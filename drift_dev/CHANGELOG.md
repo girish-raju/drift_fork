@@ -2,6 +2,8 @@
 
 - Fix warning on Dart-defined views referencing the same table multiple times.
 - Don't generate unnecessary verification code.
+- Suggest a test with data integrity when adding a new column without a default
+  value in `make-migrations`.
 
 ## 2.25.2
 

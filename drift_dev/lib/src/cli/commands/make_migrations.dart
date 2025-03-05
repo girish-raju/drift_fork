@@ -145,6 +145,7 @@ targets:
       // Write the generated test
       await writer.writeTest();
       await writer.flush();
+      writer.suggestDataMigrationTest();
     }
   }
 }
@@ -200,11 +201,10 @@ class _MigrationTestEmitter {
   }
 
   /// All the schema files for this database
-  Map<int, ExportedSchema> schemas;
+  Map<int, ExportedSchema> schemas = const {};
 
   /// Migration writer for each migration
-  List<_MigrationTestWriter> get migrations =>
-      _MigrationTestWriter.fromSchema(schemas);
+  List<_MigrationTestWriter> migrations = const [];
 
   _MigrationTestEmitter(
       {required this.cli,
@@ -219,7 +219,6 @@ class _MigrationTestEmitter {
       required this.dbClassName,
       required this.db,
       required this.driftElements,
-      required this.schemas,
       required this.dumpGeneratedSchemaCode,
       required this.needsToUseFlutterTest});
 
@@ -260,7 +259,6 @@ class _MigrationTestEmitter {
     if (db == null) {
       cli.exit('Could not read database class from the "$dbName" database.');
     }
-    final schemas = await parseSchema(schemaDir);
 
     final config = await cli.project.packageConfig;
     final hasTest = config?.packages.any((e) => e.name == 'test') == true;
@@ -271,7 +269,7 @@ class _MigrationTestEmitter {
           'dependency on flutter_test or test.');
     }
 
-    return _MigrationTestEmitter(
+    final emitter = _MigrationTestEmitter(
       cli: cli,
       rootSchemaDir: rootSchemaDir,
       rootTestDir: rootTestDir,
@@ -280,7 +278,6 @@ class _MigrationTestEmitter {
       schemaDir: schemaDir,
       testDir: testDir,
       db: db,
-      schemas: schemas,
       driftElements: elements,
       dbClassName: db.definingDartClass.toString(),
       testDatabasesDir: testDatabasesDir,
@@ -288,6 +285,14 @@ class _MigrationTestEmitter {
       dumpGeneratedSchemaCode: dumpGeneratedSchemaCode,
       needsToUseFlutterTest: !hasTest,
     );
+    await emitter._readSchemas();
+    return emitter;
+  }
+
+  Future<void> _readSchemas() async {
+    schemas = await parseSchema(schemaDir);
+    migrations = _MigrationTestWriter.fromSchema(schemas)
+        .sorted((a, b) => a.from.compareTo(b.from));
   }
 
   /// Create a .json dump of the current schema
@@ -310,7 +315,7 @@ class _MigrationTestEmitter {
           .info('$dbName: Creating schema file for version $schemaVersion');
       schemaFile.writeAsStringSync(content);
       // Re-parse the schema to include the newly created schema file
-      schemas = await parseSchema(schemaDir);
+      await _readSchemas();
     } else if (schemaFile.readAsStringSync() != content) {
       cli.exit(
           "A schema for version $schemaVersion of the $dbName database already exists and differs from the current schema."
@@ -372,8 +377,7 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
       return;
     }
 
-    final firstMigration =
-        migrations.sorted((a, b) => a.from.compareTo(b.from)).first;
+    final firstMigration = migrations.first;
 
     final packageName = cli.project.buildConfig.packageName;
     final relativeDbPath = p.posix.relative(dbClassFile.path,
@@ -463,6 +467,52 @@ void main() {
   File get stepsFile {
     return File(dbClassFile.absolute.path
         .replaceFirst(RegExp(r'\.dart$'), '.steps.dart'));
+  }
+
+  void suggestDataMigrationTest() {
+    final lastMigration = migrations.last;
+    final schemaBefore = schemas[lastMigration.from]!;
+    final schemaAfter = schemas[lastMigration.to]!;
+
+    // Find changes that suggest a test with data (instead of the default tests
+    // only using empty tables) might be useful.
+    final reasons = <String>[];
+
+    for (final elementAfter in schemaAfter.schema) {
+      final elementBefore = schemaBefore.schema
+          .firstWhereOrNull((e) => e.id.name == elementAfter.id.name);
+
+      if (elementBefore == null) {
+        continue;
+      }
+
+      if (elementAfter is DriftTable && elementBefore is DriftTable) {
+        for (final columnAfter in elementAfter.columns) {
+          final columnBefore =
+              elementBefore.columnBySqlName[columnAfter.nameInSql];
+
+          if (columnBefore == null &&
+              elementAfter.isColumnRequiredForInsert(columnAfter)) {
+            reasons.add(
+                'Added column "${columnAfter.nameInSql}" in "${elementAfter.schemaName}" without a default.');
+          }
+        }
+      }
+    }
+
+    if (reasons.isNotEmpty) {
+      cli.logger.info(
+        '${cyan.wrap('Hint')}: Your latest migration might benefit from a test '
+        'with data, as it might need special setup to transform existing data. '
+        'Drit has detected the following reasons for that: ',
+      );
+      for (final reason in reasons) {
+        cli.logger.info(' - $reason');
+      }
+
+      cli.logger.info(
+          'For more information on writing these tests, see ${yellow.wrap('https://drift.simonbinder.eu/migrations/tests/#verifying-data-integrity')}');
+    }
   }
 }
 
