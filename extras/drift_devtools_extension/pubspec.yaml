@@ -11,8 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  devtools_extensions: ^0.2.1
-  devtools_app_shared: ^0.2.1
+  devtools_extensions: ^0.3.1
+  devtools_app_shared: ^0.3.1
   db_viewer:
   drift_db_viewer:
   rxdart: ^0.28.0
