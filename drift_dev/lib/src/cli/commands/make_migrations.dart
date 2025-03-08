@@ -183,7 +183,7 @@ class _MigrationTestEmitter {
 
   /// Whether the core test package is unavailable and needs to be replaced with
   /// `flutter_test`.
-  final bool needsToUseFlutterTest;
+  final bool shouldUseFlutterTest;
 
   final File? dumpGeneratedSchemaCode;
 
@@ -220,7 +220,7 @@ class _MigrationTestEmitter {
       required this.db,
       required this.driftElements,
       required this.dumpGeneratedSchemaCode,
-      required this.needsToUseFlutterTest});
+      required this.shouldUseFlutterTest});
 
   static Future<_MigrationTestEmitter> create({
     required DriftDevCli cli,
@@ -261,9 +261,11 @@ class _MigrationTestEmitter {
     }
 
     final config = await cli.project.packageConfig;
+    final hasFlutter = config?.packages.any((e) => e.name == 'flutter') == true;
     final hasTest = config?.packages.any((e) => e.name == 'test') == true;
     final hasFlutterTest =
         config?.packages.any((e) => e.name == 'flutter_test') == true;
+
     if (!hasTest && !hasFlutterTest) {
       cli.logger.warning('No test package found for project, please add a'
           'dependency on flutter_test or test.');
@@ -283,7 +285,9 @@ class _MigrationTestEmitter {
       testDatabasesDir: testDatabasesDir,
       schemaVersion: schemaVersion,
       dumpGeneratedSchemaCode: dumpGeneratedSchemaCode,
-      needsToUseFlutterTest: !hasTest,
+      // For packages depending on flutter, suggest running tests with `flutter
+      // test` instead of `dart test`.
+      shouldUseFlutterTest: hasFlutter,
     );
     await emitter._readSchemas();
     return emitter;
@@ -382,7 +386,7 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
     final packageName = cli.project.buildConfig.packageName;
     final relativeDbPath = p.posix.relative(dbClassFile.path,
         from: p.join(cli.project.directory.path, 'lib'));
-    final testPackageName = needsToUseFlutterTest ? 'flutter_test' : 'test';
+    final testPackageName = shouldUseFlutterTest ? 'flutter_test' : 'test';
 
     final code = """
 // ignore_for_file: unused_local_variable, unused_import
@@ -434,7 +438,7 @@ void main() {
 }
 """;
 
-    final testCommand = needsToUseFlutterTest ? 'flutter' : 'dart';
+    final testCommand = shouldUseFlutterTest ? 'flutter' : 'dart';
     cli.logger.info(
         '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
         'Run this test to validate that your migrations are written correctly. ${yellow.wrap("$testCommand test ${p.relative(testFile.path)}")}');
