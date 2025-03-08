@@ -1,4 +1,4 @@
-## 2.26.0-dev
+## 2.26.0
 
 - Add support for window functions with `WindowFunctionExpression`.
 
