@@ -441,7 +441,8 @@ Generated row classes can be converted from and to JSON:
 
 ### Key names
 
-By default, drift uses column names in `snake_case` as JSON keys:
+For tables and views defined as Dart classes, drift uses the name of the getter defining columns as
+a JSON key:
 
 {{ load_snippet('default-json-keys','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
 
@@ -449,8 +450,17 @@ By default, drift uses column names in `snake_case` as JSON keys:
 {
   "id": 1,
   "title": "Todo 1",
-  "created_at": "2024-02-29T12:00:00Z"
+  "createdAt": "2024-02-29T12:00:00Z"
 }
+```
+
+For elements defined in [drift files](../sql_api/drift_files.md), drift uses the name of the column
+in SQL instead. This can be a problem when mixing the two declarations. A view defined in a drift file
+that selects from the Dart table would have different JSON keys, for instance:
+
+```sql
+-- JSON keys are id, title, created_at
+CREATE VIEW todos_view AS SELECT * FROM todos;
 ```
 
 #### Custom json keys
