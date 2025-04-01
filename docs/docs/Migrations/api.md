@@ -170,3 +170,35 @@ await m.alterTable(
   )
 )
 ```
+
+### Adding new columns
+
+The easiest way to add new columns is to simply use the `addColumn` method on the migrator:
+
+```dart
+await m.addColumn(users, users.middleName);
+```
+
+In some cases, that won't be enough though. In particular, if you're adding a column that:
+
+1. Is non-nullable, _and_
+2. Does not have a default value (`clientDefault` doesn't count as a default value here), _and_
+3. Is not an auto-incrementing primary key.
+
+Then this column can't be added to existing tables safely because the database won't know which
+value to use in existing rows.
+By using the `alterTable` API, you can specify a default value that will only be applied to existing
+rows (new insertions will either get the `clientDefault` or are required to specify their own values
+for the new column):
+
+```dart
+await m.alterTable(
+  TableMigration(
+    yourTable,
+    columnTransformer: {
+      yourTable.yourNewColumn: Constant('value for existing rows'),
+    },
+    newColumns: [yourTable.yourNewColumn],
+  )
+)
+```
