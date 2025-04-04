@@ -521,8 +521,6 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       type: i0.DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
-  static const i0.VerificationMeta _preferencesMeta =
-      const i0.VerificationMeta('preferences');
   late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
       preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
               type: i0.DriftSqlType.string,
@@ -562,7 +560,6 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       context.handle(_biographyMeta,
           biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
     }
-    context.handle(_preferencesMeta, const i0.VerificationResult.success());
     if (data.containsKey('profile_picture')) {
       context.handle(
           _profilePictureMeta,
