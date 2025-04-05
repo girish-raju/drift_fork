@@ -37,8 +37,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<Uint8List> profilePicture =
       GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
           type: DriftSqlType.blob, requiredDuringInsert: false);
-  static const VerificationMeta _preferencesMeta =
-      const VerificationMeta('preferences');
   @override
   late final GeneratedColumnWithTypeConverter<Preferences?, String>
       preferences = GeneratedColumn<String>('preferences', aliasedName, true,
@@ -78,7 +76,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           profilePicture.isAcceptableOrUnknown(
               data['profile_picture']!, _profilePictureMeta));
     }
-    context.handle(_preferencesMeta, const VerificationResult.success());
     return context;
   }
 
