@@ -948,7 +948,7 @@ class CouldNotDeserializeException implements Exception {
   String toString() => message;
 }
 
-class _PendingReferenceToOwnTable extends DriftColumnConstraint {
+final class _PendingReferenceToOwnTable extends CustomColumnConstraint {
   final String referencedColumn;
   final ReferenceAction? onUpdate, onDelete;
   final bool initiallyDeferred;

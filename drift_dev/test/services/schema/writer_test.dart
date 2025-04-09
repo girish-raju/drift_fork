@@ -35,6 +35,7 @@ import 'main.dart';
 CREATE TABLE "groups" (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  name2 TEXT NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL,
 
   UNIQUE(name)
 );
@@ -301,6 +302,32 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": []
+                    },
+                    {
+                        "name": "name2",
+                        "getter_name": "name2",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                          {
+                            "generated_as": {
+                              "dart_expression": {
+                                "elements": [
+                                  "const ",
+                                  {
+                                    "lexeme": "CustomExpression",
+                                    "import_uri": "package:drift/drift.dart"
+                                  },
+                                  "('upper(name)')"
+                                ]
+                              },
+                              "stored": false
+                            }
+                          }
+                        ]
                     }
                 ],
                 "is_virtual": false,
@@ -457,7 +484,14 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "unknown"
+                            {
+                              "foreign_key": {
+                                "to": {"table": "groups", "column": "id"},
+                                "initially_deferred": false,
+                                "on_update": null,
+                                "on_delete": null
+                              }
+                            }
                         ]
                     },
                     {
@@ -469,7 +503,14 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "unknown"
+                            {
+                              "foreign_key": {
+                                "to": {"table": "users", "column": "id"},
+                                "initially_deferred": false,
+                                "on_update": null,
+                                "on_delete": null
+                              }
+                            }
                         ]
                     },
                     {

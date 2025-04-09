@@ -508,7 +508,7 @@ void main() {
       cli.logger.info(
         '${cyan.wrap('Hint')}: Your latest migration might benefit from a test '
         'with data, as it might need special setup to transform existing data. '
-        'Drit has detected the following reasons for that: ',
+        'Drift has detected the following reasons for that: ',
       );
       for (final reason in reasons) {
         cli.logger.info(' - $reason');

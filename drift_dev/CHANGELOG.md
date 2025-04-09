@@ -1,3 +1,7 @@
+## 2.26.1-dev
+
+- Fix `generatedAs` not being generated for versioned schema imports.
+
 ## 2.26.0
 
 - Fix warning on Dart-defined views referencing the same table multiple times.

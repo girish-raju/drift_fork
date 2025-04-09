@@ -230,16 +230,18 @@ class AppliedTypeConverter {
   });
 }
 
-abstract class DriftColumnConstraint {
+sealed class DriftColumnConstraint {
   const DriftColumnConstraint();
 }
+
+base class CustomColumnConstraint extends DriftColumnConstraint {}
 
 class UniqueColumn extends DriftColumnConstraint {
   const UniqueColumn();
 }
 
 @JsonSerializable()
-class PrimaryKeyColumn extends DriftColumnConstraint {
+final class PrimaryKeyColumn extends DriftColumnConstraint {
   final bool isAutoIncrement;
 
   PrimaryKeyColumn(this.isAutoIncrement);
@@ -250,7 +252,7 @@ class PrimaryKeyColumn extends DriftColumnConstraint {
   Map<String, Object?> toJson() => _$PrimaryKeyColumnToJson(this);
 }
 
-class ForeignKeyReference extends DriftColumnConstraint {
+final class ForeignKeyReference extends DriftColumnConstraint {
   late final DriftColumn otherColumn;
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
@@ -273,7 +275,7 @@ class ForeignKeyReference extends DriftColumnConstraint {
 }
 
 @JsonSerializable()
-class ColumnGeneratedAs extends DriftColumnConstraint {
+final class ColumnGeneratedAs extends DriftColumnConstraint {
   final AnnotatedDartCode dartExpression;
   final bool stored;
 
@@ -298,7 +300,7 @@ class ColumnGeneratedAs extends DriftColumnConstraint {
 
 /// A column with a `CHECK()` generated from a Dart expression.
 @JsonSerializable()
-class DartCheckExpression extends DriftColumnConstraint {
+final class DartCheckExpression extends DriftColumnConstraint {
   final AnnotatedDartCode dartExpression;
 
   DartCheckExpression(this.dartExpression);
@@ -310,7 +312,7 @@ class DartCheckExpression extends DriftColumnConstraint {
 }
 
 @JsonSerializable()
-class LimitingTextLength extends DriftColumnConstraint {
+final class LimitingTextLength extends DriftColumnConstraint {
   final int? minLength;
 
   final int? maxLength;
@@ -334,7 +336,7 @@ class LimitingTextLength extends DriftColumnConstraint {
   }
 }
 
-class DefaultConstraintsFromSchemaFile extends DriftColumnConstraint {
+final class DefaultConstraintsFromSchemaFile extends DriftColumnConstraint {
   final String? forAllDialects;
   final Map<SqlDialect, String> dialectSpecific;
 
