@@ -30,6 +30,7 @@ adding a package to open database on the respective platform.
     dependencies:
       drift: ^{{ versions.drift }}
       drift_flutter: ^{{ versions.drift_flutter }}
+      path_provider: ^{{ versions.path_provider }}
 
     dev_dependencies:
       drift_dev: ^{{ versions.drift_dev }}
@@ -39,7 +40,7 @@ adding a package to open database on the respective platform.
     Alternatively, you can achieve the same result using the following command:
 
     ```
-    dart pub add drift drift_flutter dev:drift_dev dev:build_runner
+    dart pub add drift drift_flutter path_provider dev:drift_dev dev:build_runner
     ```
 
     Please note that `drift_flutter` depends on `sqlite3_flutter_libs`, which includes a compiled
