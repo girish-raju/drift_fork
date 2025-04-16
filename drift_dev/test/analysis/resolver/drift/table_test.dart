@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/column.dart';
 import 'package:drift_dev/src/analysis/results/table.dart';

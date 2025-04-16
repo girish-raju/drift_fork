@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -144,10 +146,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     ClassElement element,
     List<DriftColumn> columns,
   ) async {
-    final primaryKeyGetter = element.augmented.lookUpGetter(
-      name: 'primaryKey',
-      library: element.library,
-    );
+    final primaryKeyGetter =
+        element.lookUpGetter('primaryKey', element.library);
 
     if (primaryKeyGetter == null || primaryKeyGetter.isFromDefaultTable) {
       // resolved primaryKey is from the Table dsl superclass. That means there
@@ -197,10 +197,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     ClassElement element,
     List<DriftColumn> columns,
   ) async {
-    final uniqueKeyGetter = element.augmented.lookUpGetter(
-      name: 'uniqueKeys',
-      library: element.library,
-    );
+    final uniqueKeyGetter = element.lookUpGetter('uniqueKeys', element.library);
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
       // resolved uniqueKeys is from the Table dsl superclass. That means there
@@ -261,10 +258,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<bool?> _booleanGetter(ClassElement element, String name) async {
-    final getter = element.augmented.lookUpGetter(
-      name: name,
-      library: element.library,
-    );
+    final getter = element.lookUpGetter(name, element.library);
 
     // Was the getter overridden at all?
     if (getter == null || getter.isFromDefaultTable) return null;
@@ -389,10 +383,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     List<DriftColumn> localColumns,
     ClassElement element,
   ) async {
-    final customConstraints = element.augmented.lookUpGetter(
-      name: 'customConstraints',
-      library: element.library,
-    );
+    final customConstraints =
+        element.lookUpGetter('customConstraints', element.library);
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
       // Does not define custom constraints
