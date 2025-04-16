@@ -224,6 +224,7 @@ Drift also supports subqueries that appear in `JOIN`s, which are described in th
 [documentation for joins](select.md#subqueries).
 
 ## Custom expressions
+
 If you want to inline custom SQL into Dart queries, you can use a `CustomExpression` class.
 It takes an `sql` parameter that lets you write custom expressions:
 
@@ -233,3 +234,15 @@ _Note_: It's easy to write invalid queries by using `CustomExpressions` too much
 you need to use them because a feature you use is not available in drift, consider creating an issue
 to let us know. If you just prefer SQL, you could also take a look at
 [compiled SQL](../sql_api/custom_queries.md) which is type-safe to use.
+
+Especially when custom expressions need to embed sub-expressions, `CustomExpression` is a bit limiting.
+A more complex alternative that gives you full control on how snippets are written to SQL can be to
+implement `Expression` directly.
+For instance, this is an expression that implements [row values](https://sqlite.org/rowvalue.html) with
+Drift's query builder:
+
+{{ load_snippet('row-values','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
+
+It can then be used like this:
+
+{{ load_snippet('rowvalue-use','lib/snippets/dart_api/expressions.dart.excerpt.json') }}

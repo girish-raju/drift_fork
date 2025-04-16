@@ -205,6 +205,16 @@ extension Snippets on CanUseCommonTables {
     });
   }
   // #enddocregion window2
+
+  // #docregion rowvalue-use
+  void rowValuesUsage() {
+    select(animals).where((row) {
+      // Generates (amount_of_legs, average_livespan) < (?, ?)
+      return RowValues([row.amountOfLegs, row.averageLivespan])
+          .isSmallerThan(RowValues([Variable(2), Variable(10)]));
+    });
+  }
+  // #enddocregion rowvalue-use
 }
 
 // #docregion bitwise
@@ -213,3 +223,29 @@ Expression<int> bitwiseMagic(Expression<int> a, Expression<int> b) {
   return ~(a.bitwiseAnd(b));
 }
 // #enddocregion bitwise
+
+// #docregion row-values
+/// Writes row values (`(1, 2, 3)`) into SQL. We use [Never] as a bound because
+/// this expression cannot be evaluated, it's only useful as a subexpression.
+final class RowValues extends Expression<Never> {
+  final List<Expression> expressions;
+
+  RowValues(this.expressions);
+
+  @override
+  Precedence get precedence => Precedence.primary;
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer.write('(');
+
+    for (final (i, expr) in expressions.indexed) {
+      if (i != 0) context.buffer.write(', ');
+
+      expr.writeInto(context);
+    }
+
+    context.buffer.write(')');
+  }
+}
+// #enddocregion row-values
