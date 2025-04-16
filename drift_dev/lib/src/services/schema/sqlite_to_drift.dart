@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';

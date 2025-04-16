@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:collection/collection.dart';

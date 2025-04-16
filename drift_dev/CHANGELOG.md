@@ -1,7 +1,6 @@
-## 2.26.1
+## 2.26.1-dev
 
 - Fix `generatedAs` not being generated for versioned schema imports.
-- Fix compatibility issue with version 7.4.0 of the `analyzer` package.
 
 ## 2.26.0
 

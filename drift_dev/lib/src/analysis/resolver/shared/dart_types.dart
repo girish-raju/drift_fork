@@ -1,11 +1,15 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
+// ignore: implementation_imports
+import 'package:analyzer/src/dart/element/type.dart'
+    show
+        RecordTypeImpl,
+        RecordTypeNamedFieldImpl,
+        RecordTypePositionalFieldImpl;
 import 'package:drift/drift.dart' show DriftSqlType;
 
 import '../../driver/error.dart';
@@ -138,9 +142,9 @@ ExistingRowClass? validateExistingClass(
   final getters = <String, String>{};
   final missingGetters = <String>[];
   for (final column in columns) {
-    final matchingField = dartClass.classElement.lookUpGetter(
-      column.nameInDart,
-      dartClass.classElement.library,
+    final matchingField = dartClass.classElement.augmented.lookUpGetter(
+      name: column.nameInDart,
+      library: dartClass.classElement.library,
     );
 
     if (matchingField case final field?) {
@@ -528,13 +532,15 @@ extension CreateRecordType on TypeProvider {
     required List<MapEntry<String, DartType>> named,
     NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
   }) {
-    return createRecordType(
-      positional: [
-        for (final type in positional) type,
+    // todo: Use public API after https://dart-review.googlesource.com/c/sdk/+/277401
+    return RecordTypeImpl(
+      positionalFields: [
+        for (final type in positional)
+          RecordTypePositionalFieldImpl(type: type),
       ],
-      named: [
+      namedFields: [
         for (final namedEntry in named)
-          MapEntry(namedEntry.key, namedEntry.value)
+          RecordTypeNamedFieldImpl(name: namedEntry.key, type: namedEntry.value)
       ],
       nullabilitySuffix: nullabilitySuffix,
     );
