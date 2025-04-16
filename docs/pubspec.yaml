@@ -48,9 +48,6 @@ dev_dependencies:
     version: ^0.0.18
   sass_builder: ^2.2.1
 
-  # Workaround for https://github.com/google/json_serializable.dart/issues/1485
-  analyzer: '>=7.0.0 <7.4.0'
-
 dependency_overrides:
   drift_flutter:
     path: ../drift_flutter

@@ -528,9 +528,14 @@ extension CreateRecordType on TypeProvider {
     required List<MapEntry<String, DartType>> named,
     NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
   }) {
-    return RecordType(
-      positional: positional,
-      named: Map.fromEntries(named),
+    return createRecordType(
+      positional: [
+        for (final type in positional) type,
+      ],
+      named: [
+        for (final namedEntry in named)
+          MapEntry(namedEntry.key, namedEntry.value)
+      ],
       nullabilitySuffix: nullabilitySuffix,
     );
   }
