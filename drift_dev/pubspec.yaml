@@ -39,7 +39,7 @@ dependencies:
   sqlparser: ^0.41.0
 
   # Dart analysis
-  analyzer: '>=6.11.0 <7.4.0' # 7.4.0 contains breaking changes, see https://github.com/simolus3/drift/issues/3533
+  analyzer: '>=6.11.0 <8.0.0'
   source_span: ^1.10.0
   package_config: ^2.1.0
   pub_semver: ^2.1.4
@@ -51,6 +51,11 @@ dependencies:
   dart_style: ">=2.3.7 <4.0.0"
   source_gen: ">=1.5.0 <3.0.0"
   string_scanner: ^1.2.0
+
+dependency_overrides:
+  # Version 7.4.0 started deprecating element1 APIs that we're still using because pkg:build and pkg:source_gen
+  # aren't migrated.
+  analyzer: '>=7.3.0 <7.4.0'
 
 dev_dependencies:
   lints: ^5.1.0
