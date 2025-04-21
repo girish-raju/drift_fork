@@ -63,6 +63,27 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   backend.contents = entities.values.join('\n');
 
   final file = await driver.resolveElements(uri);
+  final engine = driver.newSqlEngine();
+  for (final element in file.analysis.values) {
+    final result = element.result;
+    switch (result) {
+      case DriftTrigger():
+        result.parsedStatement = engine
+            .parse(entities[element.ownId.name]!)
+            .rootNode as CreateTriggerStatement;
+      case DriftIndex():
+        result.parsedStatement = engine
+            .parse(entities[element.ownId.name]!)
+            .rootNode as CreateIndexStatement;
+      case DriftView():
+        if (result.source case final SqlViewSource source) {
+          source.parsedStatement = engine
+              .parse(entities[element.ownId.name]!)
+              .rootNode as CreateViewStatement;
+        }
+    }
+  }
+
   return [
     for (final entry in file.analysis.values)
       if (entry.result != null) entry.result!

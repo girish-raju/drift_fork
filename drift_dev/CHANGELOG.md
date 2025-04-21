@@ -3,6 +3,8 @@
 - Fix `generatedAs` not being generated for versioned schema imports.
 - Avoid the use of the shared database cache in the `SchemaVerifier`
   implementation.
+- Fix crash when `drift_dev schema dump` is used on SQLite databases with
+  triggers, views or indexes.
 
 ## 2.26.0
 
