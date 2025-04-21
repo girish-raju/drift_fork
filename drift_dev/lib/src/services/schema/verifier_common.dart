@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations_common.dart';
 import 'package:sqlite3/common.dart';
@@ -79,15 +77,14 @@ Expando<List<Input>> expectedSchema = Expando();
 abstract base class VerifierImplementation<DB extends CommonDatabase>
     implements SchemaVerifier<DB> {
   final SchemaInstantiationHelper helper;
-  final Random _random = Random();
 
   final void Function(DB)? setup;
 
   VerifierImplementation(this.helper, {this.setup});
 
-  DB newInMemoryDatabase(String uri);
+  DB newInMemoryDatabase();
 
-  QueryExecutor wrapOpened(DB db);
+  QueryExecutor wrapOpened(DB db, {required bool closeUnderlyingOnClose});
 
   @override
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
@@ -116,22 +113,8 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     verify(referenceSchema, actualSchema, validateDropped);
   }
 
-  String _randomString() {
-    const charCodeLowerA = 97;
-    const charCodeLowerZ = 122;
-    const length = 16;
-
-    final buffer = StringBuffer();
-    for (var i = 0; i < length; i++) {
-      buffer.writeCharCode(
-          _random.nextInt(charCodeLowerZ - charCodeLowerA) + charCodeLowerA);
-    }
-
-    return buffer.toString();
-  }
-
-  DB _setupDatabase(String uri) {
-    final database = newInMemoryDatabase(uri);
+  DB _setupDatabase() {
+    final database = newInMemoryDatabase();
     try {
       database.config.doubleQuotedStringLiterals = false;
     } on SqliteException {
@@ -148,23 +131,18 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
 
   @override
   Future<InitializedSchema<DB>> schemaAt(int version) async {
-    // Use distinct executors for setup and use, allowing us to close the helper
-    // db here and avoid creating it twice.
-    // https://www.sqlite.org/inmemorydb.html#sharedmemdb
-    final uri = 'file:mem${_randomString()}?mode=memory&cache=shared';
-    final dbForSetup = _setupDatabase(uri);
-    final dbForUse = _setupDatabase(uri);
+    final rawDb = _setupDatabase();
 
-    final executor = wrapOpened(dbForSetup);
+    final executor = wrapOpened(rawDb, closeUnderlyingOnClose: false);
     final db = helper.databaseForVersion(executor, version);
 
     // Opening the helper database will instantiate the schema for us
     await executor.ensureOpen(db);
     await db.close();
 
-    return InitializedSchema(dbForUse, () {
-      final db = _setupDatabase(uri);
-      return DatabaseConnection(wrapOpened(db));
+    return InitializedSchema(rawDb, () {
+      return DatabaseConnection(
+          wrapOpened(rawDb, closeUnderlyingOnClose: false));
     });
   }
 

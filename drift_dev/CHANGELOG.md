@@ -1,6 +1,8 @@
 ## 2.26.1-dev
 
 - Fix `generatedAs` not being generated for versioned schema imports.
+- Avoid the use of the shared database cache in the `SchemaVerifier`
+  implementation.
 
 ## 2.26.0
 
