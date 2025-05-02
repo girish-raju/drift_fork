@@ -5,6 +5,7 @@
   implementation.
 - Fix crash when `drift_dev schema dump` is used on SQLite databases with
   triggers, views or indexes.
+- CLI: Don't exit with code `0` when no command was selected.
 
 ## 2.26.0
 
