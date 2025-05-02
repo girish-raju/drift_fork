@@ -35,6 +35,10 @@ in which he shares the approach used by Visible to sync local changes to the ser
 Additional approaches are also discussed in [this issue](https://github.com/simolus3/drift/issues/136) and
 [here](https://github.com/simolus3/drift/discussions/2880).
 
+Jan Zimola has published [a demo](https://github.com/Musta-Pollo/custom_supabase_drift_doc_sync) for data
+sync using the WatermelonDB protocol for synchronization (with a Dart implementation for servers and clients).
+It uses code generation to automate most of the client logic.
+
 ## PowerSync
 
 <small>
