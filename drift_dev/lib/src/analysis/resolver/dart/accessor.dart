@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
@@ -195,19 +196,34 @@ class DartAccessorResolver
         // Getter, read from `=>` body if possible.
         final expr = returnExpressionOfMethod(await resolver.driver.backend
             .loadElementDeclaration(element.getter!) as MethodDeclaration);
-        if (expr is IntegerLiteral) {
-          return expr.value;
-        }
+        return _parseSchemaVersion(expr);
       } else {
         final astField = await resolver.driver.backend
             .loadElementDeclaration(element) as VariableDeclaration;
-        if (astField.initializer is IntegerLiteral) {
-          return (astField.initializer as IntegerLiteral).value;
-        }
+
+        return _parseSchemaVersion(astField.initializer);
       }
     } catch (e, s) {
       resolver.driver.backend.log
           .warning('Could not read schemaVersion from $element', e, s);
+    }
+    return null;
+  }
+
+  int? _parseSchemaVersion(Expression? expr) {
+    return switch (expr) {
+      IntegerLiteral(:final value) => value,
+      Identifier() => _parseSchemaVersionFromConstant(expr.element),
+      _ => null,
+    };
+  }
+
+  int? _parseSchemaVersionFromConstant(Element2? element) {
+    if (element?.nonSynthetic2 case final FieldElement2 field) {
+      final value = field.computeConstantValue();
+      if (value?.toIntValue() case final value?) {
+        return value;
+      }
     }
     return null;
   }
