@@ -110,7 +110,12 @@ abstract base class VersionedSchema {
       // schema versions happens at a lower layer and is not current exposed to
       // the query builder.
       if (database.executor.dialect == SqlDialect.sqlite) {
-        await database.customStatement('pragma user_version = $newVersion');
+        try {
+          await database.customStatement('pragma user_version = $newVersion');
+        } on Object {
+          // On some databases, most notably Turso cloud instances, we can't
+          // use the user_version pragma.
+        }
       }
 
       target = newVersion;
