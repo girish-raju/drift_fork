@@ -335,6 +335,8 @@ class _MigrationTestEmitter {
 Use this generated `${yellow.wrap("stepByStep")}` to write your migrations.
 Example:
 
+${blue.wrap('import')} ${lightGray.wrap('"${p.basename(stepsFilePath)}"')};
+
 ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green.wrap("_\$$dbClassName")} ${yellow.wrap("{")}
 
   ...
@@ -468,10 +470,10 @@ void main() {
   }
 
   /// Generated file where the step by step migration code is stored
-  File get stepsFile {
-    return File(dbClassFile.absolute.path
-        .replaceFirst(RegExp(r'\.dart$'), '.steps.dart'));
-  }
+  File get stepsFile => File(stepsFilePath);
+
+  String get stepsFilePath =>
+      p.setExtension(dbClassFile.absolute.path, '.steps.dart');
 
   void suggestDataMigrationTest() {
     final lastMigration = migrations.last;
