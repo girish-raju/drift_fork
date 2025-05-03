@@ -1,3 +1,8 @@
+## 2.26.1
+
+- Add `isNotNull()` column filter for the manager APIs.
+- Add optional `orderBy` parameter to more aggregate function extension.
+
 ## 2.26.0
 
 - Add support for window functions with `WindowFunctionExpression`.
