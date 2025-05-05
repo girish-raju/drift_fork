@@ -36,7 +36,8 @@ Additional approaches are also discussed in [this issue](https://github.com/simo
 [here](https://github.com/simolus3/drift/discussions/2880).
 
 Jan Zimola has published [a demo](https://github.com/Musta-Pollo/custom_supabase_drift_doc_sync) for data
-sync using the WatermelonDB protocol for synchronization (with a Dart implementation for servers and clients).
+sync using the WatermelonDB protocol for synchronization (with a Dart implementation for clients and a pgSQL-based
+implementation for servers). The server code is generic and does not depend on the actual tables, only on their interface.
 It uses code generation to automate most of the client logic.
 
 ## PowerSync
