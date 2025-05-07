@@ -101,6 +101,15 @@ class ColumnParser {
 
   ColumnParser(this._resolver, this._columnsInSameTable);
 
+  /// Generates [AnnotatedDartCode] representing [node].
+  ///
+  /// In [node], references to a column in the same table are tagged which
+  /// allows the writer to reconstruct them properly.
+  AnnotatedDartCode _ast(AstNode node) {
+    return AnnotatedDartCode.build(
+        (b) => b.addAstNode(node, taggedElements: _columnsInSameTable));
+  }
+
   Future<PendingColumnInformation?> parse(
       ColumnDeclaration columnDeclaration, Element element) async {
     final expr = columnDeclaration.expression;
@@ -328,11 +337,11 @@ class ColumnParser {
         case _methodDefault:
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
-          foundDefaultExpression = AnnotatedDartCode.ast(expression);
+          foundDefaultExpression = _ast(expression);
           break;
         case _methodClientDefault:
-          clientDefaultExpression = AnnotatedDartCode.ast(
-              remainingExpr.argumentList.arguments.single);
+          clientDefaultExpression =
+              _ast(remainingExpr.argumentList.arguments.single);
           break;
         case _methodMap:
           final args = remainingExpr.argumentList;
@@ -357,15 +366,15 @@ class ColumnParser {
           }
 
           if (generatedExpression != null) {
-            final code = AnnotatedDartCode.ast(generatedExpression);
+            final code = _ast(generatedExpression);
             foundConstraints.add(ColumnGeneratedAs(code, stored));
           }
           break;
         case _methodCheck:
           final expr = remainingExpr.argumentList.arguments.first;
+          final ast = _ast(expr);
 
-          foundConstraints.add(DartCheckExpression(AnnotatedDartCode.build(
-              (b) => b.addAstNode(expr, taggedElements: _columnsInSameTable))));
+          foundConstraints.add(DartCheckExpression(ast));
       }
 
       // We're not at a starting method yet, so we need to go deeper!

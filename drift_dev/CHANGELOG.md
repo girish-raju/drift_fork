@@ -1,3 +1,8 @@
+## 2.26.2-dev
+
+- Fix generating versioned schema code for columns referencing other columns in
+  `generatedAs` expressions.
+
 ## 2.26.1
 
 - Fix `generatedAs` not being generated for versioned schema imports.
