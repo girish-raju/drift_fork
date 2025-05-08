@@ -426,8 +426,12 @@ class SchemaReader {
         entity = _readView(content);
         break;
       case 'special-query':
-        // Not relevant for the schema.
-        return;
+        entity = _readQuery(
+          content,
+          id: id,
+          references:
+              references.map((id) => _entitiesById[id]).nonNulls.toList(),
+        );
       default:
         throw ArgumentError(
             'Could not read schema file: Unknown entity $rawData');
@@ -590,6 +594,24 @@ class SchemaReader {
       existingRowClass: null,
       nameOfRowClass: dataClassNameForClassName(entityInfoName),
       references: const [],
+    );
+  }
+
+  DefinedSqlQuery _readQuery(
+    Map<String, dynamic> content, {
+    required int id,
+    required List<DriftElement> references,
+  }) {
+    return DefinedSqlQuery(
+      _id('create$id'),
+      _declaration,
+      references: references,
+      sql: content['sql'] as String,
+      sqlOffset: -1,
+      mode: switch (content['scenario']) {
+        'create' => QueryMode.atCreate,
+        _ => throw ArgumentError.value(content, 'content', 'Unknown scenario'),
+      },
     );
   }
 

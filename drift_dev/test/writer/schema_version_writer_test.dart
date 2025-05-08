@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide DriftDatabase;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
@@ -164,5 +164,53 @@ class ComplexTable extends Table {
         ").jsonExtract<String>(r'\$.package_id')",
       ),
     );
+  });
+
+  test('can write on create queries', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3555
+    final backend = await TestBackend.inTest({
+      'a|lib/definitions.drift': r'''
+create table if not exists __metadata(
+  version int not null primary key
+);
+
+@create: insert into __metadata values (5) on conflict do nothing;
+''',
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'definitions.drift'})
+class MyDatabase {}
+''',
+    });
+
+    final results = await backend.analyze('package:a/a.dart');
+    backend.expectNoErrors();
+    final db = results.fileAnalysis!.resolvedDatabases.values.single;
+
+    final imports = LibraryImportManager();
+    final writer = Writer(
+      const DriftOptions.defaults(),
+      generationOptions: GenerationOptions(imports: imports),
+    );
+    imports.linkToWriter(writer);
+    SchemaVersionWriter(
+      [
+        SchemaVersion(
+          1,
+          db.availableElements,
+          const {},
+        ),
+        SchemaVersion(
+          2,
+          db.availableElements,
+          const {},
+        ),
+      ],
+      writer.child(),
+    ).write();
+
+    final output = writer.writeGenerated();
+    expect(output, contains('VALUES (5) ON CONFLICT DO NOTHING'));
   });
 }

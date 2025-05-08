@@ -2,16 +2,18 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:build_config/build_config.dart';
 import 'package:drift/backends.dart';
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analysis/results/file_results.dart';
-import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:drift_dev/src/cli/cli.dart';
+import 'package:drift_dev/src/cli/commands/schema.dart';
+import 'package:drift_dev/src/cli/commands/schema/generate_utils.dart';
+import 'package:drift_dev/src/cli/project.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
-import 'package:drift_dev/src/writer/database_writer.dart';
-import 'package:drift_dev/src/writer/import_manager.dart';
-import 'package:drift_dev/src/writer/writer.dart';
+import 'package:test_descriptor/test_descriptor.dart';
 import 'package:test/test.dart';
 
 import '../../analysis/test_utils.dart';
@@ -64,6 +66,8 @@ CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN
 END;
 
 simple_query: SELECT * FROM my_view; -- not part of the schema
+
+@create: INSERT INTO "groups" ("name") VALUES ('test');
       ''',
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -122,7 +126,7 @@ class Database {}
         schemaWithOptions['options'], {'store_date_time_values_as_text': true});
   });
 
-  test('can generate code from schema json', () {
+  test('can generate code from schema json', () async {
     final serializedSchema = json.decode(
             // Column types used to be serialized under a different format, test
             // reading that as well.
@@ -130,33 +134,24 @@ class Database {}
         as Map<String, dynamic>;
     final reader = SchemaReader.readJson(serializedSchema);
 
-    final writer = Writer(
-      const DriftOptions.defaults(),
-      generationOptions: GenerationOptions(
-        forSchema: 1,
-        writeCompanions: true,
-        writeDataClasses: true,
-        imports: NullImportManager(),
-      ),
+    final fakeBuildConfig = runInBuildConfigZone(() {
+      return BuildConfig(buildTargets: {});
+    }, 'drift_dev', []);
+    final generated = await GenerateUtils.generateSchemaCode(
+      DriftDevCli()
+        ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+      1,
+      ExportedSchema(reader.entities.toList(), {}),
+      false,
+      false,
     );
 
-    final database = DriftDatabase(
-      id: DriftElementId(SchemaReader.elementUri, 'database'),
-      declaration: DriftDeclaration(SchemaReader.elementUri, 0, 'database'),
-      declaredIncludes: const [],
-      declaredQueries: const [],
-      declaredTables: const [],
-      declaredViews: const [],
-      hasConstructorArgumentForConnection: false,
-    );
-    final resolved =
-        ResolvedDatabaseAccessor(const {}, const [], reader.entities.toList());
-    final input = DatabaseGenerationInput(database, resolved, const {}, null);
-
-    DatabaseWriter(input, writer.child()).write();
-    final generated = writer.writeGenerated();
     expect(generated,
         contains('ComparableExpr(settings.length).isBiggerThanValue(10)'));
+    expect(
+        generated,
+        contains(
+            "OnCreateQuery('INSERT INTO \"groups\" (name) VALUES (\\'test\\')')"));
   });
 
   test('can export Dart-defined views', () async {
@@ -600,6 +595,15 @@ const expected = r'''
                 "name": "my_view_trigger",
                 "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN\n  UPDATE \"groups\" SET id = old.id;\nEND;"
             }
+        },
+        {
+          "id": 8,
+          "references": [0],
+          "type": "special-query",
+          "data": {
+            "scenario": "create",
+            "sql": "INSERT INTO \"groups\" (\"name\") VALUES ('test')"
+          }
         }
     ]
 }

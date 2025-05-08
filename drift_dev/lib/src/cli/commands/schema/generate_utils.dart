@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 import 'package:collection/collection.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 import '../../../analysis/results/file_results.dart';
 import '../../../analysis/results/results.dart';
@@ -129,9 +130,18 @@ class GenerateUtils {
       declaredViews: const [],
       hasConstructorArgumentForConnection: false,
     );
+
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
+    final definedQueries = {
+      for (final query in schema.schema.whereType<DefinedSqlQuery>())
+        query:
+            SqlQuery.astOnly(engine: engine, name: query.name, sql: query.sql),
+    };
+
     final resolved =
         ResolvedDatabaseAccessor(const {}, const [], schema.schema);
-    final input = DatabaseGenerationInput(database, resolved, const {}, null);
+    final input =
+        DatabaseGenerationInput(database, resolved, definedQueries, null);
 
     DatabaseWriter(input, writer.child()).write();
 
