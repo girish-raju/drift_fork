@@ -182,7 +182,9 @@ class StreamQueryStore {
     }
     // awaiting this is fine - the stream is never exposed to users and we don't
     // pause any subscriptions on it.
-    await _tableUpdates.close();
+    if (!_tableUpdates.isClosed) {
+      await _tableUpdates.close();
+    }
 
     while (_pendingTimers.isNotEmpty) {
       await _pendingTimers.first.future;

@@ -197,6 +197,33 @@ void main() {
       isolate.resume(resume);
     });
   });
+
+  group('works with widget tests', () {
+    // Regression test for https://github.com/simolus3/drift/issues/3556
+    late SimpleDatabase db;
+
+    setUp(() async {
+      db = SimpleDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+    });
+
+    tearDown(() async {
+      await db.close();
+      await db.close();
+    });
+
+    testWidgets('when closing', (tester) async {
+      await db.customSelect('SELECT 1').get();
+
+      tester.runAsync(() async {
+        await db.close();
+      });
+    });
+  });
 }
 
 class SimpleDatabase extends GeneratedDatabase {
