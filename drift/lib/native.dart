@@ -43,6 +43,21 @@ typedef DatabaseSetup = void Function(Database database);
 /// ```
 typedef IsolateSetup = FutureOr<void> Function();
 
+/// Signature of a function that obtains an instance of [Sqlite3] bindings.
+///
+/// By default, drift will use the default [sqlite3] instance from
+/// `package:sqlite3`. But especially for users interested in trying out
+/// [`sqlite3_native_assets`](https://pub.dev/packages/sqlite3_native_assets),
+/// passing this function allows customizing the SQLite bindings:
+///
+/// ```dart
+/// NativeDatabase.createInBackground(
+///   File(...),
+///   sqlite3: () => sqlite3Native,
+/// );
+/// ```
+typedef SqliteResolver = FutureOr<Sqlite3> Function();
+
 /// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
@@ -77,11 +92,18 @@ class NativeDatabase extends DelegatedDatabase {
   /// If you want to manage migrations independently or don't need them at all,
   /// you can disable migrations in drift with the [enableMigrations]
   /// parameter.
+  ///
+  /// The [sqlite3] parameter can be used to provide a function responsible for
+  /// obtaining an instance of the [Sqlite3] bindings drift will use to open the
+  /// database. This is particularly relevant for users interested in using
+  /// drift with the native assets SDK feature, see [SqliteResolver] for an
+  /// example.
   /// {@endtemplate}
   factory NativeDatabase(
     File file, {
     bool logStatements = false,
     DatabaseSetup? setup,
+    SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
     bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
@@ -91,6 +113,7 @@ class NativeDatabase extends DelegatedDatabase {
           setup,
           enableMigrations,
           cachePreparedStatements,
+          sqlite3,
         ),
         logStatements);
   }
@@ -124,15 +147,23 @@ class NativeDatabase extends DelegatedDatabase {
   /// call to [Database.execute] setting `pragma journal_mode = WAL;` in
   /// [setup].
   ///
-  /// Be aware that the functions [setup] and [isolateSetup], are sent to other
-  /// isolates and executed there. Thus, they don't have access to the same
-  /// contents of global variables. Care must also be taken to ensure that the
-  /// functions don't capture state not meant to be sent across isolates.
+  /// The [sqlite3] parameter can be used to provide a function responsible for
+  /// obtaining an instance of the [Sqlite3] bindings drift will use to open the
+  /// database. This is particularly relevant for users interested in using
+  /// drift with the native assets SDK feature, see [SqliteResolver] for an
+  /// example.
+  ///
+  /// Be aware that the functions [setup], [isolateSetup] and [sqlite3], are
+  /// sent to other isolates and are executed there. Thus, they don't have
+  /// access to the same contents of global variables. Care must also be taken
+  /// to ensure that the functions don't capture state not meant to be sent
+  /// across isolates.
   static QueryExecutor createInBackground(
     File file, {
     bool logStatements = false,
     bool cachePreparedStatements = _cacheStatementsByDefault,
     DatabaseSetup? setup,
+    SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
     bool enableMigrations = true,
     IsolateSetup? isolateSetup,
     int readPool = _defaultReadPoolSize,
@@ -145,6 +176,7 @@ class NativeDatabase extends DelegatedDatabase {
       enableMigrations: enableMigrations,
       cachePreparedStatements: cachePreparedStatements,
       readPool: readPool,
+      sqlite3: sqlite3,
     );
   }
 
@@ -157,6 +189,7 @@ class NativeDatabase extends DelegatedDatabase {
     File file, {
     bool logStatements = false,
     DatabaseSetup? setup,
+    SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
     IsolateSetup? isolateSetup,
     bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
@@ -178,6 +211,7 @@ class NativeDatabase extends DelegatedDatabase {
             enableMigrations,
             setup,
             isolateSetup,
+            sqlite3,
             receiveIsolate.sendPort,
           ),
           debugName: 'Drift isolate $kind for ${file.path}',
@@ -221,6 +255,7 @@ class NativeDatabase extends DelegatedDatabase {
   /// {@macro drift_vm_database_factory}
   factory NativeDatabase.memory({
     bool logStatements = false,
+    SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
     DatabaseSetup? setup,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
@@ -233,6 +268,7 @@ class NativeDatabase extends DelegatedDatabase {
         // what's the point...
         true,
         cachePreparedStatements,
+        sqlite3,
       ),
       logStatements,
     );
@@ -265,6 +301,7 @@ class NativeDatabase extends DelegatedDatabase {
           closeUnderlyingOnClose,
           cachePreparedStatements,
           enableMigrations,
+          _NativeDelegate._defaultResolver,
         ),
         logStatements);
   }
@@ -314,16 +351,19 @@ class NativeDatabase extends DelegatedDatabase {
   ///
   /// For more information, see [issue 835](https://github.com/simolus3/drift/issues/835).
   @experimental
-  static void closeExistingInstances() {
-    tracker.closeExisting();
+  static Future<void> closeExistingInstances(
+      {SqliteResolver sqlite3 = _NativeDelegate._defaultResolver}) async {
+    tracker(await sqlite3()).closeExisting();
   }
 }
 
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
+  final SqliteResolver _sqlite3;
+  DatabaseTracker? _trackedBy;
 
   _NativeDelegate(this.file, DatabaseSetup? setup, bool enableMigrations,
-      bool cachePreparedStatements)
+      bool cachePreparedStatements, this._sqlite3)
       : super(
           setup,
           enableMigrations: enableMigrations,
@@ -336,6 +376,7 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
     super.closeUnderlyingWhenClosed,
     bool cachePreparedStatements,
     bool enableMigrations,
+    this._sqlite3,
   )   : file = null,
         super.opened(
           cachePreparedStatements: cachePreparedStatements,
@@ -343,8 +384,10 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
         );
 
   @override
-  Database openDatabase() {
+  Future<Database> openDatabase() async {
     final file = this.file;
+    final sqlite3 = await _sqlite3();
+
     Database db;
 
     if (file != null) {
@@ -357,7 +400,7 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
 
       db = sqlite3.open(file.path);
       try {
-        tracker.markOpened(file.path, db);
+        _trackedBy = tracker(sqlite3)..markOpened(file.path, db);
       } on SqliteException {
         // ignore
       }
@@ -400,13 +443,17 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
 
     if (closeUnderlyingWhenClosed) {
       try {
-        tracker.markClosed(database);
+        _trackedBy?.markClosed(database);
       } on SqliteException {
         // ignore
       }
 
       database.dispose();
     }
+  }
+
+  static Sqlite3 _defaultResolver() {
+    return sqlite3;
   }
 }
 
@@ -417,6 +464,7 @@ class _NativeIsolateStartup {
   final bool enableMigrations;
   final DatabaseSetup? setup;
   final IsolateSetup? isolateSetup;
+  final SqliteResolver sqlite3;
   final SendPort sendServer;
 
   _NativeIsolateStartup(
@@ -426,6 +474,7 @@ class _NativeIsolateStartup {
     this.enableMigrations,
     this.setup,
     this.isolateSetup,
+    this.sqlite3,
     this.sendServer,
   );
 
@@ -437,6 +486,7 @@ class _NativeIsolateStartup {
         logStatements: startup.enableLogs,
         cachePreparedStatements: startup.cachePreparedStatements,
         enableMigrations: startup.enableMigrations,
+        sqlite3: startup.sqlite3,
         setup: startup.setup,
       ));
     });

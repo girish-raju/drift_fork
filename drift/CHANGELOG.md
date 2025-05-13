@@ -1,3 +1,8 @@
+## 2.27.0-dev
+
+- Allow passing `sqlite3` callback to `NativeDatabase` to customize how SQLite
+  bindings are obtained.
+
 ## 2.26.1
 
 - Add `isNotNull()` column filter for the manager APIs.

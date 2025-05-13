@@ -61,7 +61,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   /// This method is overridden by the platform-specific implementation to open
   /// the right sqlite3 database instance.
-  DB openDatabase();
+  FutureOr<DB> openDatabase();
 
   @override
   TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
@@ -76,7 +76,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   Future<void> open(QueryExecutorUser db) async {
     if (!_hasInitializedDatabase) {
       assert(_database == null);
-      _database = openDatabase();
+      _database = await openDatabase();
 
       try {
         _initializeDatabase();
