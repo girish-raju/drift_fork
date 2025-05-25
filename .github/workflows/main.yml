@@ -40,6 +40,7 @@ jobs:
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
         run: |
+          dart pub global activate webdev
           chmod +x ./docs.sh
           ./docs.sh build
       - name: Analyze Dart and Drift sources
