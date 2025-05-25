@@ -812,8 +812,9 @@ CREATE TABLE [STRING_TABLE](
       {
         'a|lib/drift/datastore_db.drift.dart': decodedMatches(
           allOf(
-            contains(
-                r'attachedDatabase.selectOnly(attachedDatabase.comboGroup)'),
+            contains('      (attachedDatabase.selectOnly(\n'
+                '        attachedDatabase.comboGroup,\n'
+                '      )'),
           ),
         ),
       },
