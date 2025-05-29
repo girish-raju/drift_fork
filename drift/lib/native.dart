@@ -341,7 +341,7 @@ class NativeDatabase extends DelegatedDatabase {
   /// void main() {
   ///   // Guard against zombie database connections caused by hot restarts
   ///   assert(() {
-  ///     VmDatabase.closeExistingInstances();
+  ///     NativeDatabase.closeExistingInstances();
   ///     return true;
   ///   }());
   ///
