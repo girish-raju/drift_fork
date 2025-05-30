@@ -306,11 +306,11 @@ class NativeDatabase extends DelegatedDatabase {
         logStatements);
   }
 
-  /// Disposes resources allocated by all `VmDatabase` instances of this
+  /// Disposes resources allocated by all [NativeDatabase] instances of this
   /// process.
   ///
-  /// This method will call `sqlite3_close_v2` for every `VmDatabase` that this
-  /// process has opened without closing later.
+  /// This method will call `sqlite3_close_v2` for every [NativeDatabase] that
+  /// this process has opened without closing later.
   ///
   /// __Warning__: This functionality appears to cause crashes on iOS, and it
   /// does nothing on Android. It's mainly intended for Desktop operating
