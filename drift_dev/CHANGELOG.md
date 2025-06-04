@@ -1,7 +1,8 @@
-## 2.26.2-dev
+## 2.27.0-dev
 
 - Fix generating versioned schema code for columns referencing other columns in
   `generatedAs` expressions.
+- Schema validation: Allow ignoring column constraints.
 
 ## 2.26.1
 

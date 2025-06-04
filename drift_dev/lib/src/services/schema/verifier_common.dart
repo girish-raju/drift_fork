@@ -20,10 +20,9 @@ bool isInternalElement(String name, List<String> virtualTables) {
 }
 
 void verify(List<Input> referenceSchema, List<Input> actualSchema,
-    bool validateDropped) {
+    ValidationOptions options) {
   final result =
-      FindSchemaDifferences(referenceSchema, actualSchema, validateDropped)
-          .compare();
+      FindSchemaDifferences(referenceSchema, actualSchema, options).compare();
 
   if (!result.noChanges) {
     throw SchemaMismatch(result.describe());
@@ -32,7 +31,7 @@ void verify(List<Input> referenceSchema, List<Input> actualSchema,
 
 Future<void> verifyDatabase(
   GeneratedDatabase db,
-  bool validateDropped,
+  ValidationOptions options,
   QueryExecutor Function() open,
 ) async {
   final virtualTables = db.allTables
@@ -57,7 +56,7 @@ Future<void> verifyDatabase(
     await referenceDb.close();
   }
 
-  verify(referenceSchema, schemaOfThisDatabase, validateDropped);
+  verify(referenceSchema, schemaOfThisDatabase, options);
 }
 
 /// Thrown when the actual schema differs from the expected schema.
@@ -87,8 +86,12 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
   QueryExecutor wrapOpened(DB db, {required bool closeUnderlyingOnClose});
 
   @override
-  Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
-      {bool validateDropped = false}) async {
+  Future<void> migrateAndValidate(
+    GeneratedDatabase db,
+    int expectedVersion, {
+    ValidationOptions options = const ValidationOptions(),
+    bool? validateDropped,
+  }) async {
     final virtualTables = <String>[
       for (final table in db.allTables)
         if (table is VirtualTableInfo) table.entityName,
@@ -110,7 +113,11 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
     final actualSchema = await db.executor.collectSchemaInput(virtualTables);
 
-    verify(referenceSchema, actualSchema, validateDropped);
+    verify(
+      referenceSchema,
+      actualSchema,
+      options.applyDeprecatedValidateDroppedParam(validateDropped),
+    );
   }
 
   DB _setupDatabase() {
