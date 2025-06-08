@@ -2,6 +2,7 @@
 
 - Fix generating versioned schema code for columns referencing other columns in
   `generatedAs` expressions.
+- Use proper impport statements when generating schema code.
 - Schema validation: Allow ignoring column constraints.
 
 ## 2.26.1

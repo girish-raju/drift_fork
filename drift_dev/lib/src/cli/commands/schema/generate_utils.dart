@@ -107,16 +107,24 @@ class GenerateUtils {
       'generate_manager': false,
     });
 
+    final imports = LibraryImportManager()
+      ..enforceAlias(AnnotatedDartCode.drift, null)
+      // Internal URL of the generated file, just skip the import prefix.
+      ..enforceAlias(Uri.parse('${SchemaReader.elementUri}.drift.dart'), null);
+
     final writer = Writer(
       options,
       generationOptions: GenerationOptions(
         forSchema: version,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
-        imports: NullImportManager(),
+        imports: imports,
       ),
     );
+    imports.linkToWriter(writer);
 
+    // We need to use the core drift package without an import alias because it
+    // can be referenced in snippets that are part of the schema files.
     writer.leaf()
       ..writeln(_prefix)
       ..writeln("import 'package:drift/drift.dart';");

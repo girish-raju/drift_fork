@@ -78,7 +78,7 @@ class NullImportManager implements ImportManager {
 class LibraryImportManager implements ImportManager {
   static final _dartCore = Uri.parse('dart:core');
 
-  final Map<Uri, String> _importAliases = {};
+  final Map<Uri, String?> _importAliases = {};
 
   /// The uri of the file being generated.
   ///
@@ -89,6 +89,10 @@ class LibraryImportManager implements ImportManager {
   TextEmitter? emitter;
 
   LibraryImportManager([this._outputUri]);
+
+  void enforceAlias(Uri uri, String? alias) {
+    _importAliases[uri] ??= alias;
+  }
 
   void linkToWriter(Writer writer) {
     emitter = writer.leaf();
