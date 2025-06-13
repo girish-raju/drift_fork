@@ -339,6 +339,7 @@ jobs:
     name: "Integration tests for migration tooling"
     needs: [setup]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
@@ -366,6 +367,7 @@ jobs:
     name: "Web integration tests"
     needs: [drift]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare

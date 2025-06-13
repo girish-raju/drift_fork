@@ -68,6 +68,9 @@ void main() {
 
       setUpAll(() async {
         final process = driverProcess = await browser.spawnDriver();
+        // geckodriver becomes unresponsive when no one is listening on stdout.
+        unawaited(process.stdout.drain());
+
         process.exitCode.then((code) {
           if (!isStoppingProcess) {
             throw 'Webdriver stopped (code $code) before tearing down tests.';
