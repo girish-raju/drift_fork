@@ -36,12 +36,12 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/db_viewer.git
       path: db_viewer
-      ref: b1da96fc17f54e393d2781fef046d364f45220f0
+      ref: 11d6fd3eae70aa187e422eac7b4e8eece7c183b7
   drift_db_viewer:
     git:
       url: https://github.com/simolus3/db_viewer.git
       path: drift_db_viewer
-      ref: b1da96fc17f54e393d2781fef046d364f45220f0
+      ref: 11d6fd3eae70aa187e422eac7b4e8eece7c183b7
 
 flutter:
   uses-material-design: true

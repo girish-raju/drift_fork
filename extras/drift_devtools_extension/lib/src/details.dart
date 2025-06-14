@@ -9,7 +9,7 @@ import 'list.dart';
 import 'remote_database.dart';
 import 'service.dart';
 
-final loadedDatabase = AutoDisposeFutureProvider((ref) async {
+final loadedDatabase = FutureProvider.autoDispose((ref) async {
   final selected = ref.watch(selectedDatabase);
   final eval = await ref.watch(driftEvalProvider.future);
 

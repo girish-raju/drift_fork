@@ -31,7 +31,7 @@ final schemaStateProvider =
     AsyncNotifierProvider.autoDispose<SchemaVerifier, SchemaStatus>(
         SchemaVerifier._);
 
-class SchemaVerifier extends AutoDisposeAsyncNotifier<SchemaStatus> {
+class SchemaVerifier extends AsyncNotifier<SchemaStatus> {
   RemoteDatabase? _database;
   CommonSqlite3? _sqlite3;
 
