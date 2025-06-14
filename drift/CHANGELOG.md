@@ -1,4 +1,4 @@
-## 2.27.0-dev
+## 2.27.0
 
 - Allow passing `sqlite3` callback to `NativeDatabase` to customize how SQLite
   bindings are obtained.

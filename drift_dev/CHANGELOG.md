@@ -1,4 +1,4 @@
-## 2.27.0-dev
+## 2.27.0
 
 - Fix generating versioned schema code for columns referencing other columns in
   `generatedAs` expressions.
