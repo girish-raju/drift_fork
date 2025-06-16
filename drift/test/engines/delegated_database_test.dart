@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
+import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
 class _FakeExecutorUser extends QueryExecutorUser {
@@ -16,21 +17,25 @@ class _FakeExecutorUser extends QueryExecutorUser {
   int get schemaVersion => 1;
 }
 
+MockDatabaseDelegate _mockDelegate() {
+  final delegate = MockDatabaseDelegate();
+  provideDummy<TransactionDelegate>(const NoTransactionDelegate());
+  provideDummy<DbVersionDelegate>(const NoVersionDelegate());
+
+  when(delegate.isOpen).thenAnswer((_) => Future.value(true));
+  when(delegate.runSelect(any, any))
+      .thenAnswer((_) => Future.value(QueryResult.fromRows([])));
+  when(delegate.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
+  when(delegate.runInsert(any, any)).thenAnswer((_) => Future.value(4));
+  when(delegate.runCustom(any, any)).thenAnswer((_) => Future.value());
+  when(delegate.runBatched(any)).thenAnswer((_) => Future.value());
+
+  return delegate;
+}
+
 void main() {
   late MockDatabaseDelegate delegate;
-  setUp(() {
-    delegate = MockDatabaseDelegate();
-    provideDummy<TransactionDelegate>(const NoTransactionDelegate());
-    provideDummy<DbVersionDelegate>(const NoVersionDelegate());
-
-    when(delegate.isOpen).thenAnswer((_) => Future.value(true));
-    when(delegate.runSelect(any, any))
-        .thenAnswer((_) => Future.value(QueryResult.fromRows([])));
-    when(delegate.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
-    when(delegate.runInsert(any, any)).thenAnswer((_) => Future.value(4));
-    when(delegate.runCustom(any, any)).thenAnswer((_) => Future.value());
-    when(delegate.runBatched(any)).thenAnswer((_) => Future.value());
-  });
+  setUp(() => delegate = _mockDelegate());
 
   group('delegates queries', () {
     void runTests(bool sequential) {
@@ -251,6 +256,35 @@ void main() {
       await expectLater(transaction.send(), throwsA(exception));
 
       verify(transactionDelegate.startTransaction(any));
+    });
+
+    test('supported transactions - nested', () async {
+      final transactionDelegate = MockSupportedTransactionDelegate();
+      final nestedRunner = _mockDelegate();
+
+      when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
+        (i.positionalArguments.single as void Function(
+            QueryDelegate))(delegate);
+      });
+      when(transactionDelegate.startNested).thenReturn((parent, block) async {
+        await block(nestedRunner);
+      });
+      when(delegate.transactionDelegate).thenReturn(transactionDelegate);
+
+      final wrapped = TodoDb(db)
+        ..migration = MigrationStrategy(onCreate: (m) async {});
+
+      await wrapped.transaction(() async {
+        await wrapped.transaction(() async {
+          await wrapped.customSelect('SELECT 1').get();
+        }, requireNew: true);
+      });
+
+      verifyInOrder([
+        transactionDelegate.startTransaction(any),
+        transactionDelegate.startNested,
+        nestedRunner.runSelect(any, any),
+      ]);
     });
   });
 

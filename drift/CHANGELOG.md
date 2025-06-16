@@ -1,3 +1,7 @@
+## 2.28.0-dev
+
+- Query delegates: Support nested transactions in `SupportedTransactionDelegate`.
+
 ## 2.27.0
 
 - Allow passing `sqlite3` callback to `NativeDatabase` to customize how SQLite
