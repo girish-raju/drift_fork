@@ -468,6 +468,7 @@ class _DriftBuildRun {
     if (mode.isMonolithic) {
       final generationOptions = GenerationOptions(
         imports: ImportManagerForPartFiles(await buildStep.inputLibrary),
+        writePreamble: !mode.appliesCombiningBuilderFromSourceGen,
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {
@@ -483,14 +484,6 @@ class _DriftBuildRun {
 
   Future<void> _emitCode() {
     final output = StringBuffer();
-
-    if (!mode.appliesCombiningBuilderFromSourceGen) {
-      final preamble = options.preamble;
-      if (preamble != null) {
-        output.writeln(preamble);
-      }
-    }
-
     output.writeln('// ignore_for_file: type=lint');
 
     if (mode == DriftGenerationMode.monolithicPart) {

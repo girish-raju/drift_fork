@@ -13,3 +13,5 @@ targets:
             dialect: sqlite
             options:
               modules: [fts5]
+          preamble: |
+            // coverage:ignore-file

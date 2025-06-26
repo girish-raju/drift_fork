@@ -1,3 +1,7 @@
+## 2.27.1-dev
+
+- Include preamble from drift build options in generated schema code.
+
 ## 2.27.0
 
 - Fix generating versioned schema code for columns referencing other columns in
