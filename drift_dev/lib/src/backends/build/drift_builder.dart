@@ -483,22 +483,21 @@ class _DriftBuildRun {
   }
 
   Future<void> _emitCode() {
-    final output = StringBuffer();
-    output.writeln('// ignore_for_file: type=lint');
+    writer.header.writeln('// ignore_for_file: type=lint');
 
     if (mode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;
 
       if (overriddenLanguageVersion != null) {
         // Part files need to have the same version as the main library.
-        output.writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
+        writer.header
+            .writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
       }
 
-      output.writeln('part of ${asDartLiteral(originalFile)};');
+      writer.header.writeln('part of ${asDartLiteral(originalFile)};');
     }
-    output.write(writer.writeGenerated());
 
-    var code = output.toString();
+    var code = writer.writeGenerated();
 
     try {
       code = formatDartCode(

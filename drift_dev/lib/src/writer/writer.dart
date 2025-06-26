@@ -39,7 +39,7 @@ class Writer extends _NodeOrWriter {
 
     final preamble = options.preamble;
     if (preamble != null && generationOptions.writePreamble) {
-      leaf().writeln(preamble);
+      header.writeln(preamble);
     }
   }
 
