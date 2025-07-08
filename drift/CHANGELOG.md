@@ -1,6 +1,7 @@
 ## 2.28.0-dev
 
 - Query delegates: Support nested transactions in `SupportedTransactionDelegate`.
+- Fix drift server isolates leaking when their only client isolate exits without closing the database.
 
 ## 2.27.0
 

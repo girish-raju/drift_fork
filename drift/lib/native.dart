@@ -480,16 +480,20 @@ class _NativeIsolateStartup {
 
   static Future<void> start(_NativeIsolateStartup startup) async {
     await startup.isolateSetup?.call();
-    final isolate = DriftIsolate.inCurrent(() {
-      return DatabaseConnection(NativeDatabase(
-        File(startup.path),
-        logStatements: startup.enableLogs,
-        cachePreparedStatements: startup.cachePreparedStatements,
-        enableMigrations: startup.enableMigrations,
-        sqlite3: startup.sqlite3,
-        setup: startup.setup,
-      ));
-    });
+    final isolate = DriftIsolate.inCurrent(
+      () {
+        return DatabaseConnection(NativeDatabase(
+          File(startup.path),
+          logStatements: startup.enableLogs,
+          cachePreparedStatements: startup.cachePreparedStatements,
+          enableMigrations: startup.enableMigrations,
+          sqlite3: startup.sqlite3,
+          setup: startup.setup,
+        ));
+      },
+      shutdownAfterLastDisconnect: true,
+      killIsolateWhenDone: true,
+    );
 
     startup.sendServer.send(isolate);
   }
