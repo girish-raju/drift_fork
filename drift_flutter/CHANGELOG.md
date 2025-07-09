@@ -1,3 +1,7 @@
+## 0.2.5-dev
+
+- Fix `DriftWebOptions.onResult` not being called.
+
 ## 0.2.4
 
 - Allow providing a custom temporary directory.
