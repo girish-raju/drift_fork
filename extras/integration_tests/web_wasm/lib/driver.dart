@@ -203,6 +203,13 @@ class DriftWebDriver {
     ]);
   }
 
+  Future<bool> exportDatabase(WebStorageApi storageApi, String name) async {
+    return await driver
+        .executeAsync('export_database(arguments[0], arguments[1])', [
+      json.encode([storageApi.name, name]),
+    ]);
+  }
+
   Future<bool> isDart2wasm() async {
     return await driver.executeAsync('isDart2wasm("", arguments[0])', []);
   }

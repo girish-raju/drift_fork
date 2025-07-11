@@ -244,7 +244,7 @@ final class _TestConfiguration {
         });
 
         if (entry != WasmStorageImplementation.inMemory) {
-          test('delete', () async {
+          test('export and delete', () async {
             final impl = await driver.probeImplementations();
             expect(impl.existing, isEmpty);
 
@@ -257,6 +257,9 @@ final class _TestConfiguration {
             final newImpls = await driver.probeImplementations();
             expect(newImpls.existing, hasLength(1));
             final existing = newImpls.existing[0];
+
+            expect(await driver.exportDatabase(existing.$1, existing.$2),
+                isNotNull);
             await driver.deleteDatabase(existing.$1, existing.$2);
 
             await driver.driver.refresh();

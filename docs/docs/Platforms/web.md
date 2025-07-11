@@ -320,6 +320,18 @@ and drift has chosen the `unsafeIndexedDb` or the `inMemory` implementation due 
 persistence support, you may want to show a warning to the user explaining that they have to upgrade
 their browser.
 
+### Customizing how databases are opened
+
+To customize which implementation drift uses, you can use the `WasmDatabase.probe` API. Without directly
+opening a database, it returns information about which databases exist in the current context and which
+features are available in the browser.
+
+`WasmDatabase.probe` returns a `WasmProbeResult`, which can then be used to:
+
+1. `open()` the database.
+2. `deleteDatabase()` to delete a specific database at a specified location.
+3. `exportDatabase()`, to export it as a `Uint8List`.
+
 ### Custom functions and database setup
 
 Constructors on `NativeDatabase` have a `setup` callback used to initialize the raw database instance,

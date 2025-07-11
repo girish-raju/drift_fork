@@ -62,6 +62,19 @@ void main() {
     );
     return null;
   });
+  _addCallbackForWebDriver('export_database', (arg) async {
+    final result = await WasmDatabase.probe(
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+    );
+
+    final decoded = json.decode(arg!);
+
+    final exported = await result.exportDatabase(
+      (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
+    );
+    return (exported != null).toJS;
+  });
   _addCallbackForWebDriver('do_exclusive', (arg) async {
     final database = openedDatabase!;
     await database.exclusively(() async {
