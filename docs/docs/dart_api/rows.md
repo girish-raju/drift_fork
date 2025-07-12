@@ -224,17 +224,12 @@ class User implements Insertable<User> {
 }
 ```
 
-As implementing this can be tedious, drift offers the `write_to_columns_mixins` [builder option](../generation_options/index.md). When enabled, drift generates a `toInsertable` extension method on
-custom row classes that can be used:
+As implementing this can be tedious, drift offers the `write_to_columns_mixins` [builder option](../generation_options/index.md). When enabled, drift generates a mixin you can apply on your row class
+to implement `toColumns`:
 
 ```dart
-class User implements Insertable<User> {
+class User with UsersToColumns {
   // ...
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    return toInsertable().toColumns(nullToAbsent);
-  }
 }
 ```
 
