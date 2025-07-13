@@ -575,6 +575,30 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   }
 
   @override
+  void visitFormalParameterList(FormalParameterList node) {
+    // Workaround to the analyzer not including commas: https://github.com/dart-lang/sdk/blob/20ad5db3ab3f2ae49f9668b75331e51c84267011/pkg/analyzer/lib/src/dart/ast/ast.dart#L389
+    _builder.addText('(');
+    final leftDelimiter = node.leftDelimiter;
+
+    for (final (i, parameter) in node.parameters.indexed) {
+      if (i != 0) {
+        _builder.addText(', ');
+      }
+
+      if (leftDelimiter != null && leftDelimiter.offset < parameter.offset) {
+        _builder.addText(leftDelimiter.lexeme);
+      }
+
+      parameter.accept(this);
+    }
+
+    if (node.rightDelimiter case final rightDelimiter?) {
+      _builder.addText(rightDelimiter.lexeme);
+    }
+    _builder.addText(')');
+  }
+
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     // Rewrite extension invocations (e.g. `myList.indexed`) to explicitly
     // mention the extension in use (e.g `IterableExtensions(myList).indexed`).

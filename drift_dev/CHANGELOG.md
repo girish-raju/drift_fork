@@ -1,6 +1,7 @@
 ## 2.27.1-dev
 
 - Include preamble from drift build options in generated schema code.
+- Fix generated code not copying function expressions correctly.
 
 ## 2.27.0
 
