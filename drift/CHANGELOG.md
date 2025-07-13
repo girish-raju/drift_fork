@@ -1,4 +1,4 @@
-## 2.28.0-dev
+## 2.28.0
 
 - Query delegates: Support nested transactions in `SupportedTransactionDelegate`.
 - Add `WasmProbeResult.exportDatabase` to export an existing web database as a `Uint8List`.
