@@ -268,7 +268,7 @@ extension ReaderWriterUtils on TestReaderWriter {
 }
 
 class IsValidDartFile extends CustomMatcher {
-  IsValidDartFile(valueOrMatcher)
+  IsValidDartFile(dynamic valueOrMatcher)
       : super(
           'A syntactically-valid Dart source file',
           'parsed unit',
