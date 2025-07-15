@@ -1,3 +1,7 @@
+## 2.29.0-dev
+
+- Add `escapeChar` argument to `like()` to generate an `ESCAPE` clause.
+
 ## 2.28.0
 
 - Query delegates: Support nested transactions in `SupportedTransactionDelegate`.

@@ -2,18 +2,30 @@ part of '../query_builder.dart';
 
 /// Defines methods that operate on a column storing [String] values.
 extension StringExpressionOperators on Expression<String> {
-  /// Whether this column matches the given pattern. For details on what patters
-  /// are valid and how they are interpreted, check out
-  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool> like(String regex) {
-    return _LikeOperator(this, Variable.withString(regex));
+  /// Whether this column matches the given expression.
+  ///
+  /// For details on which patterms are valid and how they are interpreted,
+  /// check out [this tutorial](http://www.sqlitetutorial.net/sqlite-like/) or
+  /// the [SQLite documentation](https://www.sqlite.org/lang_expr.html#the_like_glob_regexp_match_and_extract_operators).
+  Expression<bool> like(String regex, {String? escapeChar}) {
+    return _LikeOperator(
+      this,
+      Variable.withString(regex),
+      escape: switch (escapeChar) {
+        null => null,
+        final char => Constant<String>(char),
+      },
+    );
   }
 
-  /// Whether this column matches the given expression. For details on what patters
-  /// are valid and how they are interpreted, check out
-  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool> likeExp(Expression<String> regex) {
-    return _LikeOperator(this, regex);
+  /// Whether this column matches the given expression.
+  ///
+  /// For details on which patterms are valid and how they are interpreted,
+  /// check out [this tutorial](http://www.sqlitetutorial.net/sqlite-like/) or
+  /// the [SQLite documentation](https://www.sqlite.org/lang_expr.html#the_like_glob_regexp_match_and_extract_operators).
+  Expression<bool> likeExp(Expression<String> regex,
+      {Expression<String>? escape}) {
+    return _LikeOperator(this, regex, escape: escape);
   }
 
   /// Matches this string against the regular expression in [regex].
@@ -175,6 +187,9 @@ class _LikeOperator extends Expression<bool> {
   /// The regex-like expression to test the [target] against.
   final Expression<String> regex;
 
+  /// The optinal `ESCAPE` clause of this `LIKE` operator.
+  final Expression<String>? escape;
+
   /// The operator to use when matching. Defaults to `LIKE`.
   final String operator;
 
@@ -182,7 +197,12 @@ class _LikeOperator extends Expression<bool> {
   final Precedence precedence = Precedence.comparisonEq;
 
   /// Perform a like operator with the target and the regex.
-  _LikeOperator(this.target, this.regex, {this.operator = 'LIKE'});
+  _LikeOperator(
+    this.target,
+    this.regex, {
+    this.operator = 'LIKE',
+    this.escape,
+  });
 
   @override
   void writeInto(GenerationContext context) {
@@ -191,6 +211,11 @@ class _LikeOperator extends Expression<bool> {
     context.buffer.write(operator);
     context.writeWhitespace();
     writeInner(context, regex);
+
+    if (escape case final escape?) {
+      context.buffer.write(' ESCAPE ');
+      writeInner(context, escape);
+    }
   }
 
   @override
