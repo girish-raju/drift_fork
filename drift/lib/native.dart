@@ -61,8 +61,7 @@ typedef SqliteResolver = FutureOr<Sqlite3> Function();
 /// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
-  // when changing this, also update the documentation in `drift_vm_database_factory`.
-  static const _cacheStatementsByDefault = false;
+  static const _cacheStatementsByDefault = true;
   static const _defaultReadPoolSize = 0;
 
   NativeDatabase._(super.delegate, bool logStatements)
@@ -75,10 +74,10 @@ class NativeDatabase extends DelegatedDatabase {
   /// If [logStatements] is true (defaults to `false`), generated sql statements
   /// will be printed before executing. This can be useful for debugging.
   ///
-  /// The [cachePreparedStatements] flag (defaults to `false`) controls whether
+  /// The [cachePreparedStatements] flag (defaults to `true`) controls whether
   /// drift will cache prepared statement objects, which improves performance as
   /// sqlite3 doesn't have to parse statements that are frequently used multiple
-  /// times. This will be the default in the next minor drift version.
+  /// times.
   ///
   /// The optional [setup] function can be used to perform a setup just after
   /// the database is opened, before drift is fully ready. This can be used to
