@@ -167,6 +167,24 @@ void main() {
       // would block the write.
       await raw.simpleTable.insertOne(RawValuesInsertable({}));
     });
+
+    test('can use setup', () async {
+      final database = SimpleDatabase(driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          shareAcrossIsolates: true,
+          setup: (db) => db.createFunction(
+            functionName: 'hello_dart',
+            function: (_) => 'Hello from Dart!',
+          ),
+        ),
+      ));
+      addTearDown(database.close);
+
+      final [row] =
+          await database.customSelect('SELECT hello_dart() as r;').get();
+      expect(row.data['r'], 'Hello from Dart!');
+    });
   });
 
   group('pingWithTimeout', () {
@@ -196,6 +214,23 @@ void main() {
 
       isolate.resume(resume);
     });
+  });
+
+  test('can use setup', () async {
+    final database = SimpleDatabase(driftDatabase(
+      name: 'database',
+      native: DriftNativeOptions(
+        setup: (db) => db.createFunction(
+          functionName: 'hello_dart',
+          function: (_) => 'Hello from Dart!',
+        ),
+      ),
+    ));
+    addTearDown(database.close);
+
+    final [row] =
+        await database.customSelect('SELECT hello_dart() as r;').get();
+    expect(row.data['r'], 'Hello from Dart!');
   });
 
   group('works with widget tests', () {

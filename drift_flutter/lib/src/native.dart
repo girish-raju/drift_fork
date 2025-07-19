@@ -74,7 +74,7 @@ QueryExecutor driftDatabase({
       hasConfiguredSqlite = true;
     }
 
-    if (native?.shareAcrossIsolates == true) {
+    if (native != null && native.shareAcrossIsolates) {
       const connectTimeout = Duration(seconds: 1);
 
       while (true) {
@@ -130,14 +130,17 @@ QueryExecutor driftDatabase({
       }
     }
 
-    return NativeDatabase.createBackgroundConnection(await databaseFile());
+    return NativeDatabase.createBackgroundConnection(
+      await databaseFile(),
+      setup: native?.setup,
+    );
   }));
 }
 
 typedef _EntrypointMessage = ({
   String name,
   String path,
-  DriftNativeOptions? options,
+  DriftNativeOptions options,
   SendPort sendResponses,
 });
 
@@ -147,7 +150,7 @@ void _isolateEntrypoint(_EntrypointMessage message) {
       connections.sendPort, portName(message.name))) {
     final controlPortName = isolateControlPortName(message.name);
     final server = DriftIsolate.inCurrent(
-      () => NativeDatabase(File(message.path)),
+      () => NativeDatabase(File(message.path), setup: message.options.setup),
       port: connections,
       beforeShutdown: () {
         IsolateNameServer.removePortNameMapping(portName(message.name));

@@ -1,6 +1,7 @@
-## 0.2.5-dev
+## 0.2.5
 
 - Fix `DriftWebOptions.onResult` not being called.
+- Add `setup` parameter to `DriftNativeOptions` to customize native database connections.
 
 ## 0.2.4
 
