@@ -6,7 +6,6 @@ description: How to run `ALTER` statements and complex table migrations.
 ---
 
 
-
 You can write migrations manually by using `customStatement()` in a migration
 callback. However, the callbacks also give you an instance of `Migrator` as a
 parameter. This class knows about the target schema of the database and can be
@@ -77,7 +76,10 @@ Regardless of whether you're implementing complex migrations with `TableMigratio
 of statements, we strongly recommend to write integration tests covering your migrations. This helps to avoid data
 loss caused by errors in a migration.
 
-Here are some examples demonstrating common usages of the table migration api:
+Here are some examples demonstrating common usages of the table migration API. These examples
+rely on [the generated step-by-step migrations](step_by_step.md), since that is the recommended
+way to write migrations.
+However, these APIs work without `stepByStep` as well.
 
 ### Changing the type of a column
 
@@ -112,7 +114,9 @@ non-nullable columns to nullable columns), you can just copy over data without a
 transformation:
 
 ```dart
-await m.alterTable(TableMigration(todos));
+from1To2: (m, schema) async {
+  await m.alterTable(TableMigration(schema.todos));
+}
 ```
 
 ### Deleting columns
@@ -120,7 +124,9 @@ await m.alterTable(TableMigration(todos));
 Deleting a column that's not referenced by a foreign key constraint is easy too:
 
 ```dart
-await m.alterTable(TableMigration(yourTable));
+from1To2: (m, schema) async {
+  await m.alterTable(TableMigration(schema.yourTable));
+}
 ```
 
 To delete a column referenced by a foreign key, you'd have to migrate the referencing
@@ -136,21 +142,25 @@ If you know your app runs on sqlite 3.25.0 or later (it does if you're using `sq
 you can also use the `renameColumn` api in `Migrator`:
 
 ```dart
-m.renameColumn(yourTable, 'old_column_name', yourTable.newColumn);
+from1To2: (m, schema) async {
+  await m.renameColumn(schema.yourTable, 'old_column_name', schema.yourTable.newColumn);
+}
 ```
 
 If you do want to change the actual column name in a table, you can write a `columnTransformer` to
 use an old column with a different name:
 
 ```dart
-await m.alterTable(
-  TableMigration(
-    yourTable,
-    columnTransformer: {
-      yourTable.newColumn: const CustomExpression('old_column_name')
-    },
-  )
-)
+from1To2: (m, schema) async {
+  await m.alterTable(
+    TableMigration(
+      schema.yourTable,
+      columnTransformer: {
+        schema.yourTable.newColumn: const CustomExpression('old_column_name')
+      },
+    )
+  );
+}
 ```
 
 ### Combining columns
@@ -161,11 +171,11 @@ express that with the `TableMigration` API:
 ```dart
 await m.alterTable(
   TableMigration(
-    yourTable,
+    schema.yourTable,
     columnTransformer: {
-      yourTable.newColumn: Variable.withString('from previous row: ') +
-          yourTable.oldColumn1 +
-          yourTable.oldColumn2.upper()
+      schema.yourTable.newColumn: Variable.withString('from previous row: ') +
+          schema.yourTable.oldColumn1 +
+          schema.yourTable.oldColumn2.upper()
     },
   )
 )
@@ -176,7 +186,9 @@ await m.alterTable(
 The easiest way to add new columns is to simply use the `addColumn` method on the migrator:
 
 ```dart
-await m.addColumn(users, users.middleName);
+from1To2: (m, schema) async {
+  await m.addColumn(schema.users, schema.users.middleName);
+}
 ```
 
 In some cases, that won't be enough though. In particular, if you're adding a column that:
@@ -194,11 +206,11 @@ for the new column):
 ```dart
 await m.alterTable(
   TableMigration(
-    yourTable,
+    schema.yourTable,
     columnTransformer: {
-      yourTable.yourNewColumn: Constant('value for existing rows'),
+      schema.yourTable.yourNewColumn: Constant('value for existing rows'),
     },
-    newColumns: [yourTable.yourNewColumn],
+    newColumns: [schema.yourTable.yourNewColumn],
   )
 )
 ```
