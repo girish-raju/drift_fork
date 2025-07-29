@@ -1,6 +1,6 @@
-## 2.28.1-dev.0
+## 2.28.1
 
-- Support pre-releases of `package:build` version 3.
+- Support `package:build` version 3.
 
 ## 2.28.0
 

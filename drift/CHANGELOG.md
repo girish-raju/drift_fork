@@ -1,4 +1,4 @@
-## 2.29.0-dev
+## 2.28.1
 
 - Add `escapeChar` argument to `like()` to generate an `ESCAPE` clause.
 - Native database: Cache prepared statements by default.
