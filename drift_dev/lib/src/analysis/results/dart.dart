@@ -460,17 +460,22 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
 
   @override
   void visitInterfaceType(InterfaceType type) {
-    final alias = type.alias;
-    if (alias != null) {
+    if (type.alias case final alias?) {
       _builder.addTopLevelElement(alias.element2);
+      _addTypeArguments(alias.typeArguments);
     } else {
       _builder.addTopLevelElement(type.element3);
+      _addTypeArguments(type.typeArguments);
     }
 
-    if (type.typeArguments.isNotEmpty) {
+    _writeSuffix(type.nullabilitySuffix);
+  }
+
+  void _addTypeArguments(Iterable<DartType> types) {
+    if (types.isNotEmpty) {
       _builder.addText('<');
       var i = 0;
-      for (final arg in type.typeArguments) {
+      for (final arg in types) {
         if (i != 0) {
           _builder.addText(', ');
         }
@@ -480,8 +485,6 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
       }
       _builder.addText('>');
     }
-
-    _writeSuffix(type.nullabilitySuffix);
   }
 
   @override

@@ -1,3 +1,7 @@
+## 2.28.2-dev
+
+- Fix generating code for `typedef`s with different parameters than the type they point to.
+
 ## 2.28.1
 
 - Support `package:build` version 3.
