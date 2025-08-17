@@ -26,13 +26,6 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           flutter_version: ${{ needs.setup.outputs.flutter_version }}
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.32
-          cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
       - name: Bootstrap Dart packages
         run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
@@ -286,9 +279,9 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        # We currently don't support 3.27 because we depend on a WIP build version that requires Dart 3.8.
-        # Generally we attempt to support the latest two versions.
-        flutter: ["3.29"]
+        # We currently don't support <3.35.1 because we depend on melos v7, which needs Dart 3.9.0.
+        # Generally, we try to support the latest two stable Flutter releases.
+        flutter: ["3.35.1"]
 
     steps:
       - uses: actions/checkout@v4

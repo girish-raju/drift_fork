@@ -14,6 +14,9 @@ runs:
       with:
         channel: stable
         flutter-version: ${{ inputs.flutter_version }}
+        cache: true
+        cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+        cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
 
     # Setup sqlite3
     - name: Download sqlite3
