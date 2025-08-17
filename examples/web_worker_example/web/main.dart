@@ -23,7 +23,7 @@ void main() async {
     output.innerHTML = ''.toJS;
 
     for (final row in rows) {
-      output.appendChild(HTMLLIElement()..text = row.value);
+      output.appendChild(HTMLLIElement()..textContent = row.value);
     }
   });
 
