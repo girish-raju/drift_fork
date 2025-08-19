@@ -1,3 +1,8 @@
+## 0.41.2
+
+- Improve error message on unknown columns when it looks like the identifier
+  should have been a string literal.
+
 ## 0.41.1
 
 - Support new features introduced in SQLite version 3.50.0.
