@@ -13,7 +13,7 @@ part '../generated/analysis/options.g.dart';
 /// generator.
 @JsonSerializable()
 class DriftOptions {
-  static const _defaultSqliteVersion = SqliteVersion.v3(34);
+  static const _defaultSqliteVersion = SqliteVersion.v3(38);
 
   /// Whether moor should generate a `fromJsonString` factory for data classes.
   /// It basically wraps the regular `fromJson` constructor in a `json.decode`
