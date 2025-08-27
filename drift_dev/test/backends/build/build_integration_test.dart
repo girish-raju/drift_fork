@@ -1339,4 +1339,51 @@ class Groups extends Table {
       'a|lib/groups.drift.dart': anything,
     }, build.dartOutputs, build.writer);
   });
+
+  test(
+    'warns when dao references table not added to main database',
+    () async {
+      await emulateDriftBuild(
+        inputs: {
+          'a|lib/database.dart': '''
+import 'package:drift/drift.dart';
+
+import 'dao.dart';
+
+class Users extends Table {
+  late final id = integer().autoIncrement()();
+  late final name = text()();
+}
+
+@DriftDatabase(daos: [TestAccessor])
+class AppDatabase {}
+''',
+          'a|lib/dao.dart': '''
+import 'package:drift/drift.dart';
+
+import 'database.dart';
+
+@DriftAccessor(tables: [Users])
+class TestAccessor extends DatabaseAccessor<AppDatabase> {
+}
+''',
+        },
+        modularBuild: true,
+        logger: loggerThat(
+          emits(
+            emits(
+              isA<LogRecord>().having(
+                (e) => e.message,
+                'message',
+                contains(
+                  "TestAccessor references tables that aren't available on the "
+                  'main database: [users]',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
