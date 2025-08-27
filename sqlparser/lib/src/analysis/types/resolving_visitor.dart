@@ -750,10 +750,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return const ResolveResult.needsContext();
       case 'first_value':
       case 'last_value':
+        session._addRelation(CopyTypeFrom(e, params.first));
+        return const ResolveResult.needsContext();
       case 'lag':
       case 'lead':
       case 'nth_value':
-        session._addRelation(CopyTypeFrom(e, params.first));
+        session._addRelation(CopyTypeFrom(e, params.first, makeNullable: true));
         return const ResolveResult.needsContext();
       case 'max':
       case 'min':

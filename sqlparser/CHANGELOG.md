@@ -1,7 +1,8 @@
-## 0.41.2
+## 0.41.2-dev
 
 - Improve error message on unknown columns when it looks like the identifier
   should have been a string literal.
+- Infer the output of `lag`, `lead` and `nth_value` to be nullable.
 
 ## 0.41.1
 
