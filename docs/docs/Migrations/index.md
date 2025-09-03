@@ -95,11 +95,13 @@ class MyDatabase extends _$MyDatabase {
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onUpgrade: _schemaUpgrade, // (1)
+      onUpgrade: _schemaUpgrade,
     );
   }
+}
 
-  static final OnUpgrade _schemaUpgrade = stepByStep(
+extension Migrations on GeneratedDatabase { // (1)
+  OnUpgrade get _schemaUpgrade => stepByStep(
     from1To2: (m, schema) async {
       await m.createTable(schema.groups);
     },
