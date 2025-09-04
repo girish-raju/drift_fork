@@ -858,6 +858,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitExcept(e, e.where, arg);
   }
 
+  @override
+  void visitRaiseExpression(RaiseExpression e, TypeExpectation arg) {
+    // Don't set an inner basic type because there isn't one. This just
+    // ensures the expression is marked as resolved.
+    session._checkAndResolve(e, const ResolvedType(), arg);
+  }
+
   void _handleColumn(Column? column, [AstNode? context]) {
     if (column == null ||
         session.graph.knowsType(column) ||
