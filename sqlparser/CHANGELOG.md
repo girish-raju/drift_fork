@@ -1,4 +1,4 @@
-## 0.41.2-dev
+## 0.41.2
 
 - Improve error message on unknown columns when it looks like the identifier
   should have been a string literal.

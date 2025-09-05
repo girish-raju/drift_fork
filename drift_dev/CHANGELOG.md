@@ -1,4 +1,4 @@
-## 2.28.2-dev
+## 2.28.2
 
 - Fix generating code for `typedef`s with different parameters than the type they point to.
 - Support `analyzer` version 8.x
