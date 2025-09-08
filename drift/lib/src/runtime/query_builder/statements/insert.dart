@@ -201,6 +201,13 @@ class InsertStatement<T extends Table, D> {
   /// violations. If you have further uniqueness constraints, please use the
   /// general [insert] method with a [DoUpdate] including those columns in its
   /// [DoUpdate.target].
+  ///
+  /// Liek the other [insert] methods, this returns the rowid of the last
+  /// insert. When the insert was turned into an update due to a conflicting
+  /// row, this behavior is somewhat confusing because the id of an (likely
+  /// unrelated) insert is returned instead.
+  /// Use [insertReturning] with an `onConflict` clause of
+  /// `DoUpdate((_) => entity)` to reliably get the written entity instead.
   Future<int> insertOnConflictUpdate(Insertable<D> entity) {
     return insert(entity, onConflict: DoUpdate((_) => entity));
   }
