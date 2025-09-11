@@ -7,8 +7,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
 import 'package:meta/meta.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
@@ -82,7 +82,10 @@ QueryExecutor driftDatabase({
             case final port?) {
           final isolate = DriftIsolate.fromConnectPort(port);
           try {
-            return await isolate.connect(connectTimeout: connectTimeout);
+            return await isolate.connect(
+              connectTimeout: connectTimeout,
+              isolateDebugLog: native.isolateDebugLog,
+            );
           } on TimeoutException {
             // Isolate has stopped shortly after the register call. It should
             // also remove the port mapping, so we can just try again in another
@@ -124,7 +127,9 @@ QueryExecutor driftDatabase({
           // due to a race condition (in which case it exits).
           final first = await firstMessage;
           if (first case SendPort port) {
-            return await DriftIsolate.fromConnectPort(port).connect();
+            return await DriftIsolate.fromConnectPort(port).connect(
+              isolateDebugLog: native.isolateDebugLog,
+            );
           }
         }
       }

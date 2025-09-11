@@ -39,12 +39,12 @@ final class DriftWebOptions {
   final FutureOr<Uint8List?> Function()? initializeDatabase;
 
   /// Create web-specific drift options.
-  DriftWebOptions(
-      {required this.sqlite3Wasm,
-      required this.driftWorker,
-      this.onResult,
-      this.initializeDatabase,
-      });
+  DriftWebOptions({
+    required this.sqlite3Wasm,
+    required this.driftWorker,
+    this.onResult,
+    this.initializeDatabase,
+  });
 }
 
 /// Options used to open drift databases on native platforms (outside of the
@@ -66,6 +66,10 @@ final class DriftNativeOptions {
   /// This option is not enabled by default, but recommended if a drift database
   /// may be used on multiple isolates.
   final bool shareAcrossIsolates;
+
+  /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
+  /// It will print messages exchanged between the Drift server and the client.
+  final bool isolateDebugLog;
 
   /// An optional callback returning a custom database path to be used by drift.
   ///
@@ -129,6 +133,7 @@ final class DriftNativeOptions {
   /// platforms.
   const DriftNativeOptions({
     this.shareAcrossIsolates = false,
+    this.isolateDebugLog = false,
     this.databasePath,
     this.databaseDirectory,
     this.tempDirectoryPath,
