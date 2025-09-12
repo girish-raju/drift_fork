@@ -1,3 +1,7 @@
+## 0.2.7-dev
+
+- Add `isolateDebugLog` parameter to `DriftNativeOptions` to debug internal messages between isolates.
+
 ## 0.2.6
 
 - Add `initializeDatabase` parameter to `DriftWebOptions` to enable loading initial database.

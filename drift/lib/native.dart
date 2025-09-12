@@ -187,6 +187,7 @@ class NativeDatabase extends DelegatedDatabase {
   static DatabaseConnection createBackgroundConnection(
     File file, {
     bool logStatements = false,
+    bool isolateDebugLog = false,
     DatabaseSetup? setup,
     SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
     IsolateSetup? isolateSetup,
@@ -204,14 +205,14 @@ class NativeDatabase extends DelegatedDatabase {
         await Isolate.spawn(
           _NativeIsolateStartup.start,
           _NativeIsolateStartup(
-            file.absolute.path,
-            logStatements,
-            cachePreparedStatements,
-            enableMigrations,
-            setup,
-            isolateSetup,
-            sqlite3,
-            receiveIsolate.sendPort,
+            path: file.absolute.path,
+            enableLogs: logStatements,
+            cachePreparedStatements: cachePreparedStatements,
+            enableMigrations: enableMigrations,
+            setup: setup,
+            isolateSetup: isolateSetup,
+            sqlite3: sqlite3,
+            sendServer: receiveIsolate.sendPort,
           ),
           debugName: 'Drift isolate $kind for ${file.path}',
         );
@@ -220,7 +221,8 @@ class NativeDatabase extends DelegatedDatabase {
       await spawnIsolate('worker');
       final driftIsolate = await receive.next;
 
-      var connection = await driftIsolate.connect(singleClientMode: true);
+      var connection = await driftIsolate.connect(
+          singleClientMode: true, isolateDebugLog: isolateDebugLog);
       if (readPool != 0) {
         final readers = <QueryExecutor>[];
 
@@ -230,7 +232,10 @@ class NativeDatabase extends DelegatedDatabase {
 
         for (var i = 0; i < readPool; i++) {
           final spawned = await receive.next;
-          readers.add(await spawned.connect(singleClientMode: true));
+          readers.add(await spawned.connect(
+            singleClientMode: true,
+            isolateDebugLog: isolateDebugLog,
+          ));
         }
 
         connection = DatabaseConnection(
@@ -466,16 +471,16 @@ class _NativeIsolateStartup {
   final SqliteResolver sqlite3;
   final SendPort sendServer;
 
-  _NativeIsolateStartup(
-    this.path,
-    this.enableLogs,
-    this.cachePreparedStatements,
-    this.enableMigrations,
-    this.setup,
-    this.isolateSetup,
-    this.sqlite3,
-    this.sendServer,
-  );
+  _NativeIsolateStartup({
+    required this.path,
+    required this.enableLogs,
+    required this.cachePreparedStatements,
+    required this.enableMigrations,
+    required this.setup,
+    required this.isolateSetup,
+    required this.sqlite3,
+    required this.sendServer,
+  });
 
   static Future<void> start(_NativeIsolateStartup startup) async {
     await startup.isolateSetup?.call();

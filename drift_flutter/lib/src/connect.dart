@@ -68,7 +68,8 @@ final class DriftNativeOptions {
   final bool shareAcrossIsolates;
 
   /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
-  /// It will print messages exchanged between the Drift server and the client.
+  /// It will print messages exchanged between the drift isolate server and the
+  /// client.
   final bool isolateDebugLog;
 
   /// An optional callback returning a custom database path to be used by drift.

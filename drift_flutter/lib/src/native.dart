@@ -138,6 +138,7 @@ QueryExecutor driftDatabase({
     return NativeDatabase.createBackgroundConnection(
       await databaseFile(),
       setup: native?.setup,
+      isolateDebugLog: native?.isolateDebugLog ?? false,
     );
   }));
 }
