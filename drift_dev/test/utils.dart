@@ -2,8 +2,6 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
-import 'package:build/experiments.dart';
-import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:build_test/src/in_memory_reader_writer.dart';
 import 'package:drift_dev/integrations/build.dart';
@@ -12,9 +10,6 @@ import 'package:logging/logging.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
-
-final _resolvers =
-    withEnabledExperiments(() => AnalyzerResolvers.sharedInstance, ['records']);
 
 BuilderOptions builderOptionsFromYaml(String yaml) {
   final map = loadYaml(yaml);
@@ -63,7 +58,6 @@ Future<DriftBuildResult> emulateDriftBuild({
   Logger? logger,
   bool modularBuild = false,
 }) async {
-  _resolvers.reset();
   logger ??= Logger.detached('emulateDriftBuild');
   final logLines = <LogRecord>[];
 
