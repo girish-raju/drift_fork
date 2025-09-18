@@ -1,3 +1,7 @@
+## 2.28.2-dev
+
+- Legacy wasm database: Fix cast issue when compiling with `dart2wasm`.
+
 ## 2.28.1
 
 - Add `escapeChar` argument to `like()` to generate an `ESCAPE` clause.

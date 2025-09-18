@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'dart:typed_data';
 
 @JS('initSqlJs')
 external JSPromise<_SqlJs> _initSqlJs();
@@ -114,7 +114,7 @@ class SqlJsDatabase {
 
   /// Returns the `user_version` pragma from sqlite.
   int get userVersion {
-    return _selectSingleRowAndColumn('PRAGMA user_version;') as int;
+    return (_selectSingleRowAndColumn('PRAGMA user_version;') as num).toInt();
   }
 
   /// Sets sqlite's `user_version` pragma to the specified [version].
@@ -152,7 +152,8 @@ class SqlJsDatabase {
   /// [export].
   int lastInsertId() {
     // load insert id. Will return [{columns: [...], values: [[id]]}]
-    return _selectSingleRowAndColumn('SELECT last_insert_rowid();') as int;
+    return (_selectSingleRowAndColumn('SELECT last_insert_rowid();') as num)
+        .toInt();
   }
 
   dynamic _selectSingleRowAndColumn(String sql) {
