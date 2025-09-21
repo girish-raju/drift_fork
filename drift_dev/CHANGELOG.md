@@ -1,3 +1,8 @@
+## 2.28.3
+
+- Remove dependencies on discontinued build packages.
+- Fix false-positive warnings about imported files not being referenced.
+
 ## 2.28.2
 
 - Fix generating code for `typedef`s with different parameters than the type they point to.

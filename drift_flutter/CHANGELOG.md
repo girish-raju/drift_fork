@@ -1,4 +1,4 @@
-## 0.2.7-dev
+## 0.2.7
 
 - Add `isolateDebugLog` parameter to `DriftNativeOptions` to debug internal messages between isolates.
 

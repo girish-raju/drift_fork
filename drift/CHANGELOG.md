@@ -1,6 +1,7 @@
-## 2.28.2-dev
+## 2.28.2
 
 - Legacy wasm database: Fix cast issue when compiling with `dart2wasm`.
+- `NativeDatabase.createBackground`: Allow enabling `isolateDebugLog`.
 
 ## 2.28.1
 
