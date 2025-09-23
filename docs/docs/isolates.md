@@ -34,7 +34,7 @@ This page describes when advanced isolate setups are necessary, and how to appro
 ## Introduction
 
 While the default setup is probably suitable for most apps, some scenarios require
-complete additional over the way drift manages isolates.
+complete control over the way drift manages isolates.
 In particular, some of these
 
 - You want to use a drift isolate in `compute()`, `Isolate.run` or generally in other isolates.
