@@ -198,8 +198,28 @@ class Database {}
       'sql':
           'CREATE VIEW IF NOT EXISTS "my_view" ("id", "id1", "id2") AS SELECT "t0"."id" AS "id", "t1"."id" AS "id1", "t2"."id" AS "id2" FROM "my_table" "t0" INNER JOIN "my_table" "t1" ON "t1"."id" = "t0"."id" INNER JOIN "my_table" "t2" ON "t2"."id" = "t0"."id"',
       'dart_info_name': r'$MyViewView',
-      'columns': anything,
+      'columns': everyElement(containsPair('dsl_features', [
+        // Views should include generated_as information about each column.
+        containsPair('generated_as', anything),
+      ])),
     });
+
+    final reader = SchemaReader.readJson(schemaJson);
+    final fakeBuildConfig = runInBuildConfigZone(() {
+      return BuildConfig(buildTargets: {});
+    }, 'drift_dev', []);
+    final generated = await GenerateUtils.generateSchemaCode(
+      DriftDevCli()
+        ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+      1,
+      ExportedSchema(reader.entities.toList(), {}),
+      false,
+      false,
+    );
+
+    // The generated_as constraint is not applicable for views when we generate
+    // columns, so it shouldn't be generated there.
+    expect(generated, isNot(contains('GeneratedAs')));
   });
 
   group('generates correct datetime mode', () {

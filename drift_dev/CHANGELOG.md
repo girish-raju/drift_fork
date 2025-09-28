@@ -1,3 +1,7 @@
+## 2.28.4-dev
+
+- Fix invalid schema code for views.
+
 ## 2.28.3
 
 - Remove dependencies on discontinued build packages.

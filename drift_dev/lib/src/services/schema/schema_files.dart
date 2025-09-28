@@ -586,7 +586,13 @@ class SchemaReader {
       _declaration,
       columns: [
         for (final column in content['columns'] as Iterable)
-          _readColumn(column as Map<String, dynamic>)
+          _readColumn(
+            column as Map<String, dynamic>,
+            // Don't parse column constraints. The serialized format includes a
+            // generated_as DSL feature for each view column, but that should be
+            // ignored because we're parsing views as SQL instead.
+            parseColumnConstraints: false,
+          )
       ],
       source: SqlViewSource(content['sql'] as String),
       customParentClass: null,
@@ -617,7 +623,8 @@ class SchemaReader {
 
   static final _dialectByName = SqlDialect.values.asNameMap();
 
-  DriftColumn _readColumn(Map<String, dynamic> data) {
+  DriftColumn _readColumn(Map<String, dynamic> data,
+      {bool parseColumnConstraints = true}) {
     final name = data['name'] as String;
     final columnType =
         _SerializeSqlType.deserialize(data['moor_type'] as String);
@@ -629,7 +636,7 @@ class SchemaReader {
 
     final dslFeatures = <DriftColumnConstraint?>[
       for (final feature in data['dsl_features'] as List<dynamic>)
-        _columnFeature(feature),
+        if (parseColumnConstraints) _columnFeature(feature),
       if (dialectAwareConstraints != null)
         DefaultConstraintsFromSchemaFile(null, dialectSpecific: {
           for (final MapEntry(:key, :value)
