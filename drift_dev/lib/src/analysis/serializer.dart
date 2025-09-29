@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
@@ -412,7 +412,7 @@ class ElementDeserializer {
   ElementDeserializer(this.driver, this._currentlyReading);
 
   Future<DartType> _readDartType(Uri import, int typeId) async {
-    LibraryElement2? element;
+    LibraryElement? element;
     final helpers = driver.cache.typeHelperLibraries;
 
     if (helpers.containsKey(import)) {
@@ -427,7 +427,7 @@ class ElementDeserializer {
     }
 
     final typedef =
-        element.exportNamespace.get2('T$typeId') as TypeAliasElement2;
+        element.exportNamespace.get2('T$typeId') as TypeAliasElement;
 
     return typedef.aliasedType;
   }

@@ -60,6 +60,8 @@ dependency_overrides:
     path: ../drift_flutter
   drift_postgres:
     path: ../extras/drift_postgres
+  # This is required for resolving to analyzer 8, flutter_test is the only blocker.
+  test_api: ^0.7.7
 
 flutter:
   uses-material-design: true
