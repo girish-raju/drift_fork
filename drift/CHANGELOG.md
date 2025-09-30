@@ -1,3 +1,7 @@
+## 2.29.0-dev
+
+- Allow specifying ordering for columns in `@TableIndex` annotation.
+
 ## 2.28.2
 
 - Legacy wasm database: Fix cast issue when compiling with `dart2wasm`.

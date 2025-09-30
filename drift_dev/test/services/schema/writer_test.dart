@@ -222,6 +222,70 @@ class Database {}
     expect(generated, isNot(contains('GeneratedAs')));
   });
 
+  test('can export Dart-defined index', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+@TableIndex(name: 'tbl_name', columns: {IndexedColumn(#name, orderBy: OrderingMode.desc)})
+class MyTable extends Table {
+  IntColumn get id => integer()();
+  TextColumn get name => text()();
+}
+
+@DriftDatabase(tables: [MyTable])
+class Database {}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+    final schemaJson =
+        await SchemaWriter(db.availableElements).createSchemaJson();
+    final serializedIndex = (schemaJson['entities'] as List)[1];
+
+    expect(serializedIndex['data'], {
+      'on': 0,
+      'name': 'tbl_name',
+      'sql': null,
+      'unique': false,
+      'columns': [
+        {'column': 'name', 'order_by': 'descending'}
+      ]
+    });
+
+    final newFormat = schemaJson;
+    // Older versions of drift_dev used to only include the column name in the
+    // schema and did not support specifying an ordering mode.
+    final oldFormat = json.decode(json.encode(newFormat));
+    oldFormat['entities'][1]['data']['columns'] = ['name'];
+
+    for (final format in [oldFormat, newFormat]) {
+      final reader = SchemaReader.readJson(format as Map<String, Object?>);
+      final fakeBuildConfig = runInBuildConfigZone(() {
+        return BuildConfig(buildTargets: {});
+      }, 'drift_dev', []);
+      final generated = await GenerateUtils.generateSchemaCode(
+        DriftDevCli()
+          ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+        1,
+        ExportedSchema(reader.entities.toList(), {}),
+        false,
+        false,
+      );
+
+      if (format == newFormat) {
+        expect(generated,
+            contains('CREATE INDEX tbl_name ON my_table (name DESC)'));
+      } else {
+        expect(generated, contains('CREATE INDEX tbl_name ON my_table (name)'));
+      }
+    }
+  });
+
   group('generates correct datetime mode', () {
     Future<void> runTest(bool storeAsText, String expectedDefault) async {
       final options =
