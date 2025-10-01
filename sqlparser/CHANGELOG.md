@@ -1,3 +1,7 @@
+## 0.41.3-dev
+
+- Fix unresolved references in CTEs resolving against the scope of the main query.
+
 ## 0.41.2
 
 - Improve error message on unknown columns when it looks like the identifier
