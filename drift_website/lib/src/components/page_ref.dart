@@ -33,7 +33,7 @@ final class _PageLink extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    final page = InheritedPage.of(context);
+    final page = context.page;
     final resolvedRef = url.join(url.dirname(page.path), ref);
     final referencedPage = InheritedPageResolver.resolvePageSource(
       context,

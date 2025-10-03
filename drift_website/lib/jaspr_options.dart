@@ -6,17 +6,14 @@
 
 import 'package:jaspr/jaspr.dart';
 import 'package:drift_website/components/clicker.dart' as prefix0;
-import 'package:jaspr_content/components/_internal/code_block_copy_button.dart'
-    as prefix1;
-import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix2;
+import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix1;
 import 'package:jaspr_content/components/_internal/zoomable_image.dart'
-    as prefix3;
-import 'package:jaspr_content/components/callout.dart' as prefix4;
-import 'package:jaspr_content/components/code_block.dart' as prefix5;
-import 'package:jaspr_content/components/image.dart' as prefix6;
-import 'package:jaspr_content/components/sidebar_toggle_button.dart' as prefix7;
-import 'package:jaspr_content/components/tabs.dart' as prefix8;
-import 'package:jaspr_content/components/theme_toggle.dart' as prefix9;
+    as prefix2;
+import 'package:jaspr_content/components/image.dart' as prefix3;
+import 'package:jaspr_content/components/sidebar_toggle_button.dart' as prefix4;
+import 'package:jaspr_content/components/tabs.dart' as prefix5;
+import 'package:jaspr_content/components/theme_toggle.dart' as prefix6;
+import 'package:jaspr_content_snippets/internal/client.dart' as prefix7;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -38,47 +35,45 @@ JasprOptions get defaultJasprOptions => JasprOptions(
   clients: {
     prefix0.Clicker: ClientTarget<prefix0.Clicker>('components/clicker'),
 
-    prefix1.CodeBlockCopyButton: ClientTarget<prefix1.CodeBlockCopyButton>(
-      'jaspr_content:components/_internal/code_block_copy_button',
-    ),
-
-    prefix2.TabBar: ClientTarget<prefix2.TabBar>(
+    prefix1.TabBar: ClientTarget<prefix1.TabBar>(
       'jaspr_content:components/_internal/tab_bar',
-      params: _prefix2TabBar,
+      params: _prefix1TabBar,
     ),
 
-    prefix3.ZoomableImage: ClientTarget<prefix3.ZoomableImage>(
+    prefix2.ZoomableImage: ClientTarget<prefix2.ZoomableImage>(
       'jaspr_content:components/_internal/zoomable_image',
-      params: _prefix3ZoomableImage,
+      params: _prefix2ZoomableImage,
     ),
 
-    prefix7.SidebarToggleButton: ClientTarget<prefix7.SidebarToggleButton>(
+    prefix4.SidebarToggleButton: ClientTarget<prefix4.SidebarToggleButton>(
       'jaspr_content:components/sidebar_toggle_button',
     ),
 
-    prefix9.ThemeToggle: ClientTarget<prefix9.ThemeToggle>(
+    prefix6.ThemeToggle: ClientTarget<prefix6.ThemeToggle>(
       'jaspr_content:components/theme_toggle',
+    ),
+
+    prefix7.CodeBlockCopyButton: ClientTarget<prefix7.CodeBlockCopyButton>(
+      'jaspr_content_snippets:internal/client',
     ),
   },
   styles: () => [
     ...prefix0.ClickerState.styles,
-    ...prefix2.TabBar.styles,
-    ...prefix3.ZoomableImage.styles,
-    ...prefix4.Callout.styles,
-    ...prefix5.CodeBlock.styles,
+    ...prefix1.TabBar.styles,
+    ...prefix2.ZoomableImage.styles,
 
-    ...prefix6.Image.styles,
+    ...prefix3.Image.styles,
 
-    ...prefix8.Tabs.styles,
-    ...prefix9.ThemeToggleState.styles,
+    ...prefix5.Tabs.styles,
+    ...prefix6.ThemeToggleState.styles,
   ],
 );
 
-Map<String, dynamic> _prefix2TabBar(prefix2.TabBar c) => {
+Map<String, dynamic> _prefix1TabBar(prefix1.TabBar c) => {
   'initialValue': c.initialValue,
   'items': c.items,
 };
-Map<String, dynamic> _prefix3ZoomableImage(prefix3.ZoomableImage c) => {
+Map<String, dynamic> _prefix2ZoomableImage(prefix2.ZoomableImage c) => {
   'src': c.src,
   'alt': c.alt,
   'caption': c.caption,

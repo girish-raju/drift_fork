@@ -1,0 +1,20 @@
+@use "package:jaspr_content_snippets/common";
+@use "package:jaspr_content_snippets/dracula" as dracula;
+
+@use "src/jaspr";
+
+:root {
+  @include dracula.light;
+}
+
+// TODO: The rest of jaspr_content uses a custom color picker, migrate everything to
+// media queries.
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dracula.dark;
+  }
+}
+
+pre code {
+  display: block;
+}

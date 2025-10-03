@@ -116,7 +116,7 @@ If you prefer using SQL to define your tables, drift supports that too! You can 
 For now, populate the contents of `database.dart` with these tables which could form the persistence
 layer of a simple todolist application:
 
-TODO: Snippet
+<Snippet href="/lib/src/snippets/setup/database.dart" name="before_generation" />
 
 You will get an analyzer warning on the `part` statement and on `extends _$AppDatabase`. This is
 expected because drift's generator did not run yet.
@@ -134,3 +134,34 @@ for migrations after changing the database, we can leave it at `1` for now. Upda
 so it now looks like this:
 
 <a name="open"></a>
+
+<Tabs defaultValue="sqlite3">
+  <TabItem label="Flutter (sqlite3)" value="sqlite3_flutter">
+
+<Snippet href="/lib/src/snippets/setup/database.dart" name="flutter" />
+
+If you need to customize how databases are opened, you can also set the connection
+up manually:
+
+<Collapsible title="Just testing">
+<Snippet href="/lib/src/snippets/setup/custom_flutter_setup.dart" name="custom" />
+
+The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store
+private data on unix-like systems, which is forbidden on Android. We also use this opportunity
+to work around a problem some older Android devices have with loading custom libraries through
+`dart:ffi`.
+
+</Collapsible>
+
+</TabItem>
+<TabItem label="Dart (sqlite3)" value="sqlite3">
+
+<Snippet href="/lib/src/snippets/setup/database.dart" name="sqlite3" />
+
+</TabItem>
+<TabItem label="Dart (postgres)" value="postgres">
+
+<Snippet href="/lib/src/snippets/setup/database.dart" name="postgres" />
+
+</TabItem>
+</Tabs>

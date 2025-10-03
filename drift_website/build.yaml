@@ -1,0 +1,110 @@
+targets:
+  prepare:
+    auto_apply_builders: false
+    builders:
+      drift_dev:preparing_builder:
+        enabled: true
+    sources:
+      - "$package$"
+      - "lib/src/snippets/**"
+      - "test/generated/**"
+
+  codegen:
+    dependencies: [":prepare"]
+    auto_apply_builders: false
+    builders:
+      drift_dev:preparing_builder:
+        enabled: false # Runs in prepare target
+
+      # Modular drift generation, suitable for standalone snippets that aren't part of a database
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.39"
+          databases:
+            main_db: "lib/src/snippets/dart_api/manager.dart"
+        generate_for:
+          include: &modular
+            - "lib/src/snippets/_shared/**"
+            - "lib/src/snippets/modular/**"
+            - "lib/src/snippets/drift_files/custom_queries.*"
+      drift_dev:modular:
+        enabled: true
+        options: *options
+        generate_for:
+          include: *modular
+
+      # Non-modular drift generation. Used for some "getting started" e2e examples.
+      drift_dev:drift_dev:
+        enabled: true
+        options: *options
+        generate_for:
+          exclude: *modular
+      json_serializable:
+        enabled: true
+    sources:
+      - lib/**
+      - test/generated/**
+
+  syntax_highlighting:
+    dependencies: [":codegen"]
+    builders:
+      jaspr_content_snippets:
+        enabled: true
+        generate_for:
+          include:
+            - "lib/src/snippets/**/*.dart"
+            - "lib/src/snippets/**/*.drift"
+            - "lib/src/snippets/*.dart"
+          exclude:
+            - "**/*.g.dart"
+    auto_apply_builders: false
+    sources:
+      - "$package$"
+      - "lib/src/snippets/**"
+
+  worker:
+    dependencies: ["$default"]
+    auto_apply_builders: false
+    sources:
+      - "web/drift_worker.dart"
+    builders:
+      build_web_compilers:entrypoint:
+        options:
+          compiler: dart2js
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
+
+  dart2js_archives:
+    auto_apply_builders: false
+    dependencies: [":$default", ":worker"]
+    builders:
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: true
+
+  $default:
+    dependencies: [":codegen", ":syntax_highlighting"]
+    builders:
+      jaspr_content_snippets:combiner:
+        options:
+          path: lib/src/generated_snippets.dart
+
+      # These builders should run in the source_gen target
+      drift_dev:preparing_builder:
+        enabled: false
+      drift_dev:drift_dev:
+        enabled: false
+      source_gen:combining_builder:
+        enabled: false
+      json_serializable:
+        enabled: false
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
+
+global_options:
+  "jaspr_content_snippets:api_index":
+    options:
+      packages: ['drift', 'drift_flutter', 'sqlite3', 'drift_postgres']
