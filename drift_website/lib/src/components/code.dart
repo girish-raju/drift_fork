@@ -9,11 +9,7 @@ final class DriftCodeBlock implements CustomComponent {
       tag: 'pre',
       children: [ElementNode(tag: 'code', :final children)],
     )) {
-      return CodeSnippetContainer(
-        child: pre([
-          code([builder.build(children)]),
-        ]),
-      );
+      return CodeSnippetContainer(child: builder.build(children));
     }
 
     return null;

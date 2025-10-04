@@ -143,7 +143,7 @@ so it now looks like this:
 If you need to customize how databases are opened, you can also set the connection
 up manually:
 
-<Collapsible title="Just testing">
+<Collapsible title="Manual database setup">
 <Snippet href="/lib/src/snippets/setup/custom_flutter_setup.dart" name="custom" />
 
 The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store

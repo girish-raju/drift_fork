@@ -1,6 +1,7 @@
 :root {
   --primary: oklch(0.623 0.214 259.815);
   --background: oklch(0.984 0.003 247.858);
+  --background-card: #fefefe;
   --text: oklch(0.373 0.034 259.733);
   --content-headings: oklch(0.21 0.034 264.665);
   --content-lead: oklch(0.446 0.03 256.802);
@@ -23,6 +24,7 @@
   @media (prefers-color-scheme: dark) {
     --primary: oklch(0.809 0.105 251.813);
     --background: oklch(0.141 0.005 285.823);
+    --background-card: #3f3f2f;
     --text: oklch(0.928 0.006 264.531);
     --content-headings: white;
     --content-lead: oklch(0.707 0.022 261.325);

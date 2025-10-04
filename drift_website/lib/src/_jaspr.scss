@@ -211,9 +211,6 @@
         -webkit-appearance: button;
         font: inherit;
       }
-      summary {
-        display: list-item;
-      }
       blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
         margin: 0;
       }
@@ -384,38 +381,6 @@
         font-family: inherit;
         font-weight: 500;
       }
-      .content :where(code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: var(--content-code);
-        font-weight: 600;
-      }
-      .content :where(code::before):not(:where([class~=not-content],[class~=not-content] *)) {
-        content: "`";
-      }
-      .content :where(code::after):not(:where([class~=not-content],[class~=not-content] *)) {
-        content: "`";
-      }
-      .content :where(a code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(h1 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(h2 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(h3 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(h4 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(blockquote code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-      .content :where(thead th code):not(:where([class~=not-content],[class~=not-content] *)) {
-        color: inherit;
-      }
-
       .content :where(table):not(:where([class~=not-content],[class~=not-content] *)) {
         width: 100%;
         margin-top: 2em;
@@ -510,23 +475,6 @@
         padding: 0.1875rem 0.375rem 0.1875rem 0.375rem;
         border-radius: 0.3125rem;
         font-size: 0.875em;
-      }
-      .content :where(code):not(:where([class~=not-content],[class~=not-content] *)) {
-        font-size: 0.875em;
-      }
-      .content :where(h2 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        font-size: 0.875em;
-      }
-      .content :where(h3 code):not(:where([class~=not-content],[class~=not-content] *)) {
-        font-size: 0.9em;
-      }
-      .content :where(pre):not(:where([class~=not-content],[class~=not-content] *)) {
-        padding: 0.857em 1.14em 0.857em 1.14em;
-        margin-top: 1.71em;
-        margin-bottom: 1.71em;
-        border-radius: 0.375rem;
-        font-size: 0.875em;
-        line-height: 1.71em;
       }
       .content :where(ol):not(:where([class~=not-content],[class~=not-content] *)) {
         padding-left: 1.625em;

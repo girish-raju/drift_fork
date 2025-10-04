@@ -9,7 +9,7 @@ final class Collapsible extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return details([
+    return details(classes: 'note', [
       summary([text(title)]),
       ...children,
     ]);
