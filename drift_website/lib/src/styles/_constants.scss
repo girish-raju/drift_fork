@@ -1,0 +1,23 @@
+$header-height: 4rem;
+$color-separator: #0000000d;
+
+$break-medium: 768px;
+$break-large: 1024px;
+
+@mixin from-medium {
+  @media (min-width: $break-medium) {
+    @content;
+  }
+}
+
+@mixin from-large {
+  @media (min-width: $break-large) {
+    @content;
+  }
+}
+
+@mixin until-large {
+  @media (max-width: $break-large) {
+    @content;
+  }
+}

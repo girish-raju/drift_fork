@@ -1,20 +1,18 @@
 import 'package:jaspr/jaspr.dart';
-import 'package:jaspr_content/components/header.dart';
-import 'package:jaspr_content/components/theme_toggle.dart';
+
+import 'sidebar_toggle_button.dart';
 
 final class DriftHeader extends StatelessComponent {
   @override
   Component build(BuildContext context) {
-    return Header(
-      title: 'Drift',
-      logo: '/images/logo.svg',
-      items: [
-        a(href: '/foo', [text('Guides')]),
-        // Enables switching between light and dark mode.
-        ThemeToggle(),
-        // Shows github stats.
-        //GitHubButton(repo: 'simolus3/drift'),
-      ],
-    );
+    return header([
+      nav([
+        div([
+          const SidebarToggleButton(),
+          a(href: '/', [text('Drift')]),
+        ]),
+        div([text('test')]),
+      ]),
+    ]);
   }
 }

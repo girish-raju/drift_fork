@@ -1,27 +1,19 @@
 // Styles copied over from jaspr components so that we have everything in sass instead of
 // using inline styles.
 
-      .docs .header-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 10;
-        backdrop-filter: blur(8px);
-      }
-      .docs .main-container {
+      .main-container {
         max-width: 90rem;
         padding: 0;
         margin-left: auto;
         margin-right: auto;
       }
       @media all and (min-width: 768px) {
-        .docs .main-container {
+        .main-container {
           padding-left: 1.25rem;
           padding-right: 1.25rem;
         }
       }
-      .docs .main-container .sidebar-barrier {
+      .main-container .sidebar-barrier {
         position: absolute;
         z-index: 9;
         opacity: 0.0;
@@ -29,11 +21,11 @@
         background-color: var(--background);
         inset: 0;
       }
-      .docs .main-container .sidebar-barrier:has(+ .sidebar-container.open) {
+      .main-container .sidebar-barrier:has(+ .sidebar-container.open) {
         opacity: 0.5;
         pointer-events: auto;
       }
-      .docs .main-container .sidebar-container {
+      .main-container .sidebar-container {
         position: fixed;
         top: 4rem;
         bottom: 0;
@@ -44,18 +36,18 @@
         transform: translateX(-100%);
       }
       @media all and (min-width: 768px) {
-        .docs .main-container .sidebar-container {
+        .main-container .sidebar-container {
           margin-left: -1.25rem;
         }
       }
       @media all and (min-width: 1024px) {
-        .docs .main-container .sidebar-container {
+        .main-container .sidebar-container {
           margin-left: 0;
           transform: translateX(0);
         }
       }
       @media all and (max-width: 1023px) {
-        .docs .main-container .sidebar-container {
+        .main-container .sidebar-container {
           position: fixed;
           top: 0;
           border-right-style: solid;
@@ -64,30 +56,30 @@
           background-color: var(--background);
         }
       }
-      .docs .main-container .sidebar-container.open {
+      .main-container .sidebar-container.open {
         transform: translateX(0);
       }
-      .docs .main-container main {
+      .main-container main {
         position: relative;
         padding-top: 4rem;
       }
       @media all and (min-width: 1024px) {
-        .docs .main-container main {
+        .main-container main {
           padding-left: 17rem;
         }
       }
-      .docs .main-container main > div {
+      .main-container main > div {
         display: flex;
         padding-top: 2rem;
         padding-left: 1rem;
         padding-right: 1rem;
       }
       @media all and (min-width: 1024px) {
-        .docs .main-container main > div {
+        .main-container main > div {
           padding-left: 4rem;
         }
       }
-      .docs .main-container main > div .content-container {
+      .main-container main > div .content-container {
         min-width: 0;
         padding-right: 0;
         flex-grow: 1;
@@ -95,140 +87,67 @@
         flex-basis: 0%;
       }
       @media all and (min-width: 1280px) {
-        .docs .main-container main > div .content-container {
+        .main-container main > div .content-container {
           padding-right: 3rem;
         }
       }
-      .docs .main-container main > div .content-container .content-header {
+      .main-container main > div .content-container .content-header {
         margin-bottom: 2rem;
         color: var(--content-headings);
       }
-      .docs .main-container main > div .content-container .content-header h1 {
+      .main-container main > div .content-container .content-header h1 {
         font-size: 2rem;
         line-height: 2.25rem;
       }
-      .docs .main-container main > div .content-container .content-header p {
+      .main-container main > div .content-container .content-header p {
         margin-top: 0.75rem;
         font-size: 1.25rem;
         line-height: 1.25rem;
       }
-      .docs .main-container main > div .content-container .content-header img {
+      .main-container main > div .content-container .content-header img {
         margin-top: 1rem;
         border-radius: 0.375rem;
       }
-      .docs .main-container main > div .content-container .content-footer {
+      .main-container main > div .content-container .content-footer {
         margin-top: 2rem;
       }
-      .docs .main-container main > div aside.toc {
+      .main-container main > div aside.toc {
         display: none;
         position: relative;
         width: 17rem;
       }
       @media all and (min-width: 1280px) {
-        .docs .main-container main > div aside.toc {
+        .main-container main > div aside.toc {
           display: block;
         }
       }
-      .docs .main-container main > div aside.toc > div {
+      .main-container main > div aside.toc > div {
         position: sticky;
         top: 6rem;
       }
-      .docs .main-container main > div aside.toc h3 {
+      .main-container main > div aside.toc h3 {
         margin-bottom: 0.5rem;
         opacity: 0.75;
         font-size: 0.875rem;
         font-weight: 600;
         line-height: 1.25rem;
       }
-      .docs .main-container main > div aside.toc ul {
+      .main-container main > div aside.toc ul {
         margin-top: 1rem;
       }
-      .docs .main-container main > div aside.toc li {
+      .main-container main > div aside.toc li {
         margin-top: 0.5rem;
         font-size: 14px;
       }
 
-      :root {
-        --primary: oklch(0.623 0.214 259.815);
-        --background: oklch(0.984 0.003 247.858);
-        --text: oklch(0.373 0.034 259.733);
-        --content-headings: oklch(0.21 0.034 264.665);
-        --content-lead: oklch(0.446 0.03 256.802);
-        --content-links: oklch(0.21 0.034 264.665);
-        --content-bold: oklch(0.21 0.034 264.665);
-        --content-counters: oklch(0.551 0.027 264.364);
-        --content-bullets: oklch(0.872 0.01 258.338);
-        --content-hr: oklch(0.928 0.006 264.531);
-        --content-quotes: oklch(0.21 0.034 264.665);
-        --content-quote-borders: oklch(0.707 0.165 254.624);
-        --content-captions: oklch(0.551 0.027 264.364);
-        --content-kbd: oklch(0.21 0.034 264.665);
-        --content-kbd-shadows: oklch(0.21 0.034 264.665);
-        --content-code: oklch(0.21 0.034 264.665);
-        --content-pre-code: oklch(0.928 0.006 264.531);
-        --content-pre-bg: oklch(0.278 0.033 256.848);
-        --content-th-borders: oklch(0.872 0.01 258.338);
-        --content-td-borders: oklch(0.928 0.006 264.531);
-      }
-      :root[data-theme="dark"] {
-        --primary: oklch(0.809 0.105 251.813);
-        --background: oklch(0.141 0.005 285.823);
-        --text: oklch(0.928 0.006 264.531);
-        --content-headings: white;
-        --content-lead: oklch(0.707 0.022 261.325);
-        --content-links: white;
-        --content-bold: white;
-        --content-counters: oklch(0.707 0.022 261.325);
-        --content-bullets: oklch(0.446 0.03 256.802);
-        --content-hr: oklch(0.373 0.034 259.733);
-        --content-quotes: oklch(0.967 0.003 264.542);
-        --content-captions: oklch(0.707 0.022 261.325);
-        --content-kbd: white;
-        --content-kbd-shadows: white;
-        --content-code: white;
-        --content-pre-code: oklch(0.872 0.01 258.338);
-        --content-pre-bg: rgb(0 0 0 / 50%);
-        --content-th-borders: oklch(0.446 0.03 256.802);
-        --content-td-borders: oklch(0.373 0.034 259.733);
-      }
       *, :after, :before {
         box-sizing: border-box;
         border: solid #e5e7eb 0;
-      }
-      :host,html {
-        line-height: 1.5em;
-        -webkit-text-size-adjust: 100%;
-        -moz-tab-size: 4;
-        tab-size: 4;
-        font-feature-settings: normal;
-        font-variation-settings: normal;
-        -webkit-tap-highlight-color: transparent;
-      }
-      body {
-        margin: 0;
-        line-height: inherit;
-        -webkit-font-smoothing: antialiased;
-      }
-      hr {
-        height: 0;
-        border-top-style: solid;
-        border-top-width: 1px;
-        color: inherit;
-      }
-      a {
-        color: inherit;
-        text-decoration: inherit;
-      }
-      b, strong {
-        font-weight: bolder;
       }
       code, kbd, pre, samp {
         font-size: 1em;
         font-feature-settings: normal;
         font-variation-settings: normal;
-      }
-      small {
-        font-size: 80%;
       }
       sub, sup {
         position: relative;
@@ -332,9 +251,6 @@
       img, video {
         height: auto;
         max-width: 100%;
-      }
-      :host,html {
-        font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
       }
       code, kbd, pre, samp {
         font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
@@ -723,13 +639,6 @@
 //        margin-bottom: 0;
 //      }
 
-
-      .clicker {
-        padding: 0.5rem;
-        margin-top: 1rem;
-        border: solid var(--primary);
-        border-radius: 0.5rem;
-      }
       .tab-bar {
         display: flex;
         border-bottom-style: solid;
@@ -845,16 +754,4 @@
       }
       .tabs .tab-content[active] {
         display: initial;
-      }
-      .theme-toggle {
-        display: flex;
-        padding: 0.7rem;
-        border: unset;
-        border-radius: 8px;
-        outline: unset;
-        align-items: center;
-        background-color: transparent;
-      }
-      .theme-toggle:hover {
-        background-color: color-mix(in srgb, currentColor 5%, transparent);
       }

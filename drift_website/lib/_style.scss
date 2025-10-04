@@ -1,6 +1,9 @@
 @use "package:jaspr_content_snippets/common";
 @use "package:jaspr_content_snippets/dracula" as dracula;
 
+@use "src/styles/base";
+@use "src/styles/header";
+
 @use "src/jaspr";
 
 :root {

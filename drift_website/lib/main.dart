@@ -13,8 +13,6 @@ import 'package:jaspr_content/theme.dart';
 import 'package:jaspr_content_snippets/jaspr_content_snippets.dart';
 import 'package:watcher/watcher.dart';
 
-import 'components/clicker.dart';
-
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'jaspr_options.dart';
 import 'src/components/code.dart';
@@ -76,18 +74,15 @@ void main() {
             //Callout(),
             DriftCodeBlock(),
             Collapsible.component(),
-            // Adds a custom Jaspr component to be used as <Clicker/> in markdown.
-            CustomComponent(
-              pattern: 'Clicker',
-              builder: (_, __, ___) => Clicker(),
-            ),
             // Adds zooming and caption support to images.
             Image(zoom: true),
             Tabs(),
             renderedSnippetComponent(snippets: generatedSnippets),
           ],
           layouts: [
-            DriftDocsLayout(header: DriftHeader(), sidebar: DriftSidebar()),
+            //DriftDocsLayout(),
+            LegacyDocsLayout(header: DriftHeader(), sidebar: DriftSidebar()),
+            //            DriftDocsLayout(header: DriftHeader(), sidebar: DriftSidebar()),
           ],
           theme: ContentTheme.none(),
         ),
