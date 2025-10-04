@@ -11,21 +11,28 @@ final class DriftSidebar extends StatelessComponent {
           links: [
             SidebarLink(text: "Home", href: '/'),
             SidebarLink(text: "Setup guide", href: '/setup'),
-            SidebarLink(text: "FAQ", href: '/todo'),
+            SidebarLink(text: "FAQ", href: '/faq'),
           ],
         ),
         SidebarGroup(
           title: 'Dart reference',
           links: [
-            SidebarLink(text: "Defining tables", href: '/todo'),
-            SidebarLink(text: "Selects", href: '/todo'),
-            SidebarLink(text: "Writes (update, insert, delete)", href: '/todo'),
-            SidebarLink(text: "Stream queries", href: '/todo'),
-            SidebarLink(text: "Expressions", href: '/todo'),
-            SidebarLink(text: "Schema introspection", href: '/todo'),
-            SidebarLink(text: "Views", href: '/todo'),
-            SidebarLink(text: "DAOs", href: '/todo'),
-            SidebarLink(text: "Manager API", href: '/todo'),
+            SidebarLink(text: "Defining tables", href: '/dart_api/tables'),
+            SidebarLink(text: "Selects", href: '/dart_api/select'),
+            SidebarLink(
+              text: "Writes (update, insert, delete)",
+              href: '/dart_api/writes',
+            ),
+            SidebarLink(text: "Stream queries", href: '/dart_api/streams'),
+            SidebarLink(text: "Expressions", href: '/dart_api/expressions'),
+            SidebarLink(
+              text: "Schema introspection",
+              href: '/dart_api/schema_inspection',
+            ),
+            SidebarLink(text: "Views", href: '/dart_api/views'),
+            SidebarLink(text: "DAOs", href: '/dart_api/daos'),
+            SidebarLink(text: "Manager API", href: '/dart_api/manager'),
+            SidebarLink(text: "Transactions", href: '/dart_api/transactions'),
           ],
         ),
         SidebarGroup(
@@ -69,7 +76,8 @@ final class DriftSidebar extends StatelessComponent {
           links: [
             SidebarLink(text: "Isolates", href: '/todo'),
             SidebarLink(text: "Testing", href: '/todo'),
-            SidebarLink(text: "Generated table rows", href: '/todo'),
+            SidebarLink(text: "Generated table rows", href: '/dart_api/rows'),
+
             SidebarLink(text: "Type converters", href: '/todo'),
             SidebarLink(text: "Custom SQL types", href: '/todo'),
           ],

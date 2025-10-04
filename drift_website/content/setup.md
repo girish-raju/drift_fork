@@ -82,7 +82,7 @@ dart pub add drift postgres drift_postgres dev:drift_dev dev:build_runner
 ```
 
 Drift only generates code for sqlite3 by default. So, also create a `build.yaml`
-to <PageRef href="generation_options/index.md">configure</PageRef> `drift_dev`:
+to [configure](generation_options/index.md) `drift_dev`:
 
 ```
 targets:
@@ -109,9 +109,9 @@ somewhere under `lib/`. Of course, you can put this class in any Dart file you l
 
 To make the database useful, we'll also add a simple table to it. This table, `TodoItems`, can be used
 to store todo items for a todo list app.
-Everything there is to know about defining tables in Dart is described on the <PageRef href="dart_api/tables.md">Dart tables</PageRef> page.
+Everything there is to know about defining tables in Dart is described on the [Dart tables](dart_api/tables.md) page.
 If you prefer using SQL to define your tables, drift supports that too! You can read all about that
-<PageRef href="sql_api/index.md">here</PageRef>.
+[here](sql_api/index.md).
 
 For now, populate the contents of `database.dart` with these tables which could form the persistence
 layer of a simple todolist application:
@@ -165,3 +165,32 @@ to work around a problem some older Android devices have with loading custom lib
 
 </TabItem>
 </Tabs>
+
+
+
+## Next steps
+
+Congratulations! With this setup complete, your project is ready to use drift.
+This short snippet shows how the database can be opened and how to run inserts and selects:
+
+<Snippet href="/lib/src/snippets/setup/database.dart" name="use" />
+
+But drift can do so much more! These pages provide more information useful when getting
+started with drift:
+
+- [Dart tables](dart_api/tables.md): This page describes how to define your own tables in Dart.
+  For an overview of the classes drift generates for tables, check out [row classes](dart_api/rows.md).
+- For new drift users or users not familiar with SQL, the [manager](dart_api/manager.md) APIs
+  for tables allows writing most queries with a syntax you're likely familiar with from ORMs or other
+  packages.
+- Writing queries: Drift-generated classes support writing the most common SQL statements, like
+  [selects](dart_api/select.md) or [inserts, updates and deletes](dart_api/writes.md).
+- Something to keep in mind for later: When changing the database, for instance by adding new columns
+  or tables, you need to write a migration so that existing databases are transformed to the new
+  format. Drift's extensive [migration tools](Migrations/index.md) help with that.
+- Take a look at our [FAQ](./faq.md)! It will help you with the most common questions about drift projects.
+
+Once you're familiar with the basics, the [overview here](index.md) shows what
+more drift has to offer.
+This includes transactions, automated tooling to help with migrations, multi-platform support
+and more.

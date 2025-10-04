@@ -56,7 +56,12 @@ void main() {
         loaders: [fsLoader],
         configResolver: PageConfig.all(
           enableFrontmatter: true,
-          dataLoaders: [PackageVersionDataLoader()],
+          dataLoaders: [
+            PackageVersionDataLoader(),
+            MemoryDataLoader({
+              'site': {'base': false},
+            }),
+          ],
           templateEngine: MustacheTemplateEngine(),
           parsers: [MarkdownParser()],
           extensions: [

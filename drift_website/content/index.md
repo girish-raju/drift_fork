@@ -24,7 +24,7 @@ SQL error code. Of course, it supports transactions. And DAOs. And efficient bat
 
 ## Getting started
 
-To get started with drift, follow the <PageRef href="setup.md">setup guide</PageRef>.
+To get started with drift, follow the [setup guide](setup.md).
 It explains everything from setting up the dependencies to writing database classes
 and generating code.
 

@@ -4,21 +4,23 @@ import 'package:path/path.dart' show url;
 
 import 'inherited_page.dart';
 
+/// Renders markdown links to source files (with a `.md` extension) by rewriting
+/// them to the final url that page would have in the end.
 final class PageRef implements CustomComponent {
   @override
   Component? create(Node node, NodesBuilder builder) {
-    if (node case ElementNode(
-      tag: 'pageref',
-      :final children,
-      :final attributes,
-    )) {
+    if (node case ElementNode(tag: 'a', :final attributes, :final children)) {
       final href = switch (attributes['href']) {
-        null => throw ArgumentError('Missing href attribute'),
-        final href => href,
+        null => null,
+        final href => Uri.parse(href),
       };
+      if (href == null) {
+        return null;
+      }
 
-      final child = builder.build(children);
-      return _PageLink(ref: href, child: child);
+      if (url.extension(href.path) == '.md') {
+        return _PageLink(ref: href, child: builder.build(children));
+      }
     }
 
     return null;
@@ -26,7 +28,7 @@ final class PageRef implements CustomComponent {
 }
 
 final class _PageLink extends StatelessComponent {
-  final String ref;
+  final Uri ref;
   final Component child;
 
   _PageLink({required this.ref, required this.child});
@@ -34,7 +36,7 @@ final class _PageLink extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     final page = context.page;
-    final resolvedRef = url.join(url.dirname(page.path), ref);
+    final resolvedRef = url.join(url.dirname(page.path), ref.path);
     final referencedPage = InheritedPageResolver.resolvePageSource(
       context,
       resolvedRef,
@@ -46,6 +48,14 @@ final class _PageLink extends StatelessComponent {
       ]);
     }
 
-    return a(href: referencedPage.url, [child]);
+    return a(
+      href: Uri.parse(referencedPage.url)
+          .replace(
+            fragment: ref.fragment.isNotEmpty ? ref.fragment : null,
+            query: ref.query.isNotEmpty ? ref.query : null,
+          )
+          .toString(),
+      [child],
+    );
   }
 }
