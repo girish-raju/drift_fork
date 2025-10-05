@@ -32,10 +32,15 @@ The generated `User` class will then have a `preferences` column of type
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]("/queries/custom").
 
-!!! warning "Caution with equality"
+!!! warning "Common type converter issues"
 
     If your converter returns an object that is not comparable by value, the generated dataclass will not
     be comparable by value. Consider implementing `==` and `hashCode` on those classes.
+
+    Also note that drift generates `part` files by default, which currently can't have their own imports.
+    For this reason, if you define tables in another file than your database file, you'll have to manually
+    add imports to type converters to that file.
+    [Modular code generation](generation_options/modular.md) can fix this issue too.
 
 Since applying type converters for JSON conversion is so common, drift provides a helper
 for that. For instance, we could declare the type converter as a field in the
