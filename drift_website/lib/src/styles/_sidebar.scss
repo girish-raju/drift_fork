@@ -1,0 +1,76 @@
+.sidebar {
+    position: relative;
+    padding-top: 0.75rem;
+    padding-left: 0.5rem;
+    padding-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+@media all and (min-width: 1024px) {
+    .sidebar {
+        padding-top: 0;
+    }
+}
+
+.sidebar .sidebar-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+@media all and (min-width: 1024px) {
+    .sidebar .sidebar-close {
+        display: none;
+    }
+}
+
+.sidebar .sidebar-group {
+    padding-top: 1.5rem;
+    padding-right: 0.75rem;
+}
+
+.sidebar .sidebar-group h3 {
+    padding-left: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.sidebar .sidebar-group ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+
+.sidebar .sidebar-group li div {
+    display: flex;
+    margin-bottom: 1px;
+    border-radius: 0.375rem;
+    opacity: 0.75;
+    overflow: hidden;
+    transition: all 150ms ease-in-out;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar .sidebar-group li div:hover {
+    opacity: 1.0;
+    background-color: #0000000d;
+}
+
+.sidebar .sidebar-group li div.active {
+    opacity: 1.0;
+    color: var(--primary);
+    font-weight: 700;
+    background-color: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.sidebar .sidebar-group li a {
+    display: inline-flex;
+    padding-top: 0.5rem;
+    padding-left: 12px;
+    padding-bottom: 0.5rem;
+    flex-grow: 1;
+}

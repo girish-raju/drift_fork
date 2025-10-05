@@ -1,7 +1,9 @@
 @use "sass:math";
 
 
-$header-height: 4rem;
+$nav-height: 3rem;
+$tabs-height: 2rem;
+$header-height: calc($nav-height + $tabs-height);
 $color-separator: #0000000d;
 
 $break-medium: 768px;

@@ -11,9 +11,8 @@ import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix1;
 import 'package:jaspr_content/components/_internal/zoomable_image.dart'
     as prefix2;
 import 'package:jaspr_content/components/image.dart' as prefix3;
-import 'package:jaspr_content/components/sidebar_toggle_button.dart' as prefix4;
-import 'package:jaspr_content/components/tabs.dart' as prefix5;
-import 'package:jaspr_content_snippets/internal/client.dart' as prefix6;
+import 'package:jaspr_content/components/tabs.dart' as prefix4;
+import 'package:jaspr_content_snippets/internal/client.dart' as prefix5;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -47,11 +46,7 @@ JasprOptions get defaultJasprOptions => JasprOptions(
       params: _prefix2ZoomableImage,
     ),
 
-    prefix4.SidebarToggleButton: ClientTarget<prefix4.SidebarToggleButton>(
-      'jaspr_content:components/sidebar_toggle_button',
-    ),
-
-    prefix6.CodeBlockCopyButton: ClientTarget<prefix6.CodeBlockCopyButton>(
+    prefix5.CodeBlockCopyButton: ClientTarget<prefix5.CodeBlockCopyButton>(
       'jaspr_content_snippets:internal/client',
     ),
   },
@@ -61,7 +56,7 @@ JasprOptions get defaultJasprOptions => JasprOptions(
 
     ...prefix3.Image.styles,
 
-    ...prefix5.Tabs.styles,
+    ...prefix4.Tabs.styles,
   ],
 );
 

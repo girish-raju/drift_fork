@@ -2,6 +2,7 @@ import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:path/path.dart' show url;
 
+import 'broken.dart';
 import 'inherited_page.dart';
 
 /// Renders markdown links to source files (with a `.md` extension) by rewriting
@@ -43,9 +44,7 @@ final class _PageLink extends StatelessComponent {
     );
 
     if (referencedPage == null) {
-      return strong(styles: Styles(color: Colors.red), [
-        text('broken link to $resolvedRef'),
-      ]);
+      return BrokenComponent('broken link to $resolvedRef');
     }
 
     return a(

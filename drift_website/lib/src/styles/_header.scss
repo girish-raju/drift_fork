@@ -9,14 +9,13 @@ header {
   backdrop-filter: blur(8px);
 
   nav {
-    height: $header-height;
+    height: $nav-height;
     display: flex;
     align-items: center;
     column-gap: 1rem;
     max-width: 90rem;
     padding: .25rem 1rem;
     margin: auto auto;
-    border-bottom: 1px solid $color-separator;
 
     @include from-medium {
         padding: 0.25rem 2rem;
@@ -33,6 +32,22 @@ header {
     & >:not(:first-child) {
         display: flex;
         gap: 0.25rem;
+    }
+  }
+
+  .tabs {
+    height: $tabs-height;
+    border-bottom: 1px solid $color-separator;
+    overflow-x: scroll;
+    padding: 0rem 1rem;
+
+    &>a {
+      padding: 0.25rem 1rem;
+    }
+
+    .active {
+      border-bottom: 2px solid var(--primary);
+      font-weight: bold;
     }
   }
 }

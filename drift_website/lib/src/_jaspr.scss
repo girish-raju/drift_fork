@@ -1,5 +1,6 @@
 // Styles copied over from jaspr components so that we have everything in sass instead of
 // using inline styles.
+@use "styles/constants";
 
       .main-container {
         max-width: 90rem;
@@ -27,7 +28,7 @@
       }
       .main-container .sidebar-container {
         position: fixed;
-        top: 4rem;
+        top: constants.$header-height;
         bottom: 0;
         z-index: 10;
         width: 17rem;
