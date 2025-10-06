@@ -23,9 +23,7 @@ What's different is how tables and queries are declared. For SQL to be recognize
 it needs to be put into a `.drift` file. In this example, we use a `.drift` file next to the
 database class named `tables.drift`:
 
-
-
-{{ load_snippet('(full)','lib/snippets/drift_files/getting_started/tables.drift.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/getting_started/tables.drift" name="(full)" />
 
 !!! note "On that AS Category"
 
@@ -38,15 +36,11 @@ database class named `tables.drift`:
     generate a different name with the `AS <name>` declaration at the end.
 
 
-
-
 Integrating drift files into the database is simple, they just need to be added to the
 `include` parameter of the `@DriftDatabase` annotation. The `tables` parameter can
 be omitted here, since there are no Dart-defined tables to be added to the database.
 
-
-
-{{ load_snippet('(full)','lib/snippets/drift_files/getting_started/database.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/getting_started/database.dart" name="(full)" />
 
 To generate the `database.g.dart` file which contains the `_$AppDb`
 superclass, run `dart run build_runner build` on the command

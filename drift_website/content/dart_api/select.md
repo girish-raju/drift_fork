@@ -15,23 +15,7 @@ For each table you've specified in the `@DriftDatabase` annotation on your datab
 a corresponding getter for a table will be generated. That getter can be used to
 run statements:
 
-```dart
-@DriftDatabase(tables: [TodoItems, Categories])
-class MyDatabase extends _$MyDatabase {
-
-  // the schemaVersion getter and the constructor from the previous page
-  // have been omitted.
-
-  // loads all todo entries
-  Future<List<TodoItem>> get allTodoItems => select(todoItems).get();
-
-  // watches all todo entries in a given category. The stream will automatically
-  // emit new items whenever the underlying data changes.
-  Stream<List<TodoItem>> watchEntriesInCategory(Category c) {
-    return (select(todos)..where((t) => t.category.equals(c.id))).watch();
-  }
-}
-```
+<Snippet href="/lib/src/snippets/_shared/common_database.dart" name="db" />
 
 Drift makes writing queries easy and safe. This page describes how to write basic select
 queries, but also explains how to use joins and subqueries for advanced queries.
@@ -132,60 +116,20 @@ Note that the `like` check is _not_ performed in Dart - it's sent to the underly
 can efficiently compute it for all rows.
 
 ## Aliases
+
 Sometimes, a query references a table more than once. Consider the following example to store saved routes for a
 navigation system:
-```dart
-class GeoPoints extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-  TextColumn get latitude => text()();
-  TextColumn get longitude => text()();
-}
 
-class Routes extends Table {
-
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-
-  // contains the id for the start and destination geopoint.
-  IntColumn get start => integer()();
-  IntColumn get destination => integer()();
-}
-```
+<Snippet href="/lib/src/snippets/modular/aliases.dart" name="tables" />
 
 Now, let's say we wanted to also load the start and destination `GeoPoint` object for each route. We'd have to use
 a join on the `geo-points` table twice: For the start and destination point. To express that in a query, aliases
 can be used:
-```dart
-class RouteWithPoints {
-  final Route route;
-  final GeoPoint start;
-  final GeoPoint destination;
 
-  RouteWithPoints({this.route, this.start, this.destination});
-}
+<Snippet href="/lib/src/snippets/modular/aliases.dart" name="query" />
 
-// inside the database class:
-Future<List<RouteWithPoints>> loadRoutes() async {
-  // create aliases for the geoPoints table so that we can reference it twice
-  final start = alias(geoPoints, 's');
-  final destination = alias(geoPoints, 'd');
-
-  final rows = await select(routes).join([
-    innerJoin(start, start.id.equalsExp(routes.start)),
-    innerJoin(destination, destination.id.equalsExp(routes.destination)),
-  ]).get();
-
-  return rows.map((resultRow) {
-    return RouteWithPoints(
-      route: resultRow.readTable(routes),
-      start: resultRow.readTable(start),
-      destination: resultRow.readTable(destination),
-    );
-  }).toList();
-}
-```
 The generated statement then looks like this:
+
 ```sql
 SELECT
     routes.id, routes.name, routes.start, routes.destination,

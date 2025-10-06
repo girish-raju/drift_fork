@@ -11,17 +11,17 @@
 /// Admonition flavours
 $admonitions: (
   "note":     pencil-circle         $clr-blue-a200,
-  "abstract": clipboard-text        $clr-light-blue-a400,
-  "info":     information           $clr-cyan-a700,
+  //"abstract": clipboard-text        $clr-light-blue-a400,
+  //"info":     information           $clr-cyan-a700,
   "tip":      fire                  $clr-teal-a700,
-  "success":  check                 $clr-green-a700,
-  "question": help-circle           $clr-light-green-a700,
-  "warning":  alert                 $clr-orange-a400,
-  "failure":  close                 $clr-red-a200,
-  "danger":   lightning-bolt-circle $clr-red-a400,
-  "bug":      shield-bug            $clr-pink-a400,
-  "example":  test-tube             $clr-deep-purple-a200,
-  "quote":    format-quote-close    $clr-grey
+  "success":  check                 $clr-green-a700
+  //"question": help-circle           $clr-light-green-a700,
+  //"warning":  alert                 $clr-orange-a400,
+  //"failure":  close                 $clr-red-a200,
+  //"danger":   lightning-bolt-circle $clr-red-a400,
+  //"bug":      shield-bug            $clr-pink-a400,
+  //"example":  test-tube             $clr-deep-purple-a200,
+  //"quote":    format-quote-close    $clr-grey
 ) !default;
 
 // ----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ $admonitions: (
     display: flow-root;
     line-height: 1.35rem;
     padding: 0 px2rem(12px);
-    margin: px2em(20px, 12.8px) 0;
+    margin: px2rem(20px) px2rem(12.8px);
     font-size: px2rem(12.8px);
     background-color: var(--background-card);
     border: px2rem(1.5px) solid $clr-blue-a200;
@@ -94,6 +94,7 @@ $admonitions: (
 
     // Adjust spacing on last child
     html & > :last-child {
+      margin-top: px2rem(12px);
       margin-bottom: px2rem(12px);
     }
   }

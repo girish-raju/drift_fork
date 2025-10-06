@@ -66,7 +66,7 @@ dart run build_runner build
 ```
 Drift initializes a brand-new database with all defined tables when the database is opened for the first time. (typically when running the app for the first time)
 
-However, if a database already exists, Drift won't make any automatic changes to its structure. Please see [migrations](../Migrations/index.md) for an overview of what to do when changing the database like this.
+However, if a database already exists, Drift won't make any automatic changes to its structure. Please see [migrations](../migrations/index.md) for an overview of what to do when changing the database like this.
 
 
 ## Column types
@@ -87,7 +87,7 @@ Drift offers a variety of built-in column types to suit most database needs.
 | `DateTime` (see [options](#datetime-options))                  | `late final createdAt = dateTime()()`             | `INTEGER`or `TEXT`          |
 | Your own                                                       | See [type converter docs](../type_converters.md). | Depending on type           |
 | Enums                                                          | [`intEnum` or `textEnum`](../type_converters.md#implicit-enum-converters). | `INTEGER` or `TEXT`         |
-| Postgres Types                                                 | See [postgres docs](../Platforms/postgres.md).    | Depending on type           |
+| Postgres Types                                                 | See [postgres docs](../platforms/postgres.md).    | Depending on type           |
 
 In addition to these basic types, columns can be configured to store any type which can be converted to a built-in type. See [type converters](../type_converters.md) for more information.
 
@@ -103,13 +103,11 @@ For most tables, a single auto-incrementing integer column is sufficient as the 
 
 With Drift, these columns are declared by using `autoIncrement()` in the definition of a column, which will:
 
-<div class="annotate" markdown>
-1. Make that column the sole primary-key of the table.  (1)
-2. Make this column automatically count up by 1 for each new row.
-</div>
 
-1. Thus, you can't use `autoIncrement()` on multiple columns, or mix
+1. Make that column the sole primary-key of the table.
+   Thus, you can't use `autoIncrement()` on multiple columns, or mix
    `autoIncrement()` and other [primary keys](#primary-keys)
+2. Make this column automatically count up by 1 for each new row.
 
 For example, when declaring a table with an auto-incrementing column:
 
@@ -167,7 +165,7 @@ statements.
 #### `withDefault()`
 
 Set a default value as a SQL expression that is applied in the database itself. See [expressions](../dart_api/expressions.md) for more information on how to write these expressions. Adding, removing, or changing the default value is considered a
-[schema change](../Migrations/index.md) that requires special care.
+[schema change](../migrations/index.md) that requires special care.
 
 A common example for default values is to add a column describing when the row has
 been created:
@@ -207,7 +205,7 @@ should happen when the target row gets updated or deleted.
 
 Be aware that, in sqlite3, foreign key references aren't enabled by default.
 They need to be enabled with `PRAGMA foreign_keys = ON`.
-A suitable place to issue that pragma with drift is in a [post-migration callback](../Migrations/index.md#post-migration-callbacks).
+A suitable place to issue that pragma with drift is in a [post-migration callback](../migrations/index.md#post-migration-callbacks).
 
 
 ### Additional validation checks
@@ -358,7 +356,7 @@ You can also add custom constraints to the table itself by overriding the `table
 
 <Snippet href="/lib/src/snippets/dart_api/tables.dart" name="custom-constraint-table" />
 
-!!! note "SQL Validation"
+!!! success "SQL Validation"
 
     Don't worry about syntax errors or unsupported features. Drift will validate the SQL you provide and throw an error during code generation if there are any issues.
 

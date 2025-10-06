@@ -1,10 +1,7 @@
 ---
-
 title: Custom SQL types
 description: Use custom SQL types in Drift files and Dart code.
-
 ---
-
 
 
 Drift's core library is written with sqlite3 as a primary target. This is
@@ -43,7 +40,7 @@ prepared statements and also be read from rows without manual conversions.
 In that case, a custom type class to implement `Duration` support for drift would be
 added:
 
-{{ load_snippet('duration','lib/snippets/modular/custom_types/type.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/custom_types/type.dart" name="duration" />
 
 This type defines the following things:
 
@@ -61,9 +58,7 @@ This type defines the following things:
 
 To define a custom type on a Dart table, use the `customType` column builder method with the type:
 
-
-
-{{ load_snippet('(full)','lib/snippets/modular/custom_types/table.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/custom_types/type.dart" name="(full)" />
 
 As the example shows, other column constraints like `clientDefault` can still be added to custom
 columns. You can even combine custom columns and type converters if needed.
@@ -79,9 +74,7 @@ drift doesn't have a central register describing how to deal with custom type va
 In SQL, Drift's [inline Dart](drift_files.md#dart-interop) syntax may be used to define
 the custom type:
 
-
-
-{{ load_snippet('(full)','lib/snippets/modular/custom_types/drift_table.drift.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/custom_types/drift_table.drift" name="(full)" />
 
 Please note that support for custom types in drift files is currently limited.
 For instance, custom types are not currently supported in `CAST` expressions.

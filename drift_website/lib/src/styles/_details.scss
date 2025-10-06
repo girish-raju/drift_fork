@@ -1,5 +1,6 @@
 // https://github.com/squidfunk/mkdocs-material/blob/c68fac7fb3071fa4f45cc823e2ca2ea82fd67b43/src/templates/assets/stylesheets/main/extensions/pymdownx/_details.scss#L4
 
+@use "constants" as *;
 @use "admonition";
 
 // Details
@@ -65,7 +66,7 @@
       height: px2rem(20px);
       content: "";
       background-color: currentcolor;
-      mask-image: var(--md-details-icon);
+      mask-image: url("/images/chevron-right.svg");
       mask-repeat: no-repeat;
       mask-position: center;
       mask-size: contain;

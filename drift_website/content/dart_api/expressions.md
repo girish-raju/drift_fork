@@ -109,7 +109,7 @@ Again, the `isNotIn` function works the other way around.
 
 Support for common JSON operators is provided through `package:drift/extensions/json1.dart`.
 This provides things like `jsonExtract` to extract fields from JSON or `jsonEach` to query
-nested JSON structures. For more details, see the [JSON support](select.md#json-support) section on the page about selects or [this more complex example](../Examples/relationships.md#with-json-functions).
+nested JSON structures. For more details, see the [JSON support](select.md#json-support) section on the page about selects or [this more complex example](../examples/relationships.md#with-json-functions).
 
 ## Aggregate functions (like count and sum)
 
@@ -181,7 +181,7 @@ This ranking can be attached to each row:
 
 When using a `NativeDatabase`, a basic set of trigonometric functions will be available.
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in SQL queries.
-For more information, see the [list of functions](../Platforms/vm.md#drift-only-functions) here.
+For more information, see the [list of functions](../platforms/vm.md#drift-only-functions) here.
 
 ## Subqueries
 

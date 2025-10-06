@@ -25,7 +25,7 @@ adding a package to open database on the respective platform.
 <Tabs defaultValue="sqlite3">
   <TabItem label="Flutter (sqlite3)" value="sqlite3_flutter">
 
-```
+```yaml
 dependencies:
   drift: ^{{ versions.drift }}
   drift_flutter: ^{{ versions.drift_flutter }}
@@ -38,14 +38,14 @@ dev_dependencies:
 
 Alternatively, you can achieve the same result using the following command:
 
-```
+```shell
 dart pub add drift drift_flutter path_provider dev:drift_dev dev:build_runner
 ```
 
 </TabItem>
 <TabItem label="Dart (sqlite3)" value="sqlite3">
 
-```
+```yaml
 dependencies:
   drift: ^{{ versions.drift }}
   sqlite3: ^{{ versions.sqlite3 }}
@@ -64,7 +64,7 @@ dart pub add drift sqlite3 dev:drift_dev dev:build_runner
 </TabItem>
 <TabItem label="Dart (postgres)" value="postgres">
 
-```
+```yaml
 dependencies:
   drift: ^{{ versions.drift }}
   postgres: ^{{ versions.postgres }}
@@ -84,7 +84,7 @@ dart pub add drift postgres drift_postgres dev:drift_dev dev:build_runner
 Drift only generates code for sqlite3 by default. So, also create a `build.yaml`
 to [configure](generation_options/index.md) `drift_dev`:
 
-```
+```yaml
 targets:
   $default:
   builders:
@@ -187,7 +187,7 @@ started with drift:
   [selects](dart_api/select.md) or [inserts, updates and deletes](dart_api/writes.md).
 - Something to keep in mind for later: When changing the database, for instance by adding new columns
   or tables, you need to write a migration so that existing databases are transformed to the new
-  format. Drift's extensive [migration tools](Migrations/index.md) help with that.
+  format. Drift's extensive [migration tools](migrations/index.md) help with that.
 - Take a look at our [FAQ](./faq.md)! It will help you with the most common questions about drift projects.
 
 Once you're familiar with the basics, the [overview here](index.md) shows what

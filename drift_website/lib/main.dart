@@ -15,6 +15,7 @@ import 'package:watcher/watcher.dart';
 
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'jaspr_options.dart';
+import 'src/common.dart';
 import 'src/components/code.dart';
 import 'src/components/collapsible.dart';
 import 'src/components/header.dart';
@@ -61,7 +62,11 @@ void main() {
             }),
           ],
           templateEngine: MustacheTemplateEngine(),
-          parsers: [MarkdownParser()],
+          parsers: [
+            MarkdownParser(
+              documentBuilder: (_) => driftMarkdownDocumentBuilder(),
+            ),
+          ],
           extensions: [
             // Adds heading anchors to each heading.
             HeadingAnchorsExtension(),

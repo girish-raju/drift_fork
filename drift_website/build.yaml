@@ -54,6 +54,8 @@ targets:
     builders:
       jaspr_content_snippets:
         enabled: true
+        options:
+          process_without_directives: true
         generate_for:
           include:
             - "lib/src/snippets/**/*.dart"
@@ -61,6 +63,7 @@ targets:
             - "lib/src/snippets/*.dart"
           exclude:
             - "**/*.g.dart"
+            - "**/*.drift.dart"
     auto_apply_builders: false
     sources:
       - "$package$"
