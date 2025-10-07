@@ -1,6 +1,8 @@
 ## 2.29.0-dev
 
 - Allow specifying ordering for columns in `@TableIndex` annotation.
+- Add `DelegatedDatabase.externalExecutor`, allowing transactions started
+  externally to be used with drift.
 
 ## 2.28.2
 
