@@ -451,6 +451,10 @@ enum SqlModule {
   /// Enables the dbstat table providing insights into the disk state occupied
   /// by certain tables.
   dbstat,
+
+  /// Enables static analysis support for PowerSync, providing the
+  /// `powersync_crud` virtual table.
+  powersync,
 }
 
 /// The possible values for the case of the table and column names.

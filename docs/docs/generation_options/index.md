@@ -194,6 +194,8 @@ We currently support the following extensions:
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)
   module is available. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
+- `powersync`: Assumes that the PowerSync SQLite extension is available, allowing references to e.g.
+  `powersync_crud` in `CREATE TABLE` statements.
 
 ### Known custom functions
 
