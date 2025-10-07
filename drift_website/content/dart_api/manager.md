@@ -163,20 +163,20 @@ extend them to add new filters and orderings.
 #### Custom Column Filters
 If you want to add new filters for individual columns types, you can extend the `ColumnFilter<T>` class.
 
-{{ load_snippet('manager_filter_extensions','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/manager.dart" name="manager_filter_extensions" />
 
 #### Custom Table Filters
 You can also create custom filters that operate on multiple columns by extending generated filtersets.
 
-{{ load_snippet('manager_custom_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/manager.dart" name="manager_custom_filter" />
 
 #### Custom Column Orderings
 You can create new ordering methods for individual columns types by extending the `ColumnOrdering<T>` class.
 Use the `ComposableOrdering` class to create complex orderings.
 
-{{ load_snippet('manager_ordering_extensions','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/manager.dart" name="manager_ordering_extensions" />
 
 #### Custom Table Filters
 You can also create custom filters that operate on multiple columns by extending generated filtersets.
 
-{{ load_snippet('manager_custom_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }} -->
+<Snippet href="/lib/src/snippets/dart_api/manager.dart" name="manager_custom_filter" /> -->

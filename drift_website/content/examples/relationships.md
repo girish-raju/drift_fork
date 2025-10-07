@@ -41,11 +41,11 @@ describes both approaches and highlights some differences between them.
 In both approaches, we'll implement a repository for shopping cart entries that
 will adhere to the following interface:
 
-{{ load_snippet('interface','lib/snippets/modular/many_to_many/shared.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/shared.dart" name="interface" />
 
 We also need a table for products that can be bought:
 
-{{ load_snippet('buyable_items','lib/snippets/modular/many_to_many/shared.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/shared.dart" name="buyable_items" />
 
 ## In a relational structure
 
@@ -59,7 +59,7 @@ The latter uses [references](../dart_api/tables.md#references)
 to express the foreign key constraints of referencing existing shopping
 carts or product items.
 
-{{ load_snippet('cart_tables','lib/snippets/modular/many_to_many/relational.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/relational.dart" name="cart_tables" />
 
 ### Inserts
 We want to write a `CartWithItems` instance into the database. We assume that
@@ -67,11 +67,11 @@ all the `BuyableItem`s included already exist in the database (we could store
 them via `into(buyableItems).insert(BuyableItemsCompanion(...))`). Then,
 we can replace a full cart with
 
-{{ load_snippet('updateCart','lib/snippets/modular/many_to_many/relational.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/relational.dart" name="updateCart" />
 
 We could also define a helpful method to create a new, empty shopping cart:
 
-{{ load_snippet('createEmptyCart','lib/snippets/modular/many_to_many/relational.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/relational.dart" name="createEmptyCart" />
 
 ### Selecting a cart
 As our `CartWithItems` class consists of multiple components that are separated in the
@@ -79,14 +79,14 @@ database (information about the cart, and information about the added items), we
 to merge two streams together. The `rxdart` library helps here by providing the
 `combineLatest2` method, allowing us to write
 
-{{ load_snippet('watchCart','lib/snippets/modular/many_to_many/relational.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/relational.dart" name="watchCart" />
 
 ### Selecting all carts
 Instead of watching a single cart and all associated entries, we
 now watch all carts and load all entries for each cart. For this
 type of transformation, RxDart's `switchMap` comes in handy:
 
-{{ load_snippet('watchAllCarts','lib/snippets/modular/many_to_many/relational.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/relational.dart" name="watchAllCarts" />
 
 ## With JSON functions
 
@@ -96,24 +96,24 @@ happens with help of the `json_serializable` package:
 
 
 
-{{ load_snippet('tables','lib/snippets/modular/many_to_many/json.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/json.dart" name="tables" />
 
 Creating shopping carts looks just like in the relational example:
 
-{{ load_snippet('createEmptyCart','lib/snippets/modular/many_to_many/json.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/json.dart" name="createEmptyCart" />
 
 However, updating a shopping cart doesn't require a transaction anymore since it can all happen
 in a single table:
 
-{{ load_snippet('updateCart','lib/snippets/modular/many_to_many/json.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/json.dart" name="updateCart" />
 
 To select a single cart, we can use the [`json_each`](https://sqlite.org/json1.html#jeach)
 function from sqlite3 to "join" each item stored in the JSON array as if it were a separate
 row. That way, we can efficiently look up all items in a cart:
 
-{{ load_snippet('watchCart','lib/snippets/modular/many_to_many/json.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/json.dart" name="watchCart" />
 
 Watching all carts isn't that much harder, we just remove the `where` clause and
 combine all rows into a map from carts to their items:
 
-{{ load_snippet('watchAllCarts','lib/snippets/modular/many_to_many/json.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/many_to_many/json.dart" name="watchAllCarts" />

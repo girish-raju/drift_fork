@@ -16,7 +16,6 @@ import 'package:watcher/watcher.dart';
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'jaspr_options.dart';
 import 'src/common.dart';
-import 'src/components/code.dart';
 import 'src/components/collapsible.dart';
 import 'src/components/header.dart';
 import 'src/components/inherited_page.dart';
@@ -77,7 +76,7 @@ void main() {
             PageRef(),
             // The <Info> block and other callouts.
             //Callout(),
-            DriftCodeBlock(),
+            BetterCodeBlock(),
             Collapsible.component(),
             // Adds zooming and caption support to images.
             Image(zoom: true),

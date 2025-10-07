@@ -75,7 +75,7 @@ checks afterwards.
 The `Migrator.runMigrationSteps` helper method can be used for that, as this example
 shows:
 
-{{ load_snippet('stepbystep2','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/step_by_step.dart" name="stepbystep2" />
 
 Here, foreign keys are disabled before running the migration and re-enabled afterwards.
 A check ensuring no inconsistencies occurred helps to catch issues with the migration
@@ -90,7 +90,7 @@ starting point.
 This allows you to perform all prior migration work to get the database to the "starting" point for
 `stepByStep` migrations, and then use `stepByStep` migrations beyond that schema version.
 
-{{ load_snippet('stepbystep3','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/step_by_step.dart" name="stepbystep3" />
 
 Here, we give a "floor" to the `from` value of `2`, since we've performed all other migration work to get to
 this point. From now on, you can generate step-by-step migrations for each schema change.
@@ -119,7 +119,7 @@ the path of the file to generate. Typically, you'd generate a file next to your 
 
 The generated file contains a `stepByStep` method which can be used to write migrations easily:
 
-{{ load_snippet('stepbystep','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/step_by_step.dart" name="stepbystep" />
 
 `stepByStep` expects a callback for each schema upgrade responsible for running the partial migration.
 That callback receives two parameters: A migrator `m` (similar to the regular migrator you'd get for

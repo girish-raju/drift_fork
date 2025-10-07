@@ -86,7 +86,7 @@ text, follow these steps:
   __Remember that triggers, views or other custom SQL entries in your database
   will require a custom migration that is not covered by this guide.__
 
-{{ load_snippet('unix-to-text','lib/snippets/dart_api/datetime_conversion.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/datetime_conversion.dart" name="unix-to-text" />
 
 ### ...to unix timestamps
 
@@ -102,13 +102,13 @@ steps:
   __Remember that triggers, views or other custom SQL entries in your database
   will require a custom migration that is not covered by this guide.__
 
-{{ load_snippet('text-to-unix','lib/snippets/dart_api/datetime_conversion.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/datetime_conversion.dart" name="text-to-unix" />
 
 Note that this snippet uses the `unixepoch` sqlite3 function, which has been
 added in sqlite 3.38. To support older sqlite3 versions, you can use `strftime`
 and cast to an integer instead:
 
-{{ load_snippet('text-to-unix-old','lib/snippets/dart_api/datetime_conversion.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/dart_api/datetime_conversion.dart" name="text-to-unix-old" />
 
 When using a `NativeDatabase` with a recent dependency on the
 `sqlite3_flutter_libs` package, you can safely assume that you are on a recent

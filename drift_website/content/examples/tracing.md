@@ -10,17 +10,17 @@ executes.
 The `QueryInterceptor` API can be used to extend this logging to provide more information,
 which this example will show.
 
-{{ load_snippet('class','lib/snippets/log_interceptor.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/log_interceptor.dart" name="class" />
 
 Interceptors can be applied with the `interceptWith` extension on `QueryExecutor` and
 `DatabaseConnection`:
 
-{{ load_snippet('use','lib/snippets/log_interceptor.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/log_interceptor.dart" name="use" />
 
 If you only want to apply an interceptor on a certain block instead of on the whole database,
 that's possible too:
 
-{{ load_snippet('runWithInterceptor','lib/snippets/log_interceptor.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/log_interceptor.dart" name="runWithInterceptor" />
 
 The `QueryInterceptor` class is pretty powerful, as it allows you to fully control the underlying
 database connection. You could also use it to retry some failing statements or to aggregate

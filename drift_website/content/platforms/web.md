@@ -7,7 +7,7 @@ description: Drift support in Flutter and Dart web apps.
 
 <script src="/compatibility.dart.js"></script>
 
-!!! note ""
+!!! success ""
 
     __Good news__: With drift 2.9.0, web support is stable and officially supported!
     The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
@@ -277,7 +277,7 @@ function on `WasmDatabase.open`.
 This function will be called when attempting to open a database that doesn't exist yet,
 allowing the initial sqlite3 file to be provided instead:
 
-{{ load_snippet('existing','lib/snippets/platforms/web.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="existing" />
 
 Please be aware that this only works for the default journal mode, WAL is not supported
 on the web and WAL databases can't be imported with `initializeDatabase` either.
@@ -342,11 +342,11 @@ may only exist on a web worker, we can't use Dart callback functions.
 However, it is possible to compile a custom worker that will setup drift databases it creates. For that,
 you can create a Dart file (usually put into `web/`) with content like:
 
-{{ load_snippet('setupAll','lib/snippets/platforms/web.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="setupAll" />
 
 To open the database from the application, you can then use this:
 
-{{ load_snippet('setupLocal','lib/snippets/platforms/web.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="setupLocal" />
 
 The `setupDatabase` value is duplicated with `localSetup` in case drift determines that it needs to use
 an in-memory database or an IndexedDB-powered database that doesn't run in a worker. In that case,
@@ -367,7 +367,7 @@ The web worker is written in Dart - the entrypoint is stable and part of drift's
 To compile a worker suitable for `WasmDatabase.open`, create a new Dart file that calls `WasmDatabase.workerMainForOpen`:
 
 
-{{ load_snippet('(full)','lib/snippets/platforms/stable_worker.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/stable_worker.dart" name="(full)" />
 
 The JavaScript file included in drift releases is compiled with `dart compile js -O4 web/drift_worker.dart`.
 You can use that command or a tool such as `build_web_compilers` to compile this worker.
@@ -417,7 +417,7 @@ its features out of the box with `WasmDatabase.open`.
 In older drift versions, you may have used a custom setup that loaded the WASM binary manually, created
 a `CommonSqlite3` instance with it and passed that to `WasmDatabase`.
 
-{{ load_snippet('migrate-wasm','lib/snippets/platforms/web.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="migrate-wasm" />
 
 ### Migrating from `package:drift/web.dart`
 
@@ -425,7 +425,7 @@ To migrate from a `WebDatabase` to the new setup, you can use the `initializeDat
 It is invoked when opening the database if no file exists yet. By loading the old database there,
 it is migrated to the new format without data loss:
 
-{{ load_snippet('migrate-legacy','lib/snippets/platforms/web.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="migrate-legacy" />
 
 In that snippet, `old_db` is the name previously passed to the `WebDatabase`.
 
@@ -484,14 +484,14 @@ the `web/` folder of your app. It could have the following content:
 
 
 
-{{ load_snippet('worker','lib/snippets/platforms/workers.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/workers.dart" name="worker" />
 
 For more information on this api, see the [remote API](https://pub.dev/documentation/drift/latest/remote/remote-library.html).
 
 Connecting to that worker is very simple with drift's web and remote apis. In your regular app code (outside of the worker),
 you can connect like this:
 
-{{ load_snippet('client','lib/snippets/platforms/workers.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/workers.dart" name="client" />
 
 You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on

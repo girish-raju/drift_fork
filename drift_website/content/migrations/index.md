@@ -145,11 +145,11 @@ getter.
 Here's an example: Let's say you wanted to add a due date to your todo entries (`v2` of the schema).
 Later, you decide to also add a priority column (`v3` of the schema).
 
-{{ load_snippet('table','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/migrations.dart" name="table" />
 
 We can now change the `database` class like this:
 
-{{ load_snippet('start','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/migrations.dart" name="start" />
 
 You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/drift/latest/drift/Migrator-class.html)
 for all the available options.

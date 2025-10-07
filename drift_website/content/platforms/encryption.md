@@ -39,7 +39,7 @@ as they both provide a (different) set of `sqlite3` native apis.
 On Android, you also need to adapt the opening behavior of the `sqlite3` package to use the encrypted library instead
 of the regular `libsqlite3.so`:
 
-{{ load_snippet('setup','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/encryption.dart" name="setup" />
 
 When using drift on a background database, you need to call `setupSqlCipher` on the background isolate
 as well. With `NativeDatabase.createInBackground`, which are using isolates internally, you can use
@@ -61,7 +61,7 @@ To actually encrypt a database, you must set an encryption key before using it.
 A good place to do that in drift is the `setup` parameter of `NativeDatabase`, which runs before drift
 is using the database in any way:
 
-{{ load_snippet('encrypted1','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/encryption.dart" name="encrypted1" />
 
 ??? note "Disabling double-quoted string literals"
 
@@ -81,12 +81,12 @@ you could still be getting the regular `sqlite3` library without support for enc
 
 For this reason, it is recommended that you check that the `cipher_version` pragma is available at runtime:
 
-{{ load_snippet('check_cipher','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/encryption.dart" name="check_cipher" />
 
 Next, add an `assert(_debugCheckHasCipher(database))` before using the database. A suitable place is the
 `setup` parameter to a `NativeDatabase`:
 
-{{ load_snippet('encrypted2','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/encryption.dart" name="encrypted2" />
 
 If this check reveals that the encrypted variant is not available, please see [the documentation here](https://github.com/simolus3/sqlite3.dart/tree/master/sqlcipher_flutter_libs#incompatibilities-with-sqlite3-on-ios-and-macos) for advice.
 
@@ -106,7 +106,7 @@ To migrate existing databases to encryption, SQLCipher recommends [these steps](
 
 In drift, you can run these steps in the `isolateSetup` callback when opening a `NativeDatabase`:
 
-{{ load_snippet('migration','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/encryption.dart" name="migration" />
 
 ## Using `encrypted_drift`
 

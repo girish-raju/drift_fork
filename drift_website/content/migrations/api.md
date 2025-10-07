@@ -24,7 +24,7 @@ Still, it can be useful to:
 
 With all of this combined, a migration callback can look like this:
 
-{{ load_snippet('structured','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/migrations.dart" name="structured" />
 
 ## Migrating views, triggers and indices
 
@@ -99,7 +99,7 @@ class Todos extends Table {
 
 After re-running your build and incrementing the schema version, you can write a migration:
 
-{{ load_snippet('change_type','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/migrations.dart" name="change_type" />
 
 The important part here is the `columnTransformer` - a map from columns to expressions that will
 be used to copy the old data. The values in that map refer to the old table, so we can use

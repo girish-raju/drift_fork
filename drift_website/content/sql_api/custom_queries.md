@@ -27,7 +27,7 @@ sql manually. See the sections below for details.
 
 To use this feature, all you need to is define your queries in your `DriftDatabase` annotation:
 
-{{ load_snippet('setup','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/custom_queries.dart" name="setup" />
 
 After running the build step again, drift will have written the `CategoriesWithCountResult` class for you -
 it will hold the result of your query. Also, the `_$MyDatabase` class from which you inherit will have a
@@ -46,7 +46,7 @@ stream of results:
 
 
 
-{{ load_snippet('run','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/custom_queries.dart" name="run" />
 
 Queries can have parameters in them by using the `?` or `:name` syntax. For parameters in queries,
 drift will figure out an appropriate type and include them in the generated methods. For instance,
@@ -80,7 +80,7 @@ the underlying data changes. Using the todo example introduced in the
 [getting started guide](../setup.md), we can
 write this query which will load the amount of todo entries in each category:
 
-{{ load_snippet('manual','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/custom_queries.dart" name="manual" />
 
 For custom selects, you should use the `readsFrom` parameter to specify from which tables the query is
 reading. When using a `Stream`, drift will be able to know after which updates the stream should emit
@@ -88,7 +88,7 @@ items.
 
 You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
 
-{{ load_snippet('amountOfTodosInCategory','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/custom_queries.dart" name="amountOfTodosInCategory" />
 
 
 Of course, you can also use indexed variables (like `?12`) - for more information on them, see

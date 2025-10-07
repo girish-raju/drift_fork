@@ -74,7 +74,7 @@ enabled. Further, non-nullable variables are required by default.
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but drift will desugar that at runtime. So, for this query:
 
-{{ load_snippet('entries','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
+<Snippet href="/lib/src/snippets/drift_files/small_snippets.drift" name="entries" />
 
 Drift will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
 Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and

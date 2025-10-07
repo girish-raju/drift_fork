@@ -14,14 +14,14 @@ features, such as:
 
 - Type-safe access to your database, giving you resolved classes for queries instead of
   a dynamic `List<Map<String, Object?>>` that you have to parse yourself.
-- A complete [query builder](dart_api/manager.md) capable of expressing
+- A complete [query builder](../dart_api/manager.md) capable of expressing
   even complex SQL statements in Dart.
 - Auto-updating streams for your queries.
-- Easier [transaction management](dart_api/transactions.md).
-- [Assisted migrations](Migrations/step_by_step.md) and [reliable unit tests](Migrations/tests.md) for your migrations.
-- Compile-time [analysis and lints for your SQL](sql_api/drift_files.md).
-- Efficient cross-platform implementations thanks to builtin [isolate](isolates.md) and [web worker](Platforms/web.md) support.
-- Multi-dialect support, allowing you to [re-use database code](Examples/server_sync.md) between
+- Easier [transaction management](../dart_api/transactions.md).
+- [Assisted migrations](../migrations/step_by_step.md) and [reliable unit tests](../migrations/tests.md) for your migrations.
+- Compile-time [analysis and lints for your SQL](../sql_api/drift_files.md).
+- Efficient cross-platform implementations thanks to builtin [isolate](../isolates.md) and [web worker](../platforms/web.md) support.
+- Multi-dialect support, allowing you to [re-use database code](../examples/server_sync.md) between
   your app and your backend.
 
 `sqflite` and `sqlite3` are amazing packages, and they are great tools for applications
@@ -34,11 +34,6 @@ sqlite databases, this page provides guides on how to migrate to drift.
 ## Preparations
 
 First, add a dependency on `drift` and related packages used to generate code to your app:
-
-
-
-
-
 
 ```yaml
 dependencies:
@@ -62,7 +57,7 @@ Create a file called `database.dart` (every name is possible of course, just rem
 to update the `part` statement when using a different file name) somewhere under
 `lib/` and use the following snippet
 
-{{ load_snippet('start','lib/snippets/setup/migrate_to_drift/database.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/database.dart" name="start" />
 
 To fix the errors in that snippet, generate code with
 
@@ -124,7 +119,7 @@ static QueryExecutor _openDatabase() {
 The current snippets allow opening your existing database through drift APIs, but drift
 doesn't know anything about your tables yet.
 With `sqflite` or `sqlite3`, you have created your tables with `CREATE TABLE` statements.
-Drift has a [Dart-based DSL](dart_api/tables.md) able to define tables
+Drift has a [Dart-based DSL](../dart_api/tables.md) able to define tables
 in Dart, but it can also interpret `CREATE TABLE` statements by parsing them at compile time.
 
 Since you probably still have the `CREATE TABLE` strings available in your code, using them
@@ -138,10 +133,10 @@ await db.execute(
 });
 ```
 
-All your `CREATE` statements can be imported into drift with a [drift file](sql_api/index.md).
+All your `CREATE` statements can be imported into drift with a [drift file](../sql_api/index.md).
 To get started, add a `schema.drift` file next to your `database.dart` file with the following content:
 
-{{ load_snippet('test','lib/snippets/setup/migrate_to_drift/schema.drift.excerpt.json') }}
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/schema.drift" name="test" />
 
 Next, uncomment the `include` parameter on the `@DriftDatabase` annotation:
 
@@ -183,19 +178,19 @@ database.rawQuery('SELECT * FROM Test WHERE value > ?', [12]);
 
 Then you can copy the query into a drift file, like this:
 
-{{ load_snippet('query','lib/snippets/setup/migrate_to_drift/schema.drift.excerpt.json') }}
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/schema.drift" name="query" />
 
 After re-running the build, drift has generated a matching method exposing
 the query. This method automatically returns the correct row type and has a
 correctly-typed parameter for the `?` variable in SQL:
 
-{{ load_snippet('drift-query','lib/snippets/setup/migrate_to_drift/database.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/database.dart" name="drift-query" />
 
 Especially for users already familiar with SQL, drift files are a very powerful
 feature to structure databases.
 You can of course mix definitions from drift files with tables and queries defined
 in Dart if that works better.
-For more information about drift files, see [their documentation page](sql_api/drift_files.md).
+For more information about drift files, see [their documentation page](../sql_api/drift_files.md).
 
 ### Dart queries
 
@@ -203,18 +198,18 @@ Drift provides a query builder in Dart, which can be used to write SQL statement
 For example, the `SELECT * FROM Test WHERE value > ?` query from the previous example
 can also be written like this:
 
-{{ load_snippet('dart-query','lib/snippets/setup/migrate_to_drift/database.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/database.dart" name="dart-query" />
 
 Here, `watch()` is used instead of `get()` in the end to automatically turn the statement
 into an auto-updating stream.
 
-For more information about the dart_api, see [this overview](./dart_api/manager.md).
+For more information about the dart_api, see [this overview](../dart_api/manager.md).
 
 ## Next steps
 
 This page gave a quick overview on the steps used to migrate to existing sqlite3 databases to drift.
 Drift has to offer a lot, and not every feature was highlighted in this quick guide. After completing
-the initial migration, you can browse [the docs](index.md) to learn more about drift
+the initial migration, you can browse [the docs](../index.md) to learn more about drift
 and its features.
 
 If you need more help with drift, or have questions on migrating, there's an active community happy to

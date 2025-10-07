@@ -13,19 +13,19 @@ package here to make the example simpler.
 
 ## Using converters in Dart
 
-{{ load_snippet('start','lib/snippets/type_converters/converters.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/type_converters/converters.dart" name="start" />
 
 Next, we have to tell drift how to store a `Preferences` object in the database. We write
 a `TypeConverter` for that:
 
-{{ load_snippet('converter','lib/snippets/type_converters/converters.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/type_converters/converters.dart" name="converter" />
 
 1. The original JSON type converter classes are [deprecated](#type-converters-and-json-serialization),
    which is why the `v2`-variants should generally be used instead.
 
 Finally, we can use that converter in a table declaration:
 
-{{ load_snippet('table','lib/snippets/type_converters/converters.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/type_converters/converters.dart" name="table" />
 
 The generated `User` class will then have a `preferences` column of type
 `Preferences`. Drift will automatically take care of storing and loading
@@ -41,7 +41,7 @@ Since applying type converters for JSON conversion is so common, drift provides 
 for that. For instance, we could declare the type converter as a field in the
 `Preferences` class:
 
-{{ load_snippet('simplified','lib/snippets/type_converters/converters.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/type_converters/converters.dart" name="simplified" />
 
 !!! info "Why JSON converters?"
 
@@ -62,7 +62,7 @@ When you use drift with SQLite, it may thus be helpful to use this JSONB format.
 has built-in support for that. First, use `TypeConverter.jsonb` to create a JSONB-based converter in Dart.
 Re-using the `Preferences` class from above, such a converter may look like this:
 
-{{ load_snippet('jsonb','lib/snippets/type_converters/converters.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/type_converters/converters.dart" name="jsonb" />
 
 It can then be applied to binary columns:
 

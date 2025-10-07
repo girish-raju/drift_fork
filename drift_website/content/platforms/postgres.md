@@ -49,7 +49,7 @@ targets:
 
 Then, perhaps this example database is helpful as a starting point:
 
-{{ load_snippet('setup','lib/snippets/platforms/postgres.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/postgres.dart" name="setup" />
 
 After starting a database server, for example by running `docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`,
 you can run the example to see drift talking to Postgres.
@@ -65,7 +65,7 @@ with your existing `Session` from `package:postgres`.
 This technique is also useful for pooling connections to Postgres, as the `Pool` implementation
 from `package:postgres` implements the `Session` interface:
 
-{{ load_snippet('pool','lib/snippets/platforms/postgres.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/postgres.dart" name="pool" />
 
 ## API extensions
 
@@ -109,11 +109,11 @@ Most of the date time APIs (like `currentDateAndTime`) will not work with Postgr
 When using drift databases with PostgreSQL, we suggest avoiding the default `dateTime()` column type and instead
 use `PgTypes.date` or `PgTypes.datetime`:
 
-{{ load_snippet('time','lib/snippets/platforms/postgres.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/postgres.dart" name="time" />
 
 If you need to support both sqlite3 and Postgres, consider using [dialect-aware types](../sql_api/types.md#dialect-awareness):
 
-{{ load_snippet('time-dialectaware','lib/snippets/platforms/postgres.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/postgres.dart" name="time-dialectaware" />
 
 ## Current state
 

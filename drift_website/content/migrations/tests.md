@@ -9,8 +9,6 @@ description: Generate test code to write unit tests for your migrations.
 
       If you are using the `make-migrations` command, tests are already generated for you.
 
-
-
 While migrations can be written manually without additional help from drift, dedicated tools testing
 your migrations help to ensure that they are correct and aren't loosing any data.
 
@@ -43,7 +41,7 @@ $ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
 
 After that setup, it's finally time to write some tests! For instance, a test could look like this:
 
-{{ load_snippet('setup','lib/snippets/migrations/tests/schema_test.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/tests/schema_test.dart" name="setup" />
 
 In general, a test looks like this:
 
@@ -86,11 +84,11 @@ $ dart run drift_dev schema generate --data-classes --companions drift_schemas/ 
 
 Then, you can import the generated classes with an alias:
 
-{{ load_snippet('imports','lib/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/tests/verify_data_integrity_test.dart" name="imports" />
 
 This can then be used to manually create and verify data at a specific version:
 
-{{ load_snippet('main','lib/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/migrations/tests/verify_data_integrity_test.dart" name="main" />
 
 ## Verifying a database schema at runtime
 

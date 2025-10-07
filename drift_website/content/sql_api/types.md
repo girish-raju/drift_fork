@@ -93,7 +93,7 @@ the dialect used.
 This can be used to build polyfills for other database systems. First, consider a custom type storing
 durations as integers, similar to what a type converter might do:
 
-{{ load_snippet('fallback','lib/snippets/modular/custom_types/type.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/modular/custom_types/type.dart" name="fallback" />
 
 By using a `DialectAwareSqlType`, you can automatically use the `interval` type on PostgreSQL databases
 while falling back to an integer type on sqlite3 and other databases:

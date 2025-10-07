@@ -138,8 +138,7 @@ install the dynamic library for `sqlite` next to your application executable.
 This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
 lives next to your application:
 
-
-{{ load_snippet('(full)','lib/snippets/platforms/platforms.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/platforms.dart" name="(full)" />
 
 Be sure to use drift _after_ you set the platform-specific overrides.
 When you use drift in [another isolate](../isolates.md),

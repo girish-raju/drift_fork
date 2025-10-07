@@ -11,13 +11,13 @@ description: Run drift on both mobile and desktop
 
 The `drift/native.dart` library uses the `sqlite3` package to send queries.
 At the moment, that package supports iOS, macOS and Android out of the box. Most Linux
-Distros have sqlite available as a shared library, those are supported as well. 
+Distros have sqlite available as a shared library, those are supported as well.
 
 If you're shipping apps for Windows and Linux, it is recommended that you bundle a
 `sqlite3.so` and `sqlite3.dll` file with your app. You can then make `drift`
 support your setup by running this code before opening the database:
 
-{{ load_snippet('setup','lib/snippets/platforms/vm.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/vm.dart" name="setup" />
 
 For Flutter apps, using the `drift_flutter` package as suggested in the
 [setup instructions](../setup.md) takes care of these steps.
@@ -34,7 +34,7 @@ When using `NativeDatabase.createInBackground` instead of the raw `NativeDatbase
 constructor, drift will set up a background isolate responsible for hosting the
 database:
 
-{{ load_snippet('background-simple','lib/snippets/platforms/vm.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/vm.dart" name="background-simple" />
 
 You can use the returned `QueryExecutor` with the constructor of your database
 class. This means that the usage of the database doesn't change at all, only the
@@ -63,14 +63,14 @@ access the same database.
 An additional pool of readers can be enabled with the `readPool` argument on
 `NativeDatabase.createInBackground`:
 
-{{ load_snippet('background-pool','lib/snippets/platforms/vm.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/platforms/vm.dart" name="background-pool" />
 
 In this snippet, drift will spawn five isolates to host the database: One for writes,
 and four additional ones only used for reads.
 Note that transactions and `exclusively` blocks on the database will always use the
 write isolate.
 
-## Using native drift with an existing database 
+## Using native drift with an existing database
 
 If your existing sqlite database is stored as a file, you can just use `NativeDatabase(thatFile)` - no further
 changes are required.
@@ -92,7 +92,7 @@ LazyDatabase(() async {
 });
 ```
 
-Using existing databases is explained in more detail in [this example](../Examples/existing_databases.md).
+Using existing databases is explained in more detail in [this example](../examples/existing_databases.md).
 
 ## Used compile options on Android
 
@@ -119,7 +119,7 @@ The chosen options help reduce binary size by removing features not used by drif
 
 For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).
 
-## Drift-only functions 
+## Drift-only functions
 
 The `NativeDatabase` includes additional sql functions not available in standard sqlite:
 
@@ -161,7 +161,7 @@ Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
 All the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
 They have that `sql` prefix to avoid clashes with `dart:math`.
 
-## Migrating from moor_flutter to `drift/native` 
+## Migrating from moor_flutter to `drift/native`
 
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
 add both the `drift` and `sqlite3_flutter_libs` dependencies:

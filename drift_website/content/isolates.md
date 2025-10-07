@@ -44,7 +44,7 @@ In particular, some of these
 When you try to send a drift database instance across isolates, you will run into
 an exception about sending an invalid object:
 
-{{ load_snippet('invalid','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="invalid" />
 
 Unfortunately, there is no magic change drift could implement to make sending
 databases over isolates feasible: There's simply too much mutable state needed
@@ -65,9 +65,9 @@ on the foreground isolate for synchronization, you need a constructor on your
 database class that can take a custom `QueryExecutor`, the class used by drift
 to represent lower-level databases:
 
-{{ load_snippet('database-definition','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="database-definition" />
 
-{{ load_snippet('compute','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="compute" />
 
 As the example shows, `computeWithDatabase` is an API useful to run heavy tasks,
 like inserting a large amount of batch data, into a database.
@@ -87,7 +87,7 @@ If you don't want drift to spawn the isolate for you, for instance because you w
 to use `compute` instead of `Isolate.run`, you can also do that manually with the
 `serializableConnection()` API:
 
-{{ load_snippet('custom-compute','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="custom-compute" />
 
 ## Manually managing drift isolates
 
@@ -99,22 +99,22 @@ Drift exposes the `DriftIsolate` class, which is a reference to an internal
 database server you can access on other isolates.
 Creating a `DriftIsolate` server is possible with `DriftIsolate.spawn()`:
 
-{{ load_snippet('driftisolate-spawn','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="driftisolate-spawn" />
 
 If you want to spawn the isolate yourself, that is possible too:
 
-{{ load_snippet('custom-spawn','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="custom-spawn" />
 
 After creating a `DriftIsolate` server, you can use `connect()` to connect
 to it from different isolates:
 
-{{ load_snippet('isolate','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="isolate" />
 
 If you need to construct the database outside of an `async` context, you can use the
 `DatabaseConnection.delayed` constructor. In the example above, you
 could synchronously obtain a `MyDatabase` instance by using:
 
-{{ load_snippet('delayed','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="delayed" />
 
 This can be helpful when using drift in dependency injection frameworks, since you have a way
 to create the database instance synchronously.
@@ -138,12 +138,12 @@ This section describes a workaround to start the isolate running the database
 manually. This allows passing additional data that can be computed on the main
 isolate, using platform channels.
 
-{{ load_snippet('initialization','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="initialization" />
 
 Once again, you can use a `DatabaseConnection.delayed()` to obtain a database
 connection for your database class:
 
-{{ load_snippet('init_connect','lib/snippets/isolates.dart.excerpt.json') }}
+<Snippet href="/lib/src/snippets/isolates.dart" name="init_connect" />
 
 !!! warning "Initializations and background isolates"
 
