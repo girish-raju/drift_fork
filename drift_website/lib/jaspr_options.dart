@@ -7,12 +7,13 @@
 import 'package:jaspr/jaspr.dart';
 import 'package:drift_website/src/components/sidebar_toggle_button.dart'
     as prefix0;
-import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix1;
+import 'package:drift_website/src/components/web_compatibility.dart' as prefix1;
+import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix2;
 import 'package:jaspr_content/components/_internal/zoomable_image.dart'
-    as prefix2;
-import 'package:jaspr_content/components/image.dart' as prefix3;
-import 'package:jaspr_content/components/tabs.dart' as prefix4;
-import 'package:jaspr_content_snippets/internal/client.dart' as prefix5;
+    as prefix3;
+import 'package:jaspr_content/components/image.dart' as prefix4;
+import 'package:jaspr_content/components/tabs.dart' as prefix5;
+import 'package:jaspr_content_snippets/internal/client.dart' as prefix6;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -36,35 +37,39 @@ JasprOptions get defaultJasprOptions => JasprOptions(
       'src/components/sidebar_toggle_button',
     ),
 
-    prefix1.TabBar: ClientTarget<prefix1.TabBar>(
+    prefix1.WebCompatibilityCheck: ClientTarget<prefix1.WebCompatibilityCheck>(
+      'src/components/web_compatibility',
+    ),
+
+    prefix2.TabBar: ClientTarget<prefix2.TabBar>(
       'jaspr_content:components/_internal/tab_bar',
-      params: _prefix1TabBar,
+      params: _prefix2TabBar,
     ),
 
-    prefix2.ZoomableImage: ClientTarget<prefix2.ZoomableImage>(
+    prefix3.ZoomableImage: ClientTarget<prefix3.ZoomableImage>(
       'jaspr_content:components/_internal/zoomable_image',
-      params: _prefix2ZoomableImage,
+      params: _prefix3ZoomableImage,
     ),
 
-    prefix5.CodeBlockCopyButton: ClientTarget<prefix5.CodeBlockCopyButton>(
+    prefix6.CodeBlockCopyButton: ClientTarget<prefix6.CodeBlockCopyButton>(
       'jaspr_content_snippets:internal/client',
     ),
   },
   styles: () => [
-    ...prefix1.TabBar.styles,
-    ...prefix2.ZoomableImage.styles,
+    ...prefix2.TabBar.styles,
+    ...prefix3.ZoomableImage.styles,
 
-    ...prefix3.Image.styles,
+    ...prefix4.Image.styles,
 
-    ...prefix4.Tabs.styles,
+    ...prefix5.Tabs.styles,
   ],
 );
 
-Map<String, dynamic> _prefix1TabBar(prefix1.TabBar c) => {
+Map<String, dynamic> _prefix2TabBar(prefix2.TabBar c) => {
   'initialValue': c.initialValue,
   'items': c.items,
 };
-Map<String, dynamic> _prefix2ZoomableImage(prefix2.ZoomableImage c) => {
+Map<String, dynamic> _prefix3ZoomableImage(prefix3.ZoomableImage c) => {
   'src': c.src,
   'alt': c.alt,
   'caption': c.caption,

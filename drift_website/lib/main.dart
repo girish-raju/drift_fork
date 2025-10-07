@@ -21,6 +21,7 @@ import 'src/components/header.dart';
 import 'src/components/inherited_page.dart';
 import 'src/components/page_ref.dart';
 import 'src/components/sidebar.dart';
+import 'src/components/web_compatibility.dart';
 import 'src/generated_snippets.dart';
 import 'src/layouts/docs.dart';
 import 'src/relative_watcher.dart';
@@ -82,6 +83,10 @@ void main() {
             Image(zoom: true),
             Tabs(),
             renderedSnippetComponent(snippets: generatedSnippets),
+            CustomComponent(
+              pattern: 'WebCompatibilityCheck',
+              builder: (_, _, _) => WebCompatibilityCheck(),
+            ),
           ],
           layouts: [
             //DriftDocsLayout(),

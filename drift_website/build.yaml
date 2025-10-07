@@ -94,7 +94,12 @@ targets:
       jaspr_content_snippets:combiner:
         options:
           path: lib/src/generated_snippets.dart
-
+      build_web_compilers:entrypoint:
+        generate_for:
+          include:
+            - web/**
+          exclude:
+            - "web/drift_worker.*"
       # These builders should run in the source_gen target
       drift_dev:preparing_builder:
         enabled: false
