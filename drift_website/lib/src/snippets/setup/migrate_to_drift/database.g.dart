@@ -3,23 +3,6 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-abstract class _$HackToIncludePartialAnnotationInDocs
-    extends GeneratedDatabase {
-  _$HackToIncludePartialAnnotationInDocs(QueryExecutor e) : super(e);
-  $HackToIncludePartialAnnotationInDocsManager get managers =>
-      $HackToIncludePartialAnnotationInDocsManager(this);
-  @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
-  @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [];
-}
-
-class $HackToIncludePartialAnnotationInDocsManager {
-  final _$HackToIncludePartialAnnotationInDocs _db;
-  $HackToIncludePartialAnnotationInDocsManager(this._db);
-}
-
 class Test extends Table with TableInfo<Test, TestData> {
   @override
   final GeneratedDatabase attachedDatabase;

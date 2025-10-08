@@ -66,6 +66,7 @@ dart run build_runner build
 ```
 
 This will generate the `database.g.dart` file with the relevant superclass.
+You will get a warning about `schema.drift` not existing, that file can be added later.
 
 ### Opening a drift database
 

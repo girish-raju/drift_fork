@@ -1,8 +1,15 @@
 import 'package:jaspr/server.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 
-final class LegacyDocsLayout extends DocsLayout {
-  LegacyDocsLayout({super.sidebar, super.header, super.footer});
+import '../components/header.dart';
+import '../components/sidebar.dart';
+
+final class DriftDocsLayout extends DocsLayout {
+  DriftDocsLayout({
+    super.sidebar = const DriftSidebar(),
+    super.header = const DriftHeader(),
+    super.footer,
+  });
 
   @override
   Iterable<Component> buildHead(Page page) sync* {

@@ -17,10 +17,8 @@ import 'package:watcher/watcher.dart';
 import 'jaspr_options.dart';
 import 'src/common.dart';
 import 'src/components/collapsible.dart';
-import 'src/components/header.dart';
 import 'src/components/inherited_page.dart';
 import 'src/components/page_ref.dart';
-import 'src/components/sidebar.dart';
 import 'src/components/web_compatibility.dart';
 import 'src/generated_snippets.dart';
 import 'src/layouts/docs.dart';
@@ -88,11 +86,7 @@ void main() {
               builder: (_, _, _) => WebCompatibilityCheck(),
             ),
           ],
-          layouts: [
-            //DriftDocsLayout(),
-            LegacyDocsLayout(header: DriftHeader(), sidebar: DriftSidebar()),
-            //            DriftDocsLayout(header: DriftHeader(), sidebar: DriftSidebar()),
-          ],
+          layouts: [DriftDocsLayout()],
           theme: ContentTheme.none(),
         ),
       ),

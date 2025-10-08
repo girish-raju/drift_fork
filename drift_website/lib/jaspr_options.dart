@@ -11,9 +11,10 @@ import 'package:drift_website/src/components/web_compatibility.dart' as prefix1;
 import 'package:jaspr_content/components/_internal/tab_bar.dart' as prefix2;
 import 'package:jaspr_content/components/_internal/zoomable_image.dart'
     as prefix3;
-import 'package:jaspr_content/components/image.dart' as prefix4;
-import 'package:jaspr_content/components/tabs.dart' as prefix5;
-import 'package:jaspr_content_snippets/internal/client.dart' as prefix6;
+import 'package:jaspr_content/components/github_button.dart' as prefix4;
+import 'package:jaspr_content/components/image.dart' as prefix5;
+import 'package:jaspr_content/components/tabs.dart' as prefix6;
+import 'package:jaspr_content_snippets/internal/client.dart' as prefix7;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -51,7 +52,12 @@ JasprOptions get defaultJasprOptions => JasprOptions(
       params: _prefix3ZoomableImage,
     ),
 
-    prefix6.CodeBlockCopyButton: ClientTarget<prefix6.CodeBlockCopyButton>(
+    prefix4.GitHubButton: ClientTarget<prefix4.GitHubButton>(
+      'jaspr_content:components/github_button',
+      params: _prefix4GitHubButton,
+    ),
+
+    prefix7.CodeBlockCopyButton: ClientTarget<prefix7.CodeBlockCopyButton>(
       'jaspr_content_snippets:internal/client',
     ),
   },
@@ -59,9 +65,10 @@ JasprOptions get defaultJasprOptions => JasprOptions(
     ...prefix2.TabBar.styles,
     ...prefix3.ZoomableImage.styles,
 
-    ...prefix4.Image.styles,
+    ...prefix4.GitHubButton.styles,
+    ...prefix5.Image.styles,
 
-    ...prefix5.Tabs.styles,
+    ...prefix6.Tabs.styles,
   ],
 );
 
@@ -73,4 +80,7 @@ Map<String, dynamic> _prefix3ZoomableImage(prefix3.ZoomableImage c) => {
   'src': c.src,
   'alt': c.alt,
   'caption': c.caption,
+};
+Map<String, dynamic> _prefix4GitHubButton(prefix4.GitHubButton c) => {
+  'repo': c.repo,
 };

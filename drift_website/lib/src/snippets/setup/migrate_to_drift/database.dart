@@ -3,27 +3,14 @@ import 'package:drift/drift.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(
-    // include: {'schema.drift'}
-    )
-// #enddocregion start
-class HackToIncludePartialAnnotationInDocs
-    extends _$HackToIncludePartialAnnotationInDocs {
-  HackToIncludePartialAnnotationInDocs(super.e);
-
-  @override
-  int get schemaVersion => 1;
-}
-
 @DriftDatabase(include: {'schema.drift'})
-// #docregion start
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openDatabase());
 
   @override
   int get schemaVersion => throw UnimplementedError(
-        'todo: The schema version used by your existing database',
-      );
+    'todo: The schema version used by your existing database',
+  );
 
   @override
   MigrationStrategy get migration {
@@ -61,7 +48,9 @@ class AppDatabase extends _$AppDatabase {
     final query = select(test)..where((row) => row.value.isBiggerThanValue(12));
     return query.watch();
   }
+
   // #enddocregion dart-query
   // #docregion start
 }
+
 // #enddocregion start
