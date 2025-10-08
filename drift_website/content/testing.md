@@ -83,35 +83,16 @@ We can create an in-memory version of the database by using a
 place to open the database is the `setUp` and `tearDown` methods from
 `package:test`:
 
-```dart
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:test/test.dart';
-// the file defined above, you can test any drift database of course
-import 'database.dart';
+<Snippet href="/lib/src/snippets/setup/testing.dart" name="(full)" />
 
-void main() {
-  late MyDatabase database;
+!!! note "Closing streams synchronously"
 
-  setUp(() {
-    database = MyDatabase(DatabaseConnection(
-      NativeDatabase.memory(),
-      closeStreamsSynchronously: true, // (1)!
-    ));
-  });
-  tearDown(() async {
-    await database.close();
-  });
-}
-```
-{.annotate }
-
-1. By default, unsubscribing from a query stream created by drift will keep the stream open for one event
-   loop iteration. This is useful for e.g. Flutter apps, where rebuilds may cause a `StreamBuilder` to
-   re-subscribe to streams frequently.
-   In Flutter widget tests however, it's illegal to keep these timers open after a test concludes.
-   To avoid issues with Drift in that setups, pass a `DatabaseConnection` with `closeStreamsSynchronously: true`
-   to your database.
+    By default, unsubscribing from a query stream created by drift will keep the stream open for one event
+    loop iteration. This is useful for e.g. Flutter apps, where rebuilds may cause a `StreamBuilder` to
+    re-subscribe to streams frequently.
+    In Flutter widget tests however, it's illegal to keep these timers open after a test concludes.
+    To avoid issues with Drift in that setups, pass a `DatabaseConnection` with `closeStreamsSynchronously: true`
+    to your database.
 
 With that setup in place, we can finally write some tests:
 ```dart
@@ -138,4 +119,4 @@ test('stream emits a new user when the name updates', () async {
 ## Testing migrations
 
 Drift can help you generate code for schema migrations. For more details, see
-[this guide](Migrations/tests.md).
+[this guide](migrations/tests.md).

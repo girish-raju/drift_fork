@@ -95,22 +95,27 @@ This can then be used to manually create and verify data at a specific version:
 Instead (or in addition to) [writing tests](#verifying-a-database-schema-at-runtime) to ensure your migrations work as they should,
 `drift_dev` provides an API  to verify the current schema at runtime without any additional setup on native platforms.
 
+<Tabs>
 
-=== "Native"
+<TabItem label="Native" value="native">
 
-    {{ load_snippet('native','lib/snippets/migrations/runtime_verification.dart.excerpt.json', indent=4) }}
+<Snippet href="/lib/src/snippets/migrations/runtime_verification.dart" name="native" />
 
+</TabItem>
 
-=== "Web (since drift 2.22)"
+<TabItem label="Web (since drift 2.22)" value="web">
 
-    Starting from drift version 2.22, this functionality is also available on the web. Since the method internally
-    opens another database to create the expected schema, the web variant needs to be configured explicitly:
+Starting from drift version 2.22, this functionality is also available on the web. Since the method internally
+opens another database to create the expected schema, the web variant needs to be configured explicitly:
 
-    {{ load_snippet('web','lib/snippets/migrations/runtime_verification_web.dart.excerpt.json', indent=4) }}
+<Snippet href="/lib/src/snippets/migrations/runtime_verification_web.dart" name="web" />
 
-    It's also possible to re-use code between your native and web checks with conditional imports.
-    You can check the [example app](https://github.com/simolus3/drift/tree/develop/examples/app/lib/database/connection) for
-    inspiration.
+It's also possible to re-use code between your native and web checks with conditional imports.
+You can check the [example app](https://github.com/simolus3/drift/tree/develop/examples/app/lib/database/connection) for
+inspiration.
+</TabItem>
+
+</Tabs>
 
 When you use `validateDatabaseSchema`, drift will transparently:
 

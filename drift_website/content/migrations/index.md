@@ -31,10 +31,8 @@ targets:
             another_db: lib/database2.dart
 ```
 
-You can also optionally specify the directory where the test files and schema (1) files are stored.
-{ .annotate }
-
-1.  Drift will generate multiple schema files, one for each version of your database schema. These files are used to compare the current schema with the previous schema and generate the migration code.
+You can also optionally specify the directory where the test files and schema files are stored.
+Drift will generate multiple schema files, one for each version of your database schema. These files are used to compare the current schema with the previous schema and generate the migration code.
 
 ```yaml title="build.yaml"
 targets:

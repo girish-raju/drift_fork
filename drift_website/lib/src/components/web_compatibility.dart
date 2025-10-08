@@ -25,10 +25,12 @@ final class _WebCompatibilityCheckState extends State<WebCompatibilityCheck> {
       builder: (context, snapshot) {
         return div([
           if (_compatibilityResult == null) ...[
-            button([text('Check compatibility')]),
+            button(classes: 'compat', [
+              text('Check compatibility'),
+            ], onClick: startCheck),
             pre([text('Compatibility check not started yet.')]),
-          ] else if (snapshot.connectionState == ConnectionState.active)
-            progress([])
+          ] else if (snapshot.connectionState == ConnectionState.waiting)
+            text('Loading...')
           else if (snapshot.hasError)
             pre([
               text('Error: ${snapshot.error}, Trace:\n${snapshot.stackTrace}'),

@@ -41,17 +41,15 @@ The SQL equivalent of this table would be:
 CREATE TABLE todo_items (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   title TEXT,
-  created_at INTEGER -- (1)!
+  created_at INTEGER -- Drift stores `dateTime()` columns as unix timestamps by default
 );
 ```
-{.annotate }
-
-1. By default, `dateTime()` columns are stored as Unix timestamps. To store them as ISO-8601 strings, see [DateTime options](#datetime-options).
 
 Some technical notes:
 
 - The name of the table, `todo_items` is automatically derived from the class name. This can be customized by overriding the `tableName` getter. See [Table Names](#changing-sql-names) for more information.
 - The `id` column is automatically set as the primary key because it is an auto-incrementing integer. See [Primary Keys](#primary-keys) for more information.
+- By default, `dateTime()` columns are stored as Unix timestamps. To store them as ISO-8601 strings, see [DateTime options](#datetime-options).
 
 ## Add to database
 
@@ -180,10 +178,8 @@ for inserts, as the database will use the default as a fallback.
 Similarly to `withDefault()`, this sets a default value for columns.
 Unlike `withDefault()` however, this value is computed in Dart instead of in
 the database (1).
-This means that adding, removing, or changing the default value does not require a database migration:
-{ .annotate }
-
-1. Because this default value is only applied in your Dart code, it is not applied when interacting with the database outside of Drift.
+This means that adding, removing, or changing the default value does not require a database migration,
+However, because this default value is only applied in your Dart code, it is not applied when interacting with the database outside of Drift.
 
 <Snippet href="/lib/src/snippets/dart_api/tables.dart" name="client_default" />
 

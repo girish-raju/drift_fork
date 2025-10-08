@@ -1,13 +1,9 @@
 ---
-
 title: Web
 description: Drift support in Flutter and Dart web apps.
-
 ---
 
-<script src="/compatibility.dart.js"></script>
-
-!!! success ""
+!!! success "Stable web support"
 
     __Good news__: With drift 2.9.0, web support is stable and officially supported!
     The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
@@ -104,8 +100,6 @@ web/
     correct `Content-Type` header for wasm files.
 
 
-
-
 #### Additional headers
 
 On browsers that support it, drift uses the origin-private part of the [FileSystem Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to store databases efficiently.
@@ -146,25 +140,33 @@ Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type`
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
 You can follow the [getting started guide](../setup.md) as a general setup guide.
 
-=== "Flutter (sqlite3)"
+<Tabs>
 
-    If you're using `package:drift_flutter` to setup your database, you enable web support by passing
-    `DriftWebOptions` with URIs to the WebAssembly module and the drift worker:
+<TabItem label="Flutter (sqlite3)" value="flutter">
 
-    {{ load_snippet('flutter','lib/snippets/platforms/web.dart.excerpt.json',indent=4) }}
+If you're using `package:drift_flutter` to setup your database, you enable web support by passing
+`DriftWebOptions` with URIs to the WebAssembly module and the drift worker:
 
-    If you need more control on how you're opening web databases (e.g. to prefer certain storage
-    APIs, see the manual setup for Dart in the next tab).
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="flutter" />
 
-=== "Dart (sqlite3)"
+If you need more control on how you're opening web databases (e.g. to prefer certain storage
+APIs, see the manual setup for Dart in the next tab).
 
-    Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized
-    for the web:
+</TabItem>
 
-    {{ load_snippet('connect','lib/snippets/platforms/web.dart.excerpt.json',indent=4) }}
+<TabItem label="Dart (sqlite3)" value="dart">
 
-    When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
-    supported by the current browser.
+Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized
+for the web:
+
+<Snippet href="/lib/src/snippets/platforms/web.dart" name="connect" />
+
+When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
+supported by the current browser.
+
+</TabItem>
+</Tabs>
+
 
 A full example that works on the web (and all other platforms supported by drift) is available
 [here](https://github.com/simolus3/drift/tree/develop/examples/app).
