@@ -188,7 +188,7 @@ We currently support the following extensions:
   different tables. This requires a build flag when compiling SQLite. `sqlite3_flutter_libs` sets that flag,
   but other SQLite distributions might not.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
-  of trigonometric functions. Details on those functions are available [here](../Platforms/vm.md#drift-only-functions).
+  of trigonometric functions. Details on those functions are available [here](../platforms/vm.md#drift-only-functions).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)

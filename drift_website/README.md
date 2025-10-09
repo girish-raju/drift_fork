@@ -1,15 +1,20 @@
 # drift_website
 
-A documentation site built with Jaspr
+Documentation for the Drift project, built with `jaspr_content`.
 
-## Running the project
+## Building the Documentation
 
-Run your project using `jaspr serve`.
+To start the website for preview purposes, run
+
+```shell
+dart run jaspr_cli:jaspr serve --no-managed-build-options
+```
 
 The development server will be available on `http://localhost:8080`.
 
-## Building the project
+To build the website, run:
 
-Build your project using `jaspr build`.
-
-The output will be located inside the `build/jaspr/` directory.
+```shell
+dart run jaspr_cli:jaspr serve --no-managed-build-options
+rm -r build/jaspr/packages build/jaspr/.dart_tool build/jaspr/.build.manifest
+```

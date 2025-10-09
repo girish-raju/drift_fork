@@ -77,20 +77,27 @@ LazyDatabase _openConnection() {
 }
 ```
 
-===  "Using `drift_flutter`"
+<Tabs>
 
-    {{ load_snippet('(full)','lib/snippets/examples/existing_databases_flutter.dart.excerpt.json',indent=4) }}
+<TabItem label="Using drift_flutter" value="drift_flutter">
 
-===  "Using `package:drift/native.dart`"
+<Snippet href="/lib/src/snippets/examples/existing_databases_flutter.dart" name="(full)" />
 
-    In drift, you can use a [LazyDatabase](https://pub.dev/documentation/drift/latest/drift/LazyDatabase-class.html)
-    to perform that work just before your drift database is opened:
+</TabItem>
 
-    {{ load_snippet('(full)','lib/snippets/examples/existing_databases_native.dart.excerpt.json',indent=4) }}
+<TabItem label="Using package:drift/native.dart" value="drift_native">
 
+In drift, you can use a [LazyDatabase](https://pub.dev/documentation/drift/latest/drift/LazyDatabase-class.html)
+to perform that work just before your drift database is opened:
+
+<Snippet href="/lib/src/snippets/examples/existing_databases_native.dart" name="(full)" />
+
+</TabItem>
+
+</Tabs>
 
 !!! warning
-    This snippet only works on native platforms. See [existing databases on the web](../Platforms/web.md#using-existing-databases) for web support.
+    This snippet only works on native platforms. See [existing databases on the web](../platforms/web.md#using-existing-databases) for web support.
 
 Finally, use that method to open your database:
 

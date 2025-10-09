@@ -91,7 +91,7 @@ This section lists affected APIs and workarounds to make them work PostgreSQL.
 Most parts of the `Migrator` API are SQLite-specific. You will be able to create tables on PostgreSQL as well,
 but methods like `alterTable` will only work with SQLite.
 While it's possible to use drift migrations with PostgreSQL databases, the recommended approach for now is to
-[export your drift schema](../Tools/index.md#exporting) and then use dedicated migration tools for PostgreSQL.
+[export your drift schema](../tools/index.md#exporting) and then use dedicated migration tools for PostgreSQL.
 
 In sqlite3, the current schema version is stored in the database file. To support drift's migration API
 being built on top of this mechanism in Postgres as well, drift creates a `__schema` table storing

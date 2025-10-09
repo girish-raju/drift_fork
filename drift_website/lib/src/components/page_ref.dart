@@ -19,7 +19,7 @@ final class PageRef implements CustomComponent {
         return null;
       }
 
-      if (url.extension(href.path) == '.md') {
+      if (href.authority == '' && url.extension(href.path) == '.md') {
         return _PageLink(ref: href, child: builder.build(children));
       }
     }
@@ -44,7 +44,7 @@ final class _PageLink extends StatelessComponent {
     );
 
     if (referencedPage == null) {
-      return BrokenComponent('broken link to $resolvedRef');
+      return BrokenComponent('broken link to ${ref.path} from ${page.path}');
     }
 
     return a(
