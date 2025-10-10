@@ -101,6 +101,15 @@ targets:
             - web/**
           exclude:
             - "web/drift_worker.*"
+      sass_builder:
+        generate_for:
+          - web/*.scss
+        options:
+          silenceDeprecations:
+            # Unfixable with bootstrap 5: https://github.com/twbs/bootstrap/issues/40962
+            - import
+            - color-functions
+            - global-builtin
       # These builders should run in the source_gen target
       drift_dev:preparing_builder:
         enabled: false

@@ -1,8 +1,7 @@
 import 'package:jaspr/jaspr.dart';
-import 'package:jaspr_content/components/github_button.dart';
+import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import '../navigation.dart';
-import 'sidebar_toggle_button.dart';
 
 final class DriftHeader extends StatelessComponent {
   const DriftHeader();
@@ -11,20 +10,17 @@ final class DriftHeader extends StatelessComponent {
   Component build(BuildContext context) {
     final currentTab = DriftTab.current(context);
 
-    return header([
-      nav([
-        div([
-          const SidebarToggleButton(),
-          a(href: '/', [text('Drift')]),
-        ]),
-        GitHubButton(repo: 'simolus3/drift'),
-      ]),
-      div(classes: 'tabs', [
+    return Navbar(
+      brand: NavbarBrand(href: '/', title: text('Drift')),
+      items: [
         for (final tab in DriftTab.all)
-          a(classes: tab == currentTab ? 'active' : '', href: tab.page, [
-            text(tab.name),
-          ]),
-      ]),
-    ]);
+          NavbarLink(
+            href: tab.page,
+            active: tab == currentTab,
+            children: [text(tab.name)],
+          ),
+      ],
+      search: NavbarSearchInput(),
+    );
   }
 }

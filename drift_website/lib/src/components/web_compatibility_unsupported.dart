@@ -1,3 +1,10 @@
+import 'package:jaspr/jaspr.dart';
+import 'package:universal_web/web.dart' as web;
+
 Future<String> determineDriftWasmCompatibility() async {
   throw UnsupportedError('Only runs on clients');
+}
+
+extension ResolveDomNode on BuildContext {
+  web.Node get node => throw UnsupportedError('Only runs on clients');
 }

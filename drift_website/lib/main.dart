@@ -6,12 +6,11 @@
 // Server-specific jaspr import.
 import 'package:jaspr/server.dart';
 
-import 'package:jaspr_content/components/image.dart';
-import 'package:jaspr_content/components/tabs.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
 import 'package:jaspr_content_snippets/jaspr_content_snippets.dart';
 import 'package:watcher/watcher.dart';
+import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'jaspr_options.dart';
@@ -73,13 +72,9 @@ void main() {
           ],
           components: [
             PageRef(),
-            // The <Info> block and other callouts.
-            //Callout(),
             BetterCodeBlock(),
             Collapsible.component(),
-            // Adds zooming and caption support to images.
-            Image(zoom: true),
-            Tabs(),
+            DocsyTabs(),
             renderedSnippetComponent(snippets: generatedSnippets),
             CustomComponent(
               pattern: 'WebCompatibilityCheck',

@@ -1,5 +1,6 @@
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_content/jaspr_content.dart';
+import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import 'components/broken.dart';
 import 'components/inherited_page.dart';
@@ -22,11 +23,12 @@ final class DriftPage extends StatelessComponent {
       return BrokenComponent('$title $definingFile');
     }
 
-    return li([
-      div(classes: currentRoute == referencedPage.url ? 'active' : null, [
-        a(href: referencedPage.url, [text(title)]),
-      ]),
-    ]);
+    return SidebarEntry(
+      href: referencedPage.url,
+      title: text(title),
+      depth: 3,
+      activePath: currentRoute == referencedPage.url,
+    );
   }
 }
 
@@ -38,10 +40,16 @@ final class DriftPageGroup extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return div(classes: 'sidebar-group', [
-      if (title case final title?) h3([text(title)]),
-      ul([for (final page in pages) page]),
-    ]);
+    return SidebarEntry(
+      href: null,
+      depth: 2,
+      title: switch (title) {
+        null => null,
+        final title => text(title),
+      },
+
+      children: pages,
+    );
   }
 }
 

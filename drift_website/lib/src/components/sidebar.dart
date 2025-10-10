@@ -1,5 +1,5 @@
 import 'package:jaspr/jaspr.dart';
-import 'package:jaspr_content/components/_internal/icon.dart';
+import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import '../navigation.dart';
 
@@ -10,9 +10,16 @@ final class DriftSidebar extends StatelessComponent {
   Component build(BuildContext context) {
     final tab = DriftTab.current(context) ?? DriftTab.docs;
 
-    return nav(classes: 'sidebar', [
-      button(classes: 'sidebar-close', [const CloseIcon(size: 20)]),
-      div([for (final group in tab.groups) group]),
-    ]);
+    return Sidebar(
+      search: NavbarSearchInput(),
+      entries: [
+        SidebarEntry(
+          href: tab.page,
+          title: text(tab.name),
+          activePath: true,
+          children: [for (final group in tab.groups) group],
+        ),
+      ],
+    );
   }
 }

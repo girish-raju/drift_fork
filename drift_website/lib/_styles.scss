@@ -1,0 +1,18 @@
+@use "package:jaspr_content_snippets/common";
+@use "package:jaspr_content_snippets/dracula" as dracula;
+
+@use "src/styles/admonition";
+@use "src/styles/details";
+@use "src/styles/ui";
+
+@import "package:jaspr_docsy/style";
+
+:root {
+  @include dracula.light;
+}
+
+@include color-mode(dark) {
+  :root {
+    @include dracula.dark;
+  }
+}

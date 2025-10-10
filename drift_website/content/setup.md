@@ -20,7 +20,7 @@ If you want to look at an example app for inspiration, a cross-platform Flutter 
 
 First, let's add drift to your project's `pubspec.yaml`.
 In addition to the core drift dependencies (`drift` and `drift_dev` to generate code), we're also
-adding a package to open database on the respective platform.
+adding a package to open databases on the respective platform.
 
 <Tabs defaultValue="sqlite3">
   <TabItem label="Flutter (sqlite3)" value="sqlite3_flutter">

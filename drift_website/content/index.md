@@ -1,7 +1,6 @@
 ---
 title: Welcome to Drift!
 description: Drift is a reactive persistence library for relational data in Dart and Flutter apps.
-layout: docs
 ---
 
 Drift is a reactive persistence library for Dart and Flutter applications. It's built on top

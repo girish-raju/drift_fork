@@ -35,7 +35,7 @@
   summary {
     @extend .admonition-title;
 
-    display: block;
+    display: block !important;
     min-height: px2rem(20px);
     padding-inline-end: px2rem(36px);
     // Hack: Work around Firefox bug that renders a subpixel outline when

@@ -1,4 +1,6 @@
 import 'package:drift/wasm.dart';
+import 'package:jaspr/browser.dart';
+import 'package:universal_web/web.dart' as web;
 
 Future<String> determineDriftWasmCompatibility() async {
   final db = await WasmDatabase.open(
@@ -13,4 +15,14 @@ Future<String> determineDriftWasmCompatibility() async {
 Chosen implementation: ${db.chosenImplementation}
 Features missing: ${db.missingFeatures}
 ''';
+}
+
+extension ResolveDomNode on BuildContext {
+  web.Node get node {
+    final element = this as BuildableElement;
+    final parent =
+        element.parentRenderObjectElement!.renderObject as DomRenderObject;
+
+    return parent.node;
+  }
 }
