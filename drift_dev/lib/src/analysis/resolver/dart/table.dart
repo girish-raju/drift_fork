@@ -315,11 +315,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           // forgot to add an extra pair of parentheses at the end.
           // In that case, field would be a `ColumnBuilder` instead of a `Column`.
           // We should warn the user about this.
-          // To print a detailed error message we willresolve the element to get the entire field declaration.
+          // To print a detailed error message we will resolve the element to
+          // get the entire field declaration.
           final declaration = (await resolver.driver.backend
               .loadElementDeclaration(e.baseElement) as VariableDeclaration);
           reportError(DriftAnalysisError.inDartAst(
-            declaration.declaredElement!,
+            declaration.declaredFragment!.element,
             declaration.endToken,
             '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
             'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
