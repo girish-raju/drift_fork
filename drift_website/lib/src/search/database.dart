@@ -2,16 +2,17 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:http/http.dart';
 import 'package:sqlite3/common.dart';
 
-final class AsyncVfsDatabase {
+import 'loader.dart';
+
+final class SearchDatabase {
   final CommonDatabase _db;
   final HttpFileSystem _vfs;
 
-  AsyncVfsDatabase._(this._db, this._vfs);
+  SearchDatabase._(this._db, this._vfs);
 
-  static Future<AsyncVfsDatabase> open(
+  static Future<SearchDatabase> open(
     CommonSqlite3 sqlite3,
     Uri databaseUri,
   ) async {
@@ -22,7 +23,7 @@ final class AsyncVfsDatabase {
       return sqlite3.open('/database', vfs: 'http', mode: OpenMode.readOnly);
     });
 
-    return AsyncVfsDatabase._(db, vfs);
+    return SearchDatabase._(db, vfs);
   }
 
   Future<T> _useDb<T>(T Function() inner) async {
@@ -32,10 +33,11 @@ final class AsyncVfsDatabase {
   Stream<SearchResult> search(String term) async* {
     final stmt = await _useDb(
       () => _db.prepare(
-        'SELECT title, path, snippet(content, 1, ?2, ?3, ?4, 5) FROM content(?1) ORDER BY rank',
+        'SELECT title, path, snippet(content, 1, ?2, ?3, ?4, 10) FROM content(?1) ORDER BY rank',
       ),
     );
-    final cursor = await _useDb(
+
+    var cursor = await _useDb(
       () => stmt.selectCursor([
         term,
         SearchResult.startMarker,
@@ -45,9 +47,18 @@ final class AsyncVfsDatabase {
     );
 
     try {
+      // The SQLITE_BUSY hack seems to cause duplicate rows to get reported,
+      // which we simply filter out. This kind of corruption definitely isn't
+      // concerning at all.
+      final knownPaths = <String>{};
+
       while (await _useDb(cursor.moveNext)) {
-        final title = cursor.current.columnAt(0) as String;
         final path = cursor.current.columnAt(1) as String;
+        if (!knownPaths.add(path)) {
+          continue;
+        }
+
+        final title = cursor.current.columnAt(0) as String;
         final snippet = cursor.current.columnAt(2) as String;
 
         yield SearchResult(path, title, snippet);
@@ -59,7 +70,7 @@ final class AsyncVfsDatabase {
 
   void close() {
     _db.dispose();
-    _vfs._cache._client.close();
+    _vfs._cache.loader.close();
   }
 }
 
@@ -79,7 +90,7 @@ final class HttpFileSystem extends BaseVirtualFileSystem {
   Future<void>? _waitingFor;
 
   HttpFileSystem({required super.name, required Uri uri})
-    : _cache = _BlockCache(Client(), uri);
+    : _cache = _BlockCache(HttpSearchIndexLoader(uri));
 
   @override
   int xAccess(String path, int flags) {
@@ -207,8 +218,8 @@ final class _HttpFile extends BaseVfsFile {
 
   @override
   int xFileSize() {
-    if (_vfs._cache.totalSize case final knownSize?) {
-      return knownSize;
+    if (_vfs._cache._info case final info?) {
+      return info.blocks * SearchIndexLoader.pageSize;
     }
 
     _vfs.blockOn(_vfs._cache.resolveTotalSize());
@@ -241,30 +252,16 @@ Never _unsupportedReadonly() {
 }
 
 final class _BlockCache {
-  final Client _client;
-  final Uri uri;
+  final SearchIndexLoader loader;
 
-  int? totalSize;
+  SearchDatabaseInfo? _info;
   List<Uint8List?>? _cachedPages;
 
-  _BlockCache(this._client, this.uri);
+  _BlockCache(this.loader);
 
-  Future<void> resolveTotalSize() {
-    return Future(() async {
-      final response = await _client.head(uri);
-      if (response.statusCode != 200) {
-        throw ClientException('Unexpected result code ${response.statusCode}');
-      }
-
-      final length = response.headers['content-length'];
-      if (length == null) {
-        throw ClientException('Missing content-length header');
-      }
-
-      final size = int.parse(length);
-      _cachedPages = List.filled((size + _pageSize - 1) ~/ _pageSize, null);
-      totalSize = size;
-    });
+  Future<void> resolveTotalSize() async {
+    final meta = _info = await loader.fetchMeta();
+    _cachedPages = List.filled(meta.blocks, null);
   }
 
   /// Ensures that the range from `offset` until `offset + length` (exclusive)
@@ -277,31 +274,18 @@ final class _BlockCache {
       if (_cachedPages![page] == null) {
         // We could fetch multiple pages concurrently, but most of the time
         // SQLite will only read a single page at the time anyway.
-        return _fetchPage(i);
+        return loader.fetchPage(_info!, i).then((bytes) {
+          _cachedPages![i] = bytes;
+        });
       }
     }
 
     return null;
   }
 
-  Future<void> _fetchPage(int index) async {
-    final startOffset = index * _pageSize;
-    final endOffset = (index + 1) * _pageSize - 1;
-    final response = await _client.get(
-      uri,
-      headers: {'Range': 'bytes=$startOffset-$endOffset'},
-    );
-
-    if (response.statusCode != 206) {
-      throw ClientException('Unexpected result code ${response.statusCode}');
-    }
-
-    _cachedPages![index] = response.bodyBytes;
-  }
-
   int _pageIndex(int offset) {
     return offset ~/ _pageSize;
   }
 
-  static const _pageSize = 4096;
+  static const _pageSize = SearchIndexLoader.pageSize;
 }

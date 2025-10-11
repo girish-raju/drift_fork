@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart' show sha1;
 import 'package:drift_website/src/common.dart';
 import 'package:drift_website/src/components/inherited_page.dart';
 import 'package:jaspr/server.dart';
@@ -8,6 +10,7 @@ import 'package:jaspr/src/server/async_build_owner.dart';
 import 'package:jaspr_router/src/misc/inherited_router.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_router/jaspr_router.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
 
 /// Creates a SQLite database file containing an FTS5 table indexing all content
@@ -15,6 +18,12 @@ import 'package:sqlite3/sqlite3.dart';
 void main() async {
   final loader = driftWebsiteLoader();
   final config = driftPageConfig(forSearchIndex: true);
+  for (final file in Directory('web').listSync()) {
+    if (file is File && p.extension(file.path) == '.db') {
+      file.deleteSync();
+    }
+  }
+
   final target = File('web/search.db');
   if (target.existsSync()) {
     target.deleteSync();
@@ -42,7 +51,21 @@ void main() async {
   }
 
   print('Created FTS5 index for pages');
-  db.execute('VACUUM INTO ?', ['web/search.db']);
+  // Merge multiple indexes into one for smaller size and faster queries.
+  db.execute('INSERT INTO content (content) VALUES (?)', ['optimize']);
+  db.execute('VACUUM INTO ?', [target.path]);
+
+  final contents = target.readAsBytesSync();
+  if (contents.length % 4096 != 0) {
+    throw 'Database file size not divisible by block size';
+  }
+
+  final hash = sha1.convert(contents);
+  target.renameSync('web/$hash.db');
+  File('${target.path}.json').writeAsStringSync(
+    json.encode({'hash': hash.toString(), 'blocks': contents.length ~/ 4096}),
+  );
+
   exit(0);
 
   // TODO: It would be nice to also index documentation comments.
