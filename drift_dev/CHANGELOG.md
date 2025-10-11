@@ -1,6 +1,8 @@
-## 2.28.4-dev
+## 2.29.0-dev
 
 - Fix invalid schema code for views.
+- Add the `known_tables` option. It allows defining external tables assumed to be available
+  without including them in the drift-managed schema.
 
 ## 2.28.3
 

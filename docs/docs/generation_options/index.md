@@ -228,6 +228,27 @@ Each type consists of an arbitrary word used to determine [column affinity](http
 with drift also supporting `DATETIME` and `BOOLEAN` as type hints. Then, the
 optional `NULL` keyword can be used to indicate whether the type is nullable.
 
+### External tables
+
+In addition to `known_functions`, you can also define external tables that are assumed
+to be available to the database without being managed by drift.
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialect: sqlite
+            options:
+              known_tables:
+                - "CREATE TABLE external_resource (id INTEGER PRIMARY KEY, another TEXT)"
+```
+
+Here, references to `external_resource` would not cause a warning. Drift would not generate
+code for the `external_resource` table though.
+
 ## Recommended options
 
 In general, we recommend using the default options.
