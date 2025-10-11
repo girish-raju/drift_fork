@@ -1,4 +1,3 @@
-import 'package:jaspr/browser.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:universal_web/web.dart' as web;
 
@@ -11,7 +10,11 @@ import 'web_compatibility_unsupported.dart'
 final class ActiveAnchors extends StatefulComponent {
   @override
   State<StatefulComponent> createState() {
-    return _AnchorsState();
+    if (kIsWeb) {
+      return _AnchorsState();
+    } else {
+      return _ServerAnchorsState();
+    }
   }
 }
 
@@ -64,6 +67,13 @@ final class _AnchorsState extends State<ActiveAnchors> {
     });
   }
 
+  @override
+  Component build(BuildContext context) {
+    return const Component.empty();
+  }
+}
+
+final class _ServerAnchorsState extends State<ActiveAnchors> {
   @override
   Component build(BuildContext context) {
     return const Component.empty();
