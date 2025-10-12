@@ -6,9 +6,12 @@
 
 import 'package:jaspr/jaspr.dart';
 import 'package:drift_website/src/components/anchors.dart' as prefix0;
-import 'package:drift_website/src/components/web_compatibility.dart' as prefix1;
-import 'package:jaspr_content_snippets/internal/client.dart' as prefix2;
-import 'package:jaspr_docsy/internal/tabs.dart' as prefix3;
+import 'package:drift_website/src/components/modal.dart' as prefix1;
+import 'package:drift_website/src/components/search_input.dart' as prefix2;
+import 'package:drift_website/src/components/web_compatibility.dart' as prefix3;
+import 'package:drift_website/src/search/component.dart' as prefix4;
+import 'package:jaspr_content_snippets/internal/client.dart' as prefix5;
+import 'package:jaspr_docsy/components/internal/tabs.dart' as prefix6;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -32,21 +35,31 @@ JasprOptions get defaultJasprOptions => JasprOptions(
       'src/components/anchors',
     ),
 
-    prefix1.WebCompatibilityCheck: ClientTarget<prefix1.WebCompatibilityCheck>(
+    prefix1.Backdrop: ClientTarget<prefix1.Backdrop>('src/components/modal'),
+
+    prefix2.DriftSearchInput: ClientTarget<prefix2.DriftSearchInput>(
+      'src/components/search_input',
+    ),
+
+    prefix3.WebCompatibilityCheck: ClientTarget<prefix3.WebCompatibilityCheck>(
       'src/components/web_compatibility',
     ),
 
-    prefix2.CodeBlockCopyButton: ClientTarget<prefix2.CodeBlockCopyButton>(
+    prefix4.SearchModal: ClientTarget<prefix4.SearchModal>(
+      'src/search/component',
+    ),
+
+    prefix5.CodeBlockCopyButton: ClientTarget<prefix5.CodeBlockCopyButton>(
       'jaspr_content_snippets:internal/client',
     ),
 
-    prefix3.InternalTabHeaders: ClientTarget<prefix3.InternalTabHeaders>(
-      'jaspr_docsy:internal/tabs',
-      params: _prefix3InternalTabHeaders,
+    prefix6.InternalTabHeaders: ClientTarget<prefix6.InternalTabHeaders>(
+      'jaspr_docsy:components/internal/tabs',
+      params: _prefix6InternalTabHeaders,
     ),
   },
   styles: () => [],
 );
 
-Map<String, dynamic> _prefix3InternalTabHeaders(prefix3.InternalTabHeaders c) =>
+Map<String, dynamic> _prefix6InternalTabHeaders(prefix6.InternalTabHeaders c) =>
     {'items': c.items};

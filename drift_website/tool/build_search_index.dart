@@ -33,6 +33,9 @@ void main() async {
 
   final db = sqlite3.openInMemory()
     ..createContentTable()
+    // This is the default, but the client also assumes this page size when
+    // fetching the database in range requests, so it's better to be explicit
+    // about this.
     ..execute('pragma page_size = 4096;');
   for (final route in routes) {
     if (route case final Route route) {

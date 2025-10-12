@@ -1,4 +1,4 @@
-import 'package:jaspr/src/framework/framework.dart';
+import 'package:jaspr/server.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
 import 'package:jaspr_content_snippets/jaspr_content_snippets.dart';

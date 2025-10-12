@@ -22,7 +22,10 @@ abstract interface class SearchIndexLoader {
   Future<SearchDatabaseInfo> fetchMeta();
 
   /// Fetches a database page based on its index.
-  Future<Uint8List> fetchPage(SearchDatabaseInfo info, int pageNo);
+  ///
+  /// Returns whether range requests are supported and contents. If range
+  /// requests are not supported, the response is for the entire database.
+  Future<(bool, Uint8List)> fetchPage(SearchDatabaseInfo info, int pageNo);
 
   void close();
 
@@ -50,7 +53,10 @@ final class HttpSearchIndexLoader implements SearchIndexLoader {
   }
 
   @override
-  Future<Uint8List> fetchPage(SearchDatabaseInfo info, int pageNo) async {
+  Future<(bool, Uint8List)> fetchPage(
+    SearchDatabaseInfo info,
+    int pageNo,
+  ) async {
     final startOffset = pageNo * SearchIndexLoader.pageSize;
     final endOffset = (pageNo + 1) * SearchIndexLoader.pageSize - 1;
     final response = await _client.get(
@@ -58,11 +64,11 @@ final class HttpSearchIndexLoader implements SearchIndexLoader {
       headers: {'Range': 'bytes=$startOffset-$endOffset'},
     );
 
-    if (response.statusCode != 206) {
-      throw ClientException('Unexpected result code ${response.statusCode}');
-    }
-
-    return response.bodyBytes;
+    return switch (response.statusCode) {
+      200 => (false, response.bodyBytes),
+      206 => (true, response.bodyBytes),
+      final status => throw ClientException('Unexpected result code $status'),
+    };
   }
 
   @override

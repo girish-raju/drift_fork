@@ -33,7 +33,10 @@ final class CachedIndexLoader implements SearchIndexLoader {
   }
 
   @override
-  Future<Uint8List> fetchPage(SearchDatabaseInfo info, int pageNo) async {
+  Future<(bool, Uint8List)> fetchPage(
+    SearchDatabaseInfo info,
+    int pageNo,
+  ) async {
     JSString? cacheKey;
 
     if (_cache case final cache?) {
@@ -41,18 +44,25 @@ final class CachedIndexLoader implements SearchIndexLoader {
       final cached = await cache.match(cacheKey).toDart;
       if (cached case final response?) {
         final bytes = await response.bytes().toDart;
-        return bytes.toDart;
+        return (true, bytes.toDart);
       }
     }
 
     final source = await _fallback.fetchPage(info, pageNo);
     if (_cache case final cache?) {
-      cache.put(cacheKey!, web.Response(source.toJS));
+      if (source.$1) {
+        cache.put(cacheKey!, web.Response(source.$2.toJS));
+      }
     }
     return source;
   }
 
-  Future<web.Cache> _openCache(String hash) async {
+  Future<web.Cache?> _openCache(String hash) async {
+    final cache = _cacheStorage;
+    if (cache == null) {
+      return null;
+    }
+
     const prefix = 'search-';
     final targetKey = '$prefix$hash';
     final opened = await cache.open(targetKey).toDart;
@@ -70,5 +80,5 @@ final class CachedIndexLoader implements SearchIndexLoader {
   }
 }
 
-@JS()
-external web.CacheStorage get cache;
+@JS('cache')
+external web.CacheStorage? get _cacheStorage;

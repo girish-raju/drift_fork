@@ -1,8 +1,7 @@
 import 'package:jaspr/jaspr.dart';
 import 'package:universal_web/web.dart' as web;
 
-import 'web_compatibility_unsupported.dart'
-    if (dart.library.js_interop) 'web_compatibility_web.dart';
+import '../platform_specific.dart';
 
 /// In the table of contents section, sets an `.active` class on the current
 /// section that auto-updates as the window is scrolled.

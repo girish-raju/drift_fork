@@ -1,7 +1,6 @@
 import 'package:jaspr/jaspr.dart';
 
-import 'web_compatibility_unsupported.dart'
-    if (dart.library.js_interop) 'web_compatibility_web.dart';
+import '../platform_specific.dart';
 
 @client
 final class WebCompatibilityCheck extends StatefulComponent {

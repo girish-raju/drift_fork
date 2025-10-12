@@ -4,8 +4,10 @@ import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import '../components/footer.dart';
 import '../components/header.dart';
+import '../components/modal.dart';
 import '../components/sidebar.dart';
 import '../components/toc.dart';
+import '../search/component.dart';
 
 final class DriftDocsLayout extends DocsyLayout {
   DriftDocsLayout({
@@ -13,7 +15,7 @@ final class DriftDocsLayout extends DocsyLayout {
     super.footer = const DriftFooter(),
     super.sidebar = const DriftSidebar(),
     super.toc = const TableOfContents(),
-  });
+  }) : super(wrapBody: _buildBody);
 
   @override
   Iterable<Component> buildHead(Page page) sync* {
@@ -31,4 +33,8 @@ final class DriftDocsLayout extends DocsyLayout {
 
   @override
   PageType get type => PageType.page;
+
+  static Component _buildBody(List<Component> children) {
+    return Component.fragment([...children, SearchModal(), Backdrop()]);
+  }
 }

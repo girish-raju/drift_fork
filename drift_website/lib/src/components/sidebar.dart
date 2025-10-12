@@ -2,6 +2,7 @@ import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import '../navigation.dart';
+import 'search_input.dart';
 
 final class DriftSidebar extends StatelessComponent {
   const DriftSidebar();
@@ -11,7 +12,7 @@ final class DriftSidebar extends StatelessComponent {
     final tab = DriftTab.current(context) ?? DriftTab.docs;
 
     return Sidebar(
-      search: NavbarSearchInput(),
+      search: const DriftSearchInput(),
       entries: [
         SidebarEntry(
           href: tab.page,

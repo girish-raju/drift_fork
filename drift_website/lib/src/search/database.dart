@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:drift/drift.dart' show CancellationException;
 import 'package:sqlite3/common.dart';
 
 import 'loader.dart';
 
+/// A lazily-loaded database for full-text search.
 final class SearchDatabase {
   final CommonDatabase _db;
   final HttpFileSystem _vfs;
@@ -16,28 +18,32 @@ final class SearchDatabase {
     CommonSqlite3 sqlite3,
     Uri databaseUri,
   ) async {
-    final vfs = HttpFileSystem(name: 'http', uri: databaseUri);
+    final vfs = HttpFileSystem(
+      name: 'http',
+      loader: SearchIndexLoader.http(databaseUri),
+    );
     sqlite3.registerVirtualFileSystem(vfs);
-
     final db = await vfs.asyncify(() {
       return sqlite3.open('/database', vfs: 'http', mode: OpenMode.readOnly);
     });
-
     return SearchDatabase._(db, vfs);
   }
 
-  Future<T> _useDb<T>(T Function() inner) async {
-    return _vfs.asyncify(inner);
-  }
+  Stream<SearchResult> search(
+    String term, {
+    required Future<void> cancel,
+  }) async* {
+    Future<T> useDb<T>(T Function() inner) async {
+      return _vfs.asyncify(inner, cancellationSignal: cancel);
+    }
 
-  Stream<SearchResult> search(String term) async* {
-    final stmt = await _useDb(
+    final stmt = await useDb(
       () => _db.prepare(
         'SELECT title, path, snippet(content, 1, ?2, ?3, ?4, 10) FROM content(?1) ORDER BY rank',
       ),
     );
 
-    var cursor = await _useDb(
+    var cursor = await useDb(
       () => stmt.selectCursor([
         term,
         SearchResult.startMarker,
@@ -52,7 +58,7 @@ final class SearchDatabase {
       // concerning at all.
       final knownPaths = <String>{};
 
-      while (await _useDb(cursor.moveNext)) {
+      while (await useDb(cursor.moveNext)) {
         final path = cursor.current.columnAt(1) as String;
         if (!knownPaths.add(path)) {
           continue;
@@ -89,8 +95,8 @@ final class HttpFileSystem extends BaseVirtualFileSystem {
   final _BlockCache _cache;
   Future<void>? _waitingFor;
 
-  HttpFileSystem({required super.name, required Uri uri})
-    : _cache = _BlockCache(HttpSearchIndexLoader(uri));
+  HttpFileSystem({required super.name, required SearchIndexLoader loader})
+    : _cache = _BlockCache(loader);
 
   @override
   int xAccess(String path, int flags) {
@@ -136,12 +142,20 @@ final class HttpFileSystem extends BaseVirtualFileSystem {
     _busy();
   }
 
-  /// The other, higher-level part of the [syncify] stack.
+  /// The other, higher-level part of the [blockOn] stack.
   ///
   /// This tries running a database operation and retries if it fails because
   /// the VFS would like to run an asynchronous operation.
-  Future<T> asyncify<T>(T Function() operation) async {
-    while (true) {
+  Future<T> asyncify<T>(
+    T Function() operation, {
+    Future<void>? cancellationSignal,
+  }) async {
+    var cancelRequested = false;
+    cancellationSignal?.whenComplete(() {
+      cancelRequested = true;
+    });
+
+    while (!cancelRequested) {
       try {
         return operation();
       } on SqliteException catch (e) {
@@ -154,6 +168,8 @@ final class HttpFileSystem extends BaseVirtualFileSystem {
         rethrow;
       }
     }
+
+    throw const CancellationException();
   }
 
   static Never _busy() {
@@ -269,13 +285,26 @@ final class _BlockCache {
   FutureOr<void> ensureHasRange(int offset, int length) {
     var page = _pageIndex(offset);
     var endPageInclusive = _pageIndex(offset + length - 1);
+    var cachedPages = _cachedPages!;
 
     for (var i = page; i <= endPageInclusive; i++) {
-      if (_cachedPages![page] == null) {
+      if (cachedPages[page] == null) {
         // We could fetch multiple pages concurrently, but most of the time
         // SQLite will only read a single page at the time anyway.
-        return loader.fetchPage(_info!, i).then((bytes) {
-          _cachedPages![i] = bytes;
+        return loader.fetchPage(_info!, i).then((response) {
+          final (partial, bytes) = response;
+          if (partial) {
+            assert(bytes.length == _pageSize);
+            cachedPages[i] = bytes;
+          } else {
+            assert(bytes.length == _pageSize * cachedPages.length);
+            for (var i = 0; i < cachedPages.length; i++) {
+              cachedPages[i] = bytes.buffer.asUint8List(
+                i * _pageSize,
+                _pageSize,
+              );
+            }
+          }
         });
       }
     }

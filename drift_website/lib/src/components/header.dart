@@ -2,6 +2,7 @@ import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_docsy/jaspr_docsy.dart';
 
 import '../navigation.dart';
+import 'search_input.dart';
 
 final class DriftHeader extends StatelessComponent {
   const DriftHeader();
@@ -20,7 +21,7 @@ final class DriftHeader extends StatelessComponent {
             children: [text(tab.name)],
           ),
       ],
-      search: NavbarSearchInput(),
+      search: const DriftSearchInput(),
     );
   }
 }
