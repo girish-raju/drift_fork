@@ -105,7 +105,7 @@ final class DriftTab {
     DriftPageGroup(
       title: 'Platforms',
       pages: [
-        DriftPage('Overview', 'platforms/overview.md'),
+        DriftPage('Overview', 'platforms/index.md'),
         DriftPage('Native', 'platforms/vm.md'),
         DriftPage('Web', 'platforms/web.md'),
         DriftPage('Encryption', 'platforms/encryption.md'),
