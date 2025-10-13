@@ -20,6 +20,11 @@ analyzer:
   # run a separate command for this: `jaspr analyze`
   plugins:
     - custom_lint
+  language:
+    strict-casts: true
+  exclude:
+    - "**/*.g.dart"
+
 #   exclude:
 #     - path/to/excluded/files/**
 
