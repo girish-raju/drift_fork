@@ -6,9 +6,9 @@ part 'tables.g.dart';
 
 // #docregion simple_schema
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()(); // (1)!
+  IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
-  DateTimeColumn get createdAt => dateTime().nullable()(); // (2)!
+  DateTimeColumn get createdAt => dateTime().nullable()();
 }
 // #enddocregion simple_schema
 
@@ -94,8 +94,8 @@ class TableWithCustomConstraints extends Table {
 
   @override
   List<String> get customConstraints => [
-        'FOREIGN KEY (foo, bar) REFERENCES group_memberships ("group", user)',
-      ];
+    'FOREIGN KEY (foo, bar) REFERENCES group_memberships ("group", user)',
+  ];
 }
 // #enddocregion custom-constraint-table
 
@@ -146,8 +146,8 @@ class Reservations extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {room, onDay}
-      ];
+    {room, onDay},
+  ];
 }
 // #enddocregion unique-table
 
@@ -175,10 +175,9 @@ Future<void> insertWithAutoIncrement(CatDatabase database) async {
 
 Future<void> insertWithAutoIncrementManager(CatDatabase database) async {
   // #docregion autoIncrementUseManager
-  await database.managers.items.bulkCreate((c) => [
-        c(title: 'First entry'),
-        c(title: 'Another item'),
-      ]);
+  await database.managers.items.bulkCreate(
+    (c) => [c(title: 'First entry'), c(title: 'Another item')],
+  );
 
   final items = await database.managers.items.get();
   // This prints [(id: 1, title: First entry), (id: 2, title: Another item)].
@@ -227,4 +226,5 @@ class Preferences extends Table {
   @override
   bool get isStrict => true;
 }
+
 // #enddocregion strict

@@ -25,13 +25,10 @@ example:
 
 <Snippet href="/lib/src/snippets/dart_api/tables.dart" name="simple_schema" />
 
-1. Each column must end with an extra pair of parentheses.
-    Drift will warn you if you forget them.
-    ```dart
-    late final id = integer(); // Bad
-    late final id = integer()(); // Good
-    ```
-2. Columns are non-nullable by default. Using `nullable()` allows storing `null` values.
+Each column must end with an extra pair of parentheses.
+Drift will warn you if you forget them.
+
+Note that columns are non-nullable by default. Using `nullable()` allows storing `null` values.
 
 This defines two tables: `todo_items` with columns `id`, `title`, `category`, and `created_at`; and `todo_category` with columns `id` and `description`.
 

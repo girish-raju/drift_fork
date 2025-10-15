@@ -34,6 +34,7 @@ FilesystemLoader driftWebsiteLoader() {
       // Workaround for https://github.com/schultek/jaspr/pull/571
       return RelativeDirectoryWatcher(inner);
     },
+    keepSuffixPattern: RegExp(r'.*\.html$'),
   );
 }
 
@@ -49,6 +50,7 @@ ConfigResolver driftPageConfig({bool forSearchIndex = false}) {
     templateEngine: MustacheTemplateEngine(),
     parsers: [
       MarkdownParser(documentBuilder: (_) => driftMarkdownDocumentBuilder()),
+      HtmlParser(),
     ],
     extensions: [
       // Adds heading anchors to each heading.

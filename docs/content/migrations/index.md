@@ -98,7 +98,10 @@ class MyDatabase extends _$MyDatabase {
   }
 }
 
-extension Migrations on GeneratedDatabase { // (1)
+extension Migrations on GeneratedDatabase {
+  // Extracting the `stepByStep` call into a static field or method ensures that you're not
+  // accidentally referring to the current database schema (via a getter on the database class).
+  // This ensures that each step brings the database into the correct snapshot.
   OnUpgrade get _schemaUpgrade => stepByStep(
     from1To2: (m, schema) async {
       await m.createTable(schema.groups);
@@ -106,10 +109,6 @@ extension Migrations on GeneratedDatabase { // (1)
   );
 }
 ```
-
-1. Extracting the `stepByStep` call into a static field or method ensures that you're not accidentally
-   referring to the current database schema (via a getter on the database class).
-   This ensures that each step brings the database into the correct snapshot.
 
 See the [example](https://github.com/simolus3/drift/tree/develop/examples/migrations_example) in the drift repository for a complete example of how to use the `make-migrations` command.
 

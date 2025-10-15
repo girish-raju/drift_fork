@@ -10,6 +10,7 @@ void main() {
   test('all pages are referenced in navigation tree', () async {
     const hidden = [
       'sql_api/sql_ide.md', // Currently defunct.
+      '404.html', // Not supposed to be visible.
     ];
 
     final referenced = <String>{

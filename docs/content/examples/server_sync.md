@@ -43,8 +43,10 @@ It uses code generation to automate most of the client logic.
 ## PowerSync
 
 <small>
+
 _Disclosure_: Drift maintainer Simon Binder [works at the team maintaining PowerSync](https://www.powersync.com/blog/simon-binder-joins-powersync).
 While this page only reflects his personal opinion, please keep that in mind and perhaps consult other sources on sync options for Dart too.
+
 </small>
 
 PowerSync is sync solution with [stable and official Flutter support](https://docs.powersync.com/client-sdk-references/flutter).

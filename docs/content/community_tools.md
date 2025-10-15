@@ -5,14 +5,11 @@ description: Packages contributed by the community
 
 ---
 
-!!! note ""
+!!! note "Know more tools?"
 
-    
     Do you have a drift-related package you want to share? Awesome, please let me know!
-    [Twitter](https://twitter.com/dersimolus) or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
-    
-
-
+    [Open a discussion](https://github.com/simolus3/drift/discussions/categories/show-and-tell) to
+    share it or send me an email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 
 ## Conflict-free replicated datatypes
 

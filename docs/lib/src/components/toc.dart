@@ -9,12 +9,42 @@ final class TableOfContents extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    final toc = context.page.data['toc'] as jaspr.TableOfContents?;
+    final page = context.page;
+    final data = page.data;
+    final toc = data['toc'] as jaspr.TableOfContents?;
     if (toc == null) {
       return const Component.empty();
     }
+    final source = page.path;
+    final issueTitle = Uri.encodeQueryComponent(
+      'Documentation issue: ${data.page['title']}',
+    );
 
     return fragment([
+      div(classes: 'td-page-meta ms-2 pb-1 pt-2 mb-0', [
+        a(
+          classes: 'td-page-meta--edit td-page-meta__edit',
+          target: Target.blank,
+          referrerPolicy: ReferrerPolicy.noReferrer,
+          href:
+              'https://github.com/simolus3/drift/edit/develop/docs/content/$source',
+          [
+            i(classes: 'fa-solid fa-pen-to-square', []),
+            text(' Edit this page'),
+          ],
+        ),
+        a(
+          classes: 'td-page-meta--issue td-page-meta__issue',
+          target: Target.blank,
+          referrerPolicy: ReferrerPolicy.noReferrer,
+          href:
+              'https://github.com/simolus3/drift/issues/new?template=docs.md&title=$issueTitle',
+          [
+            i(classes: 'fa-solid fa-list-check fa-fw', []),
+            text(' Create documentation issue'),
+          ],
+        ),
+      ]),
       div(classes: 'td-toc', [
         div(classes: 'td-toc__title', [
           span(classes: 'td-toc__title__text', [text('On this page')]),

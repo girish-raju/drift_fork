@@ -24,6 +24,10 @@ final class AdmonitionSyntax extends BlockSyntax {
         ));
 
     final title = match.group(3);
+    final parsedTitle = InlineParser(
+      title ?? defaultTitle,
+      parser.document,
+    ).parse();
     parser.advance();
 
     final childLines = parseChildLines(parser);
@@ -33,14 +37,11 @@ final class AdmonitionSyntax extends BlockSyntax {
     ).parseLines(parentSyntax: this);
 
     if (collapsible) {
-      return Element('details', [
-        Element('summary', [Text(title ?? defaultTitle)]),
-        ...children,
-      ])..attributes['class'] = type;
+      return Element('details', [Element('summary', parsedTitle), ...children])
+        ..attributes['class'] = type;
     } else {
       return Element('div', [
-        Element('p', [Text(title ?? defaultTitle)])
-          ..attributes['class'] = 'admonition-title',
+        Element('p', parsedTitle)..attributes['class'] = 'admonition-title',
         ...children,
       ])..attributes['class'] = 'admonition $type';
     }
