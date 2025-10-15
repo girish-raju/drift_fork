@@ -6,8 +6,8 @@ environment:
   sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
-  jaspr: ^0.21.3
-  jaspr_content: ^0.4.1
+  jaspr: ^0.21.5
+  jaspr_content: ^0.4.2
   jaspr_router: ^0.7.3
 
   drift:
@@ -45,13 +45,7 @@ dev_dependencies:
   json_serializable: ^6.11.1
   sass_builder: ^2.4.0
 
-  jaspr_cli:
-    # This stops jaspr from messing with the builder configuration. Upstream PR:
-    # https://github.com/schultek/jaspr/pull/592
-    git:
-      url: https://github.com/simolus3/jaspr.git
-      ref: c9c59cea8e64de2f4cd135e162ac69a9f3df1312
-      path: packages/jaspr_cli
+  jaspr_cli: ^0.21.5
   crypto: ^3.0.6
 
 jaspr:

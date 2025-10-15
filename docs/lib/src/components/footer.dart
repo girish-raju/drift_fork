@@ -29,7 +29,14 @@ final class DriftFooter extends StatelessComponent {
           ]),
         ]),
       ]),
-      right: Component.empty(),
+      right: a(
+        classes: 'jaspr-badge-link',
+        href: 'https://jaspr.site',
+        target: Target.blank,
+        referrerPolicy: ReferrerPolicy.noReferrer,
+        attributes: {'title': 'Built with the Jaspr web framework for Dart.'},
+        [JasprBadge.light(), JasprBadge.lightTwoTone()],
+      ),
     );
   }
 }
