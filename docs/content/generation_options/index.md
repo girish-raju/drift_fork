@@ -194,6 +194,8 @@ We currently support the following extensions:
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)
   module is available. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
+- `powersync`: Assumes that the PowerSync SQLite extension is available, allowing references to e.g.
+  `powersync_crud` in `CREATE TABLE` statements.
 
 ### Known custom functions
 
@@ -225,6 +227,27 @@ The syntax for a function type is defined as `<return type> (<argument types>)`.
 Each type consists of an arbitrary word used to determine [column affinity](https://www.sqlite.org/datatype3.html#determination_of_column_affinity),
 with drift also supporting `DATETIME` and `BOOLEAN` as type hints. Then, the
 optional `NULL` keyword can be used to indicate whether the type is nullable.
+
+### External tables
+
+In addition to `known_functions`, you can also define external tables that are assumed
+to be available to the database without being managed by drift.
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialect: sqlite
+            options:
+              known_tables:
+                - "CREATE TABLE external_resource (id INTEGER PRIMARY KEY, another TEXT)"
+```
+
+Here, references to `external_resource` would not cause a warning. Drift would not generate
+code for the `external_resource` table though.
 
 ## Recommended options
 

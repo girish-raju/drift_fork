@@ -308,6 +308,10 @@ users table contains a lot of rows:
 
 <Snippet href="/lib/src/snippets/dart_api/tables.dart" name="index" />
 
+To specify the ordering mode for a column, you can use an `IndexedColumn` instance:
+
+{{ load_snippet('index_ordering','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
 #### SQL-based index
 
 If you need more options in your index, for instance to define partial indexes,

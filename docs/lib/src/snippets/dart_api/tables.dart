@@ -202,6 +202,17 @@ class Users extends Table {
 }
 // #enddocregion index
 
+// #docregion index_ordering
+@TableIndex(
+  name: 'log_entries_at',
+  columns: {IndexedColumn(#loggedAt, orderBy: OrderingMode.desc)},
+)
+class LogEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get loggedAt => dateTime()();
+}
+// #enddocregion index_ordering
+
 // #docregion indexsql
 @TableIndex.sql('''
   CREATE INDEX pending_orders ON orders (creation_time)

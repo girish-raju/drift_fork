@@ -37,7 +37,7 @@ dependencies:
   # Drift-specific analysis and apis
   drift: ">=2.28.0 <2.29.0"
   sqlite3: ^2.4.6
-  sqlparser: ^0.41.2
+  sqlparser: ^0.42.0-0
 
   # Dart analysis
   # Note: When changing this to a lower bound of 8.x, please re-enable
