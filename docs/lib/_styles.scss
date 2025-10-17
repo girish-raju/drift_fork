@@ -6,7 +6,9 @@
 @use "src/styles/jaspr";
 @use "src/styles/ui";
 
+$color-mode-type: media-query;
 @import "package:jaspr_docsy/style";
+@import "src/styles/flutter_favorite";
 
 :root {
   @include dracula.light;

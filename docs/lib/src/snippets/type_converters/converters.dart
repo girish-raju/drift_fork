@@ -22,16 +22,16 @@ class Preferences {
   // #docregion simplified
   static JsonTypeConverter2<Preferences, String, Object?> converter =
       TypeConverter.json2(
-    fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
-    toJson: (pref) => pref.toJson(),
-  );
+        fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
+        toJson: (pref) => pref.toJson(),
+      );
   // #enddocregion simplified
   // #docregion jsonb
   static JsonTypeConverter2<Preferences, Uint8List, Object?> binaryConverter =
       TypeConverter.jsonb(
-    fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
-    toJson: (pref) => pref.toJson(),
-  );
+        fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
+        toJson: (pref) => pref.toJson(),
+      );
   // #enddocregion jsonb
   // #docregion start
 }
@@ -40,9 +40,7 @@ class Preferences {
 // #docregion converter
 // stores preferences as strings
 class PreferenceConverter extends TypeConverter<Preferences, String>
-    with
-        // (1)!
-        JsonTypeConverter2<Preferences, String, Map<String, Object?>> {
+    with JsonTypeConverter2<Preferences, String, Map<String, Object?>> {
   const PreferenceConverter();
 
   @override
@@ -75,4 +73,5 @@ class Users extends Table {
   TextColumn get preferences =>
       text().map(const PreferenceConverter()).nullable()();
 }
+
 // #enddocregion table

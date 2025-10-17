@@ -20,6 +20,11 @@ final class DriftHeader extends StatelessComponent {
             active: tab == currentTab,
             children: [text(tab.name)],
           ),
+        NavbarLink(
+          href: 'https://pub.dev/packages/drift',
+          active: false,
+          children: [text('pub.dev')],
+        ),
       ],
       search: const DriftSearchInput(),
     );

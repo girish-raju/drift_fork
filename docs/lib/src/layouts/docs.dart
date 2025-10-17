@@ -2,6 +2,7 @@ import 'package:jaspr/server.dart';
 import 'package:jaspr_content/jaspr_content.dart' hide TableOfContents;
 import 'package:jaspr_docsy/jaspr_docsy.dart';
 
+import '../components/flutter_favorite.dart';
 import '../components/footer.dart';
 import '../components/header.dart';
 import '../components/modal.dart';
@@ -25,7 +26,10 @@ final class DriftDocsLayout extends DocsyLayout {
 
   @override
   Component buildContent(Page page, Component child) {
-    return PageContent(page: page, renderedMarkdown: child);
+    return fragment([
+      if (page.url == '/') FlutterFavoriteIcon(),
+      PageContent(page: page, renderedMarkdown: child),
+    ]);
   }
 
   @override

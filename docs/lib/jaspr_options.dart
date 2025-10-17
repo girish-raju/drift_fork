@@ -11,7 +11,8 @@ import 'package:drift_website/src/components/search_input.dart' as prefix2;
 import 'package:drift_website/src/components/web_compatibility.dart' as prefix3;
 import 'package:drift_website/src/search/component.dart' as prefix4;
 import 'package:jaspr_content_snippets/internal/client.dart' as prefix5;
-import 'package:jaspr_docsy/components/internal/tabs.dart' as prefix6;
+import 'package:jaspr_docsy/components/internal/sidebar_toggle.dart' as prefix6;
+import 'package:jaspr_docsy/components/internal/tabs.dart' as prefix7;
 
 /// Default [JasprOptions] for use with your jaspr project.
 ///
@@ -53,13 +54,21 @@ JasprOptions get defaultJasprOptions => JasprOptions(
       'jaspr_content_snippets:internal/client',
     ),
 
-    prefix6.InternalTabHeaders: ClientTarget<prefix6.InternalTabHeaders>(
+    prefix6.MobileSidebarToggle: ClientTarget<prefix6.MobileSidebarToggle>(
+      'jaspr_docsy:components/internal/sidebar_toggle',
+      params: _prefix6MobileSidebarToggle,
+    ),
+
+    prefix7.InternalTabHeaders: ClientTarget<prefix7.InternalTabHeaders>(
       'jaspr_docsy:components/internal/tabs',
-      params: _prefix6InternalTabHeaders,
+      params: _prefix7InternalTabHeaders,
     ),
   },
   styles: () => [],
 );
 
-Map<String, dynamic> _prefix6InternalTabHeaders(prefix6.InternalTabHeaders c) =>
+Map<String, dynamic> _prefix6MobileSidebarToggle(
+  prefix6.MobileSidebarToggle c,
+) => {'target': c.target};
+Map<String, dynamic> _prefix7InternalTabHeaders(prefix7.InternalTabHeaders c) =>
     {'items': c.items};

@@ -56,6 +56,7 @@ targets:
         enabled: true
         options:
           process_without_directives: true
+          drop_indentation: true
         generate_for:
           include:
             - "lib/src/snippets/**/*.dart"

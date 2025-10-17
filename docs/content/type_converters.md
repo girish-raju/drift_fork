@@ -20,8 +20,8 @@ a `TypeConverter` for that:
 
 <Snippet href="/lib/src/snippets/type_converters/converters.dart" name="converter" />
 
-1. The original JSON type converter classes are [deprecated](#type-converters-and-json-serialization),
-   which is why the `v2`-variants should generally be used instead.
+This is using the `JsonTypeConverter2` classes, the original ones are [deprecated](#type-converters-and-json-serialization)
+and will be removed in the next major drift version.
 
 Finally, we can use that converter in a table declaration:
 
