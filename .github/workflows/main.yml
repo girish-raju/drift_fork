@@ -47,7 +47,7 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           production-branch: latest-release
-          publish-dir: docs/deploy
+          publish-dir: docs/build/jaspr
           enable-pull-request-comment: true
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"
@@ -60,7 +60,7 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           production-branch: latest-release
-          publish-dir: docs/deploy
+          publish-dir: docs/build/jaspr
           enable-pull-request-comment: true
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"
