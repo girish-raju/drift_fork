@@ -38,7 +38,7 @@ if [ $? -ne 0 ]; then
     echo "Failed to build the example project"
     exit 1
 fi
+rm -rf ../../docs/build/jaspr/examples/app
 mkdir -p ../../docs/build/jaspr/examples/app
-rm -r ../../docs/build/jaspr/examples/app/*
 mv -f ./build/web/* ../../docs/build/jaspr/examples/app
 cd -
