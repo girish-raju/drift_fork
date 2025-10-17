@@ -34,7 +34,7 @@ jobs:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
         run: |
           chmod +x ./tool/build.sh
-          ./build.sh
+          ./tool/build.sh
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
