@@ -15,8 +15,8 @@ else
 fi
 
 # Main content
-dart run jaspr_cli:jaspr build --no-managed-build-options
 dart run tool/build_search_index.dart
+dart run jaspr_cli:jaspr build --no-managed-build-options
 rm -r build/jaspr/packages build/jaspr/.dart_tool build/jaspr/.build.manifest
 
 # Build the flutter web project
