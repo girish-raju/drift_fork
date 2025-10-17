@@ -8,24 +8,30 @@ extension MigrateToTextDateTimes on GeneratedDatabase {
     // `allTables` getter returns all tables of the current schema, which may
     // be incorrect.
     for (final table in allTables) {
-      final dateTimeColumns =
-          table.$columns.where((c) => c.type == DriftSqlType.dateTime);
+      final dateTimeColumns = table.$columns.where(
+        (c) => c.type == DriftSqlType.dateTime,
+      );
 
       if (dateTimeColumns.isNotEmpty) {
         // This table has dateTime columns which need to be migrated.
-        await m.alterTable(TableMigration(
-          table,
-          columnTransformer: {
-            for (final column in dateTimeColumns)
-              // We assume that the column in the database is an int (unix
-              // timestamp), use `fromUnixEpoch` to convert it to a date time.
-              // Note that the resulting value in the database is in UTC.
-              column: DateTimeExpressions.fromUnixEpoch(column.dartCast<int>()),
-          },
-        ));
+        await m.alterTable(
+          TableMigration(
+            table,
+            columnTransformer: {
+              for (final column in dateTimeColumns)
+                // We assume that the column in the database is an int (unix
+                // timestamp), use `fromUnixEpoch` to convert it to a date time.
+                // Note that the resulting value in the database is in UTC.
+                column: DateTimeExpressions.fromUnixEpoch(
+                  column.dartCast<int>(),
+                ),
+            },
+          ),
+        );
       }
     }
   }
+
   // #enddocregion unix-to-text
 }
 
@@ -37,45 +43,54 @@ extension MigrateToTimestamps on GeneratedDatabase {
     // `allTables` getter returns all tables of the current schema, which may
     // be incorrect.
     for (final table in allTables) {
-      final dateTimeColumns =
-          table.$columns.where((c) => c.type == DriftSqlType.dateTime);
+      final dateTimeColumns = table.$columns.where(
+        (c) => c.type == DriftSqlType.dateTime,
+      );
 
       if (dateTimeColumns.isNotEmpty) {
         // This table has dateTime columns which need to be migrated.
-        await m.alterTable(TableMigration(
-          table,
-          columnTransformer: {
-            for (final column in dateTimeColumns)
-              // We assume that the column in the database is a string. We want
-              // to parse it to a date in SQL and then get the unix timestamp of
-              // it.
-              // Note that this requires sqlite version 3.38 or above.
-              column: FunctionCallExpression('unixepoch', [column]),
-          },
-        ));
+        await m.alterTable(
+          TableMigration(
+            table,
+            columnTransformer: {
+              for (final column in dateTimeColumns)
+                // We assume that the column in the database is a string. We want
+                // to parse it to a date in SQL and then get the unix timestamp of
+                // it.
+                // Note that this requires sqlite version 3.38 or above.
+                column: FunctionCallExpression('unixepoch', [column]),
+            },
+          ),
+        );
       }
     }
   }
   // #enddocregion text-to-unix
 
   Future<void> migrateFromTextDateTimesToUnixTimestampsPre338(
-      Migrator m) async {
+    Migrator m,
+  ) async {
     for (final table in allTables) {
-      final dateTimeColumns =
-          table.$columns.where((c) => c.type == DriftSqlType.dateTime);
+      final dateTimeColumns = table.$columns.where(
+        (c) => c.type == DriftSqlType.dateTime,
+      );
 
       if (dateTimeColumns.isNotEmpty) {
-        await m.alterTable(TableMigration(
-          table,
-          // #docregion text-to-unix-old
-          columnTransformer: {
-            for (final column in dateTimeColumns)
-              // Use this as an alternative to `unixepoch`:
-              column: FunctionCallExpression(
-                  'strftime', [const Constant('%s'), column]).cast<int>(),
-          },
-          // #enddocregion text-to-unix-old
-        ));
+        await m.alterTable(
+          TableMigration(
+            table,
+            // #docregion text-to-unix-old
+            columnTransformer: {
+              for (final column in dateTimeColumns)
+                // Use this as an alternative to `unixepoch`:
+                column: FunctionCallExpression('strftime', [
+                  const Constant('%s'),
+                  column,
+                ]).cast<int>(),
+            },
+            // #enddocregion text-to-unix-old
+          ),
+        );
       }
     }
   }

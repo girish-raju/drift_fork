@@ -9,10 +9,7 @@ abstract class ShoppingCart {
 }
 
 // #docregion interface
-typedef ShoppingCartWithItems = ({
-  ShoppingCart cart,
-  List<BuyableItem> items,
-});
+typedef ShoppingCartWithItems = ({ShoppingCart cart, List<BuyableItem> items});
 
 abstract class CartRepository {
   Future<ShoppingCartWithItems> createEmptyCart();
@@ -30,4 +27,5 @@ class BuyableItems extends Table {
   IntColumn get price => integer()();
   // we could add more columns as we wish.
 }
+
 // #enddocregion buyable_items

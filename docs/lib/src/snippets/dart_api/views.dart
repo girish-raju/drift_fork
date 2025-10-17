@@ -26,8 +26,9 @@ abstract class CategoryTodoCount extends View {
   Query as() =>
       // Views can select columns defined as expression getters on the class, or
       // they can reference columns from other tables.
-      select([categories.description, itemCount])
-          .from(categories)
-          .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+      select([categories.description, itemCount]).from(categories).join([
+        innerJoin(todos, todos.category.equalsExp(categories.id)),
+      ]);
 }
+
 // #enddocregion view

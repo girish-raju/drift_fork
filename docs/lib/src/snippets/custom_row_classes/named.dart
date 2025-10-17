@@ -18,4 +18,5 @@ class User {
 
   User.fromDb({required this.id, required this.name, required this.birthday});
 }
+
 // #enddocregion named

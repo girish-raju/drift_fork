@@ -8,10 +8,7 @@ import 'shared.drift.dart';
 
 part 'json.g.dart';
 
-typedef ShoppingCartWithItems = ({
-  ShoppingCart cart,
-  List<BuyableItem> items,
-});
+typedef ShoppingCartWithItems = ({ShoppingCart cart, List<BuyableItem> items});
 
 // #docregion tables
 @DataClassName('ShoppingCart')
@@ -54,8 +51,9 @@ class JsonBasedDatabase extends $JsonBasedDatabase {
 
   // #docregion createEmptyCart
   Future<ShoppingCartWithItems> createEmptyCart() async {
-    final cart = await into(shoppingCarts)
-        .insertReturning(const ShoppingCartsCompanion());
+    final cart = await into(
+      shoppingCarts,
+    ).insertReturning(const ShoppingCartsCompanion());
 
     // we set the items property to [] because we've just created the cart - it
     // will be empty
@@ -65,10 +63,13 @@ class JsonBasedDatabase extends $JsonBasedDatabase {
 
   // #docregion updateCart
   Future<void> updateCart(ShoppingCartWithItems entry) async {
-    await update(shoppingCarts).replace(entry.cart.copyWith(
-        entries: ShoppingCartEntries(items: [
-      for (final item in entry.items) item.id,
-    ])));
+    await update(shoppingCarts).replace(
+      entry.cart.copyWith(
+        entries: ShoppingCartEntries(
+          items: [for (final item in entry.items) item.id],
+        ),
+      ),
+    );
   }
   // #enddocregion updateCart
 
@@ -76,17 +77,15 @@ class JsonBasedDatabase extends $JsonBasedDatabase {
   Stream<ShoppingCartWithItems> watchCart(int id) {
     final referencedItems = shoppingCarts.entries.jsonEach(this, r'#$.items');
 
-    final cartWithEntries = select(shoppingCarts).join(
-      [
-        // Join every referenced item from the json array
-        innerJoin(referencedItems, const Constant(true), useColumns: false),
-        // And use that to join the items
-        innerJoin(
-          buyableItems,
-          buyableItems.id.equalsExp(referencedItems.value.cast()),
-        ),
-      ],
-    )..where(shoppingCarts.id.equals(id));
+    final cartWithEntries = select(shoppingCarts).join([
+      // Join every referenced item from the json array
+      innerJoin(referencedItems, const Constant(true), useColumns: false),
+      // And use that to join the items
+      innerJoin(
+        buyableItems,
+        buyableItems.id.equalsExp(referencedItems.value.cast()),
+      ),
+    ])..where(shoppingCarts.id.equals(id));
 
     return cartWithEntries.watch().map((rows) {
       late ShoppingCart cart;
@@ -106,17 +105,15 @@ class JsonBasedDatabase extends $JsonBasedDatabase {
   Stream<List<ShoppingCartWithItems>> watchAllCarts() {
     final referencedItems = shoppingCarts.entries.jsonEach(this, r'#$.items');
 
-    final cartWithEntries = select(shoppingCarts).join(
-      [
-        // Join every referenced item from the json array
-        innerJoin(referencedItems, const Constant(true), useColumns: false),
-        // And use that to join the items
-        innerJoin(
-          buyableItems,
-          buyableItems.id.equalsExp(referencedItems.value.cast()),
-        ),
-      ],
-    );
+    final cartWithEntries = select(shoppingCarts).join([
+      // Join every referenced item from the json array
+      innerJoin(referencedItems, const Constant(true), useColumns: false),
+      // And use that to join the items
+      innerJoin(
+        buyableItems,
+        buyableItems.id.equalsExp(referencedItems.value.cast()),
+      ),
+    ]);
 
     return cartWithEntries.watch().map((rows) {
       final entriesByCart = <ShoppingCart, List<BuyableItem>>{};
@@ -130,9 +127,10 @@ class JsonBasedDatabase extends $JsonBasedDatabase {
 
       return [
         for (final entry in entriesByCart.entries)
-          (cart: entry.key, items: entry.value)
+          (cart: entry.key, items: entry.value),
       ];
     });
   }
+
   // #enddocregion watchAllCarts
 }

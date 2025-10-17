@@ -34,8 +34,9 @@ extension Snippets on CanUseCommonTables {
       ..where((a) => a.averageLivespan.isSmallerThan(a.amountOfLegs)));
 
     Future<List<Animal>> findAnimalsByLegs(int legCount) {
-      return (select(animals)..where((a) => a.amountOfLegs.equals(legCount)))
-          .get();
+      return (select(
+        animals,
+      )..where((a) => a.amountOfLegs.equals(legCount))).get();
     }
     // #enddocregion comparison
 
@@ -54,28 +55,25 @@ extension Snippets on CanUseCommonTables {
     Animals a = animals.asDslTable;
 
     // #docregion listand
-    Expression.and([
-      a.isMammal,
-      a.amountOfLegs.equals(4),
-    ]);
+    Expression.and([a.isMammal, a.amountOfLegs.equals(4)]);
     // #enddocregion listand
   }
 
   // #docregion arithmetic
   Future<List<Product>> canBeBought(int amount, int budget) {
-    return (select(products)
-          ..where((p) {
-            final totalPrice = p.price * Variable(amount);
-            return totalPrice.isSmallerOrEqualValue(budget);
-          }))
+    return (select(products)..where((p) {
+          final totalPrice = p.price * Variable(amount);
+          return totalPrice.isSmallerOrEqualValue(budget);
+        }))
         .get();
   }
   // #enddocregion arithmetic
 
   // #docregion emptyCategories
   Future<List<Category>> emptyCategories() {
-    final hasNoTodo = notExistsQuery(select(todoItems)
-      ..where((row) => row.category.equalsExp(categories.id)));
+    final hasNoTodo = notExistsQuery(
+      select(todoItems)..where((row) => row.category.equalsExp(categories.id)),
+    );
     return (select(categories)..where((row) => hasNoTodo)).get();
   }
   // #enddocregion emptyCategories
@@ -118,7 +116,7 @@ extension Snippets on CanUseCommonTables {
         todoItems,
         todoItems.category.equalsExp(categories.id),
         useColumns: false,
-      )
+      ),
     ]);
     query
       ..addColumns([amountOfTodos])
@@ -149,16 +147,18 @@ extension Snippets on CanUseCommonTables {
 
   void customExpressions() {
     // #docregion custom
-    const inactive =
-        CustomExpression<bool>("julianday('now') - julianday(last_login) > 60");
+    const inactive = CustomExpression<bool>(
+      "julianday('now') - julianday(last_login) > 60",
+    );
     select(users)..where((u) => inactive);
-// #enddocregion custom
+    // #enddocregion custom
   }
 
   // #docregion date2
   Future<void> increaseDueDates() async {
     final change = TodoItemsCompanion.custom(
-        dueDate: todoItems.dueDate + Duration(days: 1));
+      dueDate: todoItems.dueDate + Duration(days: 1),
+    );
     await update(todoItems).write(change);
   }
   // #enddocregion date2
@@ -166,8 +166,10 @@ extension Snippets on CanUseCommonTables {
   // #docregion date3
   Future<void> moveDueDateToNextMonday() async {
     final change = TodoItemsCompanion.custom(
-        dueDate: todoItems.dueDate
-            .modify(DateTimeModifier.weekday(DateTime.monday)));
+      dueDate: todoItems.dueDate.modify(
+        DateTimeModifier.weekday(DateTime.monday),
+      ),
+    );
     await update(todoItems).write(change);
   }
   // #enddocregion date3
@@ -210,10 +212,13 @@ extension Snippets on CanUseCommonTables {
   void rowValuesUsage() {
     select(animals).where((row) {
       // Generates (amount_of_legs, average_livespan) < (?, ?)
-      return RowValues([row.amountOfLegs, row.averageLivespan])
-          .isSmallerThan(RowValues([Variable(2), Variable(10)]));
+      return RowValues([
+        row.amountOfLegs,
+        row.averageLivespan,
+      ]).isSmallerThan(RowValues([Variable(2), Variable(10)]));
     });
   }
+
   // #enddocregion rowvalue-use
 }
 
@@ -248,4 +253,5 @@ final class RowValues extends Expression<Never> {
     context.buffer.write(')');
   }
 }
+
 // #enddocregion row-values

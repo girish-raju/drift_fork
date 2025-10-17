@@ -20,7 +20,8 @@ QueryExecutor openConnection() {
       final blob = await rootBundle.load('assets/my_database.db');
       final buffer = blob.buffer;
       await file.writeAsBytes(
-          buffer.asUint8List(blob.offsetInBytes, blob.lengthInBytes));
+        buffer.asUint8List(blob.offsetInBytes, blob.lengthInBytes),
+      );
     }
 
     // Also work around limitations on old Android versions

@@ -31,7 +31,7 @@ class TodoItems extends Table {
 // #enddocregion table
 @DriftDatabase(tables: [TodoItems])
 class AppDatabase extends _$AppDatabase {
-// #enddocregion before_generation
+  // #enddocregion before_generation
   // After generating code, this class needs to define a `schemaVersion` getter
   // and a constructor telling drift where the database should be stored.
   // These are described in the getting started guide: https://drift.simonbinder.eu/setup/
@@ -45,12 +45,12 @@ class AppDatabase extends _$AppDatabase {
     throw 'should not show as snippet';
   }
 
-// #docregion before_generation
+  // #docregion before_generation
 }
 // #enddocregion before_generation
 
 class OpenFlutter {
-// #docregion flutter
+  // #docregion flutter
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: 'my_database',
@@ -66,7 +66,7 @@ class OpenFlutter {
 // #enddocregion flutter
 
 class OpenPostgres {
-// #docregion postgres
+  // #docregion postgres
   static QueryExecutor _openConnection() {
     return PgDatabase(
       endpoint: pg.Endpoint(
@@ -81,7 +81,7 @@ class OpenPostgres {
 // #enddocregion postgres
 
 class OpenSqlite3 {
-// #docregion sqlite3
+  // #docregion sqlite3
   static QueryExecutor _openConnection() {
     return NativeDatabase.createInBackground(File('path/to/your/database'));
   }
@@ -98,12 +98,17 @@ void main() async {
 
   final database = AppDatabase();
 
-  await database.into(database.todoItems).insert(TodoItemsCompanion.insert(
-        title: 'todo: finish drift setup',
-        content: 'We can now write queries and define our own tables.',
-      ));
+  await database
+      .into(database.todoItems)
+      .insert(
+        TodoItemsCompanion.insert(
+          title: 'todo: finish drift setup',
+          content: 'We can now write queries and define our own tables.',
+        ),
+      );
   List<TodoItem> allItems = await database.select(database.todoItems).get();
 
   print('items in database: $allItems');
 }
+
 // #enddocregion use

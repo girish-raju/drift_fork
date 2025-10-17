@@ -47,8 +47,6 @@ class _FallbackDurationType implements CustomSqlType<Duration> {
 
 const durationType = DialectAwareSqlType<Duration>.via(
   fallback: _FallbackDurationType(),
-  overrides: {
-    SqlDialect.postgres: DurationType(),
-  },
+  overrides: {SqlDialect.postgres: DurationType()},
 );
 // #enddocregion fallback

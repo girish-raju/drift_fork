@@ -18,9 +18,10 @@ class CategoryWithCount {
 @DriftDatabase(
   tables: [TodoItems, Categories],
   queries: {
-    'categoriesWithCount': 'SELECT *, '
+    'categoriesWithCount':
+        'SELECT *, '
         '(SELECT COUNT(*) FROM todo_items WHERE category = c.id) AS "amount" '
-        'FROM categories c;'
+        'FROM categories c;',
   },
 )
 class MyDatabase extends $MyDatabase {
@@ -69,16 +70,19 @@ class MyDatabase extends $MyDatabase {
       // earlier, drift knows how to parse a category. The only thing left to do
       // manually is extracting the amount.
       return rows
-          .map((row) => CategoryWithCount(
-                category: categories.map(row.data),
-                count: row.read<int>('amount'),
-              ))
+          .map(
+            (row) => CategoryWithCount(
+              category: categories.map(row.data),
+              count: row.read<int>('amount'),
+            ),
+          )
           .toList();
     });
   }
 
-// #enddocregion manual
+  // #enddocregion manual
 
   // #docregion setup
 }
+
 // #enddocregion setup

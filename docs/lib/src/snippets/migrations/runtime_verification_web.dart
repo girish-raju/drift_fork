@@ -15,7 +15,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
 // #docregion web
 
 class MyDatabase extends _$MyDatabase {
-// #enddocregion web
+  // #enddocregion web
   MyDatabase(super.executor);
 
   @override
@@ -28,22 +28,29 @@ class MyDatabase extends _$MyDatabase {
   // #docregion web
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {/* ... */},
-        onUpgrade: (m, from, to) async {/* your existing migration logic */},
-        beforeOpen: (details) async {
-          // your existing beforeOpen callback, enable foreign keys, etc.
+    onCreate: (m) async {
+      /* ... */
+    },
+    onUpgrade: (m, from, to) async {
+      /* your existing migration logic */
+    },
+    beforeOpen: (details) async {
+      // your existing beforeOpen callback, enable foreign keys, etc.
 
-          // This check pulls in a fair amount of code that's not needed
-          // anywhere else, so we recommend only doing it in debug builds.
-          if (kDebugMode) {
-            // The web schema verifier needs a sqlite3 instance to open another
-            // version of your database so that the two can be compared.
-            final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('/'));
-            sqlite3.registerVirtualFileSystem(InMemoryFileSystem(),
-                makeDefault: true);
-            await validateDatabaseSchema(sqlite3: sqlite3);
-          }
-        },
-      );
+      // This check pulls in a fair amount of code that's not needed
+      // anywhere else, so we recommend only doing it in debug builds.
+      if (kDebugMode) {
+        // The web schema verifier needs a sqlite3 instance to open another
+        // version of your database so that the two can be compared.
+        final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('/'));
+        sqlite3.registerVirtualFileSystem(
+          InMemoryFileSystem(),
+          makeDefault: true,
+        );
+        await validateDatabaseSchema(sqlite3: sqlite3);
+      }
+    },
+  );
 }
+
 // #enddocregion web

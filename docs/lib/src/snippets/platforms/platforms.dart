@@ -13,4 +13,5 @@ DynamicLibrary _openOnLinux() {
   final libraryNextToScript = File('${scriptDir.path}/sqlite3.so');
   return DynamicLibrary.open(libraryNextToScript.path);
 }
+
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`

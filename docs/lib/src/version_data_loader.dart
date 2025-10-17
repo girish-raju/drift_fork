@@ -31,12 +31,16 @@ final class PackageVersionDataLoader implements DataLoader {
         return;
       }
 
-      final pubspec = await File(resolvedPackage.root.resolve('pubspec.yaml').toFilePath()).readAsString();
+      final pubspec = await File(
+        resolvedPackage.root.resolve('pubspec.yaml').toFilePath(),
+      ).readAsString();
       final parsedPubspec = loadYaml(pubspec);
       resolvedVersions[package] = (parsedPubspec as Map)['version'].toString();
     }
 
-    await Future.wait([for (final package in packages) resolvePackage(package)]);
+    await Future.wait([
+      for (final package in packages) resolvePackage(package),
+    ]);
     return resolvedVersions;
   }
 

@@ -22,8 +22,8 @@ class MatchResults extends Table {
 
   @override
   List<Set<Column<Object>>>? get uniqueKeys => [
-        {teamA, teamB}
-      ];
+    {teamA, teamB},
+  ];
 }
 // #enddocregion upsert-target
 
@@ -36,7 +36,8 @@ extension DocumentationSnippets on ModularAccessor {
     return into(words).insert(
       WordsCompanion.insert(word: word),
       onConflict: DoUpdate(
-          (old) => WordsCompanion.custom(usages: old.usages + Constant(1))),
+        (old) => WordsCompanion.custom(usages: old.usages + Constant(1)),
+      ),
     );
   }
   // #enddocregion track-word
@@ -44,11 +45,19 @@ extension DocumentationSnippets on ModularAccessor {
   // #docregion upsert-target
   Future<void> insertMatch(String teamA, String teamB, bool teamAWon) {
     final data = MatchResultsCompanion.insert(
-        teamA: teamA, teamB: teamB, teamAWon: teamAWon);
+      teamA: teamA,
+      teamB: teamB,
+      teamAWon: teamAWon,
+    );
 
-    return into(matches).insert(data,
-        onConflict:
-            DoUpdate((old) => data, target: [matches.teamA, matches.teamB]));
+    return into(matches).insert(
+      data,
+      onConflict: DoUpdate(
+        (old) => data,
+        target: [matches.teamA, matches.teamB],
+      ),
+    );
   }
+
   // #enddocregion upsert-target
 }

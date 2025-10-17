@@ -6,21 +6,23 @@ import 'drift/example.drift.dart';
 extension FindById<Table extends HasResultSet, Row>
     on ResultSetImplementation<Table, Row> {
   Selectable<Row> findById(int id) {
-    return select()
-      ..where((row) {
-        final idColumn = columnsByName['id'];
+    return select()..where((row) {
+      final idColumn = columnsByName['id'];
 
-        if (idColumn == null) {
-          throw ArgumentError.value(
-              this, 'this', 'Must be a table with an id column');
-        }
+      if (idColumn == null) {
+        throw ArgumentError.value(
+          this,
+          'this',
+          'Must be a table with an id column',
+        );
+      }
 
-        if (idColumn.type != DriftSqlType.int) {
-          throw ArgumentError('Column `id` is not an integer');
-        }
+      if (idColumn.type != DriftSqlType.int) {
+        throw ArgumentError('Column `id` is not an integer');
+      }
 
-        return idColumn.equals(id);
-      });
+      return idColumn.equals(id);
+    });
   }
 }
 // #enddocregion findById
@@ -28,7 +30,10 @@ extension FindById<Table extends HasResultSet, Row>
 // #docregion updateTitle
 extension UpdateTitle on DatabaseConnectionUser {
   Future<Row?> updateTitle<T extends TableInfo<Table, Row>, Row>(
-      T table, int id, String newTitle) async {
+    T table,
+    int id,
+    String newTitle,
+  ) async {
     final columnsByName = table.columnsByName;
     final stmt = update(table)
       ..where((tbl) {
@@ -36,7 +41,10 @@ extension UpdateTitle on DatabaseConnectionUser {
 
         if (idColumn == null) {
           throw ArgumentError.value(
-              this, 'this', 'Must be a table with an id column');
+            this,
+            'this',
+            'Must be a table with an id column',
+          );
         }
 
         if (idColumn.type != DriftSqlType.int) {
@@ -46,9 +54,9 @@ extension UpdateTitle on DatabaseConnectionUser {
         return idColumn.equals(id);
       });
 
-    final rows = await stmt.writeReturning(RawValuesInsertable({
-      'title': Variable<String>(newTitle),
-    }));
+    final rows = await stmt.writeReturning(
+      RawValuesInsertable({'title': Variable<String>(newTitle)}),
+    );
 
     return rows.singleOrNull;
   }
@@ -68,5 +76,6 @@ extension FindTodoEntryById on GeneratedDatabase {
   Future<Todo?> updateTodoTitle(int id, String newTitle) {
     return updateTitle(todos, id, newTitle);
   }
+
   // #enddocregion updateTodo
 }

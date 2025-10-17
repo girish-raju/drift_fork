@@ -31,6 +31,7 @@ class StepByStep {
       ),
     );
   }
+
   // #enddocregion stepbystep
 }
 
@@ -65,10 +66,13 @@ extension StepByStep2 on GeneratedDatabase {
 
         if (kDebugMode) {
           // Fail if the migration broke foreign keys
-          final wrongForeignKeys =
-              await customSelect('PRAGMA foreign_key_check').get();
-          assert(wrongForeignKeys.isEmpty,
-              '${wrongForeignKeys.map((e) => e.data)}');
+          final wrongForeignKeys = await customSelect(
+            'PRAGMA foreign_key_check',
+          ).get();
+          assert(
+            wrongForeignKeys.isEmpty,
+            '${wrongForeignKeys.map((e) => e.data)}',
+          );
         }
 
         await customStatement('PRAGMA foreign_keys = ON;');
@@ -119,10 +123,13 @@ extension StepByStep3 on MyDatabase {
 
         if (kDebugMode) {
           // Fail if the migration broke foreign keys
-          final wrongForeignKeys =
-              await customSelect('PRAGMA foreign_key_check').get();
-          assert(wrongForeignKeys.isEmpty,
-              '${wrongForeignKeys.map((e) => e.data)}');
+          final wrongForeignKeys = await customSelect(
+            'PRAGMA foreign_key_check',
+          ).get();
+          assert(
+            wrongForeignKeys.isEmpty,
+            '${wrongForeignKeys.map((e) => e.data)}',
+          );
         }
 
         await customStatement('PRAGMA foreign_keys = ON;');

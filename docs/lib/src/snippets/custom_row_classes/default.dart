@@ -34,4 +34,5 @@ class TodoItems extends Table {
   TextColumn get content => text()();
   IntColumn get author => integer().references(Users, #id)();
 }
+
 // #enddocregion record-explicit

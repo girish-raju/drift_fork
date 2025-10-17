@@ -62,10 +62,13 @@ class MyDatabase extends _$MyDatabase {
 
         // Assert that the schema is valid after migrations
         if (kDebugMode) {
-          final wrongForeignKeys =
-              await customSelect('PRAGMA foreign_key_check').get();
-          assert(wrongForeignKeys.isEmpty,
-              '${wrongForeignKeys.map((e) => e.data)}');
+          final wrongForeignKeys = await customSelect(
+            'PRAGMA foreign_key_check',
+          ).get();
+          assert(
+            wrongForeignKeys.isEmpty,
+            '${wrongForeignKeys.map((e) => e.data)}',
+          );
         }
       },
       beforeOpen: (details) async {
@@ -81,9 +84,12 @@ class MyDatabase extends _$MyDatabase {
       // #docregion change_type
       from1To2: (m, schema) async {
         await m.alterTable(
-          TableMigration(schema.todos, columnTransformer: {
-            todos.category: schema.todos.category.cast<int>(),
-          }),
+          TableMigration(
+            schema.todos,
+            columnTransformer: {
+              todos.category: schema.todos.category.cast<int>(),
+            },
+          ),
         );
       },
       // #enddocregion change_type

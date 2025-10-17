@@ -26,9 +26,9 @@ extension SelectExamples on CanUseCommonTables {
 
   // #docregion order-by
   Future<List<TodoItem>> sortEntriesAlphabetically() {
-    return (select(todoItems)
-          ..orderBy([(t) => OrderingTerm(expression: t.title)]))
-        .get();
+    return (select(
+      todoItems,
+    )..orderBy([(t) => OrderingTerm(expression: t.title)])).get();
   }
   // #enddocregion order-by
 
@@ -82,7 +82,7 @@ extension SelectExamples on CanUseCommonTables {
     });
     // #enddocregion results
   }
-// #enddocregion joinIntro
+  // #enddocregion joinIntro
 
   // #docregion otherTodosInSameCategory
   /// Searches for todo entries in the same category as the ones having
@@ -97,12 +97,17 @@ extension SelectExamples on CanUseCommonTables {
       // In joins, `useColumns: false` tells drift to not add columns of the
       // joined table to the result set. This is useful here, since we only join
       // the tables so that we can refer to them in the where clause.
-      innerJoin(categories, categories.id.equalsExp(otherTodos.category),
-          useColumns: false),
-      innerJoin(todoItems, todoItems.category.equalsExp(categories.id),
-          useColumns: false),
-    ])
-      ..where(todoItems.title.contains(titleQuery));
+      innerJoin(
+        categories,
+        categories.id.equalsExp(otherTodos.category),
+        useColumns: false,
+      ),
+      innerJoin(
+        todoItems,
+        todoItems.category.equalsExp(categories.id),
+        useColumns: false,
+      ),
+    ])..where(todoItems.title.contains(titleQuery));
 
     return query.map((row) => row.readTable(otherTodos)).get();
   }
@@ -117,7 +122,7 @@ extension SelectExamples on CanUseCommonTables {
         todoItems,
         todoItems.category.equalsExp(categories.id),
         useColumns: false,
-      )
+      ),
     ]);
     query
       ..addColumns([amountOfTodos])
@@ -126,8 +131,10 @@ extension SelectExamples on CanUseCommonTables {
     final result = await query.get();
 
     for (final row in result) {
-      print('there are ${row.read(amountOfTodos)} entries in'
-          '${row.readTable(categories)}');
+      print(
+        'there are ${row.read(amountOfTodos)} entries in'
+        '${row.readTable(categories)}',
+      );
     }
   }
   // #enddocregion countTodosInCategories
@@ -148,9 +155,9 @@ extension SelectExamples on CanUseCommonTables {
       ..where(todoItems.category.isNull())
       ..addColumns([newDescription]);
 
-    await into(categories).insertFromSelect(query, columns: {
-      categories.name: newDescription,
-    });
+    await into(
+      categories,
+    ).insertFromSelect(query, columns: {categories.name: newDescription});
   }
   // #enddocregion createCategoryForUnassignedTodoEntries
 
@@ -168,19 +175,18 @@ extension SelectExamples on CanUseCommonTables {
     // we're not selecting from `todos`. Instead, we'll use Subquery.ref to read
     // from a column in a subquery.
     final itemCount = longestTodos.ref(todoItems.title).count();
-    final query = select(categories).join(
-      [
-        innerJoin(
-          longestTodos,
-          // Again using .ref() here to access the category in the outer select
-          // statement.
-          longestTodos.ref(todoItems.category).equalsExp(categories.id),
-          useColumns: false,
-        )
-      ],
-    )
-      ..addColumns([itemCount])
-      ..groupBy([categories.id]);
+    final query =
+        select(categories).join([
+            innerJoin(
+              longestTodos,
+              // Again using .ref() here to access the category in the outer select
+              // statement.
+              longestTodos.ref(todoItems.category).equalsExp(categories.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([itemCount])
+          ..groupBy([categories.id]);
 
     final rows = await query.get();
 
@@ -214,23 +220,32 @@ extension SelectExamples on CanUseCommonTables {
 
   // #docregion compound
   Future<List<(String?, int)>> todoItemsInCategory() async {
-    final countWithCategory = subqueryExpression<int>(selectOnly(todoItems)
-      ..addColumns([countAll()])
-      ..where(todoItems.category.equalsExp(categories.id)));
+    final countWithCategory = subqueryExpression<int>(
+      selectOnly(todoItems)
+        ..addColumns([countAll()])
+        ..where(todoItems.category.equalsExp(categories.id)),
+    );
 
-    final countWithoutCategory = subqueryExpression<int>(selectOnly(todoItems)
-      ..addColumns([countAll()])
-      ..where(todoItems.category.isNull()));
+    final countWithoutCategory = subqueryExpression<int>(
+      selectOnly(todoItems)
+        ..addColumns([countAll()])
+        ..where(todoItems.category.isNull()),
+    );
 
     final query = db.selectOnly(categories)
       ..addColumns([categories.name, countWithoutCategory])
       ..groupBy([categories.id]);
-    query.unionAll(db.selectExpressions(
-        [const Constant<String>(null), countWithoutCategory]));
+    query.unionAll(
+      db.selectExpressions([
+        const Constant<String>(null),
+        countWithoutCategory,
+      ]),
+    );
 
     return query
         .map((row) => (row.read(categories.name), row.read(countWithCategory)!))
         .get();
   }
+
   // #enddocregion compound
 }

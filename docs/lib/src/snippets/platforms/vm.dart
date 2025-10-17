@@ -50,4 +50,5 @@ QueryExecutor openMultiThreadedDatabase() {
     readPool: 4,
   );
 }
+
 // #enddocregion background-pool

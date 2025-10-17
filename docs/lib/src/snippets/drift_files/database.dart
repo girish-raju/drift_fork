@@ -4,9 +4,7 @@ import 'package:drift/native.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(
-  include: {'tables.drift'},
-)
+@DriftDatabase(include: {'tables.drift'})
 class MyDb extends _$MyDb {
   // This example creates a simple in-memory database (without actual
   // persistence).
@@ -23,5 +21,6 @@ extension MoreSnippets on MyDb {
   Future<void> insert(TodosCompanion companion) async {
     await into(todos).insert(companion);
   }
+
   // #enddocregion dart_interop_insert
 }

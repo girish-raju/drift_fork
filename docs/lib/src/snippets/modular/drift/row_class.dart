@@ -14,4 +14,5 @@ class UserWithFriends {
 
   UserWithFriends(this.user, {this.friends = const []});
 }
+
 // #enddocregion userwithfriends

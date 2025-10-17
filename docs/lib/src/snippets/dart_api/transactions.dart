@@ -26,8 +26,9 @@ extension Snippets on CanUseCommonTables {
       // this is a nested transaction:
       await transaction(() async {
         // At this point, the first category is visible
-        await into(categories)
-            .insert(CategoriesCompanion.insert(name: 'second'));
+        await into(
+          categories,
+        ).insert(CategoriesCompanion.insert(name: 'second'));
         // Here, the second category is only visible inside this nested
         // transaction.
       });
@@ -37,8 +38,9 @@ extension Snippets on CanUseCommonTables {
       try {
         await transaction(() async {
           // At this point, both categories are visible
-          await into(categories)
-              .insert(CategoriesCompanion.insert(name: 'third'));
+          await into(
+            categories,
+          ).insert(CategoriesCompanion.insert(name: 'third'));
           // The third category is only visible here.
           throw Exception('Abort in the second nested transaction');
         });
@@ -54,5 +56,6 @@ extension Snippets on CanUseCommonTables {
 
     // After the transaction, two categories are visible.
   }
+
   // #enddocregion nested
 }

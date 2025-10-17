@@ -125,4 +125,5 @@ class DialectAwareTime extends Table {
   // default date type (integer or text) on sqlite databases.
   Column<PgDateTime> get timeValue => customType(dateTime)();
 }
+
 // #enddocregion time-dialectaware

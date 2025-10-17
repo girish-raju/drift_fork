@@ -14,7 +14,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
 // #docregion native
 
 class MyDatabase extends _$MyDatabase {
-// #enddocregion native
+  // #enddocregion native
   MyDatabase(super.executor);
 
   @override
@@ -27,17 +27,22 @@ class MyDatabase extends _$MyDatabase {
   // #docregion native
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {/* ... */},
-        onUpgrade: (m, from, to) async {/* your existing migration logic */},
-        beforeOpen: (details) async {
-          // your existing beforeOpen callback, enable foreign keys, etc.
+    onCreate: (m) async {
+      /* ... */
+    },
+    onUpgrade: (m, from, to) async {
+      /* your existing migration logic */
+    },
+    beforeOpen: (details) async {
+      // your existing beforeOpen callback, enable foreign keys, etc.
 
-          if (kDebugMode) {
-            // This check pulls in a fair amount of code that's not needed
-            // anywhere else, so we recommend only doing it in debug builds.
-            await validateDatabaseSchema();
-          }
-        },
-      );
+      if (kDebugMode) {
+        // This check pulls in a fair amount of code that's not needed
+        // anywhere else, so we recommend only doing it in debug builds.
+        await validateDatabaseSchema();
+      }
+    },
+  );
 }
+
 // #enddocregion native

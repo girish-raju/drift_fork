@@ -12,10 +12,9 @@ extension CoreApi on AppDatabase {
 
   // #docregion tableUpdates
   Future<void> listenForUpdates() async {
-    final stream = tableUpdates(TableUpdateQuery.onTable(
-      todoItems,
-      limitUpdateKind: UpdateKind.update,
-    ));
+    final stream = tableUpdates(
+      TableUpdateQuery.onTable(todoItems, limitUpdateKind: UpdateKind.update),
+    );
 
     await for (final event in stream) {
       print('Update on todos table: $event');
@@ -27,6 +26,7 @@ extension CoreApi on AppDatabase {
   void markUpdated() {
     notifyUpdates({TableUpdate.onTable(todoItems, kind: UpdateKind.insert)});
   }
+
   // #enddocregion markUpdated
 }
 
@@ -35,6 +35,7 @@ extension Manager on AppDatabase {
   Selectable<TodoItem> allItemsAfter(DateTime min) {
     return managers.todoItems.filter((c) => c.createdAt.isAfter(min));
   }
+
   // #enddocregion manager
 }
 
@@ -47,5 +48,6 @@ extension CustomQueries on AppDatabase {
       readsFrom: {todoItems}, // (1)!
     ).map((row) => todoItems.map(row.data));
   }
+
   // #enddocregion custom
 }

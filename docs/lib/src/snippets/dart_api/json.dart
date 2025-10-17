@@ -64,17 +64,21 @@ class MyDatabase extends _$MyDatabase {
 
   // #docregion calls-with-contacts
   Future<List<(Call, Contact)>> callsWithContact() async {
-    final phoneNumbersForContact =
-        contacts.data.jsonEach(this, r'$.phoneNumbers');
+    final phoneNumbersForContact = contacts.data.jsonEach(
+      this,
+      r'$.phoneNumbers',
+    );
     final phoneNumberQuery = selectOnly(phoneNumbersForContact)
       ..addColumns([phoneNumbersForContact.value]);
 
-    final query = select(calls).join(
-        [innerJoin(contacts, calls.phoneNumber.isInQuery(phoneNumberQuery))]);
+    final query = select(calls).join([
+      innerJoin(contacts, calls.phoneNumber.isInQuery(phoneNumberQuery)),
+    ]);
 
     return query
         .map((row) => (row.readTable(calls), row.readTable(contacts)))
         .get();
   }
+
   // #enddocregion calls-with-contacts
 }

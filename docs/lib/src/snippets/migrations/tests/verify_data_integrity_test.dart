@@ -11,7 +11,7 @@ import 'generated_migrations/schema_v2.dart' as v2;
 
 // #docregion main
 void main() {
-// #enddocregion main
+  // #enddocregion main
   late SchemaVerifier verifier;
 
   setUpAll(() {
@@ -20,17 +20,21 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-// #docregion main
+  // #docregion main
   // ...
   test('upgrade from v1 to v2', () async {
     final schema = await verifier.schemaAt(1);
 
     // Add some data to the table being migrated
     final oldDb = v1.DatabaseAtV1(schema.newConnection());
-    await oldDb.into(oldDb.todos).insert(v1.TodosCompanion.insert(
-          title: 'my first todo entry',
-          content: 'should still be there after the migration',
-        ));
+    await oldDb
+        .into(oldDb.todos)
+        .insert(
+          v1.TodosCompanion.insert(
+            title: 'my first todo entry',
+            content: 'should still be there after the migration',
+          ),
+        );
     await oldDb.close();
 
     // Run the migration and verify that it adds the name column.
@@ -46,4 +50,5 @@ void main() {
     await migratedDb.close();
   });
 }
+
 // #enddocregion main

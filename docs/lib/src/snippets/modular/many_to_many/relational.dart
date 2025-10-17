@@ -6,10 +6,7 @@ import 'shared.drift.dart';
 
 import 'relational.drift.dart';
 
-typedef ShoppingCartWithItems = ({
-  ShoppingCart cart,
-  List<BuyableItem> items,
-});
+typedef ShoppingCartWithItems = ({ShoppingCart cart, List<BuyableItem> items});
 
 // #docregion cart_tables
 class ShoppingCarts extends Table {
@@ -45,14 +42,15 @@ class RelationalDatabase extends $RelationalDatabase {
       await update(shoppingCarts).replace(cart);
 
       // we replace the entries of the cart, so first delete the old ones
-      await (delete(shoppingCartEntries)
-            ..where((entry) => entry.shoppingCart.equals(cart.id)))
-          .go();
+      await (delete(
+        shoppingCartEntries,
+      )..where((entry) => entry.shoppingCart.equals(cart.id))).go();
 
       // And write the new ones
       for (final item in entry.items) {
-        await into(shoppingCartEntries)
-            .insert(ShoppingCartEntry(shoppingCart: cart.id, item: item.id));
+        await into(
+          shoppingCartEntries,
+        ).insert(ShoppingCartEntry(shoppingCart: cart.id, item: item.id));
       }
     });
   }
@@ -60,8 +58,9 @@ class RelationalDatabase extends $RelationalDatabase {
 
   // #docregion createEmptyCart
   Future<ShoppingCartWithItems> createEmptyCart() async {
-    final cart = await into(shoppingCarts)
-        .insertReturning(const ShoppingCartsCompanion());
+    final cart = await into(
+      shoppingCarts,
+    ).insertReturning(const ShoppingCartsCompanion());
     // we set the items property to [] because we've just created the cart - it
     // will be empty
     return (cart: cart, items: <BuyableItem>[]);
@@ -75,14 +74,12 @@ class RelationalDatabase extends $RelationalDatabase {
       ..where((cart) => cart.id.equals(id));
 
     // and also load information about the entries in this cart
-    final contentQuery = select(shoppingCartEntries).join(
-      [
-        innerJoin(
-          buyableItems,
-          buyableItems.id.equalsExp(shoppingCartEntries.item),
-        ),
-      ],
-    )..where(shoppingCartEntries.shoppingCart.equals(id));
+    final contentQuery = select(shoppingCartEntries).join([
+      innerJoin(
+        buyableItems,
+        buyableItems.id.equalsExp(shoppingCartEntries.item),
+      ),
+    ])..where(shoppingCartEntries.shoppingCart.equals(id));
 
     final cartStream = cartQuery.watchSingle();
 
@@ -93,8 +90,10 @@ class RelationalDatabase extends $RelationalDatabase {
     });
 
     // now, we can merge the two queries together in one stream
-    return Rx.combineLatest2(cartStream, contentStream,
-        (ShoppingCart cart, List<BuyableItem> items) {
+    return Rx.combineLatest2(cartStream, contentStream, (
+      ShoppingCart cart,
+      List<BuyableItem> items,
+    ) {
       return (cart: cart, items: items);
     });
   }
@@ -113,14 +112,12 @@ class RelationalDatabase extends $RelationalDatabase {
       final ids = idToCart.keys;
 
       // select all entries that are included in any cart that we found
-      final entryQuery = select(shoppingCartEntries).join(
-        [
-          innerJoin(
-            buyableItems,
-            buyableItems.id.equalsExp(shoppingCartEntries.item),
-          )
-        ],
-      )..where(shoppingCartEntries.shoppingCart.isIn(ids));
+      final entryQuery = select(shoppingCartEntries).join([
+        innerJoin(
+          buyableItems,
+          buyableItems.id.equalsExp(shoppingCartEntries.item),
+        ),
+      ])..where(shoppingCartEntries.shoppingCart.isIn(ids));
 
       return entryQuery.watch().map((rows) {
         // Store the list of entries for each cart, again using maps for faster
@@ -144,5 +141,6 @@ class RelationalDatabase extends $RelationalDatabase {
       });
     });
   }
+
   // #enddocregion watchAllCarts
 }

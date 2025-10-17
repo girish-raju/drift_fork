@@ -113,10 +113,12 @@ void main() async {
 void connectSynchronously() {
   // #docregion delayed
   MyDatabase(
-    DatabaseConnection.delayed(Future.sync(() async {
-      final isolate = await createIsolate();
-      return isolate.connect(singleClientMode: true);
-    })),
+    DatabaseConnection.delayed(
+      Future.sync(() async {
+        final isolate = await createIsolate();
+        return isolate.connect(singleClientMode: true);
+      }),
+    ),
   );
   // #enddocregion delayed
 }
@@ -167,10 +169,12 @@ class _IsolateStartRequest {
 
 // #docregion init_connect
 DatabaseConnection createDriftIsolateAndConnect() {
-  return DatabaseConnection.delayed(Future.sync(() async {
-    final isolate = await _createDriftIsolate();
-    return await isolate.connect(singleClientMode: true);
-  }));
+  return DatabaseConnection.delayed(
+    Future.sync(() async {
+      final isolate = await _createDriftIsolate();
+      return await isolate.connect(singleClientMode: true);
+    }),
+  );
 }
 // #enddocregion init_connect
 
@@ -233,21 +237,19 @@ Future<void> insertBulkData(MyDatabase database) async {
 Future<void> customIsolateUsage(MyDatabase database) async {
   final connection = await database.serializableConnection();
 
-  await Isolate.run(
-    () async {
-      // We can't share the [database] object across isolates, but the connection
-      // is fine!
-      final databaseForIsolate = MyDatabase(await connection.connect());
+  await Isolate.run(() async {
+    // We can't share the [database] object across isolates, but the connection
+    // is fine!
+    final databaseForIsolate = MyDatabase(await connection.connect());
 
-      try {
-        await databaseForIsolate.batch((batch) {
-          // (...)
-        });
-      } finally {
-        databaseForIsolate.close();
-      }
-    },
-    debugName: 'My custom database task',
-  );
+    try {
+      await databaseForIsolate.batch((batch) {
+        // (...)
+      });
+    } finally {
+      databaseForIsolate.close();
+    }
+  }, debugName: 'My custom database task');
 }
+
 // #enddocregion custom-compute

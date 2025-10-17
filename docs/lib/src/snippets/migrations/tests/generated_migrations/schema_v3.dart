@@ -9,33 +9,64 @@ class Todos extends Table with TableInfo<Todos, TodosData> {
   final String? _alias;
   Todos(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 10),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 6,
+      maxTextLength: 10,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'body', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
-      'category', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'category',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
-      'due_date', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   late final GeneratedColumn<int> priority = GeneratedColumn<int>(
-      'priority', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'priority',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, category, dueDate, priority];
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    content,
+    category,
+    dueDate,
+    priority,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -47,18 +78,30 @@ class Todos extends Table with TableInfo<Todos, TodosData> {
   TodosData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodosData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
-      dueDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
-      priority: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}priority']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category'],
+      ),
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_date'],
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      ),
     );
   }
 
@@ -75,13 +118,14 @@ class TodosData extends DataClass implements Insertable<TodosData> {
   final int? category;
   final DateTime? dueDate;
   final int? priority;
-  const TodosData(
-      {required this.id,
-      required this.title,
-      required this.content,
-      this.category,
-      this.dueDate,
-      this.priority});
+  const TodosData({
+    required this.id,
+    required this.title,
+    required this.content,
+    this.category,
+    this.dueDate,
+    this.priority,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -117,8 +161,10 @@ class TodosData extends DataClass implements Insertable<TodosData> {
     );
   }
 
-  factory TodosData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TodosData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodosData(
       id: serializer.fromJson<int>(json['id']),
@@ -142,21 +188,21 @@ class TodosData extends DataClass implements Insertable<TodosData> {
     };
   }
 
-  TodosData copyWith(
-          {int? id,
-          String? title,
-          String? content,
-          Value<int?> category = const Value.absent(),
-          Value<DateTime?> dueDate = const Value.absent(),
-          Value<int?> priority = const Value.absent()}) =>
-      TodosData(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        content: content ?? this.content,
-        category: category.present ? category.value : this.category,
-        dueDate: dueDate.present ? dueDate.value : this.dueDate,
-        priority: priority.present ? priority.value : this.priority,
-      );
+  TodosData copyWith({
+    int? id,
+    String? title,
+    String? content,
+    Value<int?> category = const Value.absent(),
+    Value<DateTime?> dueDate = const Value.absent(),
+    Value<int?> priority = const Value.absent(),
+  }) => TodosData(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    content: content ?? this.content,
+    category: category.present ? category.value : this.category,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    priority: priority.present ? priority.value : this.priority,
+  );
   TodosData copyWithCompanion(TodosCompanion data) {
     return TodosData(
       id: data.id.present ? data.id.value : this.id,
@@ -218,8 +264,8 @@ class TodosCompanion extends UpdateCompanion<TodosData> {
     this.category = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.priority = const Value.absent(),
-  })  : title = Value(title),
-        content = Value(content);
+  }) : title = Value(title),
+       content = Value(content);
   static Insertable<TodosData> custom({
     Expression<int>? id,
     Expression<String>? title,
@@ -238,13 +284,14 @@ class TodosCompanion extends UpdateCompanion<TodosData> {
     });
   }
 
-  TodosCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? title,
-      Value<String>? content,
-      Value<int?>? category,
-      Value<DateTime?>? dueDate,
-      Value<int?>? priority}) {
+  TodosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String>? content,
+    Value<int?>? category,
+    Value<DateTime?>? dueDate,
+    Value<int?>? priority,
+  }) {
     return TodosCompanion(
       id: id ?? this.id,
       title: title ?? this.title,

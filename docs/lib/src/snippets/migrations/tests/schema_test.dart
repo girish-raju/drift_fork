@@ -29,4 +29,5 @@ void main() {
     await verifier.migrateAndValidate(db, 2);
   });
 }
+
 // #enddocregion setup

@@ -13,18 +13,26 @@ void main() {
 
   // Call drift function that will set up this worker
   driftWorkerMain(() {
-    return WebDatabase.withStorage(DriftWebStorage.indexedDb('worker',
-        migrateFromLocalStorage: false, inWebWorker: true));
+    return WebDatabase.withStorage(
+      DriftWebStorage.indexedDb(
+        'worker',
+        migrateFromLocalStorage: false,
+        inWebWorker: true,
+      ),
+    );
   });
 }
 // #enddocregion worker
 
 // #docregion client
 DatabaseConnection connectToWorker() {
-  return DatabaseConnection.delayed(connectToDriftWorker(
-    'worker.dart.js',
-    // Note that SharedWorkers may not be available on all browsers and platforms.
-    mode: DriftWorkerMode.shared,
-  ));
+  return DatabaseConnection.delayed(
+    connectToDriftWorker(
+      'worker.dart.js',
+      // Note that SharedWorkers may not be available on all browsers and platforms.
+      mode: DriftWorkerMode.shared,
+    ),
+  );
 }
+
 // #enddocregion client

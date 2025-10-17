@@ -61,13 +61,16 @@ void _queryManager(Database db) async {
   // #enddocregion generated-dataclass
 
   // #docregion generated-value
-  await db.users.insertOne(UsersCompanion(
-    id: Value.absent(), // (1)!
-    username: Value('user'), // (2)!
-  ));
+  await db.users.insertOne(
+    UsersCompanion(
+      id: Value.absent(), // (1)!
+      username: Value('user'), // (2)!
+    ),
+  );
 
-  await (db.update(db.users)..where((tbl) => tbl.id.equals(1)))
-      .write(UsersCompanion(username: Value("Updated name")));
+  await (db.update(db.users)..where((tbl) => tbl.id.equals(1))).write(
+    UsersCompanion(username: Value("Updated name")),
+  );
   // #enddocregion generated-value
 
   // #docregion companion-custom
