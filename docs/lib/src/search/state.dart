@@ -5,10 +5,15 @@ import 'package:jaspr_riverpod/jaspr_riverpod.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'database.dart';
+import 'loader.dart';
+import 'web_cache_loader.dart';
 
 final searchDatabase = FutureProvider((ref) async {
   final sqlite = await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
-  return await SearchDatabase.open(sqlite, Uri.parse('/search.db.json'));
+  return await SearchDatabase.open(
+    sqlite,
+    CachedIndexLoader(SearchIndexLoader.http(Uri.parse('/search.db.json'))),
+  );
 });
 
 final class SearchTermNotifier extends Notifier<String> {

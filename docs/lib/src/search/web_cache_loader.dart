@@ -1,7 +1,7 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 
-import 'package:universal_web/web.dart' as web;
+import 'package:web/web.dart' as web;
 
 import 'loader.dart';
 
@@ -33,27 +33,44 @@ final class CachedIndexLoader implements SearchIndexLoader {
   }
 
   @override
-  Future<(bool, Uint8List)> fetchPage(
-    SearchDatabaseInfo info,
-    int pageNo,
-  ) async {
-    JSString? cacheKey;
+  Future<FetchedPages> fetchPage(PageFetchQuery query) async {
+    final cache = _cache;
+    if (cache == null) {
+      return await _fallback.fetchPage(query);
+    }
 
-    if (_cache case final cache?) {
-      cacheKey = '/${info.hash}/$pageNo'.toJS;
+    var fromCache = Uint8List(query.length);
+    var hasMissingPages = false;
+    for (var page = query.startPage; page < query.endPage; page++) {
+      final cacheKey = '/${query.info.hash}/$page'.toJS;
       final cached = await cache.match(cacheKey).toDart;
       if (cached case final response?) {
         final bytes = await response.bytes().toDart;
-        return (true, bytes.toDart);
+        final startOffset =
+            (page - query.startPage) * SearchIndexLoader.pageSize;
+
+        fromCache.setRange(
+          startOffset,
+          startOffset + SearchIndexLoader.pageSize,
+          bytes.toDart,
+        );
+      } else {
+        hasMissingPages = true;
+        break;
       }
     }
 
-    final source = await _fallback.fetchPage(info, pageNo);
-    if (_cache case final cache?) {
-      if (source.$1) {
-        cache.put(cacheKey!, web.Response(source.$2.toJS));
-      }
+    if (!hasMissingPages) {
+      return FetchedPages(startPage: query.startPage, pages: fromCache);
     }
+
+    final source = await _fallback.fetchPage(query);
+    final endPage = source.endPage;
+    for (var page = source.startPage; page < endPage; page++) {
+      final cacheKey = '/${query.info.hash}/$page'.toJS;
+      cache.put(cacheKey, web.Response(source.viewPage(page).toJS));
+    }
+
     return source;
   }
 
@@ -80,5 +97,5 @@ final class CachedIndexLoader implements SearchIndexLoader {
   }
 }
 
-@JS('cache')
+@JS('caches')
 external web.CacheStorage? get _cacheStorage;

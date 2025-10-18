@@ -16,12 +16,9 @@ final class SearchDatabase {
 
   static Future<SearchDatabase> open(
     CommonSqlite3 sqlite3,
-    Uri databaseUri,
+    SearchIndexLoader loader,
   ) async {
-    final vfs = HttpFileSystem(
-      name: 'http',
-      loader: SearchIndexLoader.http(databaseUri),
-    );
+    final vfs = HttpFileSystem(name: 'http', loader: loader);
     sqlite3.registerVirtualFileSystem(vfs);
     final db = await vfs.asyncify(() {
       return sqlite3.open('/database', vfs: 'http', mode: OpenMode.readOnly);
@@ -235,7 +232,7 @@ final class _HttpFile extends BaseVfsFile {
   @override
   int xFileSize() {
     if (_vfs._cache._info case final info?) {
-      return info.blocks * SearchIndexLoader.pageSize;
+      return info.pages * SearchIndexLoader.pageSize;
     }
 
     _vfs.blockOn(_vfs._cache.resolveTotalSize());
@@ -277,39 +274,49 @@ final class _BlockCache {
 
   Future<void> resolveTotalSize() async {
     final meta = _info = await loader.fetchMeta();
-    _cachedPages = List.filled(meta.blocks, null);
+    _cachedPages = List.filled(meta.pages, null);
+
+    // Load the first 10 pages to fetch schema and inner btree pages.
+    await ensureHasRange(0, _pageSize * min(10, meta.pages));
   }
 
   /// Ensures that the range from `offset` until `offset + length` (exclusive)
   /// is cached.
   FutureOr<void> ensureHasRange(int offset, int length) {
     var page = _pageIndex(offset);
-    var endPageInclusive = _pageIndex(offset + length - 1);
+    var endPageExclusive = _pageIndex(offset + length + _pageSize - 1);
     var cachedPages = _cachedPages!;
 
-    for (var i = page; i <= endPageInclusive; i++) {
-      if (cachedPages[page] == null) {
-        // We could fetch multiple pages concurrently, but most of the time
-        // SQLite will only read a single page at the time anyway.
-        return loader.fetchPage(_info!, i).then((response) {
-          final (partial, bytes) = response;
-          if (partial) {
-            assert(bytes.length == _pageSize);
-            cachedPages[i] = bytes;
-          } else {
-            assert(bytes.length == _pageSize * cachedPages.length);
-            for (var i = 0; i < cachedPages.length; i++) {
-              cachedPages[i] = bytes.buffer.asUint8List(
-                i * _pageSize,
-                _pageSize,
-              );
-            }
-          }
-        });
-      }
+    // Trim the range from page, endPageInclusive to remove pages at both ends
+    // that have already been cached.
+    while (cachedPages[page] != null && page < endPageExclusive) {
+      page++;
+    }
+    while (cachedPages[endPageExclusive - 1] != null &&
+        endPageExclusive > page) {
+      endPageExclusive--;
     }
 
-    return null;
+    if (page >= endPageExclusive) {
+      // All pages have already been cached, no need to fetch anything.
+      return null;
+    }
+
+    return loader
+        .fetchPage(
+          PageFetchQuery(
+            info: _info!,
+            startPage: page,
+            endPage: endPageExclusive,
+          ),
+        )
+        .then((response) {
+          var startPage = response.startPage;
+          var endPage = response.endPage;
+          for (var foundPage = startPage; foundPage < endPage; foundPage++) {
+            cachedPages[foundPage] = response.viewPage(foundPage);
+          }
+        });
   }
 
   int _pageIndex(int offset) {

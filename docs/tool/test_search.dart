@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift_website/src/search/database.dart';
+import 'package:drift_website/src/search/loader.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 /// Testing the `SearchDatabase` by running a search. To test this,
@@ -11,7 +12,7 @@ import 'package:sqlite3/sqlite3.dart';
 void main(List<String> args) async {
   final db = await SearchDatabase.open(
     sqlite3,
-    Uri.parse('http://localhost:8080/search.db.json'),
+    SearchIndexLoader.http(Uri.parse('http://localhost:8080/search.db.json')),
   );
   final term = args.join(' ');
 
