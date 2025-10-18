@@ -1,4 +1,4 @@
-## 2.29.0-dev
+## 2.29.0
 
 - Fix invalid schema code for views.
 - Add the `known_tables` option. It allows defining external tables assumed to be available

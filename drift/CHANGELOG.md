@@ -1,9 +1,10 @@
-## 2.29.0-dev
+## 2.29.0
 
 - Allow specifying ordering for columns in `@TableIndex` annotation.
 - Add `DelegatedDatabase.externalExecutor`, allowing transactions started
   externally to be used with drift.
 - Add `Batch.insertFromSelect` to insert rows from a select statement in a batch.
+- Devtools extension: Support exporting databases.
 
 ## 2.28.2
 

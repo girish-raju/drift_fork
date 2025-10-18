@@ -1,4 +1,4 @@
-## 0.42.0-dev
+## 0.42.0
 
 - Fix unresolved references in CTEs resolving against the scope of the main query.
 - Static analysis support for the PowerSync SQLite extension.
