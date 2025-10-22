@@ -418,15 +418,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     if (expression is ListLiteral) {
       for (final entry in expression.elements) {
-        if (entry is StringLiteral) {
-          final value = entry.stringValue;
-          if (value != null) {
-            foundConstraints.add(value);
-            foundConstraintSources.add(entry);
-          }
+        if (entry case StringLiteral(:final stringValue?)) {
+          foundConstraints.add(stringValue);
+          foundConstraintSources.add(entry);
         } else {
-          reportError(DriftAnalysisError.inDartAst(
-              element, entry, 'This must be a string literal.'));
+          reportError(DriftAnalysisError.inDartAst(element, entry,
+              'Drift can only verify custom constraints set as constant string literals.'));
         }
       }
     } else {

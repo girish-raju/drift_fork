@@ -491,4 +491,36 @@ class Preferences extends Table {
     expect(file.allErrors,
         [isDriftError(contains('is only meaningful for `STRICT` tables'))]);
   });
+
+  test('warns about non-constant custom constraints', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+@DataClassName('MyTable')
+class MyTables extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+}
+
+@DataClassName('MyOtherThing')
+class MyOtherThings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get otherId => integer()();
+  IntColumn get blahId => integer()();
+  TextColumn get name => text().nullable()();
+
+  @override
+  List<String> get customConstraints => ["UNIQUE(${otherId.name}, ${blahId.name})"];
+}
+
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    expect(file.allErrors, [
+      isDriftError(contains(
+          'can only verify custom constraints set as constant string literals.'))
+    ]);
+  });
 }
