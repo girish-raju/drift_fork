@@ -370,7 +370,9 @@ class WithConstraints extends Table {
           .withSpan('customConstraints')
     ]);
     expect(withConstraints.errorsDuringAnalysis, [
-      isDriftError('This must be a string literal.').withSpan('1'),
+      isDriftError(contains(
+              'can only verify custom constraints set as constant string literals'))
+          .withSpan('1'),
       isDriftError('Could not parse this table constraint').withSpan("'two'"),
       isDriftError('Could not parse this table constraint').withSpan("'three'"),
     ]);
