@@ -159,7 +159,6 @@ class SchemaIsolate {
   static Future<List<CreateStatement>> collectStatements({
     required DriftOptions options,
     required List<DriftElement> allElements,
-    required List<DriftSchemaElement> elementFilter,
     File? dumpStartupCode,
   }) async {
     final result = await _startAndRun((
@@ -171,9 +170,8 @@ class SchemaIsolate {
       'v2',
       json.encode({
         'dialects': [
-          for (final dialect in SqlDialect.values) dialect.name,
+          for (final dialect in options.supportedDialects) dialect.name,
         ],
-        'elements': [for (final element in elementFilter) element.schemaName]
       })
     ]);
 

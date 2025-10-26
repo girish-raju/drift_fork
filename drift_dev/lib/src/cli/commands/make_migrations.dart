@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift_dev/src/analysis/results/results.dart';
@@ -321,7 +320,7 @@ class _MigrationTestEmitter {
 
     final writer = SchemaWriter(driftElements, options: cli.project.options);
     final schemaFile = driftSchemaFile(schemaVersion);
-    final content = json.encode(await writer.createSchemaJson(
+    final content = SchemaWriter.json.convert(await writer.createSchemaJson(
         dumpStartupCode: dumpGeneratedSchemaCode));
     if (!schemaFile.existsSync()) {
       cli.logger

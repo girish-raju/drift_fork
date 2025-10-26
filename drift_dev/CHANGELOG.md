@@ -1,5 +1,6 @@
 ## 2.29.1-dev
 
+- Schema export: Always export generated SQL statements as a reference.
 - Schema export: Always use temporary file instead of data URI.
 
 ## 2.29.0

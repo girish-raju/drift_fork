@@ -18,7 +18,29 @@ import 'verifier_common.dart';
 Future<List<DriftElement>> extractDriftElementsFromDatabase(
     CommonDatabase database) async {
   // Put everything from sqlite_schema into a fake drift file, analyze it.
-  final logger = Logger('extractDriftElementsFromDatabase');
+  final createStatements = <String>[];
+  for (final row in database.select('select * from sqlite_master')) {
+    final name = row['name'] as String?;
+    var sql = row['sql'] as String?;
+
+    if (name == null || sql == null) {
+      continue;
+    }
+
+    if (!sql.endsWith(';')) {
+      sql += ';';
+    }
+
+    createStatements.add(sql);
+  }
+
+  return await extractDriftElementsFromSql(createStatements);
+}
+
+Future<List<DriftElement>> extractDriftElementsFromSql(
+    List<String> nameToCreateStatements) async {
+  // Put all create statements into a fake file, then analyze it.
+  final logger = Logger('extractDriftElementsFromSql');
   final uri = Uri.parse('db.drift');
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
   final driver = DriftAnalysisDriver(
@@ -34,16 +56,7 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   final engineForParsing = driver.newSqlEngine();
   final entities = <String, String>{};
   final virtualTableNames = <String>[];
-  for (final row in database.select('select * from sqlite_master')) {
-    final name = row['name'] as String?;
-    var sql = row['sql'] as String?;
-
-    if (name == null ||
-        sql == null ||
-        isInternalElement(name, virtualTableNames)) {
-      continue;
-    }
-
+  for (var sql in nameToCreateStatements) {
     if (!sql.endsWith(';')) {
       sql += ';';
     }
@@ -57,7 +70,13 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
       virtualTableNames.add(parsed.tableName);
     }
 
-    entities[name] = sql;
+    if (parsed is CreatingStatement) {
+      if (!isInternalElement(parsed.createdName, virtualTableNames)) {
+        entities[parsed.createdName] = sql;
+      }
+    } else {
+      entities['atCreate_${entities.length}'] = '@create: $sql';
+    }
   }
   entities.removeWhere((name, _) => isInternalElement(name, virtualTableNames));
   backend.contents = entities.values.join('\n');
