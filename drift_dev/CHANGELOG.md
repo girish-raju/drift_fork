@@ -1,3 +1,7 @@
+## 2.29.1-dev
+
+- Schema export: Always use temporary file instead of data URI.
+
 ## 2.29.0
 
 - Fix invalid schema code for views.
