@@ -7,6 +7,7 @@ import 'package:sqlparser/sqlparser.dart';
 import '../../analysis/backend.dart';
 import '../../analysis/driver/driver.dart';
 import '../../analysis/results/results.dart';
+import 'schema_files.dart';
 import 'verifier_common.dart';
 
 /// Extracts drift elements from the schema of an existing database.
@@ -41,7 +42,7 @@ Future<List<DriftElement>> extractDriftElementsFromSql(
     List<String> nameToCreateStatements) async {
   // Put all create statements into a fake file, then analyze it.
   final logger = Logger('extractDriftElementsFromSql');
-  final uri = Uri.parse('db.drift');
+  final uri = SchemaReader.elementUri;
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
   final driver = DriftAnalysisDriver(
       backend,
