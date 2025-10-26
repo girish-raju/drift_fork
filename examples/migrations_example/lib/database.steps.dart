@@ -769,7 +769,7 @@ i1.GeneratedColumn<String> _column_20(String aliasedName) => i1.GeneratedColumn<
         String>('birthday', aliasedName, true,
     type: i1.DriftSqlType.string,
     $customConstraints:
-        'NULL CHECK (JULIANDAY(birthday) > JULIANDAY(\'1900-01-01T00:00:00.000 +01:00\'))');
+        'NULL CHECK (JULIANDAY(birthday) > JULIANDAY(\'1900-01-01T00:00:00.000Z\'))');
 i1.GeneratedColumn<int> _column_21(String aliasedName) =>
     i1.GeneratedColumn<int>('next_user', aliasedName, true,
         type: i1.DriftSqlType.int,

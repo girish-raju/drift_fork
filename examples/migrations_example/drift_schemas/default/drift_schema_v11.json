@@ -73,7 +73,7 @@
                         "lexeme": "DateTime",
                         "import_uri": "dart:core"
                       },
-                      "(1900)))"
+                      ".utc(1900)))"
                     ]
                   }
                 }
@@ -329,7 +329,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"users\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL DEFAULT 'name', \"birthday\" TEXT NULL CHECK(JULIANDAY(\"birthday\") > JULIANDAY('1900-01-01T00:00:00.000 +01:00')), \"next_user\" INTEGER NULL REFERENCES users (id), UNIQUE (\"name\", \"birthday\"), CHECK (LENGTH(name) < 10));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"users\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL DEFAULT 'name', \"birthday\" TEXT NULL CHECK(JULIANDAY(\"birthday\") > JULIANDAY('1900-01-01T00:00:00.000Z')), \"next_user\" INTEGER NULL REFERENCES users (id), UNIQUE (\"name\", \"birthday\"), CHECK (LENGTH(name) < 10));"
         }
       ]
     },

@@ -27,7 +27,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints:
-          'NULL CHECK (JULIANDAY(birthday) > JULIANDAY(\'1900-01-01T00:00:00.000 +01:00\'))');
+          'NULL CHECK (JULIANDAY(birthday) > JULIANDAY(\'1900-01-01T00:00:00.000Z\'))');
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
