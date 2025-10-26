@@ -81,12 +81,17 @@ If drift is unable to extract the version from your `schemaVersion` getter, prov
 $ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v3.json
 ```
 
-!!! success "<i class="fas fa-lightbulb"></i> Dumping a database"
+!!! tip "Dumping a database"
 
 
     If, instead of exporting the schema of a database class, you want to export the schema of an existing sqlite3
     database file, you can do that as well! `drift_dev schema dump` recognizes a sqlite3 database file as its first
     argument and can extract the relevant schema from there.
+
+The goal of these exported schemas is to match the actual `CREATE` statements making up your database.
+For this reason, some columns like booleans and date time values get generated as the inner SQL type.
+Using the actual source of truth as a snapshot instead of higher-level drift types makes exported schemas more
+resilient to changes in your app or drift that could affect how the schema gets generated.
 
 ## What next?
 
