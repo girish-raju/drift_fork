@@ -119,7 +119,7 @@ final _jsonFunctionResultSet = CustomResultSet([
   // https://www.sqlite.org/json1.html#the_json_each_and_json_tree_table_valued_functions
   // we use string for any
   TableColumn('key', const ResolvedType(type: BasicType.text)),
-  TableColumn('value', const ResolvedType()),
+  TableColumn('value', const ResolvedType(nullable: true)),
   TableColumn('type', const ResolvedType(type: BasicType.text)),
   TableColumn('atom', const ResolvedType(type: BasicType.text)),
   TableColumn('type', const ResolvedType(type: BasicType.text)),
