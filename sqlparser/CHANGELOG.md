@@ -1,3 +1,7 @@
+## 0.42.1-dev
+
+- Support new features introduced in SQLite version 3.51.0.
+
 ## 0.42.0
 
 - Fix unresolved references in CTEs resolving against the scope of the main query.
