@@ -139,6 +139,7 @@ QueryExecutor driftDatabase({
       await databaseFile(),
       setup: native?.setup,
       isolateDebugLog: native?.isolateDebugLog ?? false,
+      isolateSetup: native?.isolateSetup,
     );
   }));
 }
@@ -155,6 +156,8 @@ void _isolateEntrypoint(_EntrypointMessage message) {
   if (IsolateNameServer.registerPortWithName(
       connections.sendPort, portName(message.name))) {
     final controlPortName = isolateControlPortName(message.name);
+    message.options.isolateSetup?.call();
+
     final server = DriftIsolate.inCurrent(
       () => NativeDatabase(File(message.path), setup: message.options.setup),
       port: connections,

@@ -130,6 +130,13 @@ final class DriftNativeOptions {
   /// can't be sent over isolates.
   final void Function(CommonDatabase db)? setup;
 
+  /// An optional callback to be invoked when `drift_flutter` spawns a
+  /// background isolate to host database connections.
+  ///
+  /// This could be used to configure how `libsqlite3` is loaded, or setup state
+  /// that needs to be accessible in the background isolate.
+  final void Function()? isolateSetup;
+
   /// Create drift options effective when opening drift databases on native
   /// platforms.
   const DriftNativeOptions({
@@ -138,6 +145,7 @@ final class DriftNativeOptions {
     this.databasePath,
     this.databaseDirectory,
     this.tempDirectoryPath,
+    this.isolateSetup,
     this.setup,
   }) : assert(
           databasePath == null || databaseDirectory == null,
