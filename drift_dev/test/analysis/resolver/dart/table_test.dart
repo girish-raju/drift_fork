@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -524,5 +525,29 @@ class MyOtherThings extends Table {
       isDriftError(contains(
           'can only verify custom constraints set as constant string literals.'))
     ]);
+  });
+
+  test('supports dot shorthand syntax', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get otherId => integer().references(Users, #id, onDelete: .cascade)();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final otherId = table.columns[1];
+    expect(otherId.nameInSql, 'other_id');
+    expect(
+        otherId.constraints,
+        contains(isA<ForeignKeyReference>()
+            .having((e) => e.onDelete, 'onDelete', ReferenceAction.cascade)));
   });
 }

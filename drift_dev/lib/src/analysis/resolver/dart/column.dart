@@ -210,26 +210,24 @@ class ColumnParser {
           bool initiallyDeferred = false;
 
           ReferenceAction? parseAction(Expression expr) {
-            if (expr is! PrefixedIdentifier) {
+            String name;
+            if (expr is PrefixedIdentifier) {
+              name = expr.identifier.name;
+            } else if (expr is DotShorthandPropertyAccess) {
+              name = expr.propertyName.name;
+            } else {
               _resolver.reportError(DriftAnalysisError.inDartAst(element, expr,
                   'Should be a direct enum reference (`KeyAction.cascade`)'));
               return null;
             }
 
-            final name = expr.identifier.name;
-            switch (name) {
-              case 'setNull':
-                return ReferenceAction.setNull;
-              case 'setDefault':
-                return ReferenceAction.setDefault;
-              case 'cascade':
-                return ReferenceAction.cascade;
-              case 'restrict':
-                return ReferenceAction.restrict;
-              case 'noAction':
-              default:
-                return ReferenceAction.noAction;
-            }
+            return switch (name) {
+              'setNull' => ReferenceAction.setNull,
+              'setDefault' => ReferenceAction.setDefault,
+              'cascade' => ReferenceAction.cascade,
+              'restrict' => ReferenceAction.restrict,
+              'noAction' || _ => ReferenceAction.noAction,
+            };
           }
 
           for (final expr in args) {
