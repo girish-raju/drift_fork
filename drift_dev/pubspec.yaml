@@ -40,9 +40,7 @@ dependencies:
   sqlparser: ^0.42.0
 
   # Dart analysis
-  # Note: When changing this to a lower bound of 8.x, please re-enable
-  # deprecation warnings in analysis_options.yaml
-  analyzer: ^8.1.0
+  analyzer: '>=8.1.0 <10.0.0'
   source_span: ^1.10.0
   package_config: ^2.1.0
   pub_semver: ^2.1.4

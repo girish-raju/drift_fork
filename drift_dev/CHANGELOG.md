@@ -2,6 +2,7 @@
 
 - Schema export: Always export generated SQL statements as a reference.
 - Schema export: Always use temporary file instead of data URI.
+- Support analyzer versions 9.x.
 
 ## 2.29.0
 
