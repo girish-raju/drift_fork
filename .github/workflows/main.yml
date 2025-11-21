@@ -277,9 +277,9 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        # We currently don't support <3.35.1 because we depend on melos v7, which needs Dart 3.9.0.
+        # We currently need 3.38 because we want to support recent analyzer versions.
         # Generally, we try to support the latest two stable Flutter releases.
-        flutter: ["3.35.1"]
+        flutter: ["3.38.2"]
 
     steps:
       - uses: actions/checkout@v4
