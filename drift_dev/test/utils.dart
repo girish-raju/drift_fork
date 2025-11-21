@@ -92,8 +92,8 @@ Future<DriftBuildResult> emulateDriftBuild({
     generateFor:
         inputs.keys.where((e) => makeAssetId(e).package == 'a').toSet(),
   );
-  if (result.buildResult.failureType != null) {
-    throw Exception('testBuilders failed');
+  if (!result.succeeded) {
+    throw Exception('testBuilders failed: ${result.errors}');
   }
 
   logger.clearListeners();
