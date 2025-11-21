@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 import 'package:sqlite3/common.dart';
@@ -123,7 +123,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
       throw UnsupportedError('Dart analyzer not available here');
 
   @override
-  Future<Never> loadElementDeclaration(Element2 element) async {
+  Future<Never> loadElementDeclaration(Element element) async {
     _noAnalyzer();
   }
 
@@ -136,7 +136,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   bool get canReadDart => false;
 
   @override
-  Future<LibraryElement2> readDart(Uri uri) async {
+  Future<LibraryElement> readDart(Uri uri) async {
     _noAnalyzer();
   }
 
@@ -147,7 +147,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   }
 
   @override
-  Future<Element2?> resolveTopLevelElement(
+  Future<Element?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) {
     _noAnalyzer();
   }

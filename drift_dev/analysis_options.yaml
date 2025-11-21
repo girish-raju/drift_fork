@@ -5,7 +5,3 @@ analyzer:
     strict-casts: true
   exclude:
     - "**/*.g.dart"
-  errors:
-    # We temporarily want to ignore analyzer deprecation warnings because we need to support both
-    # analyzer 7.3+ (element2) and 8.x (back to element).
-    deprecated_member_use: ignore

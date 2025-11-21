@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../backend.dart';
@@ -379,7 +379,7 @@ abstract class AnalysisResultCacheReader {
 
   Future<CachedDiscoveryResults?> readDiscovery(Uri uri);
 
-  Future<LibraryElement2?> readTypeHelperFor(Uri uri);
+  Future<LibraryElement?> readTypeHelperFor(Uri uri);
 
   Future<String?> readElementCacheFor(Uri uri);
 }
