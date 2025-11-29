@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/extensions/native.dart';
 import 'package:test/test.dart';
 
@@ -37,10 +37,8 @@ void main() {
     await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
 
     Future<bool?> evaluate(Expression<bool> expr) async {
-      final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
-          .getSingle();
-
-      return result.read<bool>(expr);
+      final row = await db.selectExpressions([expr]).getSingle();
+      return row.read<bool>(expr);
     }
 
     expect(
@@ -52,6 +50,12 @@ void main() {
       evaluate(const Variable('Dart is cool')
           .containsCase('dart', caseSensitive: false)),
       completion(isTrue),
+    );
+
+    expect(
+      evaluate(const Variable<String>(null)
+          .containsCase('dart', caseSensitive: false)),
+      completion(isNull),
     );
   });
 
