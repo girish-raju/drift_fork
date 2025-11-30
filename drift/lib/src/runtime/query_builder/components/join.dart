@@ -3,20 +3,24 @@ part of '../query_builder.dart';
 /// A type for a [Join] (e.g. inner, outer).
 enum _JoinType {
   /// Perform an inner join, see the [innerJoin] function for details.
-  inner,
+  inner('INNER'),
 
   /// Perform a (left) outer join, see also [leftOuterJoin]
-  leftOuter,
+  leftOuter('LEFT OUTER'),
+
+  /// Perform a right outer join, see also [rightOuterJoin].
+  rightOuter('RIGHT OUTER'),
+
+  /// Perform a full outer join, see also [fullOuterJoin].
+  fullOuter('FULL OUTER'),
 
   /// Perform a full cross join, see also [crossJoin].
-  cross
-}
+  cross('CROSS');
 
-const Map<_JoinType, String> _joinKeywords = {
-  _JoinType.inner: 'INNER',
-  _JoinType.leftOuter: 'LEFT OUTER',
-  _JoinType.cross: 'CROSS',
-};
+  final String _keyword;
+
+  const _JoinType(this._keyword);
+}
 
 /// Used internally by drift when calling [SimpleSelectStatement.join].
 ///
@@ -54,7 +58,7 @@ class Join<T extends HasResultSet, D> extends Component {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(_joinKeywords[_type]);
+    context.buffer.write(_type._keyword);
     context.buffer.write(' JOIN ');
 
     final resultSet = table as ResultSetImplementation<T, D>;
@@ -93,6 +97,24 @@ Join innerJoin(HasResultSet other, Expression<bool> on, {bool? useColumns}) {
 Join leftOuterJoin(HasResultSet other, Expression<bool> on,
     {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
+}
+
+/// Creates an SQL right outer join that can be used in
+/// [SimpleSelectStatement.join].
+///
+/// {@macro drift_join_include_results}
+Join rightOuterJoin(HasResultSet other, Expression<bool> on,
+    {bool? useColumns}) {
+  return Join._(_JoinType.rightOuter, other, on, includeInResult: useColumns);
+}
+
+/// Creates an SQL full outer join that can be used in
+/// [SimpleSelectStatement.join].
+///
+/// {@macro drift_join_include_results}
+Join fullOuterJoin(HasResultSet other, Expression<bool> on,
+    {bool? useColumns}) {
+  return Join._(_JoinType.fullOuter, other, on, includeInResult: useColumns);
 }
 
 /// Creates a sql cross join that can be used in

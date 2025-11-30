@@ -1,3 +1,7 @@
+## 2.30.0-wip
+
+- Add `rightOuterJoin` and `fullOuterJoin`.
+
 ## 2.29.0
 
 - Allow specifying ordering for columns in `@TableIndex` annotation.

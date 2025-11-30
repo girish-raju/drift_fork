@@ -80,7 +80,7 @@ that they are complete results.
 
 ## Joins
 
-Drift supports sql joins to write queries that operate on more than one table. To use that feature, start
+Drift supports SQL joins to write queries that operate on more than one table. To use that feature, start
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
 inner and left outer joins, a `ON` expression needs to be specified.
 
@@ -89,6 +89,10 @@ inner and left outer joins, a `ON` expression needs to be specified.
 Of course, you can also join multiple tables:
 
 <Snippet href="/lib/src/snippets/dart_api/select.dart" name="otherTodosInSameCategory" />
+
+Different type of join operators can be created with the
+`innerJoin`, `leftOuterJoin`, `rightOuterJoin`, `fullOuterJoin` and `crossJoin` methods
+in drift.
 
 ### Parsing results
 
