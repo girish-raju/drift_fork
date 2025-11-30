@@ -1,8 +1,6 @@
 ---
-
-title: generation_options
+title: Generation options
 description: Options for `drift_dev` and `build_runner` to change the generated code.
-
 ---
 
 The `drift_dev` package supports a range of options that control how code

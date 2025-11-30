@@ -42,6 +42,7 @@
 /docs/platforms/vm/ /platforms/vm/
 /docs/dart-api/views/ /dart_api/views/
 /docs/advanced-features/builder_options/ /generation_options/
+/options/ /generation_options/
 /docs/generation-options/modular/ /generation_options/modular/
 /docs/upgrading/ /guides/upgrading/
 /web/ /platforms/web/
