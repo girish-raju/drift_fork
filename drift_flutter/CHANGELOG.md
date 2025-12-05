@@ -1,4 +1,4 @@
-## 0.2.8-dev
+## 0.2.8
 
 - Add `isolateSetup` parameter to `DriftNativeOptions` to setup isolates spawned to host database connections.
 

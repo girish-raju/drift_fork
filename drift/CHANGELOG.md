@@ -1,4 +1,4 @@
-## 2.30.0-wip
+## 2.30.0
 
 - Add `rightOuterJoin` and `fullOuterJoin`.
 - Wasm: Add the `WasmProbeResult.moveFromIndexedDBToOpfs()` method and the

@@ -7,6 +7,7 @@ on:
       - 'drift_dev-[0-9]+.[0-9]+.[0-9]+*'
       - 'sqlparser-[0-9]+.[0-9]+.[0-9]+*'
       - 'drift_postgres-[0-9]+.[0-9]+.[0-9]+*'
+      - 'drift_flutter-[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   setup:
@@ -107,3 +108,22 @@ jobs:
       - run: dart pub get
       - run: dart pub lish --dry-run
       - run: dart pub lish -f
+
+  publish_drift_flutter:
+    if: "${{ startsWith(github.ref_name, 'drift_postgres-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: drift_flutter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: dart pub get
+      - run: flutter pub publish --dry-run
+      - run: flutter pub publish -f

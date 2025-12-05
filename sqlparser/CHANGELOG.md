@@ -1,4 +1,4 @@
-## 0.42.1-dev
+## 0.42.1
 
 - Support new features introduced in SQLite version 3.51.0.
 

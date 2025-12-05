@@ -1,8 +1,9 @@
-## 2.29.1-dev
+## 2.30.0
 
 - Schema export: Always export generated SQL statements as a reference.
 - Schema export: Always use temporary file instead of data URI.
 - Support analyzer versions 9.x.
+- Support dothand syntax when analyzing Dart sources.
 
 ## 2.29.0
 
