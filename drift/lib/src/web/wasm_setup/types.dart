@@ -44,7 +44,7 @@ enum WasmStorageImplementation {
   /// Chrome (https://crbug.com/1088481) and Safari don't support this yet.
   ///
   /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system
-  opfsShared,
+  opfsShared(WebStorageApi.opfs),
 
   /// Uses the [Origin private file system APIs][OPFS] provided my modern
   /// browsers to persist data.
@@ -70,24 +70,30 @@ enum WasmStorageImplementation {
   ///
   /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system´
   /// [cross-origin isolation]: https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated
-  opfsLocks,
+  opfsLocks(WebStorageApi.opfs),
 
   /// Emulates a file system over `IndexedDB` in a shared worker.
-  sharedIndexedDb,
+  sharedIndexedDb(WebStorageApi.indexedDb),
 
   /// Uses the asynchronous IndexedDB API outside of any worker to persist data.
   ///
   /// Unlike [opfsShared], [opfsLocks] or [sharedIndexedDb], this storage
   /// implementation can't prevent data races if your app is opened in multiple
   /// tabs at the same time, which is why it's declared as as unsafe.
-  unsafeIndexedDb,
+  unsafeIndexedDb(WebStorageApi.indexedDb),
 
   /// A fallback storage implementation that doesn't store anything.
   ///
   /// This implementation is chosen when none of the features needed for other
   /// storage implementations are supported by the current browser. In this case,
   /// [WasmDatabaseResult.missingFeatures] enumerates missing browser features.
-  inMemory,
+  inMemory(null);
+
+  /// The [WebStorageApi] used to persist data with this storage implementation,
+  /// or `null` for [inMemory].
+  final WebStorageApi? storageApi;
+
+  const WasmStorageImplementation(this.storageApi);
 }
 
 /// The storage API used by drift to store a database.
@@ -210,6 +216,20 @@ abstract interface class WasmProbeResult {
 
   /// Attempts to read an [ExistingDatabase] from storage.
   Future<Uint8List?> exportDatabase(ExistingDatabase database);
+
+  /// Moves an existing database stored in IndexedDB to OPFS.
+  ///
+  /// This may be convenient if this result indicates that an OPFS-based
+  /// implementation is available ([availableStorages]) while an existing copy
+  /// of the database is stored in IndexedDB.
+  ///
+  /// Note that this function does not check whether an IndexedDB database with
+  /// the given name exists, or that an OPFS directory with the name does not
+  /// exist already.
+  ///
+  /// It unconditionally copies files stored in IndexedDB to OPFS, and then
+  /// deletes the old IndexedDB database.
+  Future<void> moveFromIndexedDBToOpfs(String databaseName);
 }
 
 /// The result of opening a WASM database with default options.

@@ -8,12 +8,12 @@ library;
 
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
+import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show DedicatedWorkerGlobalScope, SharedWorkerGlobalScope;
-import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
@@ -138,6 +138,11 @@ class WasmDatabase extends DelegatedDatabase {
   /// When [enableMigrations] is set to `false`, drift will not check the
   /// `user_version` pragma when opening the database or run migrations.
   ///
+  /// If [moveExistingIndexedDbToOpfs] is enabled (it is currently disabled by
+  /// default), drift will attempt to move existing databases from IndexedDB to
+  /// OPFS. This may be useful if previous versions of browsers or your app
+  /// didn't support OPFS.
+  ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
   static Future<WasmDatabaseResult> open({
     required String databaseName,
@@ -145,6 +150,7 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
+    bool moveExistingIndexedDbToOpfs = false,
     bool enableMigrations = true,
   }) async {
     final probed = await probe(
@@ -155,42 +161,43 @@ class WasmDatabase extends DelegatedDatabase {
 
     // If we have an existing database in storage, we want to keep using that
     // format to avoid data loss (e.g. after a browser update that enables a
-    // otherwise preferred storage implementation). In the future, we might want
-    // to consider migrating between storage implementations as well.
+    // otherwise preferred storage implementation).
     final availableImplementations = probed.availableStorages.toList();
+    // Enum values are ordered by preferrability, so just pick the best option.
+    availableImplementations.sortBy<num>((e) => e.index);
+    var selectedImplementation = availableImplementations.firstOrNull ??
+        WasmStorageImplementation.inMemory;
 
-    checkExisting:
-    for (final (location, name) in probed.existingDatabases) {
-      if (name == databaseName) {
-        final implementationsForStorage = switch (location) {
-          WebStorageApi.indexedDb => const [
-              WasmStorageImplementation.sharedIndexedDb,
-              WasmStorageImplementation.unsafeIndexedDb
-            ],
-          WebStorageApi.opfs => const [
-              WasmStorageImplementation.opfsShared,
-              WasmStorageImplementation.opfsLocks,
-            ],
-        };
+    // Check if there is an existing DB and restrict implementations to its storage.
+    final currentDb = _selectExistingDatabase(
+      databaseName,
+      availableImplementations,
+      probed.existingDatabases,
+    );
 
-        // If any of the implementations for this location is still availalable,
-        // we want to use it instead of another location.
-        if (implementationsForStorage.any(availableImplementations.contains)) {
-          availableImplementations
-              .removeWhere((i) => !implementationsForStorage.contains(i));
-          break checkExisting;
+    // If we have an existing database, we need to use its storage API instead
+    // of starting from scratch.
+    if (currentDb != null && currentDb != selectedImplementation.storageApi) {
+      // ... except if we want to move from IndexedDB to OPFS
+      var didMove = false;
+      if (currentDb == WebStorageApi.indexedDb &&
+          selectedImplementation.storageApi == WebStorageApi.opfs) {
+        try {
+          await probed.moveFromIndexedDBToOpfs(databaseName);
+          didMove = true;
+        } catch (e) {
+          // Ok, we'll keep using the old database then.
         }
+      }
+
+      if (!didMove) {
+        selectedImplementation = availableImplementations
+            .firstWhere((e) => e.storageApi == currentDb);
       }
     }
 
-    // Enum values are ordered by preferrability, so just pick the best option
-    // left.
-    availableImplementations.sortBy<num>((element) => element.index);
-
-    final bestImplementation = availableImplementations.firstOrNull ??
-        WasmStorageImplementation.inMemory;
     final connection = await probed.open(
-      bestImplementation,
+      selectedImplementation,
       databaseName,
       localSetup: localSetup,
       initializeDatabase: initializeDatabase,
@@ -198,7 +205,34 @@ class WasmDatabase extends DelegatedDatabase {
     );
 
     return WasmDatabaseResult(
-        connection, bestImplementation, probed.missingFeatures);
+        connection, selectedImplementation, probed.missingFeatures);
+  }
+
+  static WebStorageApi? _selectExistingDatabase(
+    String databaseName,
+    List<WasmStorageImplementation> available,
+    List<ExistingDatabase> existingDatabases,
+  ) {
+    for (final (location, name) in existingDatabases) {
+      if (name != databaseName) continue;
+
+      final implementationsForStorage = switch (location) {
+        WebStorageApi.indexedDb => const [
+            WasmStorageImplementation.sharedIndexedDb,
+            WasmStorageImplementation.unsafeIndexedDb,
+          ],
+        WebStorageApi.opfs => const [
+            WasmStorageImplementation.opfsShared,
+            WasmStorageImplementation.opfsLocks,
+          ],
+      };
+
+      if (implementationsForStorage.any(available.contains)) {
+        return location;
+      }
+    }
+
+    return null;
   }
 
   /// Probes for:
