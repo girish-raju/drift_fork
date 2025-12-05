@@ -110,7 +110,7 @@ jobs:
       - run: dart pub lish -f
 
   publish_drift_flutter:
-    if: "${{ startsWith(github.ref_name, 'drift_postgres-') }}"
+    if: "${{ startsWith(github.ref_name, 'drift_flutter-') }}"
     needs: [setup]
     runs-on: ubuntu-latest
     environment: pub.dev
