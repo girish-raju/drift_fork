@@ -3,17 +3,10 @@ title: Web
 description: Drift support in Flutter and Dart web apps.
 ---
 
-!!! success "Stable web support"
-
-    __Good news__: With drift 2.9.0, web support is stable and officially supported!
-    The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
-    APIs continue to work, using the stable API will bring performance and safety benefits.
-
-
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
 you can use drift databases for the web version of your Flutter and Dart applications.
 Just like the core drift APIs, web support is platform-agnostic:
-Drift web supports Flutter Web, AngularDart, jaspr, plain `package:web/` or any other Dart web framework.
+Drift web supports Flutter Web, jaspr, plain `package:web/` or any other Dart web framework.
 
 While an official sqlite3 build for the web exists, it is fairly large and doesn't support most browsers.
 Drift uses a custom sqlite3 build with a Dart interface sharing a lot of code with the existing native
@@ -46,7 +39,6 @@ browser in that case.
 
 !!! note "Compatibility check"
 
-
     This page includes a tiny drift database compiled to JavaScript.
     You can use it to verify drift works in the browsers you want to target.
     Clicking on the button will start a feature detection run, so you can see which file system
@@ -55,9 +47,6 @@ browser in that case.
     <WebCompatibilityCheck />
 
     More information about these results is available [below](#supported-storage-implementations).
-
-
-
 
 ## Getting started
 
@@ -78,6 +67,15 @@ Drift on the web also requires you to include a portion of drift as a web worker
 host your database in a background thread, improving performance of your website. In some [storage implementations](#supported-storage-implementations),
 the worker is also responsible for sharing your database between different tabs in real-time.
 Again, you can [compile this worker yourself](#compilation) or [grab one from drift releases](https://github.com/simolus3/drift/releases).
+
+!!! danger "Download the correct version"
+
+    You should download the `sqlite3.wasm` and `drift_worker.dart.js` files from the `sqlite3` and `drift`
+    releases that are used in your app (in doubt, check `pubspec.lock` to learn exact versions).
+
+    The files are usually forwards-compatible with newer versions of the packages. But note that drift currently
+    depends on version 2.x of the `sqlite3` package, and `sqlite3.wasm` files from the 3.x releases are
+    incompatible!
 
 In the end, your `web/` directory may look like this:
 
