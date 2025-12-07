@@ -42,7 +42,7 @@ final class SearchDatabase {
 
     var cursor = await useDb(
       () => stmt.selectCursor([
-        term,
+        _escapeSearchTerm(term),
         SearchResult.startMarker,
         SearchResult.endMarker,
         '',
@@ -74,6 +74,13 @@ final class SearchDatabase {
   void close() {
     _db.dispose();
     _vfs._cache.loader.close();
+  }
+
+  static String _escapeSearchTerm(String term) {
+    // https://sqlite.org/fts5.html#fts5_strings: We wrap the string in double
+    // quotes, and use SQL-like escaping.
+    final escaped = term.replaceAll('"', '""');
+    return '"$escaped"';
   }
 }
 
