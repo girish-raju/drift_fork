@@ -12,18 +12,18 @@ final class DriftHeader extends StatelessComponent {
     final currentTab = DriftTab.current(context);
 
     return Navbar(
-      brand: NavbarBrand(href: '/', title: text('Drift')),
+      brand: NavbarBrand(href: '/', title: Component.text('Drift')),
       items: [
         for (final tab in DriftTab.all)
           NavbarLink(
             href: tab.page,
             active: tab == currentTab,
-            children: [text(tab.name)],
+            children: [Component.text(tab.name)],
           ),
         NavbarLink(
           href: 'https://pub.dev/packages/drift',
           active: false,
-          children: [text('pub.dev')],
+          children: [Component.text('pub.dev')],
         ),
       ],
       search: const DriftSearchInput(),

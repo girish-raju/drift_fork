@@ -1,3 +1,4 @@
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_docsy/jaspr_docsy.dart';
 
@@ -17,15 +18,17 @@ final class DriftFooter extends StatelessComponent {
         ],
       ),
       center: span(classes: 'td-footer__authors', [
-        text('©2019–2025'),
+        Component.text('©2019–2025'),
         span(classes: 'td-footer__authors', [
-          text('Simon Binder, Drift authors. Documentation licensed under '),
+          Component.text(
+            'Simon Binder, Drift authors. Documentation licensed under ',
+          ),
           a(href: 'https://creativecommons.org/publicdomain/zero/1.0/', [
-            text('CC0 1.0'),
+            Component.text('CC0 1.0'),
           ]),
-          text(', Drift itself is '),
+          Component.text(', Drift itself is '),
           a(href: 'https://github.com/simolus3/drift/blob/develop/LICENSE', [
-            text('MIT-licensed'),
+            Component.text('MIT-licensed'),
           ]),
         ]),
       ]),

@@ -1,5 +1,5 @@
 import 'package:drift/wasm.dart';
-import 'package:jaspr/browser.dart';
+import 'package:jaspr/client.dart';
 import 'package:universal_web/web.dart' as web;
 
 Future<String> determineDriftWasmCompatibility() async {

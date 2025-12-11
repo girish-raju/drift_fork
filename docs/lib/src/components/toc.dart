@@ -1,3 +1,4 @@
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/jaspr_content.dart' as jaspr;
@@ -20,7 +21,7 @@ final class TableOfContents extends StatelessComponent {
       'Documentation issue: ${data.page['title']}',
     );
 
-    return fragment([
+    return Component.fragment([
       div(classes: 'td-page-meta ms-2 pb-1 pt-2 mb-0', [
         a(
           classes: 'td-page-meta--edit td-page-meta__edit',
@@ -30,7 +31,7 @@ final class TableOfContents extends StatelessComponent {
               'https://github.com/simolus3/drift/edit/develop/docs/content/$source',
           [
             i(classes: 'fa-solid fa-pen-to-square', []),
-            text(' Edit this page'),
+            Component.text(' Edit this page'),
           ],
         ),
         a(
@@ -41,13 +42,15 @@ final class TableOfContents extends StatelessComponent {
               'https://github.com/simolus3/drift/issues/new?template=docs.md&title=$issueTitle',
           [
             i(classes: 'fa-solid fa-list-check fa-fw', []),
-            text(' Create documentation issue'),
+            Component.text(' Create documentation issue'),
           ],
         ),
       ]),
       div(classes: 'td-toc', [
         div(classes: 'td-toc__title', [
-          span(classes: 'td-toc__title__text', [text('On this page')]),
+          span(classes: 'td-toc__title__text', [
+            Component.text('On this page'),
+          ]),
           a(
             classes: 'td-toc__title__link',
             href: '#',
@@ -69,7 +72,7 @@ extension on jaspr.TableOfContents {
   Iterable<Component> _buildToc(List<TocEntry> toc) sync* {
     for (final entry in toc) {
       yield li([
-        a(href: '#${entry.id}', [text(entry.text)]),
+        a(href: '#${entry.id}', [Component.text(entry.text)]),
         if (entry.children.isNotEmpty) ul([..._buildToc(entry.children)]),
       ]);
     }

@@ -16,7 +16,7 @@ final class DriftSidebar extends StatelessComponent {
       entries: [
         SidebarEntry(
           href: tab.page,
-          title: text(tab.name),
+          title: Component.text(tab.name),
           activePath: true,
           children: [for (final group in tab.groups) group],
         ),

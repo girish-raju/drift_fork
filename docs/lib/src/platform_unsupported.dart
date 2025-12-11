@@ -1,5 +1,4 @@
 import 'package:jaspr/jaspr.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:universal_web/web.dart' as web;
 
 Future<String> determineDriftWasmCompatibility() async {
@@ -13,5 +12,3 @@ extension ResolveDomNode on BuildContext {
 Component searchModalImpl() {
   return const Component.empty();
 }
-
-ProviderContainer? get rootContainer => null;

@@ -25,7 +25,7 @@ final class DriftPage extends StatelessComponent {
 
     return SidebarEntry(
       href: referencedPage.url,
-      title: text(title),
+      title: Component.text(title),
       depth: 3,
       activePath: currentRoute == referencedPage.url,
     );
@@ -45,7 +45,7 @@ final class DriftPageGroup extends StatelessComponent {
       depth: 2,
       title: switch (title) {
         null => null,
-        final title => text(title),
+        final title => Component.text(title),
       },
 
       children: pages,

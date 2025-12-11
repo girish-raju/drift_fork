@@ -1,3 +1,4 @@
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 import '../platform_specific.dart';
@@ -25,17 +26,19 @@ final class _WebCompatibilityCheckState extends State<WebCompatibilityCheck> {
         return div([
           if (_compatibilityResult == null) ...[
             button(classes: 'compat', [
-              text('Check compatibility'),
+              Component.text('Check compatibility'),
             ], onClick: startCheck),
-            pre([text('Compatibility check not started yet.')]),
+            pre([Component.text('Compatibility check not started yet.')]),
           ] else if (snapshot.connectionState == ConnectionState.waiting)
-            text('Loading...')
+            Component.text('Loading...')
           else if (snapshot.hasError)
             pre([
-              text('Error: ${snapshot.error}, Trace:\n${snapshot.stackTrace}'),
+              Component.text(
+                'Error: ${snapshot.error}, Trace:\n${snapshot.stackTrace}',
+              ),
             ])
           else
-            pre([text(snapshot.data ?? 'No results available')]),
+            pre([Component.text(snapshot.data ?? 'No results available')]),
         ]);
       },
     );

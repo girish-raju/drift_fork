@@ -1,70 +1,63 @@
 import 'package:drift_website/src/search/database.dart';
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_riverpod/jaspr_riverpod.dart';
 import 'package:universal_web/web.dart' as web;
 
 import '../components/modal.dart';
-import '../platform_specific.dart';
 import 'state.dart';
 
 final class SearchModalImpl extends StatelessComponent {
   @override
-  Component build(BuildContext _) {
-    return ClientComponentScope(
-      child: Builder(
-        builder: (context) {
-          final shouldShow = context.watch(ModalNotifier.provider).searchOpen;
-          if (!shouldShow) {
-            return const Component.empty();
-          }
+  Component build(BuildContext context) {
+    final shouldShow = context.watch(ModalNotifier.provider).searchOpen;
+    if (!shouldShow) {
+      return const Component.empty();
+    }
 
-          return div(
-            classes: 'modal fade show',
-            styles: Styles(display: Display.block),
-            events: {
-              'click': (event) {
-                final target = event.target;
-                if (target case web.HTMLDivElement div) {
-                  if (div.className == 'modal fade show') {
-                    // The outer modal backdrop was clicked (not the modal
-                    // dialog ocntent). Hide the component.
-                    context.read(ModalNotifier.provider.notifier).hideModals();
-                  }
-                }
-              },
-              'keyup': (event) {
-                switch ((event as web.KeyboardEvent).key) {
-                  case 'ArrowUp':
-                    context
-                        .read(SearchResultsNotifier.provider.notifier)
-                        .activeUp();
-                  case 'ArrowDown':
-                    context
-                        .read(SearchResultsNotifier.provider.notifier)
-                        .activeDown();
-                  case 'Enter':
-                    if (context.read(SearchResultsNotifier.provider)
-                        case AsyncData(value: SearchResults(:final active?))) {
-                      web.window.location.href = active.path;
-                    }
-                }
-              },
-            },
-            attributes: {'tabindex': '-1'},
-            [
-              div(classes: 'modal-dialog', [
-                div(classes: 'modal-content', [
-                  div(classes: 'modal-header', [const _SearchInput()]),
-                  div(classes: 'modal-body', [const _SearchResults()]),
-                  div(classes: 'modal-footer', [
-                    small([text('Search built with fts5')]),
-                  ]),
-                ]),
-              ]),
-            ],
-          );
+    return div(
+      classes: 'modal fade show',
+      styles: Styles(display: Display.block),
+      events: {
+        'click': (event) {
+          final target = event.target;
+          if (target case web.HTMLDivElement div) {
+            if (div.className == 'modal fade show') {
+              // The outer modal backdrop was clicked (not the modal
+              // dialog ocntent). Hide the component.
+              context.read(ModalNotifier.provider.notifier).hideModals();
+            }
+          }
         },
-      ),
+        'keyup': (event) {
+          switch ((event as web.KeyboardEvent).key) {
+            case 'ArrowUp':
+              context.read(SearchResultsNotifier.provider.notifier).activeUp();
+            case 'ArrowDown':
+              context
+                  .read(SearchResultsNotifier.provider.notifier)
+                  .activeDown();
+            case 'Enter':
+              if (context.read(SearchResultsNotifier.provider) case AsyncData(
+                value: SearchResults(:final active?),
+              )) {
+                web.window.location.href = active.path;
+              }
+          }
+        },
+      },
+      attributes: {'tabindex': '-1'},
+      [
+        div(classes: 'modal-dialog', [
+          div(classes: 'modal-content', [
+            div(classes: 'modal-header', [const _SearchInput()]),
+            div(classes: 'modal-body', [const _SearchResults()]),
+            div(classes: 'modal-footer', [
+              small([Component.text('Search built with fts5')]),
+            ]),
+          ]),
+        ]),
+      ],
     );
   }
 }
@@ -114,7 +107,7 @@ final class _SearchResults extends StatelessComponent {
     final results = context.watch(SearchResultsNotifier.provider);
 
     if (term.length < 3) {
-      return em([text('Start typing to view search results')]);
+      return em([Component.text('Start typing to view search results')]);
     }
 
     switch (results) {
@@ -124,7 +117,9 @@ final class _SearchResults extends StatelessComponent {
             classes: 'spinner-border',
             attributes: {'role': 'status'},
             [
-              div(classes: 'visually-hidden', [text('Loading search results')]),
+              div(classes: 'visually-hidden', [
+                Component.text('Loading search results'),
+              ]),
             ],
           ),
         ]);
@@ -137,7 +132,7 @@ final class _SearchResults extends StatelessComponent {
       case AsyncError<SearchResults>(:final error, :final stackTrace):
         return pre([
           code([
-            text('''
+            Component.text('''
 Could not load results: $error
 
 $stackTrace
@@ -166,8 +161,10 @@ final class _ResultItem extends StatelessComponent {
 
         highlightItems.add(
           isInMatch
-              ? span(classes: 'fw-bold text-success-emphasis', [text(str)])
-              : text(str),
+              ? span(classes: 'fw-bold text-success-emphasis', [
+                  Component.text(str),
+                ])
+              : Component.text(str),
         );
       }
 
@@ -175,7 +172,9 @@ final class _ResultItem extends StatelessComponent {
       isInMatch = match.group(0)! == 'SNIPSTART';
     }
     if (textOffset < result.highlight.length) {
-      highlightItems.add(text(result.highlight.substring(textOffset)));
+      highlightItems.add(
+        Component.text(result.highlight.substring(textOffset)),
+      );
     }
 
     final snapshot = context.watch(SearchResultsNotifier.provider);
@@ -196,7 +195,7 @@ final class _ResultItem extends StatelessComponent {
       },
       [
         div(classes: 'ms-2 me-auto', [
-          div(classes: 'fw-bold', [text(result.title)]),
+          div(classes: 'fw-bold', [Component.text(result.title)]),
           span(highlightItems),
         ]),
       ],

@@ -1,3 +1,4 @@
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 /// Renders a warning message on debug builds and fails the build on release
@@ -10,7 +11,9 @@ final class BrokenComponent extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     if (kDebugMode) {
-      return strong(styles: Styles(color: Colors.red), [text(message)]);
+      return strong(styles: Styles(color: Colors.red), [
+        Component.text(message),
+      ]);
     } else {
       throw StateError('Cannot build BrokenComponent: $message');
     }

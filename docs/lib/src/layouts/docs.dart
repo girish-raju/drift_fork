@@ -1,3 +1,4 @@
+import 'package:jaspr/dom.dart' hide footer;
 import 'package:jaspr/server.dart';
 import 'package:jaspr_content/jaspr_content.dart' hide TableOfContents;
 import 'package:jaspr_docsy/jaspr_docsy.dart';
@@ -26,7 +27,7 @@ final class DriftDocsLayout extends DocsyLayout {
 
   @override
   Component buildContent(Page page, Component child) {
-    return fragment([
+    return Component.fragment([
       if (page.url == '/') FlutterFavoriteIcon(),
       PageContent(page: page, renderedMarkdown: child),
     ]);

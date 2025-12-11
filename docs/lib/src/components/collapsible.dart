@@ -1,4 +1,6 @@
-import 'package:jaspr/server.dart';
+import 'package:jaspr/dom.dart';
+import 'package:jaspr/jaspr.dart';
+
 import 'package:jaspr_content/jaspr_content.dart';
 
 final class Collapsible extends StatelessComponent {
@@ -10,7 +12,7 @@ final class Collapsible extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return details(classes: 'note', [
-      summary([text(title)]),
+      summary([Component.text(title)]),
       ...children,
     ]);
   }

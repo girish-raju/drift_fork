@@ -1,8 +1,5 @@
-import 'dart:js_interop';
-
 import 'package:drift/wasm.dart';
-import 'package:jaspr/browser.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:jaspr/client.dart';
 import 'package:universal_web/web.dart' as web;
 
 import 'search/component_client.dart';
@@ -34,27 +31,4 @@ extension ResolveDomNode on BuildContext {
 
 Component searchModalImpl() {
   return SearchModalImpl();
-}
-
-final ProviderContainer rootContainer = ProviderContainer(
-  observers: [_ErrorLogger()],
-);
-
-final class _ErrorLogger extends ProviderObserver {
-  @override
-  void providerDidFail(
-    ProviderObserverContext context,
-    Object error,
-    StackTrace stackTrace,
-  ) {
-    super.providerDidFail(context, error, stackTrace);
-
-    web.console.error(
-      <JSAny>[
-        'Provider failed: ${context.provider.name}'.toJS,
-        error.toString().toJS,
-        stackTrace.toString().toJS,
-      ].toJS,
-    );
-  }
 }
