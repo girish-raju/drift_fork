@@ -29,7 +29,7 @@ dependencies:
   markdown: ^7.3.0
   jaspr_docsy:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
-    version: 0.0.4
+    version: 0.0.5
   universal_web: ^1.1.1
   http: ^1.5.0
   web: ^1.1.1
@@ -69,6 +69,3 @@ dependency_overrides:
     path: ../extras/drift_postgres
   sqlparser:
     path: ../sqlparser
-
-  jaspr_docsy:
-    path: /home/simon/src/built_site/jaspr_docsy
