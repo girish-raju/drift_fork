@@ -42,7 +42,7 @@ final class SidebarToggleButton extends StatelessComponent {
               ?.classList
               .add('open');
         },
-        [raw(_menuIcon)],
+        [RawText(_menuIcon)],
       ),
     ]);
   }
