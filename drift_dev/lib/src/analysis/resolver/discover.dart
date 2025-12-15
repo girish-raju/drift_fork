@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:drift/drift.dart' show TableIndex;
 import 'package:source_gen/source_gen.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../backend.dart';
@@ -90,9 +91,11 @@ class DiscoverStep {
         final engine = _driver.newSqlEngine();
         final pendingElements = <DiscoveredDriftElement>[];
 
-        String contents;
+        SourceFile contents;
         try {
-          contents = await _driver.backend.readAsString(_file.ownUri);
+          final stringContents =
+              await _driver.backend.readAsString(_file.ownUri);
+          contents = SourceFile.fromString(stringContents, url: _file.ownUri);
         } catch (e, s) {
           _driver.backend.log
               .fine('Could not read drift sources ${_file.ownUri}', e, s);
@@ -100,7 +103,7 @@ class DiscoverStep {
           break;
         }
 
-        final parsed = engine.parseDriftFile(contents);
+        final parsed = engine.parseDriftFile(contents.span(0));
         for (final error in parsed.errors) {
           _file.errorsDuringDiscovery
               .add(DriftAnalysisError(error.token.span, error.message));

@@ -38,7 +38,7 @@ void main() {
 
   test('recovers from invalid statements', () {
     const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
-    final tokens = Scanner(sql).scanTokens();
+    final tokens = Scanner(fakeSpan(sql)).scanTokens();
     final statements = Parser(tokens).driftFile().statements;
 
     expect(statements, hasLength(1));
@@ -60,7 +60,7 @@ void main() {
     query: SELECT * FROM tbl;
      ''';
 
-    final tokens = Scanner(sql, scanDriftTokens: true).scanTokens();
+    final tokens = Scanner(fakeSpan(sql), scanDriftTokens: true).scanTokens();
     final statements = Parser(tokens, useDrift: true).driftFile().statements;
 
     expect(statements, hasLength(2));
@@ -98,7 +98,7 @@ void main() {
   ''';
 
     final engine = SqlEngine();
-    final ast = engine.parseMultiple(sql).rootNode;
+    final ast = engine.parseMultiple(fakeSpan(sql)).rootNode;
     enforceHasSpan(ast);
 
     enforceEqual(
@@ -152,7 +152,7 @@ SELECT * FROM users;
 ''';
 
     final engine = SqlEngine();
-    final ast = engine.parseMultiple(sql).rootNode;
+    final ast = engine.parseMultiple(fakeSpan(sql)).rootNode;
     enforceHasSpan(ast);
 
     final statements = ast.childNodes.toList();

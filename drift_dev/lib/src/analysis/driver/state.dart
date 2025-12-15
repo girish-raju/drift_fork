@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../results/database.dart';
@@ -137,12 +138,14 @@ abstract class DiscoveredFileState {
 }
 
 class DiscoveredDriftFile extends DiscoveredFileState {
-  final String originalSource;
+  final SourceFile originalSource;
   final DriftFile ast;
   final List<DriftFileImport> imports;
 
   @override
   bool get isValidImport => true;
+
+  FileSpan get originalSourceSpan => originalSource.span(0);
 
   @override
   Iterable<DriftImport> get importDependencies => imports.map((e) => (

@@ -591,7 +591,8 @@ class ColumnParser {
     }
 
     final engine = _resolver.resolver.driver.newSqlEngine();
-    final parseResult = engine.parseColumnConstraints(customConstraints);
+    final parseResult = engine.parseColumnConstraints(
+        SourceFile.fromString(customConstraints).span(0));
     final constraints =
         (parseResult.rootNode as sql.ColumnDefinition).constraints;
 

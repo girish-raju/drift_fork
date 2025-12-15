@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import '../parser/utils.dart';
 
 void expectFullToken(String token, TokenType type) {
-  final scanner = Scanner(token);
+  final scanner = Scanner(fakeSpan(token));
   List<Token> tokens;
   try {
     tokens = scanner.scanTokens();
@@ -62,7 +62,7 @@ void main() {
   });
 
   test('can escape strings', () {
-    final scanner = Scanner("'what''s up'");
+    final scanner = Scanner(fakeSpan("'what''s up'"));
     scanner.scanTokens();
 
     expect(scanner.tokens, hasLength(2)); // eof token at the end
@@ -76,7 +76,7 @@ void main() {
 
   group("parse unterminated string literals", () {
     test('issues error', () {
-      final scanner = Scanner("'unterminated")..scanTokens();
+      final scanner = Scanner(fakeSpan("'unterminated"))..scanTokens();
 
       expect(
         scanner.errors,
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('does not crash if the input ends with apostrophe', () {
-      final scanner = Scanner("'")..scanTokens();
+      final scanner = Scanner(fakeSpan("'"))..scanTokens();
 
       expect(
         scanner.errors,
@@ -103,7 +103,7 @@ void main() {
   });
 
   test('binary string literal', () {
-    final scanner = Scanner("X'1234' x'5678'");
+    final scanner = Scanner(fakeSpan("X'1234' x'5678'"));
     scanner.scanTokens();
 
     expect(scanner.tokens, hasLength(3));
@@ -124,7 +124,7 @@ void main() {
 
   group('parses numeric literals', () {
     void checkLiteral(String lexeme, NumericToken other, num value) {
-      final scanner = Scanner(lexeme)..scanTokens();
+      final scanner = Scanner(fakeSpan(lexeme))..scanTokens();
       final token = scanner.tokens.first as NumericToken;
 
       expect(token.hasSameStructureAs(other), isTrue,
@@ -216,7 +216,7 @@ void main() {
 
   test('named variables', () {
     for (final prefix in [':', '@', r'$']) {
-      final scanner = Scanner('${prefix}name')..scanTokens();
+      final scanner = Scanner(fakeSpan('${prefix}name'))..scanTokens();
       final token = scanner.tokens.first as NamedVariableToken;
 
       expect(token.name, 'name');

@@ -23,7 +23,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
     final typeMapping = await resolver.driver.typeMapping;
     final engine = typeMapping.newEngineWithTables(references);
 
-    final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final resolveTypes = allReferences.dartTypes.isEmpty
         ? null
         : await createTypeResolver(

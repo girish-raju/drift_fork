@@ -19,7 +19,7 @@ class DriftTriggerResolver
     final references = await resolveTableReferences(stmt);
     final engine = await newEngineWithTables(references);
 
-    final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final context = engine.analyzeNode(stmt, source);
     reportLints(context, references);
 
@@ -64,7 +64,7 @@ class DriftTriggerResolver
           as DriftElementWithResultSet?,
       onWrite: onWrite,
       references: references,
-      createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
+      createStmt: stmt.span!.text,
       writes: findWrittenTables(stmt)
           .map(mapWrite)
           .whereType<WrittenDriftTable>()

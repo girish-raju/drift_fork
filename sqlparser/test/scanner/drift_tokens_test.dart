@@ -1,3 +1,4 @@
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:test/test.dart';
@@ -5,7 +6,8 @@ import 'package:test/test.dart';
 void main() {
   test('parses drift specific tokens', () {
     const part = 'c INTEGER MAPPED BY `const Mapper()` NOT NULL **';
-    final scanner = Scanner(part, scanDriftTokens: true);
+    final scanner =
+        Scanner(SourceFile.fromString(part).span(0), scanDriftTokens: true);
     final tokens = scanner.scanTokens();
 
     expect(scanner.errors, isEmpty);

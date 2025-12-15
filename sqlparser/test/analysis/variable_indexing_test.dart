@@ -8,7 +8,7 @@ void main() {
     final engine = SqlEngine()..registerTable(demoTable);
     final context =
         engine.analyze('SELECT ? = :test FROM demo LIMIT ?4 OFFSET ?;');
-    // indices:                1   2                      4        5
+    // indices:                      1   2                      4        5
 
     final select = context.root as SelectStatement;
     final firstEquals = (select.columns[0] as ExpressionResultColumn).expression

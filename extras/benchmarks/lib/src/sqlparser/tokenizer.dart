@@ -1,13 +1,14 @@
 import 'dart:math';
 
 import 'package:benchmarks/benchmarks.dart';
+import 'package:source_span/source_span.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 class TokenizerBenchmark extends BenchmarkBase {
-  late StringBuffer input;
+  late SourceFile input;
 
   static const int size = 10000;
 
@@ -16,7 +17,7 @@ class TokenizerBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    input = StringBuffer();
+    final input = StringBuffer();
 
     final random = Random();
     final keywordLexemes = keywords.keys.toList();
@@ -26,11 +27,13 @@ class TokenizerBenchmark extends BenchmarkBase {
         ..write(' ')
         ..write(keyword);
     }
+
+    this.input = SourceFile.fromString(input.toString());
   }
 
   @override
   void run() {
-    final scanner = Scanner(input.toString());
+    final scanner = Scanner(input.span(0));
     scanner.scanTokens();
   }
 }

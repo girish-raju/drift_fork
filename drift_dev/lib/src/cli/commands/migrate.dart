@@ -103,7 +103,8 @@ class MigrateCommand extends DriftCommand {
         driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
     final originalContent = await file.readAsString();
     var output = originalContent;
-    final result = engine.parseDriftFile(originalContent);
+    final result =
+        engine.parseDriftFile(SourceFile.fromString(originalContent).span(0));
 
     if (result.errors.isNotEmpty) {
       cli.logger.warning('Could not parse ${file.path}, skipping...');

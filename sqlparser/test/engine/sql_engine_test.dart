@@ -42,8 +42,8 @@ void main() {
 
   group('parseColumnConstraints', () {
     test('parses constraints', () {
-      final result = SqlEngine()
-          .parseColumnConstraints('PRIMARY KEY NOT NULL CHECK (1) DEFAULT 0');
+      final result = SqlEngine().parseColumnConstraints(
+          fakeSpan('PRIMARY KEY NOT NULL CHECK (1) DEFAULT 0'));
       final parsedConstraints =
           (result.rootNode as ColumnDefinition).constraints;
       final expectedConstraints = [
@@ -62,7 +62,7 @@ void main() {
 
     test('parses until error', () {
       final result = SqlEngine().parseColumnConstraints(
-          'PRIMARY KEY NOT NULL invalid syntax CHECK (1)');
+          fakeSpan('PRIMARY KEY NOT NULL invalid syntax CHECK (1)'));
       final parsedConstraints =
           (result.rootNode as ColumnDefinition).constraints;
 
@@ -76,7 +76,7 @@ void main() {
     test('never allows drift extensions', () {
       final result =
           SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-              .parseColumnConstraints('MAPPED BY `myconverter()`');
+              .parseColumnConstraints(fakeSpan('MAPPED BY `myconverter()`'));
       expect(result.errors, [
         isA<ParsingError>().having(
             (e) => e.message, 'message', contains('Expected a constraint')),
@@ -87,7 +87,7 @@ void main() {
   group('parseTableConstraint', () {
     test('parses constraint', () {
       final result = SqlEngine().parseTableConstraint(
-          'CONSTRAINT foo FOREIGN KEY (a, b) REFERENCES c (d, e);');
+          fakeSpan('CONSTRAINT foo FOREIGN KEY (a, b) REFERENCES c (d, e);'));
       expect(result.errors, isEmpty);
 
       enforceEqual(
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('report errors', () {
-      final result = SqlEngine().parseTableConstraint('parse error');
+      final result = SqlEngine().parseTableConstraint(fakeSpan('parse error'));
       expect(result.errors, isNotEmpty);
     });
   });

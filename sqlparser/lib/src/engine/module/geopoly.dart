@@ -36,7 +36,7 @@ final class _GeopolyModule extends Module {
     ];
 
     for (final column in stmt.argumentContent) {
-      final tokens = engine.tokenize(column);
+      final tokens = engine.tokenizeString(column);
 
       final String resolvedName;
       final ResolvedType resolvedType;

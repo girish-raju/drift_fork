@@ -1,4 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/engine/sql_engine.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
@@ -17,16 +18,17 @@ void main() {
       {_ParseKind kind = _ParseKind.statement, String? expectedOutput}) {
     AstNode parse(String input) {
       late ParseResult result;
+      final span = stringSpan(input);
 
       switch (kind) {
         case _ParseKind.statement:
-          result = engine.parse(input);
+          result = engine.parseSpan(span);
           break;
         case _ParseKind.driftFile:
-          result = engine.parseDriftFile(input);
+          result = engine.parseDriftFile(span);
           break;
         case _ParseKind.multipleStatements:
-          result = engine.parseMultiple(input);
+          result = engine.parseMultiple(span);
           break;
       }
 

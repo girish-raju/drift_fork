@@ -1,3 +1,4 @@
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../utils/entity_reference_sorter.dart';
@@ -118,8 +119,11 @@ class FileAnalyzer {
       // We need to map defined query elements to proper analysis results.
       final genericEngineForParsing = driver.newSqlEngine();
       final source = await driver.backend.readAsString(state.ownUri);
-      final parsedFile =
-          genericEngineForParsing.parseDriftFile(source).rootNode as DriftFile;
+      final sourceSpan =
+          SourceFile.fromString(source, url: state.ownUri).span(0);
+      final parsedFile = genericEngineForParsing
+          .parseDriftFile(sourceSpan)
+          .rootNode as DriftFile;
 
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;
@@ -137,7 +141,7 @@ class FileAnalyzer {
           final options =
               _createOptionsAndVars(engine, stmt, element, knownTypes);
 
-          final analysisResult = engine.analyzeNode(stmt.statement, source,
+          final analysisResult = engine.analyzeNode(stmt.statement, sourceSpan,
               stmtOptions: options.options);
 
           final analyzer = QueryAnalyzer(analysisResult, state, driver,

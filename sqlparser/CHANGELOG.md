@@ -1,3 +1,8 @@
+## 0.43.0-wip
+
+- Allow parsing SQL from `FileSpan`s, which is convenient for SQL embedded as
+  text in outer structures.
+
 ## 0.42.1
 
 - Support new features introduced in SQLite version 3.51.0.

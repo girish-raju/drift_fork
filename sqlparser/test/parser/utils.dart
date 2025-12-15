@@ -26,7 +26,7 @@ IdentifierToken identifier(String content) {
 
 DriftFile parseDrift(String content) {
   return SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-      .parseDriftFile(content)
+      .parseDriftFile(fakeSpan(content))
       .rootNode as DriftFile;
 }
 

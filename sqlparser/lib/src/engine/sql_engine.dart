@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
@@ -110,7 +112,7 @@ class SqlEngine {
     return scope;
   }
 
-  Scanner _scan(String source) {
+  Scanner _scan(FileSpan source) {
     final scanner =
         Scanner(source, scanDriftTokens: options.useDriftExtensions);
     return scanner..scanTokens();
@@ -126,7 +128,7 @@ class SqlEngine {
   /// [Token.invisibleToParser], if you're passing them to a [Parser] directly,
   /// you need to filter them. When using the methods in this class, this will
   /// be taken care of automatically.
-  List<Token> tokenize(String source) {
+  List<Token> tokenize(FileSpan source) {
     final scanner = _scan(source);
     if (scanner.errors.isNotEmpty) {
       throw CumulatedTokenizerException(scanner.errors);
@@ -135,8 +137,13 @@ class SqlEngine {
     return scanner.tokens;
   }
 
+  /// Like [tokenize], but with a [FileSpan] created from the [sql] string.
+  List<Token> tokenizeString(String sql) {
+    return tokenize(stringSpan(sql));
+  }
+
   (List<Token>, Parser, AutoCompleteEngine?) _createParser(
-    String source, {
+    FileSpan source, {
     bool autoComplete = false,
     bool? driftExtensions,
   }) {
@@ -166,11 +173,16 @@ class SqlEngine {
   /// through [ParseResult.errors]. Callers should check that value instead of
   /// blindly trusting the returned AST, as it will be an approximation if
   /// parsing errors were encountered.
-  ParseResult parse(String sql) {
+  ParseResult parseSpan(FileSpan sql) {
     final (tokens, parser, _) = _createParser(sql);
 
     final stmt = parser.safeStatement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
+  }
+
+  /// Like [parseSpan], but with a [FileSpan] created from the [sql] string.
+  ParseResult parse(String sql) {
+    return parseSpan(stringSpan(sql));
   }
 
   /// Parses multiple [sql] statements, separated by a semicolon.
@@ -182,7 +194,7 @@ class SqlEngine {
   /// through [ParseResult.errors]. Callers should check that value instead of
   /// blindly trusting the returned AST, as it will be an approximation if
   /// parsing errors were encountered.
-  ParseResult parseMultiple(String sql) {
+  ParseResult parseMultiple(FileSpan sql) {
     final (tokens, parser, _) = _createParser(sql);
 
     final ast = parser.safeStatements();
@@ -198,7 +210,7 @@ class SqlEngine {
   /// through [ParseResult.errors]. Callers should check that value instead of
   /// blindly trusting the returned AST, as it will be an approximation if
   /// parsing errors were encountered.
-  ParseResult parseColumnConstraints(String sql) {
+  ParseResult parseColumnConstraints(FileSpan sql) {
     final (tokens, parser, _) = _createParser(sql, driftExtensions: false);
 
     return ParseResult._(
@@ -223,7 +235,7 @@ class SqlEngine {
   /// through [ParseResult.errors]. Callers should check that value instead of
   /// blindly trusting the returned AST, as it will be an approximation if
   /// parsing errors were encountered.
-  ParseResult parseTableConstraint(String sql) {
+  ParseResult parseTableConstraint(FileSpan sql) {
     final (tokens, parser, _) = _createParser(sql, driftExtensions: false);
 
     AstNode? constraint;
@@ -244,7 +256,7 @@ class SqlEngine {
 
   /// Parses a `.drift` file, which can consist of multiple statements and
   /// additional components like import statements.
-  ParseResult parseDriftFile(String content) {
+  ParseResult parseDriftFile(FileSpan content) {
     assert(options.useDriftExtensions);
     final (tokens, parser, autoComplete) =
         _createParser(content, autoComplete: true);
@@ -264,8 +276,9 @@ class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyze(String sql, {AnalyzeStatementOptions? stmtOptions}) {
-    final result = parse(sql);
+  AnalysisContext analyzeSpan(FileSpan sql,
+      {AnalyzeStatementOptions? stmtOptions}) {
+    final result = parseSpan(sql);
     final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
 
     // Add parsing errors that occurred at the beginning since they are the most
@@ -273,6 +286,11 @@ class SqlEngine {
     analyzed.errors.insertAll(0, result.errors.map(AnalysisError.fromParser));
 
     return analyzed;
+  }
+
+  /// Like [analyzeSpan], but with a [FileSpan] created from the [sql] string.
+  AnalysisContext analyze(String sql, {AnalyzeStatementOptions? stmtOptions}) {
+    return analyzeSpan(stringSpan(sql), stmtOptions: stmtOptions);
   }
 
   /// Analyzes a parsed [result] statement. The [AnalysisContext] returned
@@ -299,7 +317,7 @@ class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyzeNode(AstNode node, String file,
+  AnalysisContext analyzeNode(AstNode node, FileSpan file,
       {AnalyzeStatementOptions? stmtOptions}) {
     final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
@@ -307,7 +325,7 @@ class SqlEngine {
   }
 
   AnalysisContext _createContext(
-      AstNode node, String sql, AnalyzeStatementOptions? stmtOptions) {
+      AstNode node, FileSpan sql, AnalyzeStatementOptions? stmtOptions) {
     final schemaSupport = _createSchemaReader(stmtOptions);
 
     return AnalysisContext(node, sql, _constructRootScope(), options,
@@ -349,7 +367,7 @@ class ParseResult {
   final List<ParsingError> errors;
 
   /// The sql source that created the AST at [rootNode].
-  final String sql;
+  final FileSpan sql;
 
   /// The engine which can be used to handle auto-complete requests on this
   /// result.
@@ -395,6 +413,11 @@ class ParseResult {
   /// Returns the lexeme that created an AST [node] (which should be a child of
   /// [rootNode], e.g appear in this result).
   String lexemeOfNode(AstNode node) {
-    return sql.substring(node.firstPosition, node.lastPosition);
+    return sql.text.substring(node.firstPosition, node.lastPosition);
   }
+}
+
+@internal
+FileSpan stringSpan(String source) {
+  return SourceFile.fromString(source).span(0);
 }

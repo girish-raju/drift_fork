@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:collection/collection.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../driver/error.dart';
@@ -84,7 +85,9 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
   Future<DriftIndex> _fromSql(
       DriftTable? table, String createIndexStatement) async {
     final engineForParsing = resolver.driver.newSqlEngine();
-    final result = engineForParsing.parse(createIndexStatement);
+    // TODO: Use Dart AST offsets
+    final span = SourceFile.fromString(createIndexStatement).span(0);
+    final result = engineForParsing.parseSpan(span);
     for (final error in result.errors) {
       reportError(DriftAnalysisError.forDartElement(
           discovered.dartElement, error.message));
@@ -96,7 +99,7 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
     if (root is CreateIndexStatement) {
       final references = await resolveTableReferences(root);
       final engine = await newEngineWithTables(references);
-      final context = engine.analyzeNode(root, createIndexStatement);
+      final context = engine.analyzeNode(root, span);
 
       unique = root.unique;
       for (final error in context.errors) {

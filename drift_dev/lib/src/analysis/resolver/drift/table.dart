@@ -343,7 +343,7 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
     // having the resolved table structure first.
     final engineForAnalysis =
         typeMapping.newEngineWithTables([driftTable, ...driftTable.references]);
-    final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final context = engineForAnalysis.analyzeNode(stmt, source);
     final linter = DriftSqlLinter(context, references: references)
       ..collectLints();

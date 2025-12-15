@@ -228,7 +228,7 @@ void main() {
   group('expresssion test cases', () {
     _testCases.forEach((sql, expected) {
       test(sql, () {
-        final scanner = Scanner(sql);
+        final scanner = Scanner(fakeSpan(sql));
         final tokens = scanner.scanTokens();
         final parser = Parser(tokens);
         final expression = parser.expression();

@@ -2,6 +2,8 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:test/test.dart';
 
+import '../../parser/utils.dart';
+
 /// Parses the [driftFile] and computes available autocomplete suggestions at
 /// the position of a `^` character in the source.
 ComputedSuggestions completionsFor(String driftFile,
@@ -11,7 +13,8 @@ ComputedSuggestions completionsFor(String driftFile,
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
   setup?.call(engine);
 
-  final result = engine.parseDriftFile(driftFile.replaceFirst('^', ''));
+  final result =
+      engine.parseDriftFile(fakeSpan(driftFile.replaceFirst('^', '')));
   return result.autoCompleteEngine!.suggestCompletions(position - 1);
 }
 

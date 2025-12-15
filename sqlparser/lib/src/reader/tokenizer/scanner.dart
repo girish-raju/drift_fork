@@ -7,7 +7,6 @@ import 'token.dart';
 import 'utils.dart';
 
 class Scanner {
-  final String source;
   final Uint16List _charCodes;
 
   /// Whether to scan tokens that are only relevant for drift files.
@@ -27,7 +26,8 @@ class Scanner {
 
   int _startOffset = 0;
   int _currentOffset = 0;
-  bool get _isAtEnd => _currentOffset >= source.length;
+  final int _endOffset;
+  bool get _isAtEnd => _currentOffset >= _endOffset;
 
   FileSpan get _currentSpan {
     return _file.span(_startOffset, _currentOffset);
@@ -37,9 +37,12 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(this.source, {this.scanDriftTokens = false})
-      : _file = SourceFile.fromString(source),
-        _charCodes = Uint16List.fromList(source.codeUnits);
+  Scanner(FileSpan span, {this.scanDriftTokens = false})
+      : _file = span.file,
+        _startOffset = span.start.offset,
+        _currentOffset = span.start.offset,
+        _endOffset = span.end.offset,
+        _charCodes = Uint16List.fromList(span.file.codeUnits);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {
@@ -47,7 +50,7 @@ class Scanner {
       _scanToken();
     }
 
-    final endSpan = _file.span(source.length);
+    final endSpan = _file.span(_endOffset, _endOffset);
     tokens.add(Token(TokenType.eof, endSpan));
 
     Token? previous;
@@ -312,8 +315,8 @@ class Scanner {
       errors.add(TokenizerError('Unterminated string', _currentLocation));
     }
 
-    final value = source
-        .substring(
+    final value = _file
+        .getText(
           _startOffset + (binary ? 2 : 1),
           _currentOffset - (properlyClosed ? 1 : 0),
         )

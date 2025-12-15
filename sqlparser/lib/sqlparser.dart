@@ -15,7 +15,7 @@ export 'src/engine/module/rtree.dart' show RTreeExtension;
 export 'src/engine/module/spellfix1.dart' show Spellfix1Extension;
 export 'src/engine/module/module.dart';
 export 'src/engine/options.dart';
-export 'src/engine/sql_engine.dart';
+export 'src/engine/sql_engine.dart' hide stringSpan;
 export 'src/reader/parser.dart' show ParsingError;
 export 'src/reader/syntactic_entity.dart';
 export 'src/reader/tokenizer/token.dart'

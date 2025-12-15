@@ -44,12 +44,12 @@ CREATE TABLE foo (
     final engine =
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
 
-    final result = engine.parseDriftFile('''
+    final result = engine.parseDriftFile(fakeSpan('''
 CREATE TABLE foo (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
 );
-    ''');
+    '''));
 
     expect(result.errors, hasLength(1));
 
@@ -76,7 +76,7 @@ CREATE TABLE foo (
   test('recovers from multiple syntax errors in table definitions', () {
     // Regression test for https://github.com/simolus3/drift/issues/3273
     final engine = SqlEngine();
-    final result = engine.parseMultiple('''
+    final result = engine.parseMultiple(fakeSpan('''
 CREATE TABLE IF NOT EXISTS "employees" (
 	"employee_id"	INTEGER,
 	"department_id"	INTEGER NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS "projects" (
 	"project_title"	CHAR(255) NOT NULL,
 	PRIMARY KEY("project_id", "employee_id")
 );
-''');
+'''));
 
     expect(result.errors, [
       isParsingError(span: 'AUTOINCREMENT'),

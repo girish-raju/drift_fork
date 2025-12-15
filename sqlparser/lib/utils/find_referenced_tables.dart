@@ -1,3 +1,4 @@
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import 'node_to_text.dart';
@@ -146,7 +147,7 @@ Set<Table> findReferencedTables(AstNode root) {
 /// Extension to find referenced tables prior to any analysis runs.
 extension FindReferenceAnalysis on SqlEngine {
   /// Finds tables references from the global schema before any analyis steps
-  /// ran.
+  /// run.
   ///
   /// This includes tables added in `FROM` if those tables haven't been added
   /// syntactically, for instance through a `WITH` clause.
@@ -156,8 +157,8 @@ extension FindReferenceAnalysis on SqlEngine {
   Set<String> findReferencedSchemaTables(AstNode root) {
     // Poorly clone the AST so that the analysis doesn't bring the original one
     // into a weird state.
-    final sql = root.toSql();
-    final clone = parse(sql).rootNode;
+    final sql = SourceFile.fromString(root.toSql()).span(0);
+    final clone = parseSpan(sql).rootNode;
 
     final scope = _FakeRootScope();
     final context = AnalysisContext(clone, sql, scope, EngineOptions(),

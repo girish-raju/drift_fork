@@ -14,7 +14,7 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
     final references = await resolveTableReferences(stmt);
     final engine = await newEngineWithTables(references);
 
-    final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final context = engine.analyzeNode(stmt, source);
     reportLints(context, references);
 
@@ -33,7 +33,7 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
       table: target,
       indexedColumns: [],
       unique: stmt.unique,
-      createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
+      createStmt: source.text.substring(stmt.firstPosition, stmt.lastPosition),
     );
   }
 }

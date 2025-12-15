@@ -2,23 +2,25 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:test/test.dart';
 
+import '../parser/utils.dart';
+
 void main() {
   test('parses ** as two tokens when not using drift mode', () {
-    final tokens = Scanner('**').scanTokens();
+    final tokens = Scanner(fakeSpan('**')).scanTokens();
     expect(tokens.map((e) => e.type),
         containsAllInOrder([TokenType.star, TokenType.star]));
   });
 
   test('throws when seeing an invalid token', () {
     expect(
-      () => SqlEngine().tokenize('!'),
+      () => SqlEngine().tokenize(fakeSpan('!')),
       throwsA(isA<CumulatedTokenizerException>()),
     );
   });
 
   test('scans identifiers with backticks', () {
     expect(
-      Scanner('`SELECT`').scanTokens(),
+      Scanner(fakeSpan('`SELECT`')).scanTokens(),
       contains(isA<IdentifierToken>()
           .having((e) => e.identifier, 'identifier', 'SELECT')),
     );
@@ -26,14 +28,14 @@ void main() {
 
   test('scans identifiers with double quotes', () {
     expect(
-      Scanner('"SELECT"').scanTokens(),
+      Scanner(fakeSpan('"SELECT"')).scanTokens(),
       contains(isA<IdentifierToken>()
           .having((e) => e.identifier, 'identifier', 'SELECT')),
     );
   });
 
   test('scans new tokens for JSON extraction', () {
-    expect(Scanner('- -> ->>').scanTokens(), [
+    expect(Scanner(fakeSpan('- -> ->>')).scanTokens(), [
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.minus),
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.dashRangle),
       isA<Token>()
@@ -45,7 +47,7 @@ void main() {
   group('reports error message', () {
     test(r'for missing identifier after `$`', () {
       expect(
-        () => SqlEngine().tokenize(r'$ order'),
+        () => SqlEngine().tokenize(fakeSpan(r'$ order')),
         throwsA(
           isA<CumulatedTokenizerException>().having(
             (e) => e.errors,
@@ -63,7 +65,7 @@ void main() {
 
     test('for missing identifier after `@`', () {
       expect(
-        () => SqlEngine().tokenize('@ order'),
+        () => SqlEngine().tokenize(fakeSpan('@ order')),
         throwsA(
           isA<CumulatedTokenizerException>().having(
             (e) => e.errors,
@@ -91,7 +93,7 @@ class Screen extends ConsumerStatefulWidget {
 }
 ''';
 
-    expect(() => SqlEngine().tokenize(badInput),
+    expect(() => SqlEngine().tokenizeString(badInput),
         throwsA(isA<CumulatedTokenizerException>()));
 
     final parsed = SqlEngine().parse(badInput);

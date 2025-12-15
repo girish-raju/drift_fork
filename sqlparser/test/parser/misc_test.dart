@@ -1,3 +1,4 @@
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
@@ -31,5 +32,14 @@ void main() {
     testStatement('END', CommitStatement());
     testStatement('COMMIT TRANSACTION', CommitStatement());
     testStatement('END TRANSACTION', CommitStatement());
+  });
+
+  test('can parse substring', () {
+    final engine = SqlEngine();
+    final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');
+    final parsed = engine.parseSpan(source.span(6, 23));
+    expect(parsed.errors, isEmpty);
+    expect(parsed.sql.text, 'SELECT * FROM foo');
+    expect(parsed.rootNode.span!.text, 'SELECT * FROM foo');
   });
 }

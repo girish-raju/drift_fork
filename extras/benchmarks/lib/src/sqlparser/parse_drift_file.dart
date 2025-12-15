@@ -1,4 +1,5 @@
 import 'package:benchmarks/benchmarks.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 const file = '''
@@ -32,7 +33,7 @@ manyColumns:
 
 class ParseDriftFile extends BenchmarkBase {
   ParseDriftFile(ScoreEmitter emitter)
-      : super('Moor file: Parse only', emitter);
+      : super('Drift file: Parse only', emitter);
 
   final _engine =
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
@@ -40,12 +41,17 @@ class ParseDriftFile extends BenchmarkBase {
   @override
   void exercise() {
     for (var i = 0; i < 10; i++) {
-      assert(_engine.parseDriftFile(file).errors.isEmpty);
+      final parsed = _parse();
+      assert(parsed.errors.isEmpty);
     }
   }
 
   @override
   void run() {
-    _engine.parseDriftFile(file);
+    _parse();
+  }
+
+  ParseResult _parse() {
+    return _engine.parseDriftFile(SourceFile.fromString(file).span(0));
   }
 }

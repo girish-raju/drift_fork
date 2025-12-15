@@ -5,8 +5,8 @@ void main() {
   test('finds the most relevant node', () {
     final engine = SqlEngine();
     final result = engine.parse('SELECT * FROM tbl;');
-    //                                  | this is offset 8
-    //                                         | this is offset 17
+    //                                        | this is offset 8
+    //                                               | this is offset 17
 
     final mostRelevantAtStar = result.findNodesAtPosition(8);
     expect(mostRelevantAtStar.length, 1);

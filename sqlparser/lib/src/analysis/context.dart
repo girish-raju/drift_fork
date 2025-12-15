@@ -11,7 +11,7 @@ class AnalysisContext {
   final AstNode root;
 
   /// The raw sql statement that was used to construct this [AnalysisContext].
-  final String sql;
+  final FileSpan sql;
 
   /// The root scope used when analyzing SQL statements.
   ///

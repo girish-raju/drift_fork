@@ -132,7 +132,7 @@ abstract class SqlQuery {
   /// generate a single method returning a `Selectable`.
   bool declaredInDriftFile = false;
 
-  String? get sql => fromContext?.sql;
+  String? get sql => fromContext?.sql.text;
 
   /// The result set of this statement, mapped to drift-generated classes.
   ///

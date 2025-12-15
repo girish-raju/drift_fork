@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import 'element_resolver.dart';
@@ -14,8 +13,6 @@ class DriftQueryResolver
   Future<DefinedSqlQuery> resolve() async {
     final stmt = discovered.sqlNode.statement;
     final references = await resolveSqlReferences(stmt);
-
-    final source = (file.discovery as DiscoveredDriftFile).originalSource;
 
     final isCreate =
         discovered.sqlNode.identifier is SpecialStatementIdentifier;
@@ -51,7 +48,7 @@ class DriftQueryResolver
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       references: references.referencedElements,
-      sql: source.substring(stmt.firstPosition, stmt.lastPosition),
+      sql: stmt.span!.text,
       sqlOffset: stmt.firstPosition,
       mode: isCreate ? QueryMode.atCreate : QueryMode.regular,
       resultClassName: resultClassName,

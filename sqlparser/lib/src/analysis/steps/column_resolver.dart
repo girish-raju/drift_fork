@@ -567,7 +567,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // in this case it's just the literal expression. So for instance,
     // "SELECT 3+  5" has a result column called "3+ 5" (consecutive whitespace
     // is removed).
-    final span = context.sql.substring(c.firstPosition, c.lastPosition);
+    final span = context.sql.file.getText(c.firstPosition, c.lastPosition);
     // todo remove consecutive whitespace
     return span;
   }
