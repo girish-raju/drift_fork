@@ -69,3 +69,8 @@ dependency_overrides:
     path: ../extras/drift_postgres
   sqlparser:
     path: ../sqlparser
+  jaspr_content_snippets:
+    git:
+      url: https://github.com/simolus3/goodies.dart.git
+      ref: sqlparser-0.43
+      path: jaspr_content_snippets
