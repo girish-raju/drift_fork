@@ -7,9 +7,13 @@ part of '../ast.dart';
 /// [AggregateFunctionInvocation]. There are invocations that don't resolve to
 /// an expression, notably [TableValuedFunction]s.
 abstract class SqlInvocation implements AstNode {
+  /// For [TableValuedFunction]s, the schema on which the function is called.
+  String? get schemaName;
+
   /// The name of the function being called
   String get name;
 
+  Token? schemaNameToken;
   Token? nameToken;
 
   FunctionParameters get parameters;
@@ -30,14 +34,22 @@ class FunctionExpression extends Expression
     with ReferenceOwner
     implements ExpressionInvocation {
   @override
+  final String? schemaName;
+  @override
   final String name;
   @override
   FunctionParameters parameters;
 
   @override
+  Token? schemaNameToken;
+  @override
   Token? nameToken;
 
-  FunctionExpression({required this.name, required this.parameters});
+  FunctionExpression({
+    required this.name,
+    required this.parameters,
+    this.schemaName,
+  });
 
   @override
   bool get isAggregate => const {

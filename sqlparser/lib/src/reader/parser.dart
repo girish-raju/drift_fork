@@ -3,6 +3,7 @@ import 'package:source_span/source_span.dart';
 
 import '../ast/ast.dart';
 import '../engine/autocomplete/engine.dart';
+import '../engine/options.dart';
 import 'recovery.dart';
 import 'tokenizer/token.dart';
 
@@ -36,16 +37,17 @@ class Parser {
   final List<ParsingError> errors = [];
   final AutoCompleteEngine? autoComplete;
 
-  /// Whether to enable the extensions drift makes to the sql grammar.
-  final bool enableDriftExtensions;
+  final EngineOptions options;
 
   int _current = 0;
   final List<ErrorRecoveryScope> _errorRecovery = [];
 
-  Parser(this.tokens, {bool useDrift = false, this.autoComplete})
-      : enableDriftExtensions = useDrift;
+  Parser(this.tokens, {EngineOptions? options, this.autoComplete})
+      : options = options ?? EngineOptions();
 
   bool get _reportAutoComplete => autoComplete != null;
+
+  bool get enableDriftExtensions => options.useDriftExtensions;
 
   void _suggestHint(HintDescription description) {
     final tokenBefore = _current == 0 ? null : _previous;
@@ -174,8 +176,10 @@ class Parser {
 
   /// Parses a statement without throwing when there's a parsing error.
   Statement safeStatement() {
+    final first = _peek;
     return _parseAsStatement(statement, requireSemicolon: false) ??
-        InvalidStatement();
+        InvalidStatement()
+      ..setSpan(first, _previous);
   }
 
   SemicolonSeparatedStatements safeStatements() {
@@ -919,7 +923,51 @@ class Parser {
     //  - a simple reference: "foo"
     //  - a reference with a table: "foo.bar"
     //  - a reference with a table and a schema: "foo.bar.baz"
-    //  - a function call: "foo()"
+    //  - a function call: "foo()" or "bar.foo()"
+
+    Expression functionIfParens(IdentifierToken? second) {
+      if (_matchOne(TokenType.leftParen)) {
+        // We have something like "foo(" -> that's a function!
+        final parameters = _functionParameters();
+
+        // Aggregate functions can use `ORDER BY` in their argument list.
+        final orderBy = _orderBy();
+
+        final rightParen = _consume(TokenType.rightParen,
+            'Expected closing bracket after argument list');
+
+        final nameToken = second ?? first;
+        final schemaNameToken = second != null ? first : null;
+
+        if (schemaNameToken != null && !options.supportSchemaInFunctionNames) {
+          final error = ParsingError(
+              schemaNameToken, 'Invalid schema name for function call');
+          errors.add(error);
+        }
+
+        if (orderBy != null ||
+            _peek.type == TokenType.filter ||
+            _peek.type == TokenType.over) {
+          return _aggregate(schemaNameToken, first, parameters, orderBy);
+        }
+
+        return FunctionExpression(
+            schemaName: schemaNameToken?.identifier,
+            name: nameToken.identifier,
+            parameters: parameters)
+          ..nameToken = nameToken
+          ..schemaNameToken = schemaNameToken
+          ..setSpan(first, rightParen);
+      } else {
+        // Ok, so it's a reference.
+        return second == null
+            ? (Reference(columnName: first.identifier)..setSpan(first, first))
+            : (Reference(
+                entityName: first.identifier,
+                columnName: second.identifier,
+              )..setSpan(first, second));
+      }
+    }
 
     if (_matchOne(TokenType.dot)) {
       // Ok, we're down to two here. it's either a table or a schema ref
@@ -936,34 +984,10 @@ class Parser {
           columnName: third.identifier,
         )..setSpan(first, third);
       } else {
-        // Two identifiers only, so we have a table-based reference
-        return Reference(
-          entityName: first.identifier,
-          columnName: second.identifier,
-        )..setSpan(first, second);
+        return functionIfParens(second);
       }
-    } else if (_matchOne(TokenType.leftParen)) {
-      // We have something like "foo(" -> that's a function!
-      final parameters = _functionParameters();
-
-      // Aggregate functions can use `ORDER BY` in their argument list.
-      final orderBy = _orderBy();
-
-      final rightParen = _consume(
-          TokenType.rightParen, 'Expected closing bracket after argument list');
-
-      if (orderBy != null ||
-          _peek.type == TokenType.filter ||
-          _peek.type == TokenType.over) {
-        return _aggregate(first, parameters, orderBy);
-      }
-
-      return FunctionExpression(name: first.identifier, parameters: parameters)
-        ..nameToken = first
-        ..setSpan(first, rightParen);
     } else {
-      // Ok, just a regular reference then
-      return Reference(columnName: first.identifier)..setSpan(first, first);
+      return functionIfParens(null);
     }
   }
 
@@ -1018,6 +1042,7 @@ class Parser {
   }
 
   AggregateFunctionInvocation _aggregate(
+    Token? schemaName,
     IdentifierToken name,
     FunctionParameters params,
     OrderByBase? orderBy,
@@ -1050,14 +1075,20 @@ class Parser {
         filter: filter,
         windowDefinition: window,
         windowName: windowName,
-      )..setSpan(name, _previous);
+        schemaName: schemaName?.lexeme,
+      )
+        ..setSpan(name, _previous)
+        ..schemaNameToken = schemaName;
     } else {
       return AggregateFunctionInvocation(
+        schemaName: schemaName?.lexeme,
         function: name,
         parameters: params,
         orderBy: orderBy,
         filter: filter,
-      )..setSpan(name, _previous);
+      )
+        ..setSpan(name, _previous)
+        ..schemaNameToken = schemaName;
     }
   }
 

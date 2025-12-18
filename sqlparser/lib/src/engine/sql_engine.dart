@@ -156,7 +156,10 @@ class SqlEngine {
 
     final parser = Parser(
       tokensForParser,
-      useDrift: driftExtensions ?? options.useDriftExtensions,
+      options: EngineOptions(
+        driftOptions: driftExtensions == false ? null : options.driftOptions,
+        supportSchemaInFunctionNames: options.supportSchemaInFunctionNames,
+      ),
       autoComplete: autoCompleteEngine,
     );
 

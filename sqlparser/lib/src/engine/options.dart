@@ -10,6 +10,12 @@ class EngineOptions {
   /// extensions enabled.
   final DriftSqlOptions? driftOptions;
 
+  /// Whether to support a schema name in functions, as in `SELECT foo.bar();`.
+  ///
+  /// SQLite does not support this, but this can be enabled to parse a subset
+  /// of other dialects.
+  final bool supportSchemaInFunctionNames;
+
   /// The target sqlite version.
   ///
   /// This library will report analysis errors when using features there weren't
@@ -33,6 +39,7 @@ class EngineOptions {
 
   EngineOptions({
     this.driftOptions,
+    this.supportSchemaInFunctionNames = false,
     List<Extension> enabledExtensions = const [],
     this.version = SqliteVersion.minimum,
   }) : enabledExtensions = _allExtensions(enabledExtensions, version) {

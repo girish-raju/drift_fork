@@ -3,9 +3,14 @@ part of '../ast.dart';
 class AggregateFunctionInvocation extends Expression
     implements ExpressionInvocation, ReferenceOwner {
   final IdentifierToken function;
+  @override
+  final String? schemaName;
 
   @override
   String get name => function.identifier;
+
+  @override
+  Token? schemaNameToken;
 
   @override
   Token? nameToken;
@@ -23,6 +28,7 @@ class AggregateFunctionInvocation extends Expression
     required this.parameters,
     this.orderBy,
     this.filter,
+    this.schemaName,
   }) : nameToken = function;
 
   @override
@@ -66,15 +72,17 @@ class WindowFunctionInvocation extends AggregateFunctionInvocation {
   /// [over] in either case.
   final String? windowName;
 
-  WindowFunctionInvocation(
-      {required super.function,
-      required super.parameters,
-      super.orderBy,
-      super.filter,
-      this.windowDefinition,
-      this.windowName})
-      // one of window definition or name must be null
-      : assert((windowDefinition == null) || (windowName == null));
+  WindowFunctionInvocation({
+    required super.function,
+    required super.parameters,
+    super.orderBy,
+    super.filter,
+    this.windowDefinition,
+    this.windowName,
+    super.schemaName,
+  })
+  // one of window definition or name must be null
+  : assert((windowDefinition == null) || (windowName == null));
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

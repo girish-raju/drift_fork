@@ -47,7 +47,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitAggregateFunctionInvocation(
       AggregateFunctionInvocation e, void arg) {
     final current = _currentAs<AggregateFunctionInvocation>(e);
-    _assert(current.name == e.name, e);
+    _assert(current.schemaName == e.schemaName && current.name == e.name, e);
     _checkChildren(e);
   }
 
@@ -325,7 +325,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   @override
   void visitFunction(FunctionExpression e, void arg) {
     final current = _currentAs<FunctionExpression>(e);
-    _assert(current.name == e.name, e);
+    _assert(current.schemaName == e.schemaName && current.name == e.name, e);
     _checkChildren(e);
   }
 
@@ -673,7 +673,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   @override
   void visitTableValuedFunction(TableValuedFunction e, void arg) {
     final current = _currentAs<TableValuedFunction>(e);
-    _assert(current.name == e.name, e);
+    _assert(current.schemaName == e.schemaName && current.name == e.name, e);
     _checkChildren(e);
   }
 

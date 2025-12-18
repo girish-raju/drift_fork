@@ -61,7 +61,10 @@ void main() {
      ''';
 
     final tokens = Scanner(fakeSpan(sql), scanDriftTokens: true).scanTokens();
-    final statements = Parser(tokens, useDrift: true).driftFile().statements;
+    final statements =
+        Parser(tokens, options: EngineOptions(driftOptions: DriftSqlOptions()))
+            .driftFile()
+            .statements;
 
     expect(statements, hasLength(2));
 

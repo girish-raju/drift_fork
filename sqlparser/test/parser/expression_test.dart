@@ -232,6 +232,7 @@ void main() {
         final tokens = scanner.scanTokens();
         final parser = Parser(tokens);
         final expression = parser.expression();
+        expect(parser.errors, isEmpty);
 
         enforceHasSpan(expression);
         enforceEqual(expression, expected);
@@ -262,5 +263,35 @@ void main() {
           .expression;
       expect(value, isA<DartExpressionPlaceholder>());
     });
+  });
+
+  test('schema in function names', () {
+    final engine = SqlEngine();
+    expect(engine.parse('SELECT foo.bar(1)').errors, [
+      isParsingError(
+        message: 'Invalid schema name for function call',
+        span: 'foo',
+      ),
+    ]);
+
+    final optInEngine =
+        SqlEngine(EngineOptions(supportSchemaInFunctionNames: true));
+
+    final parsed = optInEngine.parse('SELECT foo.bar(1)');
+    enforceHasSpan(parsed.rootNode);
+    enforceEqual(
+      parsed.rootNode,
+      SelectStatement(columns: [
+        ExpressionResultColumn(
+          expression: FunctionExpression(
+            name: 'bar',
+            schemaName: 'foo',
+            parameters: ExprFunctionParameters(
+              parameters: [NumericLiteral(1)],
+            ),
+          ),
+        )
+      ]),
+    );
   });
 }

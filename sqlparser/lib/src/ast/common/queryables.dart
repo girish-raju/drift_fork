@@ -220,7 +220,12 @@ class TableValuedFunction extends Queryable
         ResolvesToResultSet,
         InExpressionTarget {
   @override
+  final String? schemaName;
+  @override
   final String name;
+
+  @override
+  Token? schemaNameToken;
 
   @override
   Token? nameToken;
@@ -234,7 +239,7 @@ class TableValuedFunction extends Queryable
   @override
   ResultSet? resultSet;
 
-  TableValuedFunction(this.name, this.parameters, {this.as});
+  TableValuedFunction(this.name, this.parameters, {this.schemaName, this.as});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
