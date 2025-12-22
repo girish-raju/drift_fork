@@ -190,6 +190,22 @@ WHERE json_each.value LIKE '704-%';
         ),
       );
     });
+
+    test('table-valued function with schema name', () {
+      testStatement(
+        'SELECT * FROM foo.bar()',
+        SelectStatement(
+          columns: [
+            StarResultColumn(),
+          ],
+          from: TableValuedFunction(
+            schemaName: 'foo',
+            'bar',
+            ExprFunctionParameters(),
+          ),
+        ),
+      );
+    });
   });
 
   group('join kinds', () {

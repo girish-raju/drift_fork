@@ -1447,7 +1447,7 @@ class Parser {
         final alias = allowAlias ? _as() : null;
 
         return TableValuedFunction(tableRef.tableName, params,
-            as: alias?.identifier)
+            as: alias?.identifier, schemaName: tableRef.schemaName)
           ..setSpan(tableRef.first!, _previous);
       }
 
