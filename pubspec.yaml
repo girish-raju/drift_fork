@@ -37,6 +37,7 @@ workspace:
   - examples/with_built_value
 
   - future/drift3
+  - future/drift_sqlite
 
 dev_dependencies:
   melos: ^7.0.0

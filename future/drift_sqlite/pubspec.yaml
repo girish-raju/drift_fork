@@ -1,5 +1,5 @@
-name: drift3
-description: In-development preview of breaking changes planned for drift version 3.
+name: drift_sqlite
+description: SQLite dialect for drift.
 version: 3.0.0-wip
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
@@ -10,8 +10,10 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
+  drift3: ^3.0.0-wip
   meta: ^1.16.0
-  collection: ^1.19.1
+  collection: ^1.18.0
+  sqlite3:
 
 dev_dependencies:
   analyzer: ^8.4.1

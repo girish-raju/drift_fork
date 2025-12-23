@@ -64,6 +64,9 @@ extension TypeExtension<T extends Object> on SqlType<T> {
 
 /// A dialect-specific implementation of a [SqlType].
 abstract base class PhysicalSqlType<T extends Object> implements SqlType<T> {
+  /// @nodoc
+  const PhysicalSqlType();
+
   /// The name of the type in SQL, e.g. in a column definition or a `CAST`.
   String get typeName;
 
