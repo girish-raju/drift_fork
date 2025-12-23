@@ -1,6 +1,6 @@
 export 'src/connection/connection.dart';
 export 'src/connection/interceptor.dart';
-export 'src/connection/result_set.dart' show QueryResult;
+export 'src/connection/result_set.dart' show QueryResult, RawResultSet, RawRow;
 export 'src/connection/streams/update_rules.dart'
     hide AnyUpdateQuery, MultipleUpdateQuery, SpecificUpdateQuery;
 
