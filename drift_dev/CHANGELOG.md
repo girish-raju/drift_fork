@@ -1,3 +1,7 @@
+## 2.30.1-dev
+
+- `make_migrations`: Don't generate schema test helpers when `--no-test` is set.
+
 ## 2.30.0
 
 - Schema export: Always export generated SQL statements as a reference.

@@ -109,18 +109,32 @@ targets:
                 .io
                 .existsSync(),
             true);
-        // Test files should be created
+        // Test files should be skipped
         await d.dir('app/test/drift/my_database', [
           // No test file, option was disabled
           d.nothing('migration_test.dart'),
-          d.file('generated/schema.dart', IsValidDartFile(anything)),
-          d.file('generated/schema_v1.dart', IsValidDartFile(anything)),
-          d.file('generated/schema_v2.dart', IsValidDartFile(anything)),
+          d.nothing('generated/schema.dart'),
+          d.nothing('generated/schema_v1.dart'),
+          d.nothing('generated/schema_v2.dart'),
         ]).validate();
         // Steps file should be created
         await d
             .file('app/lib/db.steps.dart', IsValidDartFile(anything))
             .validate();
+
+        // If we run with --no-tests in a state where generated schema files
+        // exist, we keep generating them.
+        await d
+            .file('app/test/drift/my_database/generated/schema_v1.dart')
+            .create();
+        await project.runDriftCli(['make-migrations', '--no-test']);
+
+        await d.dir('app/test/drift/my_database', [
+          d.nothing('migration_test.dart'),
+          d.file('generated/schema.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v1.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v2.dart', IsValidDartFile(anything)),
+        ]).validate();
       });
 
       test('schema_dir is respected', () async {

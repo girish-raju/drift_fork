@@ -145,11 +145,20 @@ targets:
       // This is done after all the schema files have been written to the disk
       // to ensure that the schema files are up to date
       await writer.writeStepsFile();
-      // Write the generated test databases
-      await writer.writeTestDatabases();
+
       // Write the generated test (unless that option has been disabled).
       if (generateTests) {
         await writer.writeTest();
+      }
+
+      // Tests use generated schema test utils. So if we're generating tests, or
+      // if any of the older schema files exists (indicating that a user might
+      // have a custom test file using them), we generate these for every
+      // version.
+      if (generateTests ||
+          writer.schemas.keys
+              .any((v) => writer.testUtilityFile(v).existsSync())) {
+        await writer.writeTestDatabases();
       }
 
       await writer.flush();
