@@ -160,14 +160,16 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
 
   @override
   Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
-          NewDatabase extends GeneratedDatabase>(
-      {required OldDatabase Function(QueryExecutor p1) createOld,
-      required NewDatabase Function(QueryExecutor p1) createNew,
-      required GeneratedDatabase Function(QueryExecutor p1) openTestedDatabase,
-      required void Function(Batch p1, OldDatabase p2) createItems,
-      required Future Function(NewDatabase p1) validateItems,
-      required int oldVersion,
-      required int newVersion}) async {
+      NewDatabase extends GeneratedDatabase>({
+    required OldDatabase Function(QueryExecutor p1) createOld,
+    required NewDatabase Function(QueryExecutor p1) createNew,
+    required GeneratedDatabase Function(QueryExecutor p1) openTestedDatabase,
+    required void Function(Batch p1, OldDatabase p2) createItems,
+    required Future Function(NewDatabase p1) validateItems,
+    required int oldVersion,
+    required int newVersion,
+    ValidationOptions options = const ValidationOptions(),
+  }) async {
     final schema = await schemaAt(oldVersion);
 
     final oldDb = createOld(schema.newConnection());
@@ -175,7 +177,7 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     await oldDb.close();
 
     final db = openTestedDatabase(schema.newConnection());
-    await migrateAndValidate(db, newVersion);
+    await migrateAndValidate(db, newVersion, options: options);
     await db.close();
 
     final newDb = createNew(schema.newConnection());

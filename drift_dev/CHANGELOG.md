@@ -2,6 +2,7 @@
 
 - `make_migrations`: Don't generate schema test helpers when `--no-test` is set.
 - Generate managers entrypoint for `@DriftAccessor`s as well.
+- Add `ValidationOptions` parameter to `testWithDataIntegrity`.
 
 ## 2.30.0
 

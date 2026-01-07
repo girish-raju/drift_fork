@@ -5,11 +5,19 @@ import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final verifier = SchemaVerifier(
-    _TestHelper(),
-    setup: (rawDb) => rawDb.createFunction(
-        functionName: 'test_function', function: (args) => 1),
-  );
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
+  late SchemaVerifier verifier;
+  GeneratedDatabase Function(QueryExecutor db, int version) openReference =
+      _TestDatabase.new;
+
+  setUp(() {
+    verifier = SchemaVerifier(
+      _TestHelper((db, version) => openReference(db, version)),
+      setup: (rawDb) => rawDb.createFunction(
+          functionName: 'test_function', function: (args) => 1),
+    );
+  });
 
   group('startAt', () {
     test('starts at the requested version', () async {
@@ -36,7 +44,6 @@ void main() {
 
   group('migrateAndValidate', () {
     test('invokes a migration', () async {
-      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
       OpeningDetails? capturedDetails;
 
       final connection = await verifier.startAt(3);
@@ -48,8 +55,56 @@ void main() {
       await verifier.migrateAndValidate(db, 4);
       expect(capturedDetails!.versionBefore, 3);
       expect(capturedDetails!.versionNow, 4);
+    });
 
-      driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
+    test('can skip validating column constraints', () async {
+      openReference = (db, version) {
+        final ref = _TestDatabase(db, version);
+
+        ref.migration = MigrationStrategy(onCreate: (m) async {
+          if (version == 1) {
+            await ref
+                .customStatement('CREATE TABLE users (name TEXT NOT NULL);');
+          } else {
+            await ref.customStatement('CREATE TABLE users (name TEXT);');
+          }
+        });
+
+        return ref;
+      };
+
+      // Should throw with an empty migration due to constraint mismatch
+      var connection = await verifier.startAt(1);
+      var db = _TestDatabase(connection.executor, 2)
+        ..migration = MigrationStrategy(
+          onUpgrade: (m, from, to) async {},
+        );
+      await expectLater(() => verifier.migrateAndValidate(db, 2),
+          throwsA(isA<SchemaMismatch>()));
+
+      // Which can be disabled with an option.
+      connection = await verifier.startAt(1);
+      db = _TestDatabase(connection.executor, 2)
+        ..migration = MigrationStrategy(
+          onUpgrade: (m, from, to) async {},
+        );
+      await verifier.migrateAndValidate(db, 2,
+          options: ValidationOptions(validateColumnConstraints: false));
+
+      // that is also respected in testWithDataIntegrity
+      await verifier.testWithDataIntegrity(
+        oldVersion: 1,
+        createOld: (ex) => openReference(ex, 1),
+        newVersion: 2,
+        createNew: (ex) => openReference(ex, 2),
+        openTestedDatabase: (e) => _TestDatabase(e, 2)
+          ..migration = MigrationStrategy(
+            onUpgrade: (m, from, to) async {},
+          ),
+        createItems: (batch, old) async {},
+        validateItems: (_) async {},
+        options: ValidationOptions(validateColumnConstraints: false),
+      );
     });
   });
 
@@ -88,9 +143,13 @@ void main() {
 }
 
 class _TestHelper implements SchemaInstantiationHelper {
+  final GeneratedDatabase Function(QueryExecutor db, int version) resolve;
+
+  _TestHelper(this.resolve);
+
   @override
   GeneratedDatabase databaseForVersion(QueryExecutor db, int version) {
-    return _TestDatabase(db, version);
+    return resolve(db, version);
   }
 }
 

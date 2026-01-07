@@ -8,7 +8,11 @@ import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'migrations_common.dart' as common;
 
 export 'migrations_common.dart'
-    show SchemaMismatch, SchemaInstantiationHelper, MissingSchemaException;
+    show
+        SchemaMismatch,
+        SchemaInstantiationHelper,
+        MissingSchemaException,
+        ValidationOptions;
 
 abstract class SchemaVerifier implements common.SchemaVerifier<Database> {
   /// Creates a schema verifier for the drift-generated [helper].

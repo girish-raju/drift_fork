@@ -79,6 +79,7 @@ abstract class SchemaVerifier<DB extends CommonDatabase> {
     required Future Function(NewDatabase) validateItems,
     required int oldVersion,
     required int newVersion,
+    ValidationOptions options = const ValidationOptions(),
   });
 }
 
