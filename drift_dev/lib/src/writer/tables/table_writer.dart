@@ -670,6 +670,7 @@ class TableWriter extends TableOrViewWriter {
     } else {
       buffer.writeln('@override\nString get aliasedName => '
           '_alias ?? actualTableName;');
+      buffer.writeln('@override\nString get actualTableName => \$name;');
     }
 
     buffer.write('static const String \$name = \'${table.id.name}\';\n');

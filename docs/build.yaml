@@ -111,6 +111,7 @@ targets:
             - import
             - color-functions
             - global-builtin
+            - if-function
       # These builders should run in the source_gen target
       drift_dev:preparing_builder:
         enabled: false
