@@ -53,6 +53,14 @@ sealed class ColumnType {
 
 final class ColumnDriftType extends ColumnType {
   const ColumnDriftType(super.builtin) : super._();
+
+  @override
+  int get hashCode => builtin.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is ColumnDriftType && other.builtin == builtin;
+  }
 }
 
 final class ColumnCustomType extends ColumnType {

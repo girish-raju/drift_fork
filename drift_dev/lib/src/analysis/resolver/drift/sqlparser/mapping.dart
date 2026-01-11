@@ -159,13 +159,40 @@ class TypeMapping {
             Uri.parse('package:drift/extensions/geopoly.dart'),
             'const GeopolyPolygonType()',
           ),
-          knownTypes!.geopolyPolygon,
+          knownTypes!.geopolyPolygon!,
         ),
       );
     }
 
     return ColumnType.drift(_toDefaultType(type));
   }
+
+  HasType resolveSqlType(ResolvedType? type) {
+    final columnType = sqlTypeToDrift(type);
+    return _ResolvedTypeFromSql(
+      isArray: type?.isArray ?? false,
+      nullable: type?.nullable ?? true,
+      sqlType: columnType,
+      typeConverter: null,
+    );
+  }
+}
+
+final class _ResolvedTypeFromSql implements HasType {
+  @override
+  final bool isArray;
+  @override
+  final bool nullable;
+  @override
+  final ColumnType sqlType;
+  @override
+  final AppliedTypeConverter? typeConverter;
+
+  _ResolvedTypeFromSql(
+      {required this.isArray,
+      required this.nullable,
+      required this.sqlType,
+      required this.typeConverter});
 }
 
 /// Creates a [TypeFromText] implementation that will look up type converters

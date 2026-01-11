@@ -61,12 +61,18 @@ class DatabaseWriter {
     }
 
     firstLeaf
-      ..write('class $className extends ')
+      ..write(scope.drift3 ? 'base class' : 'class')
+      ..write(' $className extends ')
       ..writeDriftRef('GeneratedDatabase')
       ..writeln('{')
-      ..writeln('$className(${firstLeaf.drift('QueryExecutor e')}): super(e);');
+      ..write('$className(');
+    if (scope.drift3) {
+      firstLeaf.writeln('super.implementation);');
+    } else {
+      firstLeaf.writeln('${firstLeaf.drift('QueryExecutor e')}): super(e);');
+    }
 
-    if (dbScope.options.generateConnectConstructor) {
+    if (!scope.drift3 && dbScope.options.generateConnectConstructor) {
       final conn = firstLeaf.drift('DatabaseConnection');
       firstLeaf.write('$className.connect($conn c): super.connect(c); \n');
     }
@@ -98,7 +104,7 @@ class DatabaseWriter {
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: tableClassName,
-          code: '$tableClassName(this)',
+          code: scope.drift3 ? '$tableClassName()' : '$tableClassName(this)',
         );
       } else if (entity is DriftTrigger) {
         writeMemoizedGetter(
@@ -173,13 +179,17 @@ class DatabaseWriter {
     // Write List of tables
     final schemaScope = dbScope.leaf();
 
-    final tableInfoType =
-        '${dbScope.drift('TableInfo')}<${dbScope.drift('Table')}, Object?>';
-    final schemaEntity = dbScope.drift('DatabaseSchemaEntity');
+    if (!scope.drift3) {
+      final tableInfoType =
+          '${dbScope.drift('TableInfo')}<${dbScope.drift('Table')}, Object?>';
 
+      schemaScope
+        ..write('@override\nIterable<$tableInfoType> get allTables => ')
+        ..write('allSchemaEntities.whereType<$tableInfoType>();\n');
+    }
+
+    final schemaEntity = dbScope.drift('DatabaseSchemaEntity');
     schemaScope
-      ..write('@override\nIterable<$tableInfoType> get allTables => ')
-      ..write('allSchemaEntities.whereType<$tableInfoType>();\n')
       ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
       ..write('=> [')
       ..write(elements
@@ -240,6 +250,11 @@ class DatabaseWriter {
   static String createTrigger(Scope scope, DriftTrigger entity) {
     final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final trigger = scope.drift('Trigger');
+    if (scope.drift3) {
+      final arg =
+          scope.dartCode(scope.customComponent(entity.parsedStatement!));
+      return '$trigger(${asDartLiteral(entity.schemaName)}, $arg)';
+    }
 
     if (dialectSpecific) {
       return '$trigger.byDialect(${asDartLiteral(entity.schemaName)}, $sql)';
@@ -251,6 +266,11 @@ class DatabaseWriter {
   static String createIndex(Scope scope, DriftIndex entity) {
     final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final index = scope.drift('Index');
+    if (scope.drift3) {
+      final arg =
+          scope.dartCode(scope.customComponent(entity.parsedStatement!));
+      return '$index(${asDartLiteral(entity.schemaName)}, $arg)';
+    }
 
     if (dialectSpecific) {
       return '$index.byDialect(${asDartLiteral(entity.schemaName)}, $sql)';
@@ -263,6 +283,10 @@ class DatabaseWriter {
       Scope scope, DefinedSqlQuery query, SqlQuery resolved) {
     final (sql, dialectSpecific) = scope.sqlByDialect(resolved.root!);
     final onCreate = scope.drift('OnCreateQuery');
+    if (scope.drift3) {
+      final arg = scope.dartCode(scope.customComponent(resolved.root!));
+      return '$onCreate($arg)';
+    }
 
     if (dialectSpecific) {
       return '$onCreate.byDialect($sql)';

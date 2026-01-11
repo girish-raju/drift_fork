@@ -15,8 +15,9 @@ import '../../analysis/resolver/dart/helper.dart';
 
 class DriftBuildBackend extends DriftBackend {
   final BuildStep _buildStep;
+  final bool forDrift3Preview;
 
-  DriftBuildBackend(this._buildStep);
+  DriftBuildBackend(this._buildStep, {this.forDrift3Preview = false});
 
   @override
   Logger get log => build.log;
@@ -126,8 +127,10 @@ class DriftBuildBackend extends DriftBackend {
       // to look it up in `dart:core`.
       // For that, resolve a library we know exists and likely has been resolved
       // already.
-      final libraryWeKnowExists = await _buildStep.resolver
-          .libraryFor(AssetId.resolve(KnownDriftTypes.uri));
+      final libraryWeKnowExists = await _buildStep.resolver.libraryFor(
+          AssetId.resolve(forDrift3Preview
+              ? KnownDriftTypes.drift3Uri
+              : KnownDriftTypes.drift2Uri));
       final dartCore = libraryWeKnowExists.typeProvider.objectElement.library;
 
       return dartCore.exportNamespace.get2(reference);

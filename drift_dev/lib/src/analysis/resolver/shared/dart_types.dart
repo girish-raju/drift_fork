@@ -282,7 +282,6 @@ enum EnumType {
 }
 
 CustomColumnType? readCustomType(
-  LibraryElement library,
   Expression dartExpression,
   KnownDriftTypes helper,
   void Function(String) reportError,
@@ -525,7 +524,7 @@ extension on TypeProvider {
       case DriftSqlType.double:
         return doubleType;
       case DriftSqlType.any:
-        return knownTypes.driftAny;
+        return knownTypes.driftAny!;
     }
   }
 }

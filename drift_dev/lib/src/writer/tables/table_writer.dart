@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import '../../analysis/results/results.dart';
 import '../../utils/string_escaper.dart';
 import '../utils/column_constraints.dart';
@@ -28,6 +30,7 @@ abstract class TableOrViewWriter {
       column,
       emitter,
       isRequiredForInsert: isRequiredForInsert,
+      isForTable: tableOrView is DriftTable,
     );
 
     writeMemoizedGetter(
@@ -73,6 +76,10 @@ abstract class TableOrViewWriter {
   }
 
   void writeMappingMethod(Scope scope) {
+    if (scope.drift3) {
+      return _writeDrift3MappingMethod(scope);
+    }
+
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
         @override
@@ -152,12 +159,129 @@ abstract class TableOrViewWriter {
     buffer.write('}\n');
   }
 
+  void _writeDrift3MappingMethod(Scope scope) {
+    final columnPosition = emitter.drift('ColumnPosition');
+    final driftRow = emitter.drift('DriftRow');
+
+    if (!scope.generationOptions.writeDataClasses) {
+      buffer.writeln('''
+        @override
+        Never createMapperFromPositions(${emitter.drift('DriftDialect')} dialect, List<$columnPosition> positions) {
+          throw UnsupportedError('Mapping to Dart in schema verification code');
+        }
+      ''');
+      return;
+    }
+
+    final dataClassType = emitter.dartCode(emitter.writer.rowType(tableOrView));
+
+    buffer
+      ..writeln('@override')
+      ..write('$dataClassType? Function($driftRow) createMapperFromPositions(')
+      ..writeln(
+          '${emitter.drift('DriftDialect')} dialect, List<$columnPosition> positions) {');
+
+    final resolvedColumns = <DriftColumn, (String, String)>{};
+    final types = <ColumnType, String>{};
+    for (final (index, column) in tableOrView.columns.indexed) {
+      final posVariable = 'pos\$${column.nameInDart}';
+      buffer.writeln('final $posVariable = positions[$index].index;');
+
+      final typeVariable = types.putIfAbsent(column.sqlType, () {
+        final name = 'type\$${types.length}';
+        emitter
+          ..write('final $name = ')
+          ..write(emitter.drift3SqlType(column.sqlType))
+          ..writeln('.resolveIn(dialect);');
+        return name;
+      });
+      resolvedColumns[column] = (posVariable, typeVariable);
+    }
+    buffer.writeln('return ($driftRow row) {');
+
+    // We need to check whether this table is present in the row at all (it may
+    // be absent for left outer joins).
+    final firstNonNullableColumn =
+        tableOrView.columns.firstWhereOrNull((c) => !c.nullable);
+    if (firstNonNullableColumn case final column?) {
+      buffer
+        ..writeln(
+            ' // Not part of row if non-nullable column "${column.nameInDart}" is missing')
+        ..writeln('if (row.raw[${resolvedColumns[column]!.$1}] == null) {')
+        ..writeln('return null;')
+        ..writeln('}');
+    }
+
+    if (tableOrView.hasExistingRowClass) {
+      final info = tableOrView.existingRowClass!;
+
+      final writer = RowMappingWriter(
+        positional: [
+          for (final positional in info.positionalColumns)
+            tableOrView.columnBySqlName[positional]!
+        ],
+        named: info.namedColumns.map((dartParameter, columnName) {
+          return MapEntry(
+              tableOrView.columnBySqlName[columnName]!, dartParameter);
+        }),
+        table: tableOrView,
+        writer: scope.writer,
+        databaseGetter: '_',
+        columnToPositionAndType: resolvedColumns,
+      );
+
+      final ctor = info.constructor;
+      emitter.write('return ');
+      if (!info.isRecord) {
+        // Write the constructor or async mapping method for this existing row
+        // class. It will later be invoked by writing the arguments below.
+        // For records, the argument syntax is already a valid record literal.
+        emitter.writeDart(AnnotatedDartCode.type(info.targetType));
+
+        if (ctor != 'new') {
+          buffer
+            ..write('.')
+            ..write(ctor);
+        }
+      }
+
+      writer.writeArguments(buffer);
+      buffer.write(';\n');
+    } else {
+      final columns = tableOrView.columns;
+
+      final writer = RowMappingWriter(
+        positional: const [],
+        named: {for (final column in columns) column: column.nameInDart},
+        table: tableOrView,
+        writer: scope.writer,
+        databaseGetter: '_',
+        columnToPositionAndType: resolvedColumns,
+      );
+
+      emitter
+        ..write('return ')
+        ..writeDart(emitter.writer.rowClass(tableOrView));
+      writer.writeArguments(buffer);
+      buffer.writeln(';');
+    }
+
+    buffer.write('};}\n');
+  }
+
   void writeGetColumnsOverride() {
     final columnsWithGetters =
         tableOrView.columns.map((c) => c.nameInDart).join(', ');
-    buffer.write(
-        '@override\nList<${emitter.drift('GeneratedColumn')}> get \$columns => '
-        '[$columnsWithGetters];\n');
+
+    if (emitter.parent!.drift3) {
+      final type = tableOrView is DriftTable ? 'TableColumn' : 'SchemaColumn';
+      buffer.write('@override\nList<${emitter.drift(type)}> get columns => '
+          '[$columnsWithGetters];\n');
+    } else {
+      buffer.write(
+          '@override\nList<${emitter.drift('GeneratedColumn')}> get \$columns => '
+          '[$columnsWithGetters];\n');
+    }
   }
 
   void writeAsDslTable() {
@@ -170,8 +294,18 @@ abstract class TableOrViewWriter {
   static (String, String) instantiateColumn(
     DriftColumn column,
     TextEmitter emitter, {
+    bool isForTable = false,
     bool? isRequiredForInsert,
   }) {
+    if (emitter.parent!.drift3) {
+      return _instantiateColumnDrift3(
+        column,
+        emitter,
+        isRequiredForInsert: isRequiredForInsert,
+        isForTable: isForTable,
+      );
+    }
+
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
@@ -312,6 +446,96 @@ abstract class TableOrViewWriter {
 
     return (type, expressionBuffer.toString());
   }
+
+  static (String, String) _instantiateColumnDrift3(
+    DriftColumn column,
+    TextEmitter emitter, {
+    bool isForTable = false,
+    bool? isRequiredForInsert,
+  }) {
+    final namedParameters = <String, String>{
+      'name': asDartLiteral(column.nameInSql),
+      'type': emitter.drift3SqlType(column.sqlType),
+      'isNullable': column.nullable.toString(),
+//      if (column.viewExpression case final viewExpression?)
+//        'expression': emitter.dartCode(viewExpression),
+    };
+    final expressionBuffer = StringBuffer();
+    final constraints = columnConstraintsDrift3(emitter, column);
+
+    if (isRequiredForInsert != null) {
+      namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
+    }
+
+    if (column.customConstraints != null) {
+      final list = '[${emitter.drift('ColumnConstraint.customSql')}'
+          '(${asDartLiteral(column.customConstraints!)})]';
+
+      namedParameters['constraints'] = '() => $list';
+    } else if (constraints.isNotEmpty) {
+      // Use the default constraints supported by drift
+      namedParameters['constraints'] = '() => [${constraints.join(', ')}]';
+    }
+
+    if (column.clientDefaultCode != null &&
+        !emitter.writer.generationOptions.avoidUserCode) {
+      namedParameters['clientDefault'] =
+          emitter.dartCode(column.clientDefaultCode!);
+    }
+
+    final innerType = emitter.innerColumnType(column.sqlType);
+    var baseColumnImpl = isForTable ? 'TableColumn' : 'ViewColumn';
+    var type =
+        '${emitter.drift(baseColumnImpl)}<${emitter.dartCode(innerType)}>';
+
+    expressionBuffer
+      ..write(type)
+      // Use ViewColumn.forDriftFile constructor if we don't have a Dart
+      // expression backing the column (which is the case for SQL-defined
+      // views).
+      ..write(!isForTable && true /*column.viewExpression == null */
+          ? '.forDriftFile'
+          : '')
+      ..write('(');
+
+    var first = true;
+    namedParameters.forEach((name, value) {
+      if (!first) {
+        expressionBuffer.write(', ');
+      } else {
+        first = false;
+      }
+
+      expressionBuffer
+        ..write(name)
+        ..write(': ')
+        ..write(value);
+    });
+
+    expressionBuffer.write(')');
+
+    final converter = column.typeConverter;
+    if (converter != null && !emitter.writer.generationOptions.avoidUserCode) {
+      // Generate a TableColumnWithTypeConverter instance, as it has
+      // additional methods to check for equality against a mapped value.
+      final mappedType = emitter.dartCode(emitter.writer.dartType(column));
+
+      final converterCode = emitter.dartCode(emitter.writer
+          .readConverter(converter, forNullable: column.nullable));
+
+      type = '${emitter.drift('${baseColumnImpl}WithTypeConverter')}'
+          '<$mappedType, ${emitter.dartCode(innerType)}>';
+      expressionBuffer
+        ..write('.withConverter<')
+        ..write(mappedType)
+        ..write('>(')
+        ..write(converterCode)
+        ..write(')');
+    }
+
+    expressionBuffer.write('..owningResultSet = this');
+    return (type, expressionBuffer.toString());
+  }
 }
 
 class TableWriter extends TableOrViewWriter {
@@ -327,6 +551,7 @@ class TableWriter extends TableOrViewWriter {
   TableWriter(this.table, this.scope);
 
   bool get _skipVerification =>
+      scope.drift3 ||
       scope.writer.options.skipVerificationCode ||
       scope.generationOptions.isGeneratingForSchema;
 
@@ -370,8 +595,16 @@ class TableWriter extends TableOrViewWriter {
       buffer
         ..write('class ${table.entityInfoName} extends ')
         ..write(emitter.drift('Table'))
-        ..write(' with ')
-        ..write(emitter.drift('TableInfo'));
+        ..write(' with ');
+      if (scope.drift3) {
+        buffer
+          ..write(emitter.drift('ResultSet'))
+          ..write(' implements ')
+          ..write(emitter.drift('GeneratedTable'));
+      } else {
+        buffer.write(emitter.drift('TableInfo'));
+      }
+
       if (table.isVirtual) {
         buffer.write(', ${emitter.drift('VirtualTableInfo')}');
       }
@@ -382,29 +615,45 @@ class TableWriter extends TableOrViewWriter {
           AnnotatedDartCode.importedSymbol(AnnotatedDartCode.drift, 'Table');
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
-      final typeArgs = '<${table.entityInfoName}, $dataClass>';
+      final typeArgs = scope.drift3
+          ? '<$dataClass, ${table.entityInfoName}>'
+          : '<${table.entityInfoName}, $dataClass>';
 
       emitter
         ..write('class ${table.entityInfoName} extends ')
         ..writeDart(tableDslName)
-        ..write(' with ')
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.drift, 'TableInfo'))
-        ..write(typeArgs);
+        ..write(' with ');
+      if (scope.drift3) {
+        buffer
+          ..write(emitter.drift('ResultSet'))
+          ..write(typeArgs)
+          ..write(' implements ')
+          ..write(emitter.drift('GeneratedTable'));
+      } else {
+        buffer.write(emitter.drift('TableInfo'));
+      }
+      buffer.write(typeArgs);
 
       if (table.isVirtual) {
         buffer.write(', ${emitter.drift('VirtualTableInfo')}$typeArgs ');
       }
     }
 
-    buffer
-      ..writeln('{')
-      // write a GeneratedDatabase reference that is set in the constructor
-      ..writeln(
-          '@override final ${emitter.drift('GeneratedDatabase')} attachedDatabase;')
-      ..writeln('final String? _alias;')
-      ..writeln(
-          '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
+    buffer.writeln('{');
+    if (scope.drift3) {
+      buffer
+        ..writeln('@override')
+        ..writeln('final String? alias;')
+        ..writeln('${table.entityInfoName}([this.alias]);');
+    } else {
+      buffer
+        // write a GeneratedDatabase reference that is set in the constructor
+        ..writeln(
+            '@override final ${emitter.drift('GeneratedDatabase')} attachedDatabase;')
+        ..writeln('final String? _alias;')
+        ..writeln(
+            '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
+    }
 
     // Generate the columns
     for (final column in table.columns) {
@@ -416,12 +665,16 @@ class TableWriter extends TableOrViewWriter {
 
     // Generate $columns, $tableName, asDslTable getters
     writeGetColumnsOverride();
-    buffer
-      ..write('@override\nString get aliasedName => '
-          '_alias ?? actualTableName;\n')
-      ..write('@override\n String get actualTableName => \$name;\n')
-      ..write('static const String \$name = \'${table.id.name}\';\n');
+    if (scope.drift3) {
+      buffer.write('@override\nString get entityName => \$name;');
+    } else {
+      buffer.writeln('@override\nString get aliasedName => '
+          '_alias ?? actualTableName;');
+    }
 
+    buffer.write('static const String \$name = \'${table.id.name}\';\n');
+
+    writeAsSelfType();
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
     _writeUniqueKeyOverride();
@@ -524,8 +777,14 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writePrimaryKeyOverride() {
-    buffer.write(
-        '@override\nSet<${emitter.drift('GeneratedColumn')}> get \$primaryKey => ');
+    if (scope.drift3) {
+      buffer.write(
+          '@override\nSet<${emitter.drift('TableColumn')}> get primaryKey => ');
+    } else {
+      buffer.write(
+          '@override\nSet<${emitter.drift('GeneratedColumn')}> get \$primaryKey => ');
+    }
+
     final primaryKey = table.fullPrimaryKey;
 
     if (primaryKey.isEmpty) {
@@ -556,8 +815,13 @@ class TableWriter extends TableOrViewWriter {
       return;
     }
 
-    buffer.write('@override\nList<Set<${emitter.drift('GeneratedColumn')}>> '
-        'get uniqueKeys => [');
+    if (scope.drift3) {
+      buffer.write('@override\nList<Set<${emitter.drift('TableColumn')}>> '
+          'get uniqueKeys => [');
+    } else {
+      buffer.write('@override\nList<Set<${emitter.drift('GeneratedColumn')}>> '
+          'get uniqueKeys => [');
+    }
 
     for (final uniqueKey in uniqueKeys) {
       buffer.write('{');
@@ -578,11 +842,17 @@ class TableWriter extends TableOrViewWriter {
   void _writeAliasGenerator() {
     final typeName = table.entityInfoName;
 
-    buffer
-      ..write('@override\n')
-      ..write('$typeName createAlias(String alias) {\n')
-      ..write('return $typeName(attachedDatabase, alias);')
-      ..write('}');
+    buffer.writeln('@override');
+    if (scope.drift3) {
+      buffer
+        ..write('$typeName withAlias(String alias) {\n')
+        ..write('return $typeName(alias);');
+    } else {
+      buffer
+        ..write('$typeName createAlias(String alias) {\n')
+        ..write('return $typeName(attachedDatabase, alias);');
+    }
+    buffer.writeln('}');
   }
 
   void _overrideFieldsIfNeeded() {
@@ -624,6 +894,13 @@ class TableWriter extends TableOrViewWriter {
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');
+    }
+  }
+
+  void writeAsSelfType() {
+    if (scope.drift3) {
+      emitter.writeln(
+          '@override\n${tableOrView.entityInfoName} asSelfType() => this;\n');
     }
   }
 }

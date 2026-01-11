@@ -23,6 +23,10 @@ part '../generated/analysis/options.g.dart';
 class DriftOptions {
   static const _defaultSqliteVersion = SqliteVersion.v3(38);
 
+  /// Whether to generate code for the temporary `drift3` packages.
+  @JsonKey(name: 'drift3_preview', defaultValue: false)
+  final bool drift3Preview;
+
   /// Whether moor should generate a `fromJsonString` factory for data classes.
   /// It basically wraps the regular `fromJson` constructor in a `json.decode`
   /// call.
@@ -145,6 +149,7 @@ class DriftOptions {
 
   @internal
   const DriftOptions.defaults({
+    this.drift3Preview = false,
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
     this.skipVerificationCode = false,
@@ -178,6 +183,7 @@ class DriftOptions {
   });
 
   DriftOptions({
+    required this.drift3Preview,
     required this.generateFromJsonStringConstructor,
     required this.overrideHashAndEqualsInResultSets,
     required this.skipVerificationCode,

@@ -152,7 +152,7 @@ final class DriftResultSet
 
   Object? Function(DriftRow) _mapperFor(ResultSet resultSet) {
     return _createdMappers.putIfAbsent(resultSet, () {
-      return resultSet.createMapperToDart(structure);
+      return resultSet.createMapperToDart(dialect, structure);
     });
   }
 }

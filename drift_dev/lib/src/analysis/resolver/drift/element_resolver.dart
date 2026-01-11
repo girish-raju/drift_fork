@@ -38,7 +38,6 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
     final knownTypes = await resolver.driver.knownTypes;
     return readCustomType(
-      knownTypes.helperLibrary,
       expression,
       knownTypes,
       (msg) => reportError(DriftAnalysisError.inDriftFile(type, msg)),

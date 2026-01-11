@@ -11,6 +11,7 @@ import '../clauses/limit.dart';
 import '../clauses/order_by.dart';
 import '../clauses/where.dart';
 import '../compiler.dart';
+import '../dialect.dart';
 import '../expressions/boolean.dart';
 import '../expressions/expression.dart';
 import '../results.dart';
@@ -264,7 +265,10 @@ sealed class BaseSelectStatement<
   /// Creates a function that, given a [DriftRow], extracts the result set for
   /// this [BaseSelectStatement].
   @internal
-  Row Function(DriftRow) createMapper(ResultSetStructure structure);
+  Row Function(DriftRow) createMapper(
+    DriftDialect dialect,
+    ResultSetStructure structure,
+  );
 
   List<Row> _mapResults(QueryResult result) {
     final resultSet = DriftResultSet(
@@ -272,7 +276,7 @@ sealed class BaseSelectStatement<
       result.resultSet!,
       _database.dialect,
     );
-    final converter = createMapper(structure);
+    final converter = createMapper(resultSet.dialect, structure);
     return resultSet.map(converter).toList();
   }
 
@@ -430,7 +434,10 @@ final class SelectStatement
   }
 
   @override
-  DriftRow Function(DriftRow) createMapper(ResultSetStructure resultSet) {
+  DriftRow Function(DriftRow) createMapper(
+    DriftDialect dialect,
+    ResultSetStructure resultSet,
+  ) {
     return (row) => row;
   }
 }
@@ -498,8 +505,11 @@ final class SingleTableSelectStatement<
   SingleTableSelectStatement<Row, RS> _asSelf() => this;
 
   @override
-  Row Function(DriftRow p1) createMapper(ResultSetStructure resultSet) {
-    final inner = this.resultSet.createMapperToDart(resultSet);
+  Row Function(DriftRow p1) createMapper(
+    DriftDialect dialect,
+    ResultSetStructure resultSet,
+  ) {
+    final inner = this.resultSet.createMapperToDart(dialect, resultSet);
     return (row) => inner(row)!;
   }
 

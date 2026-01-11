@@ -21,7 +21,8 @@ class AccessorWriter {
     final prefix = isModular ? '' : r'_';
     final mixinName = '$prefix\$${daoName}Mixin';
     classScope.leaf()
-      ..write('mixin $mixinName on ')
+      ..write(scope.drift3 ? 'base mixin' : 'mixin')
+      ..write(' $mixinName on ')
       ..writeDriftRef('DatabaseAccessor<')
       ..writeDart(input.accessor.databaseClass)
       ..writeln('> {');

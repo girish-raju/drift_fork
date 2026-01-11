@@ -13,6 +13,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         $checkKeys(
           json,
           allowedKeys: const [
+            'drift3_preview',
             'write_from_json_string_constructor',
             'override_hash_and_equals_in_result_sets',
             'skip_verification_code',
@@ -46,6 +47,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           ],
         );
         final val = DriftOptions(
+          drift3Preview:
+              $checkedConvert('drift3_preview', (v) => v as bool? ?? false),
           generateFromJsonStringConstructor: $checkedConvert(
               'write_from_json_string_constructor', (v) => v as bool? ?? false),
           overrideHashAndEqualsInResultSets: $checkedConvert(
@@ -126,6 +129,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         return val;
       },
       fieldKeyMap: const {
+        'drift3Preview': 'drift3_preview',
         'generateFromJsonStringConstructor':
             'write_from_json_string_constructor',
         'overrideHashAndEqualsInResultSets':
@@ -162,6 +166,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
 
 Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
     <String, dynamic>{
+      'drift3_preview': instance.drift3Preview,
       'write_from_json_string_constructor':
           instance.generateFromJsonStringConstructor,
       'override_hash_and_equals_in_result_sets':

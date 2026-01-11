@@ -150,7 +150,9 @@ class _DriftBuildRun {
       options,
       mode,
       buildStep,
-      DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
+      DriftAnalysisDriver(
+          DriftBuildBackend(buildStep, forDrift3Preview: options.drift3Preview),
+          options)
         ..cacheReader = BuildCacheReader(
           buildStep,
           // The discovery and analyzer builders will have emitted IR for

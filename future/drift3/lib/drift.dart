@@ -18,3 +18,4 @@ export 'src/dsl/table.dart';
 export 'src/exceptions.dart';
 
 export 'src/query_builder.dart' hide SingleTableStatementMixin;
+export 'src/runtime_options.dart';

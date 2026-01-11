@@ -48,7 +48,7 @@ class DataClassWriter {
     final customParent = table.customParentClass;
     final parentClass = customParent != null
         ? _emitter.dartCode(customParent.parentClass)
-        : _emitter.drift('DataClass');
+        : _emitter.drift(scope.drift3 ? 'LegacyDataClass' : 'DataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
     var hasImplementsClause = false;
@@ -373,12 +373,17 @@ class RowMappingWriter {
   /// from SQL to Dart.
   final String databaseGetter;
 
+  /// Whether `pos$name` variables providing the index of a column in the row
+  /// are available.
+  final Map<DriftColumn, (String, String)> columnToPositionAndType;
+
   RowMappingWriter({
     required this.positional,
     required this.table,
     required this.writer,
     required this.databaseGetter,
     this.named = const {},
+    this.columnToPositionAndType = const {},
   });
 
   void writeArguments(StringBuffer buffer) {
@@ -386,18 +391,25 @@ class RowMappingWriter {
       final columnName = column.nameInSql;
       final rawData = "data['\${effectivePrefix}$columnName']";
 
-      final String sqlType;
-      switch (column.sqlType) {
-        case ColumnDriftType():
-          sqlType = writer.drift(column.sqlType.builtin.toString());
-        case ColumnCustomType(:final custom):
-          sqlType = writer.dartCode(custom.expression);
-      }
+      String loadType;
+      if (writer.options.drift3Preview) {
+        final (position, type) = columnToPositionAndType[column]!;
+        final nullCheck = column.nullable ? '' : '!';
 
-      var loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';
+        loadType = '$type.dartValue(row.raw[$position]$nullCheck)';
+      } else {
+        final String sqlType;
+        switch (column.sqlType) {
+          case ColumnDriftType():
+            sqlType = writer.drift(column.sqlType.builtin.toString());
+          case ColumnCustomType(:final custom):
+            sqlType = writer.dartCode(custom.expression);
+        }
 
-      if (!column.nullable) {
-        loadType += '!';
+        loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';
+        if (!column.nullable) {
+          loadType += '!';
+        }
       }
 
       // run the loaded expression though the custom converter for the final

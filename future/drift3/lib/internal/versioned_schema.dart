@@ -183,6 +183,7 @@ final class VersionedTable extends Table
 
   @override
   DriftRow? Function(DriftRow p1) createMapperFromPositions(
+    DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
     return (row) => row;
@@ -274,6 +275,7 @@ final class VersionedView
 
   @override
   DriftRow? Function(DriftRow p1) createMapperFromPositions(
+    DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
     return (row) => row;

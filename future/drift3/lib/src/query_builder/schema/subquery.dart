@@ -1,4 +1,5 @@
 import '../compiler.dart';
+import '../dialect.dart';
 import '../expressions/expression.dart';
 import '../expressions/subquery.dart';
 import '../results.dart';
@@ -124,10 +125,11 @@ final class Subquery<Row extends Object>
 
   @override
   Row? Function(DriftRow) createMapperFromPositions(
+    DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
     final structure = select.structure.shift(positions);
-    return select.createMapper(structure);
+    return select.createMapper(dialect, structure);
   }
 
   @override

@@ -299,6 +299,35 @@ abstract class _NodeOrWriter {
     });
   }
 
+  /// Writes a drift3 `CustomComponent` for all configured SQL dialects.
+  AnnotatedDartCode customComponent(sql.AstNode node) {
+    final dialects = writer.options.supportedDialects;
+
+    return AnnotatedDartCode.build((b) {
+      final defaultText = StringBuffer();
+      SqlWriter(writer.options,
+              dialect: dialects.first,
+              buffer: defaultText,
+              escapeForDart: false)
+          .writeSql(node);
+      final dialectSpecific = StringBuffer();
+      _writeSqlByDialectMap(node, dialectSpecific);
+
+      b
+        ..addSymbol('CustomComponent', AnnotatedDartCode.drift)
+        ..addText('(')
+        ..addText(asDartLiteral(defaultText.toString()));
+
+      if (dialects.length > 1) {
+        b
+          ..addText(', dialectSpecificSql: ')
+          ..addText(dialectSpecific.toString());
+      }
+
+      b.addText(')');
+    });
+  }
+
   String refUri(Uri definition, String element) {
     final prefix =
         writer.generationOptions.imports.prefixFor(definition, element);
@@ -314,6 +343,16 @@ abstract class _NodeOrWriter {
   /// library.
   String drift(String element) {
     return refUri(AnnotatedDartCode.drift, element);
+  }
+
+  String drift3SqlType(ColumnType sqlType) {
+    return switch (sqlType) {
+      ColumnDriftType(builtin: DriftSqlType.string) =>
+        drift('BuiltinDriftType.text'),
+      ColumnDriftType(:final builtin) =>
+        drift('BuiltinDriftType.${builtin.name}'),
+      ColumnCustomType(:final custom) => dartCode(custom.expression),
+    };
   }
 
   String dartCode(AnnotatedDartCode code) {
@@ -418,6 +457,8 @@ class Scope extends _Node {
         super(parent);
 
   DriftOptions get options => writer.options;
+
+  bool get drift3 => options.drift3Preview;
 
   GenerationOptions get generationOptions => writer.generationOptions;
 

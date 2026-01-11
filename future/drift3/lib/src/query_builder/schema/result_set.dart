@@ -4,6 +4,7 @@ import '../../connection/result_set.dart';
 import '../../database/connection_user.dart';
 import '../../database/data_class.dart';
 import '../../dsl/table.dart';
+import '../dialect.dart';
 import '../expressions/variables.dart';
 import '../results.dart';
 import 'column.dart';
@@ -34,17 +35,21 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
 
   /// Creates a function that, when receiving a [DriftRow], extracts columns for
   /// this result set into the mapped [Row] type.
-  Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
+  Row? Function(DriftRow) createMapperToDart(
+    DriftDialect dialect,
+    ResultSetStructure structure,
+  ) {
     final positions = structure.tables[this];
     if (positions == null) {
       throw StateError('Table $aliasOrName has not been selected from');
     }
 
-    return createMapperFromPositions(positions);
+    return createMapperFromPositions(dialect, positions);
   }
 
   /// Like [createMapperToDart], but with positions already resolved.
   Row? Function(DriftRow) createMapperFromPositions(
+    DriftDialect dialect,
     List<ColumnPosition> positions,
   );
 
@@ -84,7 +89,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
       resultSet,
       database.dialect,
     );
-    final mapper = createMapperToDart(structure);
+    final mapper = createMapperToDart(database.dialect, structure);
     return mapper(mappedResultSet.first)!;
   }
 

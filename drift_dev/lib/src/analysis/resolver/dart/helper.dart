@@ -7,9 +7,11 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
+import 'package:source_gen/source_gen.dart';
 
 import '../../backend.dart';
 import '../../driver/error.dart';
+import '../../options.dart';
 import '../../results/results.dart';
 import '../resolver.dart';
 import '../shared/dart_types.dart';
@@ -31,53 +33,77 @@ class KnownDriftTypes {
   final InterfaceElement userDefinedSqlType;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
-  final InterfaceType driftAny;
+  final InterfaceType? driftAny;
   final InterfaceType uint8List;
-  final InterfaceType geopolyPolygon;
+  final InterfaceType? geopolyPolygon;
+  final InterfaceElement? driftColumnDeclarationBuilder;
 
-  KnownDriftTypes._(
-    this.helperLibrary,
-    this.tableElement,
-    this.tableType,
-    this.tableIndexType,
-    this.viewType,
-    this.tableInfoType,
-    this.userDefinedSqlType,
-    this.typeConverter,
-    this.jsonTypeConverter,
-    this.driftDatabase,
-    this.driftAccessor,
-    this.driftAny,
-    this.uint8List,
-    this.geopolyPolygon,
-  );
+  KnownDriftTypes._({
+    required this.helperLibrary,
+    required this.tableElement,
+    required this.tableType,
+    required this.tableIndexType,
+    required this.viewType,
+    required this.tableInfoType,
+    required this.userDefinedSqlType,
+    required this.typeConverter,
+    required this.jsonTypeConverter,
+    required this.driftDatabase,
+    required this.driftAccessor,
+    required this.driftAny,
+    required this.uint8List,
+    required this.geopolyPolygon,
+    required this.driftColumnDeclarationBuilder,
+  });
+
+  late final TypeChecker? checkDriftColumnDeclarationBuilder =
+      switch (driftColumnDeclarationBuilder) {
+    null => null,
+    final builderClass => TypeChecker.fromStatic(builderClass.thisType),
+  };
 
   /// Constructs the set of known drift types from a helper library, which is
   /// resolved from `package:drift/src/drift_dev_helper.dart`.
-  factory KnownDriftTypes._fromLibrary(LibraryElement helper) {
+  factory KnownDriftTypes._fromLibrary(
+      LibraryElement helper, LibraryElement? sqliteHelper,
+      {bool forDrift3 = false}) {
     final exportNamespace = helper.exportNamespace;
     final tableElement = exportNamespace.get2('Table') as ClassElement;
     final dbElement = exportNamespace.get2('DriftDatabase') as ClassElement;
     final daoElement = exportNamespace.get2('DriftAccessor') as ClassElement;
 
+    // In drift3, SQLite-specific types are exported from another package.
+    final sqliteExportNamespace = sqliteHelper?.exportNamespace;
+
     return KnownDriftTypes._(
-      helper,
-      tableElement,
-      tableElement.defaultInstantiation,
-      (exportNamespace.get2('TableIndex') as InterfaceElement).thisType,
-      (exportNamespace.get2('View') as InterfaceElement).thisType,
-      (exportNamespace.get2('TableInfo') as InterfaceElement).thisType,
-      exportNamespace.get2('UserDefinedSqlType') as InterfaceElement,
-      exportNamespace.get2('TypeConverter') as InterfaceElement,
-      exportNamespace.get2('JsonTypeConverter2') as InterfaceElement,
-      dbElement.defaultInstantiation,
-      daoElement.defaultInstantiation,
-      (exportNamespace.get2('DriftAny') as InterfaceElement)
+      helperLibrary: helper,
+      tableElement: tableElement,
+      tableType: tableElement.defaultInstantiation,
+      tableIndexType:
+          (exportNamespace.get2('TableIndex') as InterfaceElement).thisType,
+      viewType: (exportNamespace.get2('View') as InterfaceElement).thisType,
+      tableInfoType: (exportNamespace
+              .get2(forDrift3 ? 'ResultSet' : 'TableInfo') as InterfaceElement)
+          .thisType,
+      userDefinedSqlType:
+          exportNamespace.get2(forDrift3 ? 'SqlType' : 'UserDefinedSqlType')
+              as InterfaceElement,
+      typeConverter: exportNamespace.get2('TypeConverter') as InterfaceElement,
+      jsonTypeConverter:
+          exportNamespace.get2('JsonTypeConverter2') as InterfaceElement,
+      driftDatabase: dbElement.defaultInstantiation,
+      driftAccessor: daoElement.defaultInstantiation,
+      driftAny: (sqliteExportNamespace?.get2('DriftAny') as InterfaceElement?)
+          ?.defaultInstantiation,
+      uint8List: (exportNamespace.get2('Uint8List') as InterfaceElement)
           .defaultInstantiation,
-      (exportNamespace.get2('Uint8List') as InterfaceElement)
-          .defaultInstantiation,
-      (exportNamespace.get2('GeopolyPolygon') as InterfaceElement)
-          .defaultInstantiation,
+      geopolyPolygon:
+          (sqliteExportNamespace?.get2('GeopolyPolygon') as InterfaceElement?)
+              ?.defaultInstantiation,
+      driftColumnDeclarationBuilder: forDrift3
+          ? exportNamespace.get2('DriftColumnDeclarationBuilder')
+              as InterfaceElement
+          : null,
     );
   }
 
@@ -112,17 +138,36 @@ class KnownDriftTypes {
     }
   }
 
-  static Future<KnownDriftTypes?> resolve(DriftBackend backend) async {
+  static Future<KnownDriftTypes?> resolve(
+      DriftOptions options, DriftBackend backend) async {
     if (backend.canReadDart) {
-      final library = await backend.readDart(uri);
+      if (options.drift3Preview) {
+        final mainLibrary = await backend.readDart(drift3Uri);
+        LibraryElement? sqliteLibrary;
 
-      return KnownDriftTypes._fromLibrary(library);
+        try {
+          sqliteLibrary = await backend.readDart(drift3SqliteUri);
+        } on Object {
+          // Ignore, no SQLite types then.
+        }
+
+        return KnownDriftTypes._fromLibrary(mainLibrary, sqliteLibrary,
+            forDrift3: true);
+      } else {
+        final library = await backend.readDart(drift2Uri);
+        return KnownDriftTypes._fromLibrary(library, library);
+      }
     }
 
     return null;
   }
 
-  static final Uri uri = Uri.parse('package:drift/src/drift_dev_helper.dart');
+  static final Uri drift2Uri =
+      Uri.parse('package:drift/src/drift_dev_helper.dart');
+  static final Uri drift3Uri =
+      Uri.parse('package:drift3/src/drift_dev_helper.dart');
+  static final Uri drift3SqliteUri =
+      Uri.parse('package:drift_sqlite/src/drift_dev_helper.dart');
 }
 
 Expression? returnExpressionOfMethod(MethodDeclaration method) {
@@ -183,8 +228,10 @@ bool isColumnBuilder(DartType type) {
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final uri = type.element.library.uri;
-  return uri.scheme == 'package' && uri.pathSegments[0] == 'drift';
+  return switch (type.element.library.uri) {
+    Uri(scheme: 'package', pathSegments: ['drift' || 'drift3', ...]) => true,
+    _ => false,
+  };
 }
 
 extension IsFromDrift on Element {

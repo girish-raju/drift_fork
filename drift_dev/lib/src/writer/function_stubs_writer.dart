@@ -6,7 +6,6 @@ import 'package:sqlparser/sqlparser.dart';
 import '../analysis/driver/driver.dart';
 import '../analysis/options.dart';
 import '../analysis/results/dart.dart';
-import '../analysis/results/types.dart';
 import '../utils/string_escaper.dart';
 
 /// If the given [options] define custom SQL functions (via
@@ -61,12 +60,8 @@ class FunctionStubsWriter {
   String _nameFor(String sqlName) => ReCase(sqlName).camelCase;
 
   void _writeTypeFor(ResolvedType type) {
-    final driftType = _typeMapping.sqlTypeToDrift(type).builtin;
-
-    _emitter.writeDart(AnnotatedDartCode([dartTypeNames[driftType]!]));
-    if (type.nullable == true) {
-      _emitter.write('?');
-    }
+    final dartType = _emitter.dartType(_typeMapping.resolveSqlType(type));
+    _emitter.writeDart(dartType);
   }
 
   void _writeFunctionTypeFor(KnownSqliteFunction function) {

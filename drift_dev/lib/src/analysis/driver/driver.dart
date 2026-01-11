@@ -102,14 +102,14 @@ class DriftAnalysisDriver {
   /// Dart code.
   Future<KnownDriftTypes?> get knownTypesIfSupportedByBackend {
     return switch (_loadingTypes) {
-      null => _loadingTypes = KnownDriftTypes.resolve(backend),
+      null => _loadingTypes = KnownDriftTypes.resolve(options, backend),
       var loading => loading.then((resolved) {
           if (resolved == null) {
             return null;
           } else if (resolved.isStillConsistent) {
             return resolved;
           } else {
-            return _loadingTypes = KnownDriftTypes.resolve(backend);
+            return _loadingTypes = KnownDriftTypes.resolve(options, backend);
           }
         }),
     };
