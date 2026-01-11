@@ -1,4 +1,4 @@
-## 0.43.0-wip
+## 0.43.0
 
 - Allow parsing SQL from `FileSpan`s, which is convenient for SQL embedded as
   text in outer structures.

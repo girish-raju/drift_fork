@@ -1,3 +1,8 @@
+## 2.30.1
+
+- Web: Fix databases being moved from IndexedDB to OPFS even if
+  `moveExistingIndexedDbToOpfs` is disabled.
+
 ## 2.30.0
 
 - Add `rightOuterJoin` and `fullOuterJoin`.
