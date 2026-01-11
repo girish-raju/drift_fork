@@ -1,7 +1,6 @@
 // ignore_for_file: unused_local_variable, unused_import
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:drift_dev/api/migrations_common.dart' show ValidationOptions;
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:migrations_example/database.dart';
 import 'package:test/test.dart';

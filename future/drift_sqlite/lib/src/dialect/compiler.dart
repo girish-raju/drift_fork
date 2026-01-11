@@ -42,7 +42,7 @@ final class SqliteCompiler extends StatementCompiler {
     }
 
     final type = inner.resolveType(dialect);
-    return type is DateTimeType || type == BuiltinDriftType.dateTime;
+    return type is DateTimeType;
   }
 
   Expression<double> _makeDateTimeComparable(Expression inner) {

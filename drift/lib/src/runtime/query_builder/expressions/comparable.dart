@@ -4,47 +4,55 @@ part of '../query_builder.dart';
 extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
+  @pragma('drift:v3-rename', 'isGreaterThan')
   Expression<bool> isBiggerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.more, other);
   }
 
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other value.
+  @pragma('drift:v3-rename', 'isGreaterThanValue')
   Expression<bool> isBiggerThanValue(DT other) {
     return isBiggerThan(variable(other));
   }
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other expression.
+  @pragma('drift:v3-rename', 'isGreaterOrEqual')
   Expression<bool> isBiggerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.moreOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other value.
+  @pragma('drift:v3-rename', 'isGreaterOrEqualValue')
   Expression<bool> isBiggerOrEqualValue(DT other) {
     return isBiggerOrEqual(variable(other));
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
+  @pragma('drift:v3-rename', 'isLessThan')
   Expression<bool> isSmallerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.less, other);
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other value.
+  @pragma('drift:v3-rename', 'isLessThanValue')
   Expression<bool> isSmallerThanValue(DT other) =>
       isSmallerThan(variable(other));
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
+  @pragma('drift:v3-rename', 'isLessOrEqual')
   Expression<bool> isSmallerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.lessOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other value.
+  @pragma('drift:v3-rename', 'isLessOrEqualValue')
   Expression<bool> isSmallerOrEqualValue(DT other) {
     return isSmallerOrEqual(variable(other));
   }
