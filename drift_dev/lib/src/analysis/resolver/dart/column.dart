@@ -197,7 +197,8 @@ class ColumnParser {
     final fullColumnBuilder = switch (expr) {
       FunctionExpressionInvocation(:final function) =>
         function as MethodInvocation,
-      MethodInvocation() => expr,
+      MethodInvocation() when _resolver.resolver.driver.options.drift3Preview =>
+        expr,
       _ => null,
     };
 
