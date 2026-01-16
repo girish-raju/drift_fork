@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import '../connection/result_set.dart';
 import 'dialect.dart';
@@ -12,27 +13,7 @@ import 'types.dart';
 
 /// Information about where we expect a high-level drift column to appear in the
 /// low-level result map returned by database implementation.
-///
-/// Drift generates a unique [name] used as an alias in the query (e.g. `SELECT
-/// &lt;expr&gt; AS c1`) and also remembers its position ([index]).
-final class ColumnPosition {
-  /// The index of this column in the result set.
-  final int index;
-
-  String? _fixedResultName;
-
-  /// If [name] has been called, the fixed alias to use for this column.
-  String? get resultAlias => _fixedResultName;
-
-  /// A stable name for this column.
-  ///
-  /// This is computed on-demand. When called, a new name is assigned to this
-  /// column.
-  String get name => _fixedResultName ??= 'c$index';
-
-  /// Creates a column position from the [index].
-  ColumnPosition(this.index);
-}
+extension type const ColumnPosition(int index) implements int {}
 
 /// The expected column structure of a result set.
 ///
@@ -44,13 +25,14 @@ final class ColumnPosition {
 /// positions are then used when each row is mapped to Dart, avoiding the
 /// duplicate map lookup.
 final class ResultSetStructure {
-  /// For [Expression] instances added to a query, the index of the column
-  /// added for that expression.
+  /// All expressions added as columns to this result set structure.
   final Map<Expression, ColumnPosition> expressions;
 
   /// For each [ResultSet] that has been added to a query in its entirety, the
   /// a list of column indices for each column in the result set.
   final Map<ResultSet, List<ColumnPosition>> tables;
+
+  Map<ColumnPosition, String>? _namedColumns;
 
   /// @nodoc
   ResultSetStructure({
@@ -59,8 +41,29 @@ final class ResultSetStructure {
   }) : expressions = expressions ?? {},
        tables = tables ?? {};
 
+  /// If an explicit name has been set for the given column position, returns
+  /// it.
+  ///
+  /// For the most part, we only use index-based addressing for columns. Names
+  /// are only added when a column from a subquery is referenced out of the
+  /// subquery.
+  String? nameForColumn(ColumnPosition position) {
+    return _namedColumns?[position];
+  }
+
+  /// Creates a name for a given column position that can later be queried with
+  /// [nameForColumn].
+  String createNameForColumn(ColumnPosition position) {
+    return (_namedColumns ??= {}).putIfAbsent(
+      position,
+      () => 'c${position.index}',
+    );
+  }
+
   /// Adds all columns from the given [ResultSet] in order.
   void addSelectStarFromSingleTable(ResultSet resultSet) {
+    assert(expressions.isEmpty);
+
     final positions = <ColumnPosition>[];
     for (final (i, column) in resultSet.columns.indexed) {
       final position = ColumnPosition(i);
@@ -76,19 +79,24 @@ final class ResultSetStructure {
   ///
   /// This is mainly used internally, e.g. used to obtain the result of
   /// subqueries.
+  @internal
   ResultSetStructure shift(List<ColumnPosition> outerPositions) {
     assert(outerPositions.length == expressions.length);
     ColumnPosition apply(ColumnPosition original) {
       return outerPositions[original.index];
     }
 
-    return ResultSetStructure(
+    final mapped = ResultSetStructure(
       expressions: expressions.map((e, pos) => MapEntry(e, apply(pos))),
       tables: tables.map(
         (resultSet, positions) =>
             MapEntry(resultSet, positions.map(apply).toList()),
       ),
     );
+
+    // We don't have to map _namedColumns because that information is only used
+    // to build queries, and shift() is only used to read results.
+    return mapped;
   }
 }
 

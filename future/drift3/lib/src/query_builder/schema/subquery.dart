@@ -100,13 +100,14 @@ final class Subquery<Row extends Object>
   /// [ref] needs to be used every time a column from a subquery is used in an
   /// outer query, regardless of the context.
   Expression<T> ref<T extends Object>(Expression<T> inner) {
-    final name = select.structure.expressions[inner]?.name;
-    if (name == null) {
+    final addedPosition = select.structure.expressions[inner];
+    if (addedPosition == null) {
       throw ArgumentError(
         'The source select statement does not contain that column',
       );
     }
 
+    final name = select.structure.createNameForColumn(addedPosition);
     return columnsByName[name]!.dartCast();
   }
 
@@ -114,7 +115,7 @@ final class Subquery<Row extends Object>
   late final List<SchemaColumn<Object>> columns = [
     for (final entry in select.structure.expressions.entries)
       SchemaColumn(
-        name: entry.value.name,
+        name: select.structure.nameForColumn(entry.value) ?? '_unnamed',
         isNullable: true,
         sqlType: BuiltinDriftType.text,
       )..owningResultSet = this,

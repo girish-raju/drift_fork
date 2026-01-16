@@ -581,7 +581,14 @@ abstract base class StatementCompiler {
     // right columns for the insert. The final SQL statement will look like
     // this:
     // WITH _source AS $select INSERT INTO $table (...) SELECT ... FROM _source
-    if (insert.source case InsertFromSelect(:final select)) {
+    if (insert.source case InsertFromSelect(
+      :final select,
+      :final columnNameToSelectColumnName,
+    )) {
+      for (final column in columnNameToSelectColumnName.values) {
+        select.structure.createNameForColumn(column);
+      }
+
       statement.buffer.write('WITH _source AS (');
       select.compileWith(this);
       statement.buffer.write(')');
@@ -647,7 +654,7 @@ abstract base class StatementCompiler {
 
         expr.compileWith(this);
 
-        if (position.resultAlias case final alias?) {
+        if (select.structure.nameForColumn(position) case final alias?) {
           statement.buffer.write(' AS ');
           addReference(alias);
         }
@@ -1153,7 +1160,7 @@ abstract base class StatementCompiler {
       if (i != 0) statement.comma();
 
       statement.buffer.write('_source.');
-      addReference(value.name);
+      addReference(source.select.structure.nameForColumn(value)!);
     }
   }
 
