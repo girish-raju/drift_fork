@@ -4,6 +4,16 @@ import 'package:test/test.dart';
 
 const defaultDialect = SqliteDialect();
 
+void expectEquals(Object? actual, Object? expected) {
+  expect(actual, equals(expected));
+  expect(actual.hashCode, equals(expected.hashCode));
+}
+
+void expectNotEquals(Object? actual, Object? expected) {
+  expect(actual, isNot(equals(expected)));
+  expect(actual.hashCode, isNot(equals(expected.hashCode)));
+}
+
 /// Matcher for [Component]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
 Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
