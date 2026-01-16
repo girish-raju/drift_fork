@@ -145,7 +145,7 @@ final class DriftResultSet
   /// [DriftRow.read] on each row since types only have to be resolved once.
   T? Function(DriftRow) bindExpression<T extends Object>(Expression<T> expr) {
     final position = _expressionPosition(expr);
-    final resolvedType = expr.resolveType(dialect);
+    final resolvedType = expr.sqlType.resolveIn(dialect);
 
     return (row) => row._readAtPositionWithType(position, resolvedType);
   }
@@ -185,7 +185,7 @@ final class DriftRow {
   T? read<T extends Object>(Expression<T> expr) {
     return _readAtPositionWithType(
       resultSet._expressionPosition(expr),
-      expr.resolveType(resultSet.dialect),
+      expr.sqlType.resolveIn(resultSet.dialect),
     );
   }
 

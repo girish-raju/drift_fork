@@ -1,5 +1,4 @@
 import '../compiler.dart';
-import '../dialect.dart';
 import '../types.dart';
 import 'functions.dart';
 import 'expression.dart';
@@ -176,6 +175,9 @@ final class CollateExpression extends Expression<String> {
   CollateExpression._(this.source, this.collation);
 
   @override
+  SqlType<String> get sqlType => BuiltinDriftType.text;
+
+  @override
   int get hashCode => Object.hash(source, collation);
 
   @override
@@ -183,11 +185,6 @@ final class CollateExpression extends Expression<String> {
     return other is CollateExpression &&
         other.source == source &&
         other.collation == collation;
-  }
-
-  @override
-  PhysicalSqlType<String> resolveType(DriftDialect dialect) {
-    return dialect.textType;
   }
 
   @override

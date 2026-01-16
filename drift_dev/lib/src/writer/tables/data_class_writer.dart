@@ -394,9 +394,12 @@ class RowMappingWriter {
       String loadType;
       if (writer.options.drift3Preview) {
         final (position, type) = columnToPositionAndType[column]!;
-        final nullCheck = column.nullable ? '' : '!';
 
-        loadType = '$type.dartValue(row.raw[$position]$nullCheck)';
+        if (column.nullable) {
+          loadType = '$type.nullableDartValue(row.raw[$position])';
+        } else {
+          loadType = '$type.dartValue(row.raw[$position]!)';
+        }
       } else {
         final String sqlType;
         switch (column.sqlType) {

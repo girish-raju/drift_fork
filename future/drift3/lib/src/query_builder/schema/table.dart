@@ -87,7 +87,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// @nodoc
   TableColumn({
     required super.name,
-    required super.type,
+    required super.sqlType,
     super.isNullable,
     this.requiredDuringInsert = true,
     List<ColumnConstraint> Function() constraints = _noConstraints,
@@ -121,7 +121,7 @@ final class TableColumnWithTypeConverter<D, S extends Object>
     required TableColumn<S> base,
   }) : super(
          name: base.name,
-         type: base.type,
+         sqlType: base.sqlType,
          isNullable: base.isNullable,
          requiredDuringInsert: base.requiredDuringInsert,
          constraints: () => base.constraints,

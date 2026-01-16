@@ -41,7 +41,7 @@ final class SqliteCompiler extends StatementCompiler {
       return false;
     }
 
-    final type = inner.resolveType(dialect);
+    final type = inner.sqlType.resolveIn(dialect);
     return type is DateTimeType;
   }
 
@@ -183,7 +183,7 @@ final class SqliteCompiler extends StatementCompiler {
 
   @override
   void addDialectSpecificDefaultColumnConstraints(TableColumn<Object> column) {
-    if (column.type == BuiltinDriftType.bool) {
+    if (column.sqlType == BuiltinDriftType.bool) {
       statement.buffer.write(' CHECK (');
       addReference(column.name);
       statement.buffer.write(' IN (0, 1))');

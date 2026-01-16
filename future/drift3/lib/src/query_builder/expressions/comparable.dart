@@ -1,7 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import '../compiler.dart';
-import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 import 'operators.dart';
@@ -116,12 +115,12 @@ final class BetweenExpression extends Expression<bool> {
   });
 
   @override
+  SqlType<bool> get sqlType => BuiltinDriftType.bool;
+
+  @override
   void compileWith(StatementCompiler compiler) {
     return compiler.addBetweenExpression(this);
   }
-
-  @override
-  PhysicalSqlType<bool> resolveType(DriftDialect dialect) => dialect.boolType;
 
   @override
   int get hashCode => Object.hash(target, lower, higher, not);

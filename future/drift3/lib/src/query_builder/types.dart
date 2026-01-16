@@ -80,6 +80,12 @@ abstract base class PhysicalSqlType<T extends Object> implements SqlType<T> {
   /// Maps a raw value returned in a raw result set into the [T] for [SqlType].
   T dartValue(Object databaseValue);
 
+  /// Like [dartValue], except that it supports null values which are forwarded
+  /// unchanged.
+  T? nullableDartValue(Object? databaseValue) {
+    return databaseValue == null ? null : dartValue(databaseValue);
+  }
+
   @override
   PhysicalSqlType<T> resolveIn(DriftDialect dialect) {
     return this;
@@ -140,12 +146,6 @@ abstract interface class TypeProvider {
 
   /// Returns a type implementation suitable for storing boolean values.
   PhysicalSqlType<bool> get boolType;
-
-  /// Return a [SqlType] instance for a Dart type [T], or throw if that
-  /// operation is not supported.
-  ///
-  /// An implementation can delegate to [BuiltinDriftType.forType].
-  PhysicalSqlType<T> resolveType<T extends Object>();
 }
 
 interface class _BuiltinDriftTypeWithoutBound<T> {}

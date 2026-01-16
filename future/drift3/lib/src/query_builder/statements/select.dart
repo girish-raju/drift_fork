@@ -396,7 +396,6 @@ final class SelectStatement
     }
 
     final normalizedOther = other._asSelectStatement();
-    final dialect = _database.dialect;
 
     var columnsHere = structure.expressions.keys.iterator;
     var otherColumns = other.structure.expressions.keys.iterator;
@@ -413,7 +412,7 @@ final class SelectStatement
       var here = columnsHere.current;
       var otherColumn = otherColumns.current;
 
-      if (here.resolveType(dialect) != otherColumn.resolveType(dialect)) {
+      if (here.sqlType != otherColumn.sqlType) {
         throw ArgumentError(
           "Can't add part because the column types at index $columnCount "
           'differ.',

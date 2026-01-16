@@ -36,7 +36,7 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
   /// @nodoc
   ViewColumn({
     required super.name,
-    required super.type,
+    required super.sqlType,
     super.isNullable,
     required this.expression,
   });
@@ -46,7 +46,7 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
   /// The [expression] is not provided for these.
   ViewColumn.forDriftFile({
     required super.name,
-    required super.type,
+    required super.sqlType,
     super.isNullable,
   }) : expression = const CustomExpression(CustomComponent(''));
 
@@ -75,7 +75,7 @@ final class ViewColumnWithTypeConverter<D, S extends Object>
     required ViewColumn<S> base,
   }) : super(
          name: base.name,
-         type: base.type,
+         sqlType: base.sqlType,
          isNullable: base.isNullable,
          expression: base.expression,
        );

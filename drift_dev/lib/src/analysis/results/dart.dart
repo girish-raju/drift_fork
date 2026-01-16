@@ -24,6 +24,8 @@ class AnnotatedDartCode {
   static final Uri dartAsync = Uri.parse('dart:async');
   static final Uri dartCore = Uri.parse('dart:core');
   static final Uri drift = Uri.parse('package:drift/drift.dart');
+  static final Uri driftSqlitePreview =
+      Uri.parse('package:drift_sqlite/drift_sqlite.dart');
 
   final List<DartCodeElement> elements;
 

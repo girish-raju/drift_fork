@@ -1,5 +1,4 @@
 import '../compiler.dart';
-import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 
@@ -14,7 +13,7 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
   /// The operator combining [left] and [right].
   final BinaryOperator operator;
 
-  final PhysicalSqlType<T> Function(DriftDialect)? _resolveType;
+  final SqlType<T>? _type;
 
   /// Creates a binary expression by combining [left] and [right] with an
   /// [operator].
@@ -22,8 +21,8 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
     this.left,
     this.operator,
     this.right, {
-    PhysicalSqlType<T> Function(DriftDialect)? resolveType,
-  }) : _resolveType = resolveType;
+    SqlType<T>? type,
+  }) : _type = type;
 
   @override
   Precedence get precedence => operator.precedence;
@@ -40,9 +39,7 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
   }
 
   @override
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) {
-    return _resolveType?.call(dialect) ?? dialect.resolveType<T>();
-  }
+  SqlType<T> get sqlType => _type ?? super.sqlType;
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -145,14 +142,11 @@ final class UnaryExpression<T extends Object> extends Expression<T> {
   /// The inner expression on which the [operator] is applied to.
   final Expression operand;
 
-  final PhysicalSqlType<T> Function(DriftDialect)? _resolveType;
+  final SqlType<T>? _type;
 
   /// Create a unary expression from the [operator] and the [operand].
-  const UnaryExpression(
-    this.operator,
-    this.operand, {
-    PhysicalSqlType<T> Function(DriftDialect)? resolveType,
-  }) : _resolveType = resolveType;
+  const UnaryExpression(this.operator, this.operand, {SqlType<T>? type})
+    : _type = type;
 
   @override
   int get hashCode => Object.hash(operator, operand);
@@ -168,9 +162,7 @@ final class UnaryExpression<T extends Object> extends Expression<T> {
   }
 
   @override
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) {
-    return _resolveType?.call(dialect) ?? dialect.resolveType<T>();
-  }
+  SqlType<T> get sqlType => _type ?? super.sqlType;
 
   @override
   void compileWith(StatementCompiler compiler) {

@@ -12,7 +12,7 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   late final TableColumn<int> id = TableColumn<int>(
     name: 'id',
-    type: BuiltinDriftType.int,
+    sqlType: BuiltinDriftType.int,
     isNullable: false,
     requiredDuringInsert: false,
     constraints: () => [
@@ -22,7 +22,7 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   late final TableColumn<String> name = TableColumn<String>(
     name: 'name',
-    type: BuiltinDriftType.text,
+    sqlType: BuiltinDriftType.text,
     isNullable: false,
     requiredDuringInsert: true,
   )..owningResultSet = this;
@@ -70,8 +70,8 @@ class TodoCategory extends LegacyDataClass implements Insertable<TodoCategory> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
+    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    map['name'] = Variable<String>(name, BuiltinDriftType.text);
     return map;
   }
 
@@ -153,10 +153,10 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
     }
     return map;
   }

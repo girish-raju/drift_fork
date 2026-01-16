@@ -138,7 +138,10 @@ final class CustomRow {
   /// The dart type [T] must be supported by the type system of the database
   /// used (mostly contains booleans, strings, numbers and dates).
   T read<T extends Object>(String name) {
-    return readWithType(_db.dialect.resolveType<T>(), name);
+    return readWithType(
+      BuiltinDriftType.forType<T>()!.resolveIn(_db.dialect),
+      name,
+    );
   }
 
   /// Interprets the column named [key] under the known drift type [type].
@@ -156,7 +159,10 @@ final class CustomRow {
   /// Just like for the non-nullable [read], the type [T] must be supported by
   /// drift (e.g. booleans, strings, numbers, dates, `Uint8List`s).
   T? readNullable<T extends Object>(String key) {
-    return readNullableWithType(_db.dialect.resolveType<T>(), key);
+    return readNullableWithType(
+      BuiltinDriftType.forType<T>()!.resolveIn(_db.dialect),
+      key,
+    );
   }
 
   /// Interprets the column named [key] under the known drift type [type].

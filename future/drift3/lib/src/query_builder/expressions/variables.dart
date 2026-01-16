@@ -14,7 +14,7 @@ import 'expression.dart';
 final class Variable<T extends Object> extends Expression<T> {
   /// The Dart value that will be sent to the database
   final T? value;
-  final PhysicalSqlType<T> Function(DriftDialect)? _resolveType;
+  final SqlType<T>? _type;
 
   @override
   Precedence get precedence => Precedence.primary;
@@ -22,42 +22,55 @@ final class Variable<T extends Object> extends Expression<T> {
   @override
   int get hashCode => value.hashCode;
 
+  @override
+  SqlType<T> get sqlType {
+    if (_type case final type?) {
+      return type;
+    }
+
+    final builtin =
+        BuiltinDriftType.forType<T>() ??
+        BuiltinDriftType.forValue(value) ??
+        BuiltinDriftType.text;
+    return builtin as SqlType<T>;
+  }
+
   /// Constructs a new variable from the [value].
-  const Variable(this.value, [this._resolveType]);
+  const Variable(this.value, [this._type]);
 
   /// Creates a variable that holds the specified boolean.
   static Variable<bool> withBool(bool value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.bool);
   }
 
   /// Creates a variable that holds the specified int.
   static Variable<int> withInt(int value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.int);
   }
 
   /// Creates a variable that holds the specified BigInt.
   static Variable<BigInt> withBigInt(BigInt value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.int64);
   }
 
   /// Creates a variable that holds the specified string.
   static Variable<String> withString(String value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.text);
   }
 
   /// Creates a variable that holds the specified date.
   static Variable<DateTime> withDateTime(DateTime value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.dateTime);
   }
 
   /// Creates a variable that holds the specified data blob.
   static Variable<Uint8List> withBlob(Uint8List value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.byteArray);
   }
 
   /// Creates a variable that holds the specified floating point value.
   static Variable<double> withReal(double value) {
-    return Variable(value);
+    return Variable(value, BuiltinDriftType.double);
   }
 
   @override
@@ -69,19 +82,6 @@ final class Variable<T extends Object> extends Expression<T> {
   }
 
   @override
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) {
-    if (_resolveType case final resolve?) {
-      return resolve(dialect);
-    }
-
-    final builtin =
-        BuiltinDriftType.forType<T>() ??
-        BuiltinDriftType.forValue(value) ??
-        BuiltinDriftType.text;
-    return (builtin as BuiltinDriftType<T>).resolveIn(dialect);
-  }
-
-  @override
   void compileWith(StatementCompiler compiler) {
     return compiler.addVariable(this);
   }
@@ -89,7 +89,7 @@ final class Variable<T extends Object> extends Expression<T> {
   /// Resolves the type of this variable and uses that type implementation to
   /// map [value] into the underlying representation for the SQL implementation.
   MappedValue resolveValue(DriftDialect dialect) {
-    return MappedValue.map(resolveType(dialect), value);
+    return MappedValue.map(sqlType.resolveIn(dialect), value);
   }
 }
 
@@ -99,10 +99,10 @@ final class Variable<T extends Object> extends Expression<T> {
 final class Literal<T extends Object> extends Expression<T> {
   /// The value that will be converted to an sql literal.
   final T? value;
-  final PhysicalSqlType<T> Function(DriftDialect)? _resolveType;
+  final SqlType<T>? _type;
 
   /// Constructs a new SQL literal holding the [value].
-  const Literal(this.value, [this._resolveType]);
+  const Literal(this.value, [this._type]);
 
   @override
   Precedence get precedence => Precedence.primary;
@@ -119,16 +119,16 @@ final class Literal<T extends Object> extends Expression<T> {
   String toString() => 'Literal($value)';
 
   @override
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) {
-    if (_resolveType case final resolve?) {
-      return resolve(dialect);
+  SqlType<T> get sqlType {
+    if (_type case final type?) {
+      return type;
     }
 
     final builtin =
         BuiltinDriftType.forType<T>() ??
         BuiltinDriftType.forValue(value) ??
         BuiltinDriftType.text;
-    return (builtin as BuiltinDriftType<T>).resolveIn(dialect);
+    return builtin as SqlType<T>;
   }
 
   @override

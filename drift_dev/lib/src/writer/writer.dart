@@ -262,6 +262,38 @@ abstract class _NodeOrWriter {
     });
   }
 
+  AnnotatedDartCode mapValue(HasType column, AnnotatedDartCode expression,
+      {bool ignoreArray = false}) {
+    if (!writer.options.drift3Preview) {
+      // Before drift 3, raw variables are represented with the Variable query
+      // builder class.
+      return wrapInVariable(column, expression, ignoreArray: ignoreArray);
+    }
+
+    return AnnotatedDartCode.build((b) {
+      final converter = column.typeConverter;
+
+      if (writer.options.drift3Preview) {
+        b.addText('mapValue(');
+        b.addCode(_drift3SqlType(column.sqlType));
+        b.addText(', ');
+        if (converter != null) {
+          // apply type converter before writing the variable
+          b
+            ..addCode(readConverter(converter, forNullable: column.nullable))
+            ..addText('.toSql(')
+            ..addCode(expression)
+            ..addText(')');
+        } else {
+          b.addCode(expression);
+        }
+        b.addText(')');
+
+        return;
+      }
+    });
+  }
+
   AnnotatedDartCode wrapInVariable(HasType column, AnnotatedDartCode expression,
       {bool ignoreArray = false}) {
     return AnnotatedDartCode.build((b) {
@@ -284,15 +316,21 @@ abstract class _NodeOrWriter {
         b.addCode(expression);
       }
 
-      switch (column.sqlType) {
-        case ColumnDriftType():
-          break;
-        case ColumnCustomType(:final custom):
-          // Also specify the custom type since it can't be inferred from the
-          // value passed to the variable.
-          b
-            ..addText(', ')
-            ..addCode(custom.expression);
+      if (writer.options.drift3Preview) {
+        b
+          ..addText(', ')
+          ..addCode(_drift3SqlType(column.sqlType));
+      } else {
+        switch (column.sqlType) {
+          case ColumnDriftType():
+            break;
+          case ColumnCustomType(:final custom):
+            // Also specify the custom type since it can't be inferred from the
+            // value passed to the variable.
+            b
+              ..addText(', ')
+              ..addCode(custom.expression);
+        }
       }
 
       b.addText(')');
@@ -346,12 +384,26 @@ abstract class _NodeOrWriter {
   }
 
   String drift3SqlType(ColumnType sqlType) {
+    return dartCode(_drift3SqlType(sqlType));
+  }
+
+  AnnotatedDartCode _drift3SqlType(ColumnType sqlType) {
+    AnnotatedDartCode builtinType(String name) {
+      return AnnotatedDartCode.importedSymbol(
+          AnnotatedDartCode.drift, 'BuiltinDriftType.$name');
+    }
+
     return switch (sqlType) {
-      ColumnDriftType(builtin: DriftSqlType.string) =>
-        drift('BuiltinDriftType.text'),
-      ColumnDriftType(:final builtin) =>
-        drift('BuiltinDriftType.${builtin.name}'),
-      ColumnCustomType(:final custom) => dartCode(custom.expression),
+      ColumnDriftType(builtin: DriftSqlType.string) => builtinType('text'),
+      ColumnDriftType(builtin: DriftSqlType.blob) => builtinType('byteArray'),
+      ColumnDriftType(builtin: DriftSqlType.any) =>
+        AnnotatedDartCode.build((b) {
+          b.addText('const ');
+          b.addSymbol('AnyType', AnnotatedDartCode.driftSqlitePreview);
+          b.addText('()');
+        }),
+      ColumnDriftType(:final builtin) => builtinType(builtin.name),
+      ColumnCustomType(:final custom) => custom.expression,
     };
   }
 

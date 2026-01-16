@@ -217,7 +217,7 @@ abstract base class StatementCompiler {
   void addTableColumnDefinition(TableColumn column) {
     addReference(column.name);
     statement.space();
-    statement.buffer.write(column.type.typeName(dialect));
+    statement.buffer.write(column.sqlType.typeName(dialect));
 
     final hasCustomConstraint = column.constraints.any(
       (e) => e is CustomColumnConstraint,
@@ -288,7 +288,7 @@ abstract base class StatementCompiler {
 
   void addVariable(Variable variable) {
     if (!statement.supportsVariables) {
-      return addLiteral(Literal(variable.value, variable.resolveType));
+      return addLiteral(Literal(variable.value, variable.sqlType));
     }
 
     if (statement._variableIndexes[variable] case final index?) {
@@ -730,7 +730,7 @@ abstract base class StatementCompiler {
       statement.buffer.write('CAST(');
       expr.inner.compileWith(this);
       statement.buffer.write(' AS ');
-      addTypeName(expr.resolveType(dialect));
+      addTypeName(expr.sqlType.resolveIn(dialect));
       statement.buffer.write(')');
     });
   }
@@ -955,7 +955,7 @@ abstract base class StatementCompiler {
 
   void addLiteral(Literal literal) {
     if (literal.value case final value?) {
-      final type = literal.resolveType(dialect);
+      final type = literal.sqlType.resolveIn(dialect);
       statement.buffer.write(type.sqlLiteral(value));
     } else {
       statement.buffer.write('NULL');

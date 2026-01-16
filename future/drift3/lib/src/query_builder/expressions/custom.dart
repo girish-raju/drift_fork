@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../compiler.dart';
-import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 
@@ -26,9 +25,7 @@ final class CustomExpression<D extends Object> extends Expression<D> {
   }) : _customType = customType;
 
   @override
-  PhysicalSqlType<D> resolveType(DriftDialect dialect) {
-    return _customType?.resolveIn(dialect) ?? super.resolveType(dialect);
-  }
+  SqlType<D> get sqlType => _customType ?? super.sqlType;
 
   @override
   void compileWith(StatementCompiler compiler) {

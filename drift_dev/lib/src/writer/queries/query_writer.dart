@@ -857,7 +857,7 @@ class _ExpandedVariableWriter {
         dartExpr = ('row.read(${asDartLiteral(capture.helperColumn)})');
       }
 
-      final code = _emitter.wrapInVariable(
+      final code = _emitter.mapValue(
         element,
         AnnotatedDartCode.text(dartExpr),
         // No longer an array here, we apply a for loop below and run this on

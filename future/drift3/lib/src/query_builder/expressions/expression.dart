@@ -56,8 +56,9 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
 
   /// Resolves the [SqlType] implementation describing the type of this
   /// expression.
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) =>
-      dialect.resolveType<T>();
+  SqlType<T> get sqlType =>
+      BuiltinDriftType.forType<T>() ??
+      (throw ArgumentError('Unknown type parameter for builtin type: $T'));
 
   @override
   void compileWith(StatementCompiler compiler);
@@ -285,7 +286,7 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
   /// `this`.
   @protected
   Variable<T> variable(T? value) {
-    return Variable(value, resolveType);
+    return Variable(value, sqlType);
   }
 
   /// Chains all [predicates] together into a single expression that will
@@ -425,13 +426,11 @@ final class _DartCastExpression<D1 extends Object, D2 extends Object>
   int get hashCode => inner.hashCode * 7;
 
   @override
-  bool operator ==(Object other) {
-    return other is _DartCastExpression && other.inner == inner;
-  }
+  SqlType<D2> get sqlType => _resolvedType ?? super.sqlType;
 
   @override
-  PhysicalSqlType<D2> resolveType(DriftDialect dialect) {
-    return _resolvedType?.resolveIn(dialect) ?? dialect.resolveType<D2>();
+  bool operator ==(Object other) {
+    return other is _DartCastExpression && other.inner == inner;
   }
 
   @override
@@ -455,8 +454,7 @@ final class CastExpression<D1 extends Object, D2 extends Object>
   const CastExpression._(this.inner, this._fixedType);
 
   @override
-  PhysicalSqlType<D2> resolveType(DriftDialect dialect) =>
-      _fixedType?.resolveIn(dialect) ?? dialect.resolveType<D2>();
+  SqlType<D2> get sqlType => _fixedType ?? super.sqlType;
 
   @override
   void compileWith(StatementCompiler compiler) {

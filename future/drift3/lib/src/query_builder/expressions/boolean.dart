@@ -1,4 +1,3 @@
-import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 import 'operators.dart';
@@ -8,7 +7,7 @@ extension BooleanExpressionOperators on Expression<bool> {
   /// Negates this boolean expression. The returned expression is true if
   /// `this` is false, and vice versa.
   Expression<bool> not() =>
-      UnaryExpression(UnaryOperator.not, this, resolveType: _resolveType);
+      UnaryExpression(UnaryOperator.not, this, type: BuiltinDriftType.bool);
 
   /// Returns an expression that is true iff both `this` and [other] are true.
   ///
@@ -18,7 +17,7 @@ extension BooleanExpressionOperators on Expression<bool> {
       this,
       BinaryOperator.and,
       other,
-      resolveType: _resolveType,
+      type: BuiltinDriftType.bool,
     );
   }
 
@@ -30,10 +29,7 @@ extension BooleanExpressionOperators on Expression<bool> {
       this,
       BinaryOperator.or,
       other,
-      resolveType: _resolveType,
+      type: BuiltinDriftType.bool,
     );
   }
-
-  static PhysicalSqlType<bool> _resolveType(DriftDialect dialect) =>
-      dialect.boolType;
 }

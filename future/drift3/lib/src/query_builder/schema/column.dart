@@ -1,5 +1,4 @@
 import '../compiler.dart';
-import '../dialect.dart';
 import '../expressions/boolean.dart';
 import '../expressions/expression.dart';
 import '../type_converter.dart';
@@ -12,7 +11,8 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   final String name;
 
   /// The SQL type of this column.
-  final SqlType<T> type;
+  @override
+  final SqlType<T> sqlType;
 
   /// Whether the column is nullable in SQL, meaning that it doesn't have a
   /// `NOT NULL` constraint applied to it.
@@ -24,14 +24,9 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   /// @nodoc
   SchemaColumn({
     required this.name,
-    required this.type,
+    required this.sqlType,
     this.isNullable = true,
   });
-
-  @override
-  PhysicalSqlType<T> resolveType(DriftDialect dialect) {
-    return type.resolveIn(dialect);
-  }
 
   @override
   String toString() {

@@ -6,6 +6,7 @@ export 'src/connection/streams/update_rules.dart'
 
 export 'src/database/batch.dart' hide createBatch, runBatch;
 export 'src/database/connection_user.dart' hide InternalConnectionUser;
+export 'src/database/custom_select.dart' show CustomRow, CustomResultSet;
 export 'src/database/data_class.dart';
 export 'src/database/db_base.dart' hide InternalGeneratedDatabase;
 export 'src/database/migrations.dart';

@@ -116,7 +116,7 @@ final class Subquery<Row extends Object>
       SchemaColumn(
         name: entry.value.name,
         isNullable: true,
-        type: BuiltinDriftType.text,
+        sqlType: BuiltinDriftType.text,
       )..owningResultSet = this,
   ];
 

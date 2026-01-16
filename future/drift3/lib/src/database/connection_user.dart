@@ -21,6 +21,7 @@ import '../query_builder/statements/insert.dart';
 import '../query_builder/statements/select.dart';
 import '../query_builder/statements/statement.dart';
 import '../query_builder/statements/update.dart';
+import '../query_builder/types.dart';
 import 'batch.dart';
 import 'custom_select.dart';
 import 'data_class.dart';
@@ -537,6 +538,12 @@ abstract base class DatabaseConnectionUser {
       this,
       isReadOnly,
     );
+  }
+
+  /// Map a Dart [value] into a typed [MappedValue] understood by the database
+  /// driver.
+  MappedValue mapValue<T extends Object>(SqlType<T> type, T? value) {
+    return MappedValue.map(type.resolveIn(dialect), value);
   }
 
   /// Executes the custom sql [statement] on the database.

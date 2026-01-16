@@ -69,7 +69,7 @@ final class InsertStatement<
         map[columnName] = value;
       } else {
         if (column.clientDefault case final clientDefault?) {
-          map[columnName] = Variable(clientDefault(), column.resolveType);
+          map[columnName] = Variable(clientDefault(), column.sqlType);
         }
       }
 
