@@ -37,18 +37,15 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
   ViewColumn({
     required super.name,
     required super.sqlType,
-    super.isNullable,
+
     required this.expression,
   });
 
   /// A view column for views defined in drift files.
   ///
   /// The [expression] is not provided for these.
-  ViewColumn.forDriftFile({
-    required super.name,
-    required super.sqlType,
-    super.isNullable,
-  }) : expression = const CustomExpression(CustomComponent(''));
+  ViewColumn.forDriftFile({required super.name, required super.sqlType})
+    : expression = const CustomExpression(CustomComponent(''));
 
   /// Applies a type converter to this column.
   ///
@@ -76,7 +73,6 @@ final class ViewColumnWithTypeConverter<D, S extends Object>
   }) : super(
          name: base.name,
          sqlType: base.sqlType,
-         isNullable: base.isNullable,
          expression: base.expression,
        );
 }

@@ -12,7 +12,6 @@ class NoIds extends Table
   late final TableColumn<Uint8List> payload = TableColumn<Uint8List>(
     name: 'payload',
     sqlType: BuiltinDriftType.byteArray,
-    isNullable: false,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')],
   )..owningResultSet = this;
@@ -98,14 +97,12 @@ class WithDefaults extends Table
   late final TableColumn<String> a = TableColumn<String>(
     name: 'a',
     sqlType: const CustomTextType(),
-    isNullable: true,
     requiredDuringInsert: false,
     constraints: () => [ColumnConstraint.customSql('DEFAULT \'something\'')],
   )..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
     name: 'b',
     sqlType: BuiltinDriftType.int,
-    isNullable: true,
     requiredDuringInsert: false,
     constraints: () => [ColumnConstraint.customSql('UNIQUE NULL')],
   )..owningResultSet = this;
@@ -291,20 +288,17 @@ class WithConstraints extends Table
   late final TableColumn<String> a = TableColumn<String>(
     name: 'a',
     sqlType: BuiltinDriftType.text,
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
     name: 'b',
     sqlType: BuiltinDriftType.int,
-    isNullable: false,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<double> c = TableColumn<double>(
     name: 'c',
     sqlType: BuiltinDriftType.double,
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -524,21 +518,18 @@ class ConfigTable extends Table
   late final TableColumn<String> configKey = TableColumn<String>(
     name: 'config_key',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')],
   )..owningResultSet = this;
   late final TableColumn<DriftAny> configValue = TableColumn<DriftAny>(
     name: 'config_value',
     sqlType: const AnyType(),
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncState =
       TableColumn<int>(
           name: 'sync_state',
           sqlType: BuiltinDriftType.int,
-          isNullable: true,
           requiredDuringInsert: false,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
@@ -546,7 +537,6 @@ class ConfigTable extends Table
       TableColumn<int>(
           name: 'sync_state_implicit',
           sqlType: BuiltinDriftType.int,
-          isNullable: true,
           requiredDuringInsert: false,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
@@ -850,26 +840,22 @@ class Mytable extends Table
   late final TableColumn<int> someid = TableColumn<int>(
     name: 'someid',
     sqlType: BuiltinDriftType.int,
-    isNullable: false,
     requiredDuringInsert: false,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<String> sometext = TableColumn<String>(
     name: 'sometext',
     sqlType: BuiltinDriftType.text,
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<bool> isInserting = TableColumn<bool>(
     name: 'is_inserting',
     sqlType: BuiltinDriftType.bool,
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<DateTime> somedate = TableColumn<DateTime>(
     name: 'somedate',
     sqlType: BuiltinDriftType.dateTime,
-    isNullable: true,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -1127,20 +1113,20 @@ class Email extends Table
   late final TableColumn<String> sender = TableColumn<String>(
     name: 'sender',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   late final TableColumn<String> title = TableColumn<String>(
     name: 'title',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   late final TableColumn<String> body = TableColumn<String>(
     name: 'body',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sender, title, body];
@@ -1348,14 +1334,12 @@ class WeirdTable extends Table
   late final TableColumn<int> sqlClass = TableColumn<int>(
     name: 'class',
     sqlType: BuiltinDriftType.int,
-    isNullable: false,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<String> textColumn = TableColumn<String>(
     name: 'text',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;

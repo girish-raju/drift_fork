@@ -14,19 +14,11 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   @override
   final SqlType<T> sqlType;
 
-  /// Whether the column is nullable in SQL, meaning that it doesn't have a
-  /// `NOT NULL` constraint applied to it.
-  final bool isNullable;
-
   /// The [ResultSet] that this column is part of.
   late ResultSet owningResultSet;
 
   /// @nodoc
-  SchemaColumn({
-    required this.name,
-    required this.sqlType,
-    this.isNullable = true,
-  });
+  SchemaColumn({required this.name, required this.sqlType});
 
   @override
   String toString() {
@@ -49,30 +41,12 @@ base mixin SchemaColumnWithTypeConverter<D, S extends Object>
   TypeConverter<D, S?> get converter;
 
   S? _mapDartValue(D? dartValue) {
-    S? mappedValue;
-
-    if (isNullable) {
+    if (dartValue == null) {
       // For nullable columns, the type converter needs to accept null values.
-      mappedValue = (converter as TypeConverter<D?, S?>).toSql(dartValue);
+      return (converter as TypeConverter<D?, S?>).toSql(null);
     } else {
-      if (dartValue == null) {
-        throw ArgumentError(
-          "This non-nullable column can't be equal to `null`.",
-          'dartValue',
-        );
-      }
-
-      mappedValue = converter.toSql(dartValue);
+      return converter.toSql(dartValue);
     }
-
-    if (!isNullable && dartValue == null) {
-      throw ArgumentError(
-        "This non-nullable column can't be equal to `null`.",
-        'dartValue',
-      );
-    }
-
-    return mappedValue;
   }
 
   /// Compares this column against the mapped [dartValue].

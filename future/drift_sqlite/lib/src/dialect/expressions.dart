@@ -304,10 +304,7 @@ extension RowIdExtension on GeneratedTable {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');
     }
 
-    return TableColumn<int>(
-      name: '_rowid_',
-      sqlType: BuiltinDriftType.int,
-      isNullable: false,
-    )..owningResultSet = this;
+    return TableColumn<int>(name: '_rowid_', sqlType: BuiltinDriftType.int)
+      ..owningResultSet = this;
   }
 }

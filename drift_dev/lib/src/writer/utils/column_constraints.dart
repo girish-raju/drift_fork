@@ -142,6 +142,10 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     }
   }
 
+  if (!column.nullable) {
+    entries.add('const ${emitter.drift('ColumnNotNullConstraint')}()');
+  }
+
   if (column.defaultArgument case final columnDefault?) {
     final type = emitter.dartCode(emitter.innerColumnType(column.sqlType));
 

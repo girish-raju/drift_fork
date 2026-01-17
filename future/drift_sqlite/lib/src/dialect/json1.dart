@@ -316,44 +316,24 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
          columns: [
            SchemaColumn<DriftAny>(
              name: 'key',
-             isNullable: true,
              sqlType: SqliteDialect.anyType(),
            ),
            SchemaColumn<DriftAny>(
              name: 'value',
-             isNullable: true,
              sqlType: SqliteDialect.anyType(),
            ),
-           SchemaColumn<String>(
-             name: 'type',
-             isNullable: true,
-             sqlType: BuiltinDriftType.text,
-           ),
+           SchemaColumn<String>(name: 'type', sqlType: BuiltinDriftType.text),
            SchemaColumn<DriftAny>(
              name: 'atom',
-             isNullable: true,
              sqlType: SqliteDialect.anyType(),
            ),
-           SchemaColumn<int>(
-             name: 'id',
-             isNullable: true,
-             sqlType: BuiltinDriftType.int,
-           ),
-           SchemaColumn<int>(
-             name: 'parent',
-             isNullable: true,
-             sqlType: BuiltinDriftType.int,
-           ),
+           SchemaColumn<int>(name: 'id', sqlType: BuiltinDriftType.int),
+           SchemaColumn<int>(name: 'parent', sqlType: BuiltinDriftType.int),
            SchemaColumn<String>(
              name: 'fullkey',
-             isNullable: true,
              sqlType: BuiltinDriftType.text,
            ),
-           SchemaColumn<String>(
-             name: 'path',
-             isNullable: true,
-             sqlType: BuiltinDriftType.text,
-           ),
+           SchemaColumn<String>(name: 'path', sqlType: BuiltinDriftType.text),
          ],
        );
 

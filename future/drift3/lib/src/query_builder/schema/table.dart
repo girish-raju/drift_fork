@@ -88,7 +88,6 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   TableColumn({
     required super.name,
     required super.sqlType,
-    super.isNullable,
     this.requiredDuringInsert = true,
     List<ColumnConstraint> Function() constraints = _noConstraints,
     this.clientDefault,
@@ -122,7 +121,6 @@ final class TableColumnWithTypeConverter<D, S extends Object>
   }) : super(
          name: base.name,
          sqlType: base.sqlType,
-         isNullable: base.isNullable,
          requiredDuringInsert: base.requiredDuringInsert,
          constraints: () => base.constraints,
          clientDefault: base.clientDefault,

@@ -219,15 +219,6 @@ abstract base class StatementCompiler {
     statement.space();
     statement.buffer.write(column.sqlType.typeName(dialect));
 
-    final hasCustomConstraint = column.constraints.any(
-      (e) => e is CustomColumnConstraint,
-    );
-    if (!hasCustomConstraint) {
-      statement.space();
-
-      statement.buffer.write(column.isNullable ? 'NULL' : 'NOT NULL');
-    }
-
     for (final constraint in column.constraints) {
       if (constraint case CustomColumnConstraint(:final onlyOnDialect?)) {
         if (onlyOnDialect != dialect.known) {
@@ -1052,6 +1043,10 @@ abstract base class StatementCompiler {
     statement.buffer.write('CHECK(');
     constraint.check.compileWith(this);
     statement.buffer.write(')');
+  }
+
+  void addColumnNotNullConstraint(ColumnNotNullConstraint constraint) {
+    statement.buffer.write('NOT NULL');
   }
 
   void addCustom(CustomComponent component) {

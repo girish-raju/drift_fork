@@ -456,7 +456,6 @@ abstract class TableOrViewWriter {
     final namedParameters = <String, String>{
       'name': asDartLiteral(column.nameInSql),
       'sqlType': emitter.drift3SqlType(column.sqlType),
-      'isNullable': column.nullable.toString(),
 //      if (column.viewExpression case final viewExpression?)
 //        'expression': emitter.dartCode(viewExpression),
     };

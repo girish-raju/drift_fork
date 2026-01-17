@@ -158,6 +158,20 @@ final class ColumnCheckConstraint extends ColumnConstraint {
   }
 }
 
+/// A `NOT NULL` constraint used to disallow `NULL` values on a column.
+///
+/// For tables defined in Dart, drift adds this constraint to columns by default
+/// unless `nullable()` is used in the column's definition.
+final class ColumnNotNullConstraint extends ColumnConstraint {
+  /// @nodoc
+  const ColumnNotNullConstraint() : super._();
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addColumnNotNullConstraint(this);
+  }
+}
+
 /// A custom column constraint.
 final class CustomColumnConstraint extends ColumnConstraint {
   /// The component generating text for this constraint.

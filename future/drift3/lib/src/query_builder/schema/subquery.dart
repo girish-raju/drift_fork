@@ -117,7 +117,6 @@ final class Subquery<Row extends Object>
     for (final entry in select.structure.expressions.entries)
       SchemaColumn(
         name: select.structure.nameForColumn(entry.value) ?? '_unnamed',
-        isNullable: true,
         sqlType: BuiltinDriftType.text,
       )..owningResultSet = this,
   ];

@@ -13,18 +13,18 @@ class $TodoCategoriesTable extends TodoCategories
   late final TableColumn<int> id = TableColumn<int>(
     name: 'id',
     sqlType: BuiltinDriftType.int,
-    isNullable: false,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+      const ColumnNotNullConstraint(),
     ],
   )..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
     name: 'name',
     sqlType: BuiltinDriftType.text,
-    isNullable: false,
     requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   List<TableColumn> get columns => [id, name];
