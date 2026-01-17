@@ -27,18 +27,18 @@ class NoIds extends Table
   @override
   Set<TableColumn> get primaryKey => {payload};
   @override
-  NoIdRow? Function(DriftRow) createMapperFromPositions(
+  NoIdRow? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
     final pos$payload = positions[0].index;
     final type$0 = BuiltinDriftType.byteArray.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "payload" is missing
-      if (row.raw[pos$payload] == null) {
+      if (row[pos$payload] == null) {
         return null;
       }
-      return NoIdRow(type$0.dartValue(row.raw[pos$payload]!));
+      return NoIdRow(type$0.dartValue(row[pos$payload]!));
     };
   }
 
@@ -120,7 +120,7 @@ class WithDefaults extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WithDefault? Function(DriftRow) createMapperFromPositions(
+  WithDefault? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -128,10 +128,10 @@ class WithDefaults extends Table
     final type$0 = const CustomTextType().resolveIn(dialect);
     final pos$b = positions[1].index;
     final type$1 = BuiltinDriftType.int.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       return WithDefault(
-        a: type$0.nullableDartValue(row.raw[pos$a]),
-        b: type$1.nullableDartValue(row.raw[pos$b]),
+        a: type$0.nullableDartValue(row[pos$a]),
+        b: type$1.nullableDartValue(row[pos$b]),
       );
     };
   }
@@ -293,7 +293,6 @@ class WithConstraints extends Table
     sqlType: BuiltinDriftType.text,
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
     name: 'b',
@@ -307,7 +306,6 @@ class WithConstraints extends Table
     sqlType: BuiltinDriftType.double,
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   @override
   List<TableColumn> get columns => [a, b, c];
@@ -320,7 +318,7 @@ class WithConstraints extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WithConstraint? Function(DriftRow) createMapperFromPositions(
+  WithConstraint? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -330,15 +328,15 @@ class WithConstraints extends Table
     final type$1 = BuiltinDriftType.int.resolveIn(dialect);
     final pos$c = positions[2].index;
     final type$2 = BuiltinDriftType.double.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "b" is missing
-      if (row.raw[pos$b] == null) {
+      if (row[pos$b] == null) {
         return null;
       }
       return WithConstraint(
-        a: type$0.nullableDartValue(row.raw[pos$a]),
-        b: type$1.dartValue(row.raw[pos$b]!),
-        c: type$2.nullableDartValue(row.raw[pos$c]),
+        a: type$0.nullableDartValue(row[pos$a]),
+        b: type$1.dartValue(row[pos$b]!),
+        c: type$2.nullableDartValue(row[pos$c]),
       );
     };
   }
@@ -535,7 +533,6 @@ class ConfigTable extends Table
     sqlType: const AnyType(),
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncState =
       TableColumn<int>(
@@ -543,7 +540,6 @@ class ConfigTable extends Table
           sqlType: BuiltinDriftType.int,
           isNullable: true,
           requiredDuringInsert: false,
-          constraints: () => [ColumnConstraint.customSql('')],
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
@@ -552,7 +548,6 @@ class ConfigTable extends Table
           sqlType: BuiltinDriftType.int,
           isNullable: true,
           requiredDuringInsert: false,
-          constraints: () => [ColumnConstraint.customSql('')],
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
   @override
@@ -571,7 +566,7 @@ class ConfigTable extends Table
   @override
   Set<TableColumn> get primaryKey => {configKey};
   @override
-  Config? Function(DriftRow) createMapperFromPositions(
+  Config? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -582,19 +577,19 @@ class ConfigTable extends Table
     final pos$syncState = positions[2].index;
     final type$2 = BuiltinDriftType.int.resolveIn(dialect);
     final pos$syncStateImplicit = positions[3].index;
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "configKey" is missing
-      if (row.raw[pos$configKey] == null) {
+      if (row[pos$configKey] == null) {
         return null;
       }
       return Config(
-        configKey: type$0.dartValue(row.raw[pos$configKey]!),
-        configValue: type$1.nullableDartValue(row.raw[pos$configValue]),
+        configKey: type$0.dartValue(row[pos$configKey]!),
+        configValue: type$1.nullableDartValue(row[pos$configValue]),
         syncState: ConfigTable.$convertersyncStaten.fromSql(
-          type$2.nullableDartValue(row.raw[pos$syncState]),
+          type$2.nullableDartValue(row[pos$syncState]),
         ),
         syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
-          type$2.nullableDartValue(row.raw[pos$syncStateImplicit]),
+          type$2.nullableDartValue(row[pos$syncStateImplicit]),
         ),
       );
     };
@@ -864,21 +859,18 @@ class Mytable extends Table
     sqlType: BuiltinDriftType.text,
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   late final TableColumn<bool> isInserting = TableColumn<bool>(
     name: 'is_inserting',
     sqlType: BuiltinDriftType.bool,
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   late final TableColumn<DateTime> somedate = TableColumn<DateTime>(
     name: 'somedate',
     sqlType: BuiltinDriftType.dateTime,
     isNullable: true,
     requiredDuringInsert: false,
-    constraints: () => [ColumnConstraint.customSql('')],
   )..owningResultSet = this;
   @override
   List<TableColumn> get columns => [someid, sometext, isInserting, somedate];
@@ -895,7 +887,7 @@ class Mytable extends Table
     {sometext, isInserting},
   ];
   @override
-  MytableData? Function(DriftRow) createMapperFromPositions(
+  MytableData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -907,16 +899,16 @@ class Mytable extends Table
     final type$2 = BuiltinDriftType.bool.resolveIn(dialect);
     final pos$somedate = positions[3].index;
     final type$3 = BuiltinDriftType.dateTime.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "someid" is missing
-      if (row.raw[pos$someid] == null) {
+      if (row[pos$someid] == null) {
         return null;
       }
       return MytableData(
-        someid: type$0.dartValue(row.raw[pos$someid]!),
-        sometext: type$1.nullableDartValue(row.raw[pos$sometext]),
-        isInserting: type$2.nullableDartValue(row.raw[pos$isInserting]),
-        somedate: type$3.nullableDartValue(row.raw[pos$somedate]),
+        someid: type$0.dartValue(row[pos$someid]!),
+        sometext: type$1.nullableDartValue(row[pos$sometext]),
+        isInserting: type$2.nullableDartValue(row[pos$isInserting]),
+        somedate: type$3.nullableDartValue(row[pos$somedate]),
       );
     };
   }
@@ -1126,6 +1118,227 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   }
 }
 
+class Email extends Table
+    with ResultSet<EMail, Email>
+    implements GeneratedTable<EMail, Email>, VirtualTableInfo<EMail, Email> {
+  @override
+  final String? alias;
+  Email([this.alias]);
+  late final TableColumn<String> sender = TableColumn<String>(
+    name: 'sender',
+    sqlType: BuiltinDriftType.text,
+    isNullable: false,
+    requiredDuringInsert: true,
+  )..owningResultSet = this;
+  late final TableColumn<String> title = TableColumn<String>(
+    name: 'title',
+    sqlType: BuiltinDriftType.text,
+    isNullable: false,
+    requiredDuringInsert: true,
+  )..owningResultSet = this;
+  late final TableColumn<String> body = TableColumn<String>(
+    name: 'body',
+    sqlType: BuiltinDriftType.text,
+    isNullable: false,
+    requiredDuringInsert: true,
+  )..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [sender, title, body];
+  @override
+  String get entityName => $name;
+  static const String $name = 'email';
+  @override
+  Email asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => const {};
+  @override
+  EMail? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$sender = positions[0].index;
+    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$title = positions[1].index;
+    final pos$body = positions[2].index;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "sender" is missing
+      if (row[pos$sender] == null) {
+        return null;
+      }
+      return EMail(
+        sender: type$0.dartValue(row[pos$sender]!),
+        title: type$0.dartValue(row[pos$title]!),
+        body: type$0.dartValue(row[pos$body]!),
+      );
+    };
+  }
+
+  @override
+  Email withAlias(String alias) {
+    return Email(alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs => 'fts5(sender, title, body)';
+}
+
+class EMail extends LegacyDataClass implements Insertable<EMail> {
+  final String sender;
+  final String title;
+  final String body;
+  const EMail({required this.sender, required this.title, required this.body});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['sender'] = Variable<String>(sender, BuiltinDriftType.text);
+    map['title'] = Variable<String>(title, BuiltinDriftType.text);
+    map['body'] = Variable<String>(body, BuiltinDriftType.text);
+    return map;
+  }
+
+  EmailCompanion toCompanion(bool nullToAbsent) {
+    return EmailCompanion(
+      sender: Value(sender),
+      title: Value(title),
+      body: Value(body),
+    );
+  }
+
+  factory EMail.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EMail(
+      sender: serializer.fromJson<String>(json['sender']),
+      title: serializer.fromJson<String>(json['title']),
+      body: serializer.fromJson<String>(json['body']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sender': serializer.toJson<String>(sender),
+      'title': serializer.toJson<String>(title),
+      'body': serializer.toJson<String>(body),
+    };
+  }
+
+  EMail copyWith({String? sender, String? title, String? body}) => EMail(
+    sender: sender ?? this.sender,
+    title: title ?? this.title,
+    body: body ?? this.body,
+  );
+  EMail copyWithCompanion(EmailCompanion data) {
+    return EMail(
+      sender: data.sender.present ? data.sender.value : this.sender,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EMail(')
+          ..write('sender: $sender, ')
+          ..write('title: $title, ')
+          ..write('body: $body')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(sender, title, body);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EMail &&
+          other.sender == this.sender &&
+          other.title == this.title &&
+          other.body == this.body);
+}
+
+class EmailCompanion extends UpdateCompanion<EMail> {
+  final Value<String> sender;
+  final Value<String> title;
+  final Value<String> body;
+  final Value<int> rowid;
+  const EmailCompanion({
+    this.sender = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EmailCompanion.insert({
+    required String sender,
+    required String title,
+    required String body,
+    this.rowid = const Value.absent(),
+  }) : sender = Value(sender),
+       title = Value(title),
+       body = Value(body);
+  static Insertable<EMail> custom({
+    Expression<String>? sender,
+    Expression<String>? title,
+    Expression<String>? body,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sender != null) 'sender': sender,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EmailCompanion copyWith({
+    Value<String>? sender,
+    Value<String>? title,
+    Value<String>? body,
+    Value<int>? rowid,
+  }) {
+    return EmailCompanion(
+      sender: sender ?? this.sender,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sender.present) {
+      map['sender'] = Variable<String>(sender.value, BuiltinDriftType.text);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value, BuiltinDriftType.text);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value, BuiltinDriftType.text);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EmailCompanion(')
+          ..write('sender: $sender, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class WeirdTable extends Table
     with ResultSet<WeirdData, WeirdTable>
     implements GeneratedTable<WeirdData, WeirdTable> {
@@ -1157,7 +1370,7 @@ class WeirdTable extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WeirdData? Function(DriftRow) createMapperFromPositions(
+  WeirdData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -1165,14 +1378,14 @@ class WeirdTable extends Table
     final type$0 = BuiltinDriftType.int.resolveIn(dialect);
     final pos$textColumn = positions[1].index;
     final type$1 = BuiltinDriftType.text.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "sqlClass" is missing
-      if (row.raw[pos$sqlClass] == null) {
+      if (row[pos$sqlClass] == null) {
         return null;
       }
       return WeirdData(
-        sqlClass: type$0.dartValue(row.raw[pos$sqlClass]!),
-        textColumn: type$1.dartValue(row.raw[pos$textColumn]!),
+        sqlClass: type$0.dartValue(row[pos$sqlClass]!),
+        textColumn: type$1.dartValue(row[pos$textColumn]!),
       );
     };
   }
@@ -1331,24 +1544,416 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     'value_idx',
     CustomComponent(
       'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)',
+      dialectSpecificSql: {
+        KnownSqlDialect.sqlite: '',
+        KnownSqlDialect.postgres: '',
+      },
     ),
   );
   late final Mytable mytable = Mytable();
+  late final Email email = Email();
   late final WeirdTable weirdTable = WeirdTable();
   late final Trigger myTrigger = Trigger(
     'my_trigger',
     CustomComponent(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
+      dialectSpecificSql: {
+        KnownSqlDialect.sqlite: '',
+        KnownSqlDialect.postgres: '',
+      },
     ),
   );
-  Future<int> writeConfig(String key, DriftAny? value) {
+  Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
-      'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
+      switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
+        KnownSqlDialect.postgres ||
+        _ => 'REPLACE INTO config (config_key, config_value) VALUES (\$1, \$2)',
+      },
       variables: [
         mapValue(BuiltinDriftType.text, key),
         mapValue(const AnyType(), value),
       ],
       updates: {config},
+    );
+  }
+
+  Selectable<Config> readConfig(String var1) {
+    return customSelectMapped<Config>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = \$1',
+      },
+      variables: [mapValue(BuiltinDriftType.text, var1)],
+      readsFrom: {config},
+      createMapper: (RawResultSet _) {
+        final map_0 = config.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
+  Selectable<Config> readMultiple(
+    List<String> var1, {
+    ReadMultiple$clause? clause,
+  }) {
+    var $arrayStartIndex = 1;
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    $arrayStartIndex += var1.length;
+    final generatedclause = $write(
+      clause?.call(this.config) ?? const OrderBy.nothing(),
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedclause.variables.length;
+    return customSelectMapped<Config>(
+      query:
+          'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.buffer}',
+      variables: [
+        for (var $ in var1) mapValue(BuiltinDriftType.text, $),
+        ...generatedclause.variables,
+      ],
+      readsFrom: {config, ...generatedclause.watchedTables},
+      createMapper: (RawResultSet _) {
+        final map_0 = config.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
+  Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
+    var $arrayStartIndex = 1;
+    final generatedpredicate = $write(
+      predicate?.call(this.config) ??
+          const Expression.customComponent(
+            CustomComponent(
+              '(TRUE)',
+              dialectSpecificSql: {
+                KnownSqlDialect.sqlite: '',
+                KnownSqlDialect.postgres: '',
+              },
+            ),
+          ),
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedpredicate.variables.length;
+    return customSelectMapped<Config>(
+      query: 'SELECT * FROM config WHERE ${generatedpredicate.buffer}',
+      variables: [...generatedpredicate.variables],
+      readsFrom: {config, ...generatedpredicate.watchedTables},
+      createMapper: (RawResultSet _) {
+        final map_0 = config.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
+  Selectable<String> typeConverterVar(
+    SyncType? var1,
+    List<SyncType?> var2, {
+    TypeConverterVar$pred? pred,
+  }) {
+    var $arrayStartIndex = 2;
+    final generatedpred = $write(
+      pred?.call(this.config) ??
+          const Expression.customComponent(
+            CustomComponent(
+              '(TRUE)',
+              dialectSpecificSql: {
+                KnownSqlDialect.sqlite: '',
+                KnownSqlDialect.postgres: '',
+              },
+            ),
+          ),
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedpred.variables.length;
+    final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
+    $arrayStartIndex += var2.length;
+    return customSelectMapped<String>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND(sync_state = \$1 OR sync_state_implicit IN ($expandedvar2))',
+      },
+      variables: [
+        mapValue(
+          BuiltinDriftType.int,
+          ConfigTable.$convertersyncStaten.toSql(var1),
+        ),
+        ...generatedpred.variables,
+        for (var $ in var2)
+          mapValue(
+            BuiltinDriftType.int,
+            ConfigTable.$convertersyncStateImplicitn.toSql($),
+          ),
+      ],
+      readsFrom: {config, ...generatedpred.watchedTables},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+
+        return (RawRow row) => type$0.dartValue(row[0]!);
+      },
+    );
+  }
+
+  Selectable<JsonResult> tableValued() {
+    return customSelectMapped<JsonResult>(
+      query:
+          'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
+      variables: [],
+      readsFrom: {config},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+
+        return (RawRow row) => JsonResult(
+          row: row,
+          key: type$0.dartValue(row[0]!),
+          value: type$0.nullableDartValue(row[1]),
+        );
+      },
+    );
+  }
+
+  Selectable<JsonResult> another() {
+    return customSelectMapped<JsonResult>(
+      query: 'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
+      variables: [],
+      readsFrom: {},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+
+        return (RawRow row) => JsonResult(
+          row: row,
+          key: type$0.dartValue(row[0]!),
+          value: type$0.nullableDartValue(row[1]),
+        );
+      },
+    );
+  }
+
+  Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
+    var $arrayStartIndex = 1;
+    final generatedpredicate = $write(
+      predicate(
+        alias(this.withDefaults, 'd'),
+        alias(this.withConstraints, 'c'),
+      ),
+      hasMultipleTables: true,
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedpredicate.variables.length;
+    return customSelectMapped<MultipleResult>(
+      query:
+          'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.buffer}',
+      variables: [...generatedpredicate.variables],
+      readsFrom: {
+        withDefaults,
+        withConstraints,
+        ...generatedpredicate.watchedTables,
+      },
+      createMapper: (RawResultSet _) {
+        final type$0 = const CustomTextType().resolveIn(dialect);
+        final type$1 = BuiltinDriftType.int.resolveIn(dialect);
+        final map_0 = withConstraints.createMapperFromPositions(dialect, const [
+          ColumnPosition(2),
+          ColumnPosition(3),
+          ColumnPosition(4),
+        ]);
+
+        return (RawRow row) => MultipleResult(
+          row: row,
+          a: type$0.nullableDartValue(row[0]),
+          b: type$1.nullableDartValue(row[1]),
+          c: map_0(row),
+        );
+      },
+    );
+  }
+
+  Selectable<EMail> searchEmails({required String? term}) {
+    return customSelectMapped<EMail>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
+        KnownSqlDialect.postgres ||
+        _ => 'SELECT * FROM email WHERE email MATCH \$1 ORDER BY rank',
+      },
+      variables: [mapValue(BuiltinDriftType.text, term)],
+      readsFrom: {email},
+      createMapper: (RawResultSet _) {
+        final map_0 = email.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
+  Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
+    var $arrayStartIndex = 1;
+    final generatedexpr = $write(
+      expr(this.config),
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedexpr.variables.length;
+    return customSelectMapped<ReadRowIdResult>(
+      query:
+          'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.buffer}',
+      variables: [...generatedexpr.variables],
+      readsFrom: {config, ...generatedexpr.watchedTables},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+        final type$2 = const AnyType().resolveIn(dialect);
+
+        return (RawRow row) => ReadRowIdResult(
+          row: row,
+          rowid: type$0.dartValue(row[0]!),
+          configKey: type$1.dartValue(row[1]!),
+          configValue: type$2.nullableDartValue(row[2]),
+          syncState: NullAwareTypeConverter.wrapFromSql(
+            ConfigTable.$convertersyncState,
+            type$0.nullableDartValue(row[3]),
+          ),
+          syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
+            ConfigTable.$convertersyncStateImplicit,
+            type$0.nullableDartValue(row[4]),
+          ),
+        );
+      },
+    );
+  }
+
+  Selectable<int> cfeTest() {
+    return customSelectMapped<int>(
+      query:
+          'WITH RECURSIVE cnt (x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+      variables: [],
+      readsFrom: {},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+
+        return (RawRow row) => type$0.dartValue(row[0]!);
+      },
+    );
+  }
+
+  Selectable<int?> nullableQuery() {
+    return customSelectMapped<int?>(
+      query: 'SELECT MAX(oid) AS _c0 FROM config',
+      variables: [],
+      readsFrom: {config},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+
+        return (RawRow row) => type$0.nullableDartValue(row[0]);
+      },
+    );
+  }
+
+  Future<List<Config>> addConfig({required Insertable<Config> value}) {
+    var $arrayStartIndex = 1;
+    final generatedvalue = $writeInsertable(
+      this.config,
+      value,
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedvalue.variables.length;
+    return customWriteReturning(
+      'INSERT INTO config ${generatedvalue.buffer} RETURNING *',
+      variables: [...generatedvalue.variables],
+      updates: {config},
+    ).then((rows) {
+      final map_0 = config.createMapperFromPositions(dialect, const [
+        ColumnPosition(0),
+        ColumnPosition(1),
+        ColumnPosition(2),
+        ColumnPosition(3),
+      ]);
+
+      return rows.map((row) => map_0(row)!).toList();
+    });
+  }
+
+  Selectable<NestedResult> nested(String? var1) {
+    return customSelectMapped<NestedResult>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = \$1',
+      },
+      variables: [mapValue(const CustomTextType(), var1)],
+      readsFrom: {withConstraints, withDefaults},
+      createMapper: (RawResultSet _) {
+        final map_0 = withDefaults.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+        ]);
+
+        return (RawRow row) => NestedResult(
+          row: row,
+          defaults: map_0(row)!,
+          nestedQuery1: throw 'todo',
+        );
+      },
+    );
+  }
+
+  Selectable<MyCustomResultClass> customResult() {
+    return customSelectMapped<MyCustomResultClass>(
+      query:
+          'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
+      variables: [],
+      readsFrom: {withConstraints, config, noIds},
+      createMapper: (RawResultSet _) {
+        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final map_0 = config.createMapperFromPositions(dialect, const [
+          ColumnPosition(2),
+          ColumnPosition(3),
+          ColumnPosition(4),
+          ColumnPosition(5),
+        ]);
+        final map_1 = noIds.createMapperFromPositions(dialect, const [
+          ColumnPosition(6),
+        ]);
+
+        return (RawRow row) => MyCustomResultClass(
+          type$0.dartValue(row[0]!),
+          syncState: NullAwareTypeConverter.wrapFromSql(
+            ConfigTable.$convertersyncState,
+            type$0.nullableDartValue(row[1]),
+          ),
+          config: map_0(row)!,
+          noIds: map_1(row)!,
+          nested: throw 'todo',
+        );
+      },
     );
   }
 
@@ -1360,8 +1965,20 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     config,
     valueIdx,
     mytable,
+    email,
     weirdTable,
     myTrigger,
+    OnCreateQuery(
+      CustomComponent(
+        'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
+        dialectSpecificSql: {
+          KnownSqlDialect.sqlite:
+              'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
+          KnownSqlDialect.postgres:
+              'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
+        },
+      ),
+    ),
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1373,4 +1990,125 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       result: [TableUpdate('with_defaults', kind: UpdateKind.insert)],
     ),
   ]);
+}
+
+typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);
+typedef ReadDynamic$predicate = Expression<bool> Function(ConfigTable config);
+typedef TypeConverterVar$pred = Expression<bool> Function(ConfigTable config);
+
+final class JsonResult extends CustomResultSet {
+  final String key;
+  final String? value;
+  JsonResult({required RawRow row, required this.key, this.value}) : super(row);
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JsonResult &&
+          other.key == this.key &&
+          other.value == this.value);
+  @override
+  String toString() {
+    return (StringBuffer('JsonResult(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+}
+
+final class MultipleResult extends CustomResultSet {
+  final String? a;
+  final int? b;
+  final WithConstraint? c;
+  MultipleResult({required RawRow row, this.a, this.b, this.c}) : super(row);
+  @override
+  int get hashCode => Object.hash(a, b, c);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MultipleResult &&
+          other.a == this.a &&
+          other.b == this.b &&
+          other.c == this.c);
+  @override
+  String toString() {
+    return (StringBuffer('MultipleResult(')
+          ..write('a: $a, ')
+          ..write('b: $b, ')
+          ..write('c: $c')
+          ..write(')'))
+        .toString();
+  }
+}
+
+typedef Multiple$predicate =
+    Expression<bool> Function(WithDefaults d, WithConstraints c);
+
+final class ReadRowIdResult extends CustomResultSet {
+  final int rowid;
+  final String configKey;
+  final DriftAny? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
+  ReadRowIdResult({
+    required RawRow row,
+    required this.rowid,
+    required this.configKey,
+    this.configValue,
+    this.syncState,
+    this.syncStateImplicit,
+  }) : super(row);
+  @override
+  int get hashCode =>
+      Object.hash(rowid, configKey, configValue, syncState, syncStateImplicit);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReadRowIdResult &&
+          other.rowid == this.rowid &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue &&
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
+  @override
+  String toString() {
+    return (StringBuffer('ReadRowIdResult(')
+          ..write('rowid: $rowid, ')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
+
+final class NestedResult extends CustomResultSet {
+  final WithDefault defaults;
+  final List<WithConstraint> nestedQuery1;
+  NestedResult({
+    required RawRow row,
+    required this.defaults,
+    required this.nestedQuery1,
+  }) : super(row);
+  @override
+  int get hashCode => Object.hash(defaults, nestedQuery1);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NestedResult &&
+          other.defaults == this.defaults &&
+          other.nestedQuery1 == this.nestedQuery1);
+  @override
+  String toString() {
+    return (StringBuffer('NestedResult(')
+          ..write('defaults: $defaults, ')
+          ..write('nestedQuery1: $nestedQuery1')
+          ..write(')'))
+        .toString();
+  }
 }

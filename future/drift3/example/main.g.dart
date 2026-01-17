@@ -37,7 +37,7 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   Set<TableColumn> get primaryKey => {id};
   @override
-  TodoCategory? Function(DriftRow) createMapperFromPositions(
+  TodoCategory? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -45,14 +45,14 @@ class $TodoCategoriesTable extends TodoCategories
     final type$0 = BuiltinDriftType.int.resolveIn(dialect);
     final pos$name = positions[1].index;
     final type$1 = BuiltinDriftType.text.resolveIn(dialect);
-    return (DriftRow row) {
+    return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
-      if (row.raw[pos$id] == null) {
+      if (row[pos$id] == null) {
         return null;
       }
       return TodoCategory(
-        id: type$0.dartValue(row.raw[pos$id]!),
-        name: type$1.dartValue(row.raw[pos$name]!),
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.dartValue(row[pos$name]!),
       );
     };
   }

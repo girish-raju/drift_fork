@@ -149,11 +149,11 @@ abstract mixin class DialectSpecificComponent implements SqlComponent {
 /// A custom component, used to embed a fixed SQL string into drift-generated
 /// statements.
 final class CustomComponent implements SqlComponent {
-  /// The SQL string to use for dialects not contained in [dialectSpecifcSql].
+  /// The SQL string to use for dialects not contained in [dialectSpecificSql].
   final String fallbackSql;
 
   /// Dialect-specific overrides for the SQL text to generate.
-  final Map<KnownSqlDialect, String> dialectSpecifcSql;
+  final Map<KnownSqlDialect, String> dialectSpecificSql;
 
   /// Additional tables that this SQL construct is watching.
   ///
@@ -166,13 +166,13 @@ final class CustomComponent implements SqlComponent {
   /// Creates a custom component instance from the SQL text.
   const CustomComponent(
     this.fallbackSql, {
-    this.dialectSpecifcSql = const {},
+    this.dialectSpecificSql = const {},
     this.watchedTables = const [],
   });
 
   /// The SQL text to generate for the specific [KnownSqlDialect].
   String sqlFor(KnownSqlDialect? dialect) {
-    return dialectSpecifcSql[dialect] ?? fallbackSql;
+    return dialectSpecificSql[dialect] ?? fallbackSql;
   }
 
   @override
@@ -184,12 +184,12 @@ final class CustomComponent implements SqlComponent {
   bool operator ==(Object other) {
     return other is CustomComponent &&
         other.fallbackSql == fallbackSql &&
-        _equality.equals(other.dialectSpecifcSql, dialectSpecifcSql);
+        _equality.equals(other.dialectSpecificSql, dialectSpecificSql);
   }
 
   @override
   int get hashCode =>
-      Object.hash(fallbackSql, _equality.hash(dialectSpecifcSql));
+      Object.hash(fallbackSql, _equality.hash(dialectSpecificSql));
 
   static const _equality = MapEquality<Object?, Object?>();
 }

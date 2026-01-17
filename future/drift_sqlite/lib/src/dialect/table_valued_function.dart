@@ -16,7 +16,7 @@ import 'compiler.dart';
 /// `JsonTableFunction` in `package:drift/json1.dart`. It makes the `json_each`
 /// and `json_tree` table-valued functions available to drift.
 abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
-    with ResultSet<DriftRow, Self>
+    with ResultSet<RawRow, Self>
     implements SqlComponent {
   /// The name of the table-valued function being called.
   final String functionName;
@@ -53,7 +53,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   String get entityName => functionName;
 
   @override
-  DriftRow? Function(DriftRow p1) createMapperFromPositions(
+  RawRow Function(RawRow p1) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {

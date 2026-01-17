@@ -36,6 +36,8 @@ class QueryWriter {
 
   DriftOptions get options => scope.writer.options;
 
+  bool get drift3 => options.drift3Preview;
+
   QueryWriter(this.scope) : _emitter = scope.leaf();
 
   void write(SqlQuery query) {
@@ -87,8 +89,14 @@ class QueryWriter {
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
   void _writeMappingLambda(InferredResultSet resultSet, QueryRowType rowClass) {
+    if (drift3) {
+      return _Drift3MappingCodeWriter(this)
+          .write(_emitter, resultSet, rowClass);
+    }
+
     final queryRow = _emitter.drift('QueryRow');
-    final asyncModifier = rowClass.requiresAsynchronousContext ? 'async' : '';
+    final asyncModifier =
+        rowClass.requiresAsynchronousContext(options) ? 'async' : '';
 
     // We can write every available mapping as a Dart expression via
     // _writeArgumentExpression. This can be turned into a lambda by appending
@@ -257,23 +265,22 @@ class QueryWriter {
       // column from the table is null. If it is, the entire table is null. This
       // can happen when the table comes from an outer join.
       if (context.isNullable) {
-        for (final MapEntry(:key, :value) in match.aliasToColumn.entries) {
-          if (!value.nullable) {
-            final mapKey = context.applyPrefix(key);
-
+        match.columnToSource.forEach((column, source) {
+          if (!column.nullable) {
+            final mapKey = context.applyPrefix(source.name);
             _emitter
                 .write('row.data[${asDartLiteral(mapKey)}] == null ? null : ');
           }
-        }
+        });
       }
 
       _emitter.write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
 
-      for (final alias in match.aliasToColumn.entries) {
+      for (final columnSource in match.columnToSource.entries) {
         _emitter
-          ..write(asDartLiteral(context.applyPrefix(alias.key)))
+          ..write(asDartLiteral(context.applyPrefix(columnSource.value.name)))
           ..write(': ')
-          ..write(asDartLiteral(alias.value.nameInSql))
+          ..write(asDartLiteral(columnSource.key.nameInSql))
           ..write(', ');
       }
 
@@ -308,15 +315,29 @@ class QueryWriter {
 
   void _writeCustomSelectStatement(SqlSelectQuery select,
       [QueryRowType? resultType]) {
+    final resultSet = select.resultSet;
+    resultType ??= select.queryRowType(options);
+
+    if (drift3) {
+      _emitter
+        ..write(' customSelectMapped<')
+        ..writeDart(resultType.rowType)
+        ..write('>(query: ${_queryCode(select)},');
+      _writeVariables(select);
+      _emitter.write(', ');
+      _writeReadsFrom(select);
+      _emitter.write(', createMapper: ');
+      _writeMappingLambda(resultSet, resultType);
+      _emitter.write(')');
+      return;
+    }
+
     _buffer.write(' customSelect(${_queryCode(select)}, ');
     _writeVariables(select);
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    final resultSet = select.resultSet;
-    resultType ??= select.queryRowType(options);
-
-    if (resultType.requiresAsynchronousContext) {
+    if (resultType.requiresAsynchronousContext(options)) {
       _buffer.write(').asyncMap(');
     } else {
       _buffer.write(').map(');
@@ -347,21 +368,45 @@ class QueryWriter {
     _buffer.write('return customWriteReturning(${_queryCode(update)},');
     _writeCommonUpdateParameters(update);
 
-    _buffer.write(').then((rows) => ');
-
     final resultSet = update.resultSet!;
     final rowType = update.queryRowType(options);
 
-    if (rowType.requiresAsynchronousContext) {
-      _buffer.write('Future.wait(rows.map(');
-      _writeMappingLambda(resultSet, rowType);
-      _buffer.write('))');
+    if (drift3) {
+      _buffer.writeln(').then((rows) {');
+
+      final mappingWriter = _Drift3MappingCodeWriter(this)
+        .._writeArgumentExpression(
+            rowType, resultSet, (isNullable: false, sqlPrefix: null));
+      _buffer
+        ..writeln(mappingWriter._outerSetup)
+        ..write('return ');
+
+      if (rowType.requiresAsynchronousContext(options)) {
+        _buffer
+          ..write('Future.wait(rows.map((row) => ')
+          ..write(mappingWriter._innerMapper)
+          ..write('))');
+      } else {
+        _buffer
+          ..write('rows.map((row) => ')
+          ..write(mappingWriter._innerMapper)
+          ..write(').toList()');
+      }
+      _buffer.writeln(';});\n}');
     } else {
-      _buffer.write('rows.map(');
-      _writeMappingLambda(resultSet, rowType);
-      _buffer.write(').toList()');
+      _buffer.write(').then((rows) => ');
+
+      if (rowType.requiresAsynchronousContext(options)) {
+        _buffer.write('Future.wait(rows.map(');
+        _writeMappingLambda(resultSet, rowType);
+        _buffer.write('))');
+      } else {
+        _buffer.write('rows.map(');
+        _writeMappingLambda(resultSet, rowType);
+        _buffer.write(').toList()');
+      }
+      _buffer.write(');\n}');
     }
-    _buffer.write(');\n}');
   }
 
   void _writeUpdatingQuery(UpdatingQuery update) {
@@ -522,8 +567,10 @@ class QueryWriter {
     } else {
       // Create a switch expression matching over the dialect of the database
       // we're connected to.
-      final buffer = StringBuffer('switch (executor.dialect) {');
-      final dialectEnum = scope.drift('SqlDialect');
+      final buffer = StringBuffer(
+          drift3 ? 'switch (dialect.known) {' : 'switch (executor.dialect) {');
+      final dialectEnum =
+          scope.drift(drift3 ? 'KnownSqlDialect' : 'SqlDialect');
 
       var index = 0;
       for (final MapEntry(key: code, value: dialects)
@@ -587,6 +634,201 @@ class QueryWriter {
 /// Returns code to load an instance of the [converter] at runtime.
 String readConverter(TextEmitter emitter, AppliedTypeConverter converter) {
   return emitter.dartCode(emitter.readConverter(converter));
+}
+
+/// Builds code responsible for mapping `DriftRow`s into the result type of the
+/// query.
+class _Drift3MappingCodeWriter {
+  final QueryWriter _writer;
+
+  final StringBuffer _outerSetup = StringBuffer();
+  final StringBuffer _innerMapper = StringBuffer();
+
+  final Map<Object, String> _obtainedTypes = {};
+  int _mappingFunctionCounter = 0;
+
+  TextEmitter get _emitter => _writer._emitter;
+
+  _Drift3MappingCodeWriter(this._writer);
+
+  String referenceBuiltinType(DriftSqlType type) {
+    return _obtainedTypes.putIfAbsent(type, () {
+      final variableName = 'type\$${type.name}';
+      _outerSetup.writeln(
+          'final $variableName = ${_emitter.drift3SqlType(ColumnDriftType(type))};');
+
+      return variableName;
+    });
+  }
+
+  String referenceType(ColumnType type) {
+    return _obtainedTypes.putIfAbsent(type, () {
+      final variableName = 'type\$${_obtainedTypes.length}';
+      _outerSetup
+        ..write('final $variableName = ')
+        ..write(_emitter.drift3SqlType(type))
+        ..writeln('.resolveIn(dialect);');
+
+      return variableName;
+    });
+  }
+
+  String columnPosition(ScalarResultColumn column, {bool addConst = true}) {
+    return _writer.scope.dartCode(AnnotatedDartCode.build((b) {
+      if (addConst) b.addText('const ');
+      b.addSymbol('ColumnPosition', AnnotatedDartCode.drift);
+      b.addText('(${column.index})');
+    }));
+  }
+
+  void write(
+      TextEmitter outer, InferredResultSet resultSet, QueryRowType rowClass) {
+    _writeArgumentExpression(
+        rowClass, resultSet, (isNullable: false, sqlPrefix: null));
+    outer
+      ..writeln('(${outer.drift('RawResultSet')} _) {')
+      ..writeln(_outerSetup)
+      ..write('return (')
+      ..writeDriftRef('RawRow')
+      ..writeln(' row) => $_innerMapper;')
+      ..writeln('}');
+  }
+
+  /// Writes code that will read the [argument] for an existing row type from
+  /// the raw `QueryRow`.
+  void _writeArgumentExpression(
+    ArgumentForQueryRowType argument,
+    InferredResultSet resultSet,
+    _ArgumentContext context,
+  ) {
+    switch (argument) {
+      case RawQueryRow():
+        _innerMapper.write('row');
+      case ScalarResultColumn():
+        _readScalar(argument, context);
+      case MatchingDriftTable():
+        _readMatchingTable(argument, context);
+      case StructuredFromNestedColumn():
+        final prefix = resultSet.nestedPrefixFor(argument.table);
+        _writeArgumentExpression(
+          argument.nestedType,
+          resultSet,
+          (sqlPrefix: prefix, isNullable: argument.nullable),
+        );
+      case MappedNestedListQuery():
+        _innerMapper.write("throw 'todo'");
+//        _innerMapper.write('await ');
+//        final query = argument.column.query;
+//        _writeCustomSelectStatement(query, argument.nestedType);
+//        _innerMapper.write('.get()');
+      case QueryRowType():
+        final singleValue = argument.singleValue;
+        if (singleValue != null) {
+          return _writeArgumentExpression(singleValue, resultSet, context);
+        }
+
+        if (context.isNullable) {
+          // If this structed type is nullable, it's coming from an OUTER join
+          // which means that, even if the individual components making up the
+          // structure are non-nullable, they might all be null in SQL. We
+          // detect this case by looking for a non-nullable column and, if it's
+          // null, return null directly instead of creating the structured type.
+          for (final arg in argument.positionalArguments
+              .followedBy(argument.namedArguments.values)
+              .whereType<ScalarResultColumn>()) {
+            if (!arg.nullable) {
+              final keyInMap = context.applyPrefix(arg.name);
+              _innerMapper.write(
+                  'row.data[${asDartLiteral(keyInMap)}] == null ? null : ');
+            }
+          }
+        }
+
+        final _ArgumentContext childContext = (
+          sqlPrefix: context.sqlPrefix,
+          // Individual fields making up this query row type aren't covered by
+          // the outer nullability.
+          isNullable: false,
+        );
+
+        if (!argument.isRecord) {
+          // We're writing a constructor, so let's start with the class name.
+          _innerMapper.write(_emitter.dartCode(argument.rowType));
+
+          final constructorName = argument.constructorName;
+          if (constructorName.isNotEmpty) {
+            _innerMapper
+              ..write('.')
+              ..write(constructorName);
+          }
+        }
+
+        _innerMapper.write('(');
+        for (final positional in argument.positionalArguments) {
+          _writeArgumentExpression(positional, resultSet, childContext);
+          _innerMapper.write(', ');
+        }
+        argument.namedArguments.forEach((name, parameter) {
+          _innerMapper.write('$name: ');
+          _writeArgumentExpression(parameter, resultSet, childContext);
+          _innerMapper.write(', ');
+        });
+
+        _innerMapper.write(')');
+    }
+  }
+
+  /// Writes Dart code that, given a variable of type `QueryRow` named `row`
+  /// in the same scope, reads the [column] from that row and brings it into a
+  /// suitable type.
+  void _readScalar(ScalarResultColumn column, _ArgumentContext context) {
+    final isNullable = context.isNullable || column.nullable;
+    final type = referenceType(column.sqlType);
+    final rawValue = 'row[${column.index}]';
+
+    var code = isNullable
+        ? '$type.nullableDartValue($rawValue)'
+        : '$type.dartValue($rawValue!)';
+
+    final converter = column.typeConverter;
+    if (converter != null) {
+      if (converter.canBeSkippedForNulls && isNullable) {
+        // The type converter maps non-nullable types, but the column may be
+        // nullable in SQL => just map null to null and only invoke the type
+        // converter for non-null values.
+        final wrapFrom = _emitter.drift('NullAwareTypeConverter.wrapFromSql');
+        code = '$wrapFrom(${readConverter(_emitter, converter)}, $code)';
+      } else {
+        // Just apply the type converter directly.
+        code = '${readConverter(_emitter, converter)}.fromSql($code)';
+      }
+    }
+
+    _innerMapper.write(code);
+  }
+
+  void _readMatchingTable(MatchingDriftTable match, _ArgumentContext context) {
+    final table = match.table;
+    final mappingFunctionName = 'map_${_mappingFunctionCounter++}';
+    _outerSetup.write(
+        'final $mappingFunctionName = ${table.dbGetterName}.createMapperFromPositions(dialect, const [');
+
+    for (final column in table.columns) {
+      final source = match.columnToSource[column]!;
+
+      _outerSetup.write(columnPosition(
+        source,
+        addConst: false, // Is already const from list literal
+      ));
+      _outerSetup.write(',');
+    }
+    _outerSetup.writeln(']);');
+
+    _innerMapper.write('$mappingFunctionName(row)');
+    if (!context.isNullable) {
+      _innerMapper.write('!');
+    }
+  }
 }
 
 class _ExpandedDeclarationWriter {
@@ -736,8 +978,10 @@ class _ExpandedDeclarationWriter {
 
     // similar to the case for expanded array variables, we need to
     // increase the index
-    _increaseIndexCounter(
-        '${placeholderContextName(element)}.amountOfVariables');
+    final placeholderName = placeholderContextName(element);
+    _increaseIndexCounter(_scope.drift3
+        ? '$placeholderName.variables.length'
+        : '$placeholderName.amountOfVariables');
   }
 
   void _writeArrayVariable(FoundVariable element) {
@@ -878,23 +1122,44 @@ class _ExpandedVariableWriter {
   }
 
   void _writeDartPlaceholder(FoundDartPlaceholder element) {
-    _buffer.write('...${placeholderContextName(element)}.introducedVariables');
+    if (_emitter.writer.options.drift3Preview) {
+      _buffer.write('...${placeholderContextName(element)}.variables');
+    } else {
+      _buffer
+          .write('...${placeholderContextName(element)}.introducedVariables');
+    }
   }
 }
 
 String? _defaultForDartPlaceholder(
     FoundDartPlaceholder placeholder, Scope scope) {
   final kind = placeholder.type;
-  if (kind is ExpressionDartPlaceholderType && kind.defaultValue != null) {
+  if (kind
+      case ExpressionDartPlaceholderType(defaultValue: final defaultValue?)) {
     // Wrap the default expression in parentheses to avoid issues with
     // the surrounding precedence in SQL.
-    final (sql, dialectSpecific) =
-        scope.sqlByDialect(Parentheses(kind.defaultValue!));
+    final node = Parentheses(defaultValue);
 
-    if (dialectSpecific) {
-      return 'const ${scope.drift('CustomExpression')}.dialectSpecific($sql)';
+    if (scope.drift3) {
+      final code = AnnotatedDartCode.build((b) {
+        final component = scope.customComponent(node);
+
+        b
+          ..addText('const ')
+          ..addSymbol('Expression', AnnotatedDartCode.drift)
+          ..addText('.customComponent(')
+          ..addCode(component)
+          ..addText(')');
+      });
+
+      return scope.dartCode(code);
     } else {
-      return 'const ${scope.drift('CustomExpression')}($sql)';
+      final (sql, dialectSpecific) = scope.sqlByDialect(node);
+      if (dialectSpecific) {
+        return 'const ${scope.drift('CustomExpression')}.dialectSpecific($sql)';
+      } else {
+        return 'const ${scope.drift('CustomExpression')}($sql)';
+      }
     }
   } else if (kind is SimpleDartPlaceholderType &&
       kind.kind == SimpleDartPlaceholderKind.orderBy) {

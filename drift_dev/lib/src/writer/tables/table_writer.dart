@@ -161,7 +161,7 @@ abstract class TableOrViewWriter {
 
   void _writeDrift3MappingMethod(Scope scope) {
     final columnPosition = emitter.drift('ColumnPosition');
-    final driftRow = emitter.drift('DriftRow');
+    final rawRow = emitter.drift('RawRow');
 
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
@@ -177,7 +177,7 @@ abstract class TableOrViewWriter {
 
     buffer
       ..writeln('@override')
-      ..write('$dataClassType? Function($driftRow) createMapperFromPositions(')
+      ..write('$dataClassType? Function($rawRow) createMapperFromPositions(')
       ..writeln(
           '${emitter.drift('DriftDialect')} dialect, List<$columnPosition> positions) {');
 
@@ -197,7 +197,7 @@ abstract class TableOrViewWriter {
       });
       resolvedColumns[column] = (posVariable, typeVariable);
     }
-    buffer.writeln('return ($driftRow row) {');
+    buffer.writeln('return ($rawRow row) {');
 
     // We need to check whether this table is present in the row at all (it may
     // be absent for left outer joins).
@@ -207,7 +207,7 @@ abstract class TableOrViewWriter {
       buffer
         ..writeln(
             ' // Not part of row if non-nullable column "${column.nameInDart}" is missing')
-        ..writeln('if (row.raw[${resolvedColumns[column]!.$1}] == null) {')
+        ..writeln('if (row[${resolvedColumns[column]!.$1}] == null) {')
         ..writeln('return null;')
         ..writeln('}');
     }

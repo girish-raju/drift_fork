@@ -35,7 +35,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
 
   /// Creates a function that, when receiving a [DriftRow], extracts columns for
   /// this result set into the mapped [Row] type.
-  Row? Function(DriftRow) createMapperToDart(
+  Row? Function(RawRow) createMapperToDart(
     DriftDialect dialect,
     ResultSetStructure structure,
   ) {
@@ -48,7 +48,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   }
 
   /// Like [createMapperToDart], but with positions already resolved.
-  Row? Function(DriftRow) createMapperFromPositions(
+  Row? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   );
@@ -74,23 +74,13 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     }
 
     final structure = ResultSetStructure()..addSelectStarFromSingleTable(this);
-    final resultSet = RawResultSet.fromRows(
-      columnNames: [...asColumnMap.keys],
-      rows: [
-        [
-          for (final value in asColumnMap.values)
-            (value as Variable).resolveValue(database.dialect).rawValue,
-        ],
-      ],
-    );
+    final values = [
+      for (final value in asColumnMap.values)
+        (value as Variable).resolveValue(database.dialect).rawValue,
+    ];
 
-    final mappedResultSet = DriftResultSet(
-      structure,
-      resultSet,
-      database.dialect,
-    );
     final mapper = createMapperToDart(database.dialect, structure);
-    return mapper(mappedResultSet.first)!;
+    return mapper(values)!;
   }
 
   /// Returns a new instance of this result set with [alias] set to the given

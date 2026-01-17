@@ -496,6 +496,16 @@ class InferredResultSet {
 
   Iterable<NestedResult> get nestedResults => columns.whereType();
 
+  /// The amount of underlying columns (as selected from the database) wrapped
+  /// in this result set.
+  int get underlyingColumnCount => columns
+      .map((e) => switch (e) {
+            ScalarResultColumn() => 1,
+            NestedResultTable() => e.innerResultSet.underlyingColumnCount,
+            NestedResultQuery() => 1,
+          })
+      .sum;
+
   /// Whether a new class needs to be written to store the result of this query.
   ///
   /// We don't need to introduce result classes for queries which
@@ -652,8 +662,8 @@ class QueryRowType implements ArgumentForQueryRowType {
   }
 
   @override
-  bool get requiresAsynchronousContext =>
-      allArguments.any((arg) => arg.requiresAsynchronousContext);
+  bool requiresAsynchronousContext(DriftOptions options) =>
+      allArguments.any((arg) => arg.requiresAsynchronousContext(options));
 
   @override
   String toString() {
@@ -665,7 +675,7 @@ class QueryRowType implements ArgumentForQueryRowType {
 sealed class ArgumentForQueryRowType {
   /// Whether the code constructing this argument may need to be in an async
   /// context.
-  bool get requiresAsynchronousContext;
+  bool requiresAsynchronousContext(DriftOptions options);
 }
 
 /// An argument that just maps the raw query row.
@@ -674,7 +684,9 @@ sealed class ArgumentForQueryRowType {
 /// reference to the raw result set.
 class RawQueryRow extends ArgumentForQueryRowType {
   @override
-  bool get requiresAsynchronousContext => false;
+  bool requiresAsynchronousContext(DriftOptions options) {
+    return false;
+  }
 }
 
 class StructuredFromNestedColumn extends ArgumentForQueryRowType {
@@ -686,8 +698,8 @@ class StructuredFromNestedColumn extends ArgumentForQueryRowType {
   StructuredFromNestedColumn(this.table, this.nestedType);
 
   @override
-  bool get requiresAsynchronousContext =>
-      nestedType.requiresAsynchronousContext;
+  bool requiresAsynchronousContext(DriftOptions options) =>
+      nestedType.requiresAsynchronousContext(options);
 }
 
 class MappedNestedListQuery extends ArgumentForQueryRowType {
@@ -698,7 +710,7 @@ class MappedNestedListQuery extends ArgumentForQueryRowType {
 
   // List queries run another statement and always need an asynchronous mapping.
   @override
-  bool get requiresAsynchronousContext => true;
+  bool requiresAsynchronousContext(DriftOptions options) => true;
 }
 
 /// Information about a matching table. A table matches a query if a query
@@ -707,22 +719,28 @@ class MappedNestedListQuery extends ArgumentForQueryRowType {
 /// We still need to handle column aliases.
 class MatchingDriftTable implements ArgumentForQueryRowType {
   final DriftElementWithResultSet table;
-  final Map<String, DriftColumn> aliasToColumn;
+  final Map<DriftColumn, ScalarResultColumn> columnToSource;
 
-  MatchingDriftTable(this.table, this.aliasToColumn);
+  MatchingDriftTable(this.table, this.columnToSource);
 
   @override
-  // Mapping from tables is currently asynchronous because the existing data
-  // class could be an asynchronous factory.
-  bool get requiresAsynchronousContext => true;
+  bool requiresAsynchronousContext(DriftOptions options) {
+    if (options.drift3Preview) {
+      return false;
+    } else {
+      // Mapping from tables is currently asynchronous because the existing data
+      // class could be an asynchronous factory.
+      return true;
+    }
+  }
 
   /// Whether the column alias can be ignored.
   ///
   /// This is the case if each result column name maps to a drift column with
   /// the same SQL name.
   bool get effectivelyNoAlias {
-    return !aliasToColumn.entries
-        .any((entry) => entry.key != entry.value.nameInSql);
+    return columnToSource.entries
+        .every((entry) => entry.value.name == entry.key.nameInSql);
   }
 }
 
@@ -740,6 +758,7 @@ sealed class ResultColumn {
 
 final class ScalarResultColumn extends ResultColumn
     implements HasType, ArgumentForQueryRowType {
+  final int index;
   final String name;
   @override
   final ColumnType sqlType;
@@ -752,14 +771,16 @@ final class ScalarResultColumn extends ResultColumn
   /// The analyzed column from the `sqlparser` package.
   final Column? sqlParserColumn;
 
-  ScalarResultColumn(this.name, this.sqlType, this.nullable,
+  ScalarResultColumn(this.index, this.name, this.sqlType, this.nullable,
       {this.typeConverter, this.sqlParserColumn});
 
   @override
   bool get isArray => false;
 
   @override
-  bool get requiresAsynchronousContext => false;
+  bool requiresAsynchronousContext(DriftOptions options) {
+    return false;
+  }
 
   @override
   String dartGetterName(Iterable<String> existingNames) {

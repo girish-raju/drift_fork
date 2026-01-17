@@ -226,7 +226,12 @@ class SqlWriter extends NodeSqlBuilder {
       final moorPlaceholder =
           query!.placeholders.singleWhere((p) => p.astNode == e);
 
-      _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+      if (options.drift3Preview) {
+        _writeRawInSpaces(
+            '\${${placeholderContextName(moorPlaceholder)}.buffer}');
+      } else {
+        _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+      }
     } else if (e is NestedQueryColumn) {
       assert(
         false,

@@ -234,6 +234,17 @@ class DriftOptions {
             'Try moving it to `sql.options`.',
       );
     }
+
+    if (drift3Preview) {
+      void checkRemovedOption(bool value, String name) {
+        if (value) {
+          throw ArgumentError('Option $name is no longer available in drift3');
+        }
+      }
+
+      checkRemovedOption(generateFromJsonStringConstructor,
+          'write_from_json_string_constructor');
+    }
   }
 
   factory DriftOptions.fromJson(Map json) => _$DriftOptionsFromJson(json);

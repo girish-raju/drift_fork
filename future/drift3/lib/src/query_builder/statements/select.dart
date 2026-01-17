@@ -265,19 +265,14 @@ sealed class BaseSelectStatement<
   /// Creates a function that, given a [DriftRow], extracts the result set for
   /// this [BaseSelectStatement].
   @internal
-  Row Function(DriftRow) createMapper(
+  Row Function(RawRow) createMapper(
     DriftDialect dialect,
     ResultSetStructure structure,
   );
 
   List<Row> _mapResults(QueryResult result) {
-    final resultSet = DriftResultSet(
-      structure,
-      result.resultSet!,
-      _database.dialect,
-    );
-    final converter = createMapper(resultSet.dialect, structure);
-    return resultSet.map(converter).toList();
+    final converter = createMapper(_database.dialect, structure);
+    return result.resultSet!.map(converter).toList();
   }
 
   @override
@@ -433,11 +428,16 @@ final class SelectStatement
   }
 
   @override
-  DriftRow Function(DriftRow) createMapper(
+  DriftRow Function(RawRow) createMapper(
     DriftDialect dialect,
-    ResultSetStructure resultSet,
+    ResultSetStructure structure,
   ) {
-    return (row) => row;
+    final fakeResultSet = DriftResultSet(
+      structure,
+      RawResultSet.fromRows(columnNames: [], rows: []),
+      _database.dialect,
+    );
+    return (row) => DriftRow(fakeResultSet, row);
   }
 }
 
@@ -504,7 +504,7 @@ final class SingleTableSelectStatement<
   SingleTableSelectStatement<Row, RS> _asSelf() => this;
 
   @override
-  Row Function(DriftRow p1) createMapper(
+  Row Function(RawRow p1) createMapper(
     DriftDialect dialect,
     ResultSetStructure resultSet,
   ) {

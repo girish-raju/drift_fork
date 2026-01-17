@@ -349,7 +349,7 @@ abstract class _NodeOrWriter {
               escapeForDart: false)
           .writeSql(node);
       final dialectSpecific = StringBuffer();
-      _writeSqlByDialectMap(node, dialectSpecific);
+      _writeSqlByDialectMap(node, dialectSpecific, defaultText.toString());
 
       b
         ..addSymbol('CustomComponent', AnnotatedDartCode.drift)
@@ -460,16 +460,22 @@ abstract class _NodeOrWriter {
     return (buffer.toString(), true);
   }
 
-  void _writeSqlByDialectMap(sql.AstNode node, StringBuffer buffer) {
+  void _writeSqlByDialectMap(sql.AstNode node, StringBuffer buffer,
+      [String? defaultSql]) {
     buffer.write('{');
 
     for (final dialect in writer.options.supportedDialects) {
       buffer
-        ..write(drift('SqlDialect'))
+        ..write(drift(
+            writer.options.drift3Preview ? 'KnownSqlDialect' : 'SqlDialect'))
         ..write(".${dialect.name}: '");
 
-      SqlWriter(writer.options, dialect: dialect, buffer: buffer)
+      final dialectBuffer = StringBuffer();
+      SqlWriter(writer.options, dialect: dialect, buffer: dialectBuffer)
           .writeSql(node);
+      if (dialectBuffer.toString() != defaultSql) {
+        buffer.write(dialectBuffer);
+      }
 
       buffer.writeln("',");
     }

@@ -123,8 +123,8 @@ abstract base class VersionedSchema {
 /// converters or information about unique/primary keys are not present in these
 /// tables.
 final class VersionedTable extends Table
-    with ResultSet<DriftRow, VersionedTable>
-    implements GeneratedTable<DriftRow, VersionedTable> {
+    with ResultSet<RawRow, VersionedTable>
+    implements GeneratedTable<RawRow, VersionedTable> {
   @override
   final String entityName;
   @override
@@ -182,7 +182,7 @@ final class VersionedTable extends Table
   VersionedTable asSelfType() => this;
 
   @override
-  DriftRow? Function(DriftRow p1) createMapperFromPositions(
+  RawRow? Function(RawRow p1) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
@@ -234,8 +234,8 @@ class VersionedVirtualTable extends VersionedTable
 /// A constructed from individual fields instead of being generated with a
 /// dedicated class.
 final class VersionedView
-    with ResultSet<DriftRow, VersionedView>
-    implements GeneratedView<DriftRow, VersionedView> {
+    with ResultSet<RawRow, VersionedView>
+    implements GeneratedView<RawRow, VersionedView> {
   @override
   final String entityName;
   @override
@@ -274,7 +274,7 @@ final class VersionedView
   CustomComponent? get sqlDefinition => CustomComponent(createViewStmt);
 
   @override
-  DriftRow? Function(DriftRow p1) createMapperFromPositions(
+  RawRow? Function(RawRow p1) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {

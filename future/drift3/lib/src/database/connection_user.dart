@@ -13,7 +13,6 @@ import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
 import '../query_builder/expressions/aggregate.dart';
 import '../query_builder/expressions/expression.dart';
-import '../query_builder/results.dart';
 import '../query_builder/schema/result_set.dart';
 import '../query_builder/schema/table.dart';
 import '../query_builder/statements/delete.dart';
@@ -525,7 +524,7 @@ abstract base class DatabaseConnectionUser {
   /// statement for which rows can be mapped to a custom Dart type.
   Selectable<T> customSelectMapped<T>({
     required String query,
-    required T Function(DriftRow) Function(DriftResultSet) createMapper,
+    required T Function(RawRow) Function(RawResultSet) createMapper,
     List<MappedValue> variables = const [],
     Set<ResultSet> readsFrom = const {},
     bool isReadOnly = true,
@@ -611,7 +610,7 @@ abstract base class DatabaseConnectionUser {
   /// you can also set the [updateKind] parameter.
   /// This is optional, but can improve the accuracy of query updates,
   /// especially when using triggers.
-  Future<DriftResultSet> customWriteReturning(
+  Future<RawResultSet> customWriteReturning(
     String query, {
     List<MappedValue> variables = const [],
     Set<ResultSet>? updates,
@@ -624,7 +623,7 @@ abstract base class DatabaseConnectionUser {
       updateKind,
       true,
     );
-    return DriftResultSet(ResultSetStructure(), result.resultSet!, dialect);
+    return result.resultSet!;
   }
 
   /// Common logic for [customUpdate] and [customInsert] which takes care of

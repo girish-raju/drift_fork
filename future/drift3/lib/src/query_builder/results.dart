@@ -116,7 +116,7 @@ final class DriftResultSet
   /// The dialect, used to resolve SQL type implementations when reading values.
   final DriftDialect dialect;
 
-  final Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
+  final Map<ResultSet, Object? Function(RawRow)> _createdMappers = {};
 
   /// @nodoc
   DriftResultSet(this.structure, this.resultSet, this.dialect);
@@ -158,7 +158,7 @@ final class DriftResultSet
     return (row) => row._readAtPositionWithType(position, resolvedType);
   }
 
-  Object? Function(DriftRow) _mapperFor(ResultSet resultSet) {
+  Object? Function(RawRow) _mapperFor(ResultSet resultSet) {
     return _createdMappers.putIfAbsent(resultSet, () {
       return resultSet.createMapperToDart(dialect, structure);
     });
@@ -237,6 +237,6 @@ final class DriftRow {
   Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
     RS resultSet,
   ) {
-    return this.resultSet._mapperFor(resultSet)(this) as Row?;
+    return this.resultSet._mapperFor(resultSet)(raw) as Row?;
   }
 }

@@ -51,7 +51,6 @@ END;
 
 /*CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2;*/
 
-/*
 readConfig: SELECT
   config_key AS ck,
   config_value as cf,
@@ -83,7 +82,7 @@ searchEmails(REQUIRED :term AS TEXT OR NULL): SELECT * FROM email WHERE email MA
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 
-readView($where = TRUE): SELECT * FROM my_view WHERE $where;
+/*readView($where = TRUE): SELECT * FROM my_view WHERE $where;*/
 
 cfeTest: WITH RECURSIVE
   cnt(x) AS (
@@ -111,4 +110,3 @@ customResult WITH MyCustomResultClass:
   FROM with_constraints
     INNER JOIN config ON config_key = with_constraints.a
     CROSS JOIN no_ids;
-*/

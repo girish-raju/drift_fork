@@ -172,7 +172,10 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
         typeConverter: converter,
         defaultArgument: defaultArgument,
         documentationComment: column.definition?.documentationComment,
-        customConstraints: customConstraintsForDrift.toString(),
+        customConstraints: (customConstraintsForDrift.isEmpty &&
+                resolver.driver.options.drift3Preview)
+            ? null
+            : customConstraintsForDrift.toString(),
         declaration: DriftDeclaration.driftFile(
           column.definition?.nameToken ?? stmt,
           state.ownId.libraryUri,

@@ -36,9 +36,8 @@ final class ReturningClause<
     DatabaseConnectionUser database,
     QueryResult result,
   ) {
-    final rows = DriftResultSet(structure, result.resultSet!, database.dialect);
     final mapper = _resultSet.createMapperToDart(database.dialect, structure);
 
-    return [for (final row in rows) mapper(row)!];
+    return [for (final row in result.resultSet!) mapper(row)!];
   }
 }

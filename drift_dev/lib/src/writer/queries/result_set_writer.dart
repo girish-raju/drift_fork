@@ -21,6 +21,10 @@ class ResultSetWriter {
     final nonNullableFields = <String>{};
     final into = scope.leaf();
 
+    if (scope.drift3) {
+      into.write('final ');
+    }
+
     into.write('class $resultClassName ');
     if (scope.options.rawResultSetData) {
       into.write('extends CustomResultSet {\n');
@@ -75,7 +79,9 @@ class ResultSetWriter {
 
     // write the constructor
     if (scope.options.rawResultSetData) {
-      into.write('$resultClassName({required QueryRow row,');
+      final rowType = scope.options.drift3Preview ? 'RawRow' : 'QueryRow';
+
+      into.write('$resultClassName({required ${scope.drift(rowType)} row,');
     } else {
       into.write('$resultClassName({');
     }

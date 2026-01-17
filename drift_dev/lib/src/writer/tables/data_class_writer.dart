@@ -396,9 +396,9 @@ class RowMappingWriter {
         final (position, type) = columnToPositionAndType[column]!;
 
         if (column.nullable) {
-          loadType = '$type.nullableDartValue(row.raw[$position])';
+          loadType = '$type.nullableDartValue(row[$position])';
         } else {
-          loadType = '$type.dartValue(row.raw[$position]!)';
+          loadType = '$type.dartValue(row[$position]!)';
         }
       } else {
         final String sqlType;

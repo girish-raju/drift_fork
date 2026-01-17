@@ -1,3 +1,4 @@
+import '../../connection/result_set.dart';
 import '../compiler.dart';
 import '../dialect.dart';
 import '../expressions/expression.dart';
@@ -125,7 +126,7 @@ final class Subquery<Row extends Object>
   Subquery<Row> asSelfType() => this;
 
   @override
-  Row? Function(DriftRow) createMapperFromPositions(
+  Row? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
