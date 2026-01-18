@@ -51,7 +51,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
     if (e.target case final UpdateTarget onUpdate) {
       onUpdate.scope = SingleTableReferenceScope(scope, e.onTable.tableName,
-          ResultSetAvailableInStatement(e.onTable, table));
+          ResultSetAvailableInStatement(e.onTable, table, e.onTable.as));
     }
 
     visitChildren(e, arg);
@@ -163,7 +163,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       e.scope,
       e.foreignTable.tableName,
       resolved != null
-          ? ResultSetAvailableInStatement(e.foreignTable, resolved)
+          ? ResultSetAvailableInStatement(
+              e.foreignTable, resolved, e.foreignTable.as)
           : null,
     );
     e.scope = scope;
@@ -298,7 +299,13 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
     void markAvailableResultSet(
         Queryable source, ResolvesToResultSet resultSet, String? name) {
-      final added = ResultSetAvailableInStatement(source, resultSet);
+      final added = ResultSetAvailableInStatement(
+          source,
+          resultSet,
+          switch (source) {
+            Renamable(as: final alias) => alias,
+            _ => null,
+          });
 
       if (source is TableOrSubquery) {
         source.availableResultSet = added;

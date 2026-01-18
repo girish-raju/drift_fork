@@ -76,7 +76,7 @@ abstract class ReferenceScope {
     final createdAlias = TableAlias(resultSet, alias);
     addResolvedResultSet(
       alias,
-      ResultSetAvailableInStatement(origin, createdAlias,
+      ResultSetAvailableInStatement(origin, createdAlias, alias,
           canUseUnqualifiedColumns: canUseUnqualifiedColumns),
     );
   }
@@ -230,7 +230,8 @@ class StatementScope extends ReferenceScope with _HasParentScope {
     bool canUseUnqualifiedColumns = true,
   }) {
     final createdAlias = TableAlias(resultSet, alias);
-    resultSets[alias] = ResultSetAvailableInStatement(origin, createdAlias,
+    resultSets[alias] = ResultSetAvailableInStatement(
+        origin, createdAlias, alias,
         canUseUnqualifiedColumns: canUseUnqualifiedColumns);
   }
 

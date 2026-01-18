@@ -47,7 +47,7 @@ class TableReference extends TableOrSubquery
   Token? tableNameToken;
 
   @override
-  final String? as;
+  String? as;
 
   TableReference(this.tableName, {this.as, this.schemaName});
 
@@ -75,7 +75,7 @@ class TableReference extends TableOrSubquery
 /// different from nested select expressions, which can only return one value.
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
-  final String? as;
+  String? as;
   BaseSelectStatement statement;
 
   SelectStatementAsSource({required this.statement, this.as});
@@ -231,7 +231,7 @@ class TableValuedFunction extends Queryable
   Token? nameToken;
 
   @override
-  final String? as;
+  String? as;
 
   @override
   FunctionParameters parameters;

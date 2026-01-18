@@ -218,9 +218,14 @@ class SqlWriter extends NodeSqlBuilder {
 
         final escapedTable = escapeIdentifier(table);
         final escapedColumn = escapeIdentifier(columnName);
-        final escapedAlias = escapeIdentifier('$prefix.$columnName');
 
-        _out.write('$escapedTable.$escapedColumn AS $escapedAlias');
+        _out.write('$escapedTable.$escapedColumn');
+        if (!options.drift3Preview) {
+          // We don't need aliases in drift3 because we're referencing columns
+          // by their index.
+          final escapedAlias = escapeIdentifier('$prefix.$columnName');
+          _out.write(' AS $escapedAlias');
+        }
       }
     } else if (e is DartPlaceholder) {
       final moorPlaceholder =

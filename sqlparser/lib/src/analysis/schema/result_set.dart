@@ -65,6 +65,9 @@ class ResultSetAvailableInStatement with Referencable {
   /// The added result set.
   final ResolvesToResultSet resultSet;
 
+  /// If an explicit alias has been set on [origin], the alias.
+  final String? alias;
+
   /// Whether this result set should be considered when resolving unqualified
   /// references.
   ///
@@ -75,7 +78,7 @@ class ResultSetAvailableInStatement with Referencable {
   @override
   bool get visibleToChildren => true;
 
-  ResultSetAvailableInStatement(this.origin, this.resultSet,
+  ResultSetAvailableInStatement(this.origin, this.resultSet, this.alias,
       {this.canUseUnqualifiedColumns = true});
 }
 

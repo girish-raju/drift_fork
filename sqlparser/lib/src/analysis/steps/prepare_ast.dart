@@ -51,7 +51,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     if (knownTable is Table) {
       scope
         ..expansionOfStarColumn = knownTable.resolvedColumns
-        ..resultSets[null] = ResultSetAvailableInStatement(e, knownTable);
+        ..resultSets[null] = ResultSetAvailableInStatement(e, knownTable, null);
     }
 
     visitChildren(e, arg);

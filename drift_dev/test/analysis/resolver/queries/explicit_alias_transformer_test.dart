@@ -10,9 +10,9 @@ void main() {
   engine.registerTable(const SchemaFromCreateTable()
       .read(result.rootNode as CreateTableStatement));
 
-  void checkTransformation(String input, String output) {
+  void checkTransformation(String input, String output, {bool drift3 = false}) {
     final node = engine.analyze(input).root;
-    final transformer = ExplicitAliasTransformer();
+    final transformer = ExplicitAliasTransformer(drift3Mode: drift3);
     transformer.rewrite(node);
 
     expect(node.toSql(), output);
@@ -80,5 +80,41 @@ void main() {
       'INSERT INTO a VALUES (1), (2) RETURNING id * 3',
       'INSERT INTO a VALUES (1), (2) RETURNING id * 3 AS _c0',
     );
+  });
+
+  group('drift3', () {
+    test('does not introduce column aliases', () {
+      checkTransformation(
+        'SELECT 1, id FROM a',
+        'SELECT 1, id FROM a',
+        drift3: true,
+      );
+    });
+
+    group('rewrites star columns', () {
+      test('not referenced elsewhere', () {
+        checkTransformation(
+          'SELECT 1, * FROM a',
+          'SELECT 1, "_s:0".id FROM a AS "_s:0"',
+          drift3: true,
+        );
+      });
+
+      test('with other references', () {
+        checkTransformation(
+          'SELECT * FROM a WHERE id < 10',
+          'SELECT "_s:0".id FROM a AS "_s:0" WHERE "_s:0".id < 10',
+          drift3: true,
+        );
+      });
+
+      test('from subquery', () {
+        checkTransformation(
+          'SELECT * FROM (SELECT 1, 2, 3)',
+          'SELECT "_s:0"._c0, "_s:0"._c1, "_s:0"._c2 FROM (SELECT 1 AS _c0, 2 AS _c1, 3 AS _c2) AS "_s:0"',
+          drift3: true,
+        );
+      });
+    });
   });
 }

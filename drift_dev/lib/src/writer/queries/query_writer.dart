@@ -60,7 +60,7 @@ class QueryWriter {
     // We do this transformation so late because it shouldn't have an impact on
     // analysis, Dart getter names stay the same.
     if (resultSet != null) {
-      _transformer = ExplicitAliasTransformer();
+      _transformer = ExplicitAliasTransformer(drift3Mode: drift3);
       _transformer.rewrite(query.root!);
 
       final nested = query is SqlSelectQuery ? query.nestedContainer : null;

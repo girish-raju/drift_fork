@@ -1765,7 +1765,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += generatedclause.variables.length;
     return customSelectMapped<Config>(
       query:
-          'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.buffer}',
+          'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE "_s:0".config_key IN ($expandedvar1) ${generatedclause.buffer}',
       variables: [
         for (var $ in var1) mapValue(BuiltinDriftType.text, $),
         ...generatedclause.variables,
@@ -1801,7 +1801,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     );
     $arrayStartIndex += generatedpredicate.variables.length;
     return customSelectMapped<Config>(
-      query: 'SELECT * FROM config WHERE ${generatedpredicate.buffer}',
+      query:
+          'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE ${generatedpredicate.buffer}',
       variables: [...generatedpredicate.variables],
       readsFrom: {config, ...generatedpredicate.watchedTables},
       createMapper: (RawResultSet _) {
@@ -1915,7 +1916,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += generatedpredicate.variables.length;
     return customSelectMapped<MultipleResult>(
       query:
-          'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.buffer}',
+          'SELECT d.a, d.b,"c"."a", "c"."b", "c"."c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.buffer}',
       variables: [...generatedpredicate.variables],
       readsFrom: {
         withDefaults,
@@ -1945,9 +1946,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<EMail>(
       query: switch (dialect.known) {
         KnownSqlDialect.sqlite =>
-          'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
-        KnownSqlDialect.postgres ||
-        _ => 'SELECT * FROM email WHERE email MATCH \$1 ORDER BY rank',
+          'SELECT "_s:0".sender, "_s:0".title, "_s:0".body FROM email AS "_s:0" WHERE "_s:0".email MATCH ?1 ORDER BY "_s:0".rank',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT "_s:0".sender, "_s:0".title, "_s:0".body FROM email AS "_s:0" WHERE "_s:0".email MATCH \$1 ORDER BY "_s:0".rank',
       },
       variables: [mapValue(BuiltinDriftType.text, term)],
       readsFrom: {email},
@@ -1972,7 +1973,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += generatedexpr.variables.length;
     return customSelectMapped<ReadRowIdResult>(
       query:
-          'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.buffer}',
+          'SELECT oid, "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE _rowid_ = ${generatedexpr.buffer}',
       variables: [...generatedexpr.variables],
       readsFrom: {config, ...generatedexpr.watchedTables},
       createMapper: (RawResultSet _) {
@@ -2015,7 +2016,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     );
     $arrayStartIndex += generatedwhere.variables.length;
     return customSelectMapped<MyViewData>(
-      query: 'SELECT * FROM my_view WHERE ${generatedwhere.buffer}',
+      query:
+          'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM my_view AS "_s:0" WHERE ${generatedwhere.buffer}',
       variables: [...generatedwhere.variables],
       readsFrom: {config, ...generatedwhere.watchedTables},
       createMapper: (RawResultSet _) {
@@ -2047,7 +2049,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<int?> nullableQuery() {
     return customSelectMapped<int?>(
-      query: 'SELECT MAX(oid) AS _c0 FROM config',
+      query: 'SELECT MAX(oid) FROM config',
       variables: [],
       readsFrom: {config},
       createMapper: (RawResultSet _) {
@@ -2086,9 +2088,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<NestedResult>(
       query: switch (dialect.known) {
         KnownSqlDialect.sqlite =>
-          'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
+          'SELECT"defaults"."a", "defaults"."b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
         KnownSqlDialect.postgres || _ =>
-          'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = \$1',
+          'SELECT"defaults"."a", "defaults"."b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = \$1',
       },
       variables: [mapValue(const CustomTextType(), var1)],
       readsFrom: {withConstraints, withDefaults},
@@ -2110,7 +2112,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MyCustomResultClass> customResult() {
     return customSelectMapped<MyCustomResultClass>(
       query:
-          'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
+          'SELECT with_constraints.b, config.sync_state,"config"."config_key", "config"."config_value", "config"."sync_state", "config"."sync_state_implicit","no_ids"."payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
       variables: [],
       readsFrom: {withConstraints, config, noIds},
       createMapper: (RawResultSet _) {
