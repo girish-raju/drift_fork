@@ -142,7 +142,7 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     }
   }
 
-  if (!column.nullable) {
+  if (!column.nullable && column.owner is DriftTable) {
     entries.add('const ${emitter.drift('ColumnNotNullConstraint')}()');
   }
 

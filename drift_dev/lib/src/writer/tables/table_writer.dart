@@ -289,6 +289,11 @@ abstract class TableOrViewWriter {
         '@override\n${tableOrView.entityInfoName} get asDslTable => this;\n');
   }
 
+  void writeAsSelfType() {
+    emitter.writeln(
+        '@override\n${tableOrView.entityInfoName} asSelfType() => this;\n');
+  }
+
   /// Returns the Dart type and the Dart expression creating a `GeneratedColumn`
   /// instance in drift for the given [column].
   static (String, String) instantiateColumn(
@@ -674,7 +679,7 @@ class TableWriter extends TableOrViewWriter {
 
     buffer.write('static const String \$name = \'${table.id.name}\';\n');
 
-    writeAsSelfType();
+    if (scope.drift3) writeAsSelfType();
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
     _writeUniqueKeyOverride();
@@ -894,13 +899,6 @@ class TableWriter extends TableOrViewWriter {
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');
-    }
-  }
-
-  void writeAsSelfType() {
-    if (scope.drift3) {
-      emitter.writeln(
-          '@override\n${tableOrView.entityInfoName} asSelfType() => this;\n');
     }
   }
 }

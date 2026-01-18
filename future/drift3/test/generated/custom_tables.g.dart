@@ -1518,6 +1518,170 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   }
 }
 
+class MyViewData extends LegacyDataClass {
+  final String configKey;
+  final DriftAny? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
+  const MyViewData({
+    required this.configKey,
+    this.configValue,
+    this.syncState,
+    this.syncStateImplicit,
+  });
+  factory MyViewData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MyViewData(
+      configKey: serializer.fromJson<String>(json['config_key']),
+      configValue: serializer.fromJson<DriftAny?>(json['config_value']),
+      syncState: serializer.fromJson<SyncType?>(json['sync_state']),
+      syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromJson(
+        serializer.fromJson<int?>(json['sync_state_implicit']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'config_key': serializer.toJson<String>(configKey),
+      'config_value': serializer.toJson<DriftAny?>(configValue),
+      'sync_state': serializer.toJson<SyncType?>(syncState),
+      'sync_state_implicit': serializer.toJson<int?>(
+        ConfigTable.$convertersyncStateImplicitn.toJson(syncStateImplicit),
+      ),
+    };
+  }
+
+  MyViewData copyWith({
+    String? configKey,
+    Value<DriftAny?> configValue = const Value.absent(),
+    Value<SyncType?> syncState = const Value.absent(),
+    Value<SyncType?> syncStateImplicit = const Value.absent(),
+  }) => MyViewData(
+    configKey: configKey ?? this.configKey,
+    configValue: configValue.present ? configValue.value : this.configValue,
+    syncState: syncState.present ? syncState.value : this.syncState,
+    syncStateImplicit: syncStateImplicit.present
+        ? syncStateImplicit.value
+        : this.syncStateImplicit,
+  );
+  @override
+  String toString() {
+    return (StringBuffer('MyViewData(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(configKey, configValue, syncState, syncStateImplicit);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MyViewData &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue &&
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
+}
+
+class MyView
+    with ResultSet<MyViewData, MyView>
+    implements GeneratedView<MyViewData, MyView> {
+  @override
+  final String? alias;
+  final _$CustomTablesDb _attachedDatabase;
+  MyView(this._attachedDatabase, [this.alias]);
+  @override
+  List<SchemaColumn> get columns => [
+    configKey,
+    configValue,
+    syncState,
+    syncStateImplicit,
+  ];
+  @override
+  String get entityName => 'my_view';
+  @override
+  CustomComponent? get sqlDefinition => CustomComponent(
+    'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2',
+    dialectSpecificSql: {
+      KnownSqlDialect.sqlite: '',
+      KnownSqlDialect.postgres: '',
+    },
+  );
+  @override
+  MyView asSelfType() => this;
+
+  @override
+  MyViewData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$configKey = positions[0].index;
+    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$configValue = positions[1].index;
+    final type$1 = const AnyType().resolveIn(dialect);
+    final pos$syncState = positions[2].index;
+    final type$2 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$syncStateImplicit = positions[3].index;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "configKey" is missing
+      if (row[pos$configKey] == null) {
+        return null;
+      }
+      return MyViewData(
+        configKey: type$0.dartValue(row[pos$configKey]!),
+        configValue: type$1.nullableDartValue(row[pos$configValue]),
+        syncState: ConfigTable.$convertersyncStaten.fromSql(
+          type$2.nullableDartValue(row[pos$syncState]),
+        ),
+        syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
+          type$2.nullableDartValue(row[pos$syncStateImplicit]),
+        ),
+      );
+    };
+  }
+
+  late final ViewColumn<String> configKey = ViewColumn<String>.forDriftFile(
+    name: 'config_key',
+    sqlType: BuiltinDriftType.text,
+  )..owningResultSet = this;
+  late final ViewColumn<DriftAny> configValue =
+      ViewColumn<DriftAny>.forDriftFile(
+        name: 'config_value',
+        sqlType: const AnyType(),
+      )..owningResultSet = this;
+  late final ViewColumnWithTypeConverter<SyncType?, int> syncState =
+      ViewColumn<int>.forDriftFile(
+          name: 'sync_state',
+          sqlType: BuiltinDriftType.int,
+        ).withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
+        ..owningResultSet = this;
+  late final ViewColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
+      ViewColumn<int>.forDriftFile(
+          name: 'sync_state_implicit',
+          sqlType: BuiltinDriftType.int,
+        ).withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
+        ..owningResultSet = this;
+  @override
+  MyView withAlias(String alias) {
+    return MyView(_attachedDatabase, alias);
+  }
+
+  @override
+  SelectStatement? get query => null;
+  @override
+  Set<String> get readsFrom => const {'config'};
+}
+
 abstract base class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(super.implementation);
   late final NoIds noIds = NoIds();
@@ -1547,6 +1711,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       },
     ),
   );
+  late final MyView myView = MyView(this);
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       switch (dialect.known) {
@@ -1833,6 +1998,39 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     );
   }
 
+  Selectable<MyViewData> readView({ReadView$where? where}) {
+    var $arrayStartIndex = 1;
+    final generatedwhere = $write(
+      where?.call(this.myView) ??
+          const Expression.customComponent(
+            CustomComponent(
+              '(TRUE)',
+              dialectSpecificSql: {
+                KnownSqlDialect.sqlite: '',
+                KnownSqlDialect.postgres: '',
+              },
+            ),
+          ),
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedwhere.variables.length;
+    return customSelectMapped<MyViewData>(
+      query: 'SELECT * FROM my_view WHERE ${generatedwhere.buffer}',
+      variables: [...generatedwhere.variables],
+      readsFrom: {config, ...generatedwhere.watchedTables},
+      createMapper: (RawResultSet _) {
+        final map_0 = myView.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
   Selectable<int> cfeTest() {
     return customSelectMapped<int>(
       query:
@@ -1952,6 +2150,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     email,
     weirdTable,
     myTrigger,
+    myView,
     OnCreateQuery(
       CustomComponent(
         'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
@@ -2070,6 +2269,7 @@ final class ReadRowIdResult extends CustomResultSet {
 }
 
 typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
+typedef ReadView$where = Expression<bool> Function(MyView my_view);
 
 final class NestedResult extends CustomResultSet {
   final WithDefault defaults;

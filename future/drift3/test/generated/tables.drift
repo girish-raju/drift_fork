@@ -49,7 +49,7 @@ CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
   INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
 END;
 
-/*CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2;*/
+CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2;
 
 readConfig: SELECT
   config_key AS ck,
@@ -82,7 +82,7 @@ searchEmails(REQUIRED :term AS TEXT OR NULL): SELECT * FROM email WHERE email MA
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 
-/*readView($where = TRUE): SELECT * FROM my_view WHERE $where;*/
+readView($where = TRUE): SELECT * FROM my_view WHERE $where;
 
 cfeTest: WITH RECURSIVE
   cnt(x) AS (
