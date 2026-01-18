@@ -1022,18 +1022,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.windowDeclarations.isNotEmpty) {
       keyword(TokenType.window);
 
-      var isFirst = true;
-      for (final declaration in e.windowDeclarations) {
-        if (!isFirst) {
-          symbol(',', spaceAfter: true);
-        }
-
-        identifier(declaration.name);
-        keyword(TokenType.as);
-
-        visit(declaration.definition, arg);
-        isFirst = false;
-      }
+      _join(e.windowDeclarations, ',');
     }
     visitNullable(e.orderBy, arg);
     visitNullable(e.limit, arg);
@@ -1302,6 +1291,13 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.when, arg);
     keyword(TokenType.then);
     visit(e.then, arg);
+  }
+
+  @override
+  void visitNamedWindowDefinition(NamedWindowDeclaration e, void arg) {
+    identifier(e.name);
+    keyword(TokenType.as);
+    visitWindowDefinition(e.definition, arg);
   }
 
   @override

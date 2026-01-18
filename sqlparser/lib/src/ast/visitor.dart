@@ -85,6 +85,7 @@ abstract class AstVisitor<A, R> {
 
   R visitAggregateFunctionInvocation(AggregateFunctionInvocation e, A arg);
   R visitWindowFunctionInvocation(WindowFunctionInvocation e, A arg);
+  R visitNamedWindowDefinition(NamedWindowDeclaration e, A arg);
   R visitWindowDefinition(WindowDefinition e, A arg);
   R visitFrameSpec(FrameSpec e, A arg);
   R visitIndexedColumn(IndexedColumn e, A arg);
@@ -370,6 +371,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitDeferrableClause(DeferrableClause e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R? visitNamedWindowDefinition(NamedWindowDeclaration e, A arg) {
     return defaultNode(e, arg);
   }
 

@@ -1606,7 +1606,8 @@ class Parser {
             'Expected AS between the window name and its definition');
         final window = _windowDefinition();
 
-        declarations.add(NamedWindowDeclaration(name.identifier, window));
+        declarations.add(NamedWindowDeclaration(name.identifier, window)
+          ..setSpan(name, _previous));
       } while (_matchOne(TokenType.comma));
     }
     return declarations;

@@ -1,3 +1,7 @@
+## 0.43.1-dev
+
+- Make `NamedWindowDeclaration` an AST node.
+
 ## 0.43.0
 
 - Allow parsing SQL from `FileSpan`s, which is convenient for SQL embedded as

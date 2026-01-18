@@ -110,12 +110,24 @@ class WindowFunctionInvocation extends AggregateFunctionInvocation {
 /// A window declaration that appears in a `SELECT` statement like
 /// `WINDOW <name> AS <window-defn>`. It can be referenced from an
 /// [AggregateFunctionInvocation] if it uses the same name.
-class NamedWindowDeclaration with Referencable {
-  // todo: Should be an ast node
+class NamedWindowDeclaration extends AstNode with Referencable {
   final String name;
-  final WindowDefinition definition;
+  WindowDefinition definition;
 
   NamedWindowDeclaration(this.name, this.definition);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitNamedWindowDefinition(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [definition];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    definition = transformer.transformChild(definition, this, arg);
+  }
 }
 
 class WindowDefinition extends AstNode {

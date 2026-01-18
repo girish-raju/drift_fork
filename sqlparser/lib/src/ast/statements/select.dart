@@ -29,7 +29,7 @@ class SelectStatement extends BaseSelectStatement
   @override
   Expression? where;
   GroupBy? groupBy;
-  final List<NamedWindowDeclaration> windowDeclarations;
+  List<NamedWindowDeclaration> windowDeclarations;
 
   OrderByBase? orderBy;
   LimitBase? limit;
@@ -61,7 +61,8 @@ class SelectStatement extends BaseSelectStatement
     from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
     groupBy = transformer.transformNullableChild(groupBy, this, arg);
-//    transformer.transformChildren(windowDeclarations, this, arg);
+    windowDeclarations =
+        transformer.transformChildren(windowDeclarations, this, arg);
     limit = transformer.transformNullableChild(limit, this, arg);
     orderBy = transformer.transformNullableChild(orderBy, this, arg);
   }
@@ -74,7 +75,7 @@ class SelectStatement extends BaseSelectStatement
       if (from != null) from!,
       if (where != null) where!,
       if (groupBy != null) groupBy!,
-      for (var windowDecl in windowDeclarations) windowDecl.definition,
+      ...windowDeclarations,
       if (limit != null) limit!,
       if (orderBy != null) orderBy!,
     ];

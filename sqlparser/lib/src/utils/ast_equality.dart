@@ -748,6 +748,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitNamedWindowDefinition(NamedWindowDeclaration e, void arg) {
+    final current = _currentAs<NamedWindowDeclaration>(e);
+    _assert(current.name == e.name, e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitWindowDefinition(WindowDefinition e, void arg) {
     final current = _currentAs<WindowDefinition>(e);
     _assert(current.baseWindowName == e.baseWindowName, e);
