@@ -300,6 +300,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       ClassElement element) async {
     // Returns true if the given field is a column defined as a getter
     bool isGetterColumn(FieldElement e) {
+      // On analyzer 10: e.isOriginGetterSetter
       return isColumn(e.type) && e.getter != null && !e.getter!.isSynthetic;
     }
 
@@ -356,6 +357,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     for (final field in fields) {
       final ColumnDeclaration node;
       final PendingColumnInformation? column;
+      // On analyzer 10: field.getter!.isOriginDeclaration
       if (field.getter!.isSynthetic) {
         node = ColumnDeclaration(
             await resolver.driver.backend

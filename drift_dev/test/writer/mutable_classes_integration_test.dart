@@ -69,6 +69,7 @@ class _WithoutFinalFields extends Matcher {
     for (final definedClass in definedClasses) {
       final definedClassName = definedClass.name.lexeme;
       if (expectedWithoutFinals.contains(definedClassName)) {
+        // On analyzer 10: definedClass.body.childEntities
         for (final member in definedClass.members) {
           if (member is FieldDeclaration) {
             if (member.fields.isFinal) {

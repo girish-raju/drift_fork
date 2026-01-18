@@ -69,8 +69,10 @@ class _DefaultConstructorAllRequired extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
+      // On analyzer 10: definedClass.namePart.typeName.lexeme
       final definedClassName = definedClass.name.lexeme;
       if (classesToCheck.contains(definedClassName)) {
+        // On analyzer 10: definedClass.body.childEntities
         for (final member in definedClass.members) {
           if (member is ConstructorDeclaration && member.name == null) {
             for (final parameter in member.parameters.parameters) {

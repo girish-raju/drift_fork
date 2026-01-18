@@ -523,7 +523,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   _AddFromAst(this._builder, this._excluding, this._taggedElements);
 
   void _addTopLevelReference(Element? element, Token name2) {
-    if (element == null || (element.isSynthetic && element.library == null)) {
+    if (element == null || element.library == null) {
       _builder.addText(name2.lexeme);
     } else {
       _builder.addTopLevel(
