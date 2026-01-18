@@ -30,12 +30,12 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     emitter = scope.leaf();
     final viewClassName = emitter.dartCode(emitter.entityInfoType(view));
-    final dataClass = emitter.dartCode(emitter.rowType(view));
+    final dataClass = scope.generationOptions.writeDataClasses
+        ? emitter.dartCode(emitter.rowType(view))
+        : 'Never';
 
     if (scope.drift3) {
-      final typeArgs = scope.generationOptions.writeDataClasses
-          ? '<$dataClass, $viewClassName>'
-          : '<Never, $viewClassName>';
+      final typeArgs = '<$dataClass, $viewClassName>';
       final viewDslName = view.definingDartClass;
       final dbClassName =
           databaseWriter?.dbClassName ?? emitter.drift('GeneratedDatabase');
@@ -60,14 +60,11 @@ class ViewWriter extends TableOrViewWriter {
         ..writeln(
             '${view.entityInfoName}(this._attachedDatabase, [this.alias]);');
     } else {
-      buffer.write(
-          'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}');
-      if (scope.generationOptions.writeDataClasses) {
-        emitter.write('<$viewClassName, $dataClass>');
-      } else {
-        buffer.write('<${view.entityInfoName}, Never>');
-      }
-      buffer.writeln(' implements ${emitter.drift('HasResultSet')} {');
+      emitter
+        ..write(
+            'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}')
+        ..write('<$viewClassName, $dataClass>')
+        ..writeln(' implements ${emitter.drift('HasResultSet')} {');
 
       final dbClassName =
           databaseWriter?.dbClassName ?? emitter.drift('GeneratedDatabase');
