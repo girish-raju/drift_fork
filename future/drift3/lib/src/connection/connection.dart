@@ -348,8 +348,8 @@ extension type const MappedValue._((PhysicalSqlType, Object?) _value) {
   /// [rawValue] alone would not be enough.
   PhysicalSqlType get type => _value.$1;
 
-  /// The value obtained by calling [SqlType.sqlParameter] on the original value
-  /// and the associated [type].
+  /// The value obtained by calling [PhysicalSqlType.sqlParameter] on the
+  /// original value and the associated [type].
   Object? get rawValue => _value.$2;
 }
 

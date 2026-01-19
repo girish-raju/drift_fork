@@ -38,6 +38,7 @@ workspace:
 
   - future/drift3
   - future/drift_sqlite
+  - future/drift3_postgres
 
 dev_dependencies:
   melos: ^7.0.0
