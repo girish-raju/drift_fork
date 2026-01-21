@@ -81,6 +81,13 @@ void main() {
     testStatement('DETACH DATABASE bar', DetachStatement('bar'));
   });
 
+  test('analyze', () {
+    testStatement('ANALYZE', AnalyzeStatement());
+    testStatement('ANALYZE a', AnalyzeStatement(elementName: 'a'));
+    testStatement(
+        'ANALYZE a.b', AnalyzeStatement(schemaName: 'a', elementName: 'b'));
+  });
+
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');

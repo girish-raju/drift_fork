@@ -252,6 +252,10 @@ class Parser {
       return _detach();
     }
 
+    if (_check(TokenType.analyze)) {
+      return _analyze();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2678,6 +2682,15 @@ class Parser {
 
     final schemaName = _consumeIdentifier('Expected name of schema');
     return DetachStatement(schemaName.identifier)..setSpan(first, schemaName);
+  }
+
+  AnalyzeStatement _analyze() {
+    final first = _consume(TokenType.analyze);
+    final tableRef = _tableReferenceOrNull(allowAlias: false);
+
+    return AnalyzeStatement(
+        schemaName: tableRef?.schemaName, elementName: tableRef?.tableName)
+      ..setSpan(first, _previous);
   }
 
   SavepointStatement _savepoint() {

@@ -596,6 +596,18 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitAnalyzeStatement(AnalyzeStatement e, void arg) {
+    keyword(TokenType.analyze);
+    if (e.schemaName case final schema?) {
+      identifier(schema);
+      symbol('.');
+    }
+    if (e.elementName case final element?) {
+      identifier(element);
+    }
+  }
+
+  @override
   void visitSavepointStatement(SavepointStatement e, void arg) {
     keyword(TokenType.savepoint);
     identifier(e.savepointName);

@@ -244,6 +244,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('RELEASE SAVEPOINT foo');
       testFormat('ROLLBACK TO foo');
     });
+
+    test('analyze', () {
+      testFormat('ANALYZE');
+      testFormat('ANALYZE a');
+      testFormat('ANALYZE a.b');
+    });
   });
 
   group('query statements', () {
