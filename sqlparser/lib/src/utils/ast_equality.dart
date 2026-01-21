@@ -263,6 +263,17 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
+  @override
+  void visitAttachStatement(AttachStatement e, void arg) {
+    _assert(_currentAs<AttachStatement>(e).as == e.as, e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitDetachStatement(DetachStatement e, void arg) {
+    _assert(_currentAs<DetachStatement>(e).schemaName == e.schemaName, e);
+  }
+
   void visitDartPlaceholder(DartPlaceholder e, void arg) {
     final current = _currentAs<DartPlaceholder>(e);
     _assert(current.name == e.name && current.runtimeType == e.runtimeType, e);

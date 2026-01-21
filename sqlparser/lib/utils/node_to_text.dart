@@ -582,6 +582,20 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitAttachStatement(AttachStatement e, void arg) {
+    keyword(TokenType.attach);
+    e.path.accept(this, arg);
+    keyword(TokenType.as);
+    identifier(e.as);
+  }
+
+  @override
+  void visitDetachStatement(DetachStatement e, void arg) {
+    keyword(TokenType.detach);
+    identifier(e.schemaName);
+  }
+
+  @override
   void visitDefaultValues(DefaultValues e, void arg) {
     keyword(TokenType.$default);
     keyword(TokenType.$values);

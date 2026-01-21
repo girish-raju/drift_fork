@@ -213,6 +213,14 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     testFormat("VACUUM schema INTO 'foo'");
   });
 
+  test('attach', () {
+    testFormat("ATTACH 'foo' AS bar");
+  });
+
+  test('detach', () {
+    testFormat('DETACH foo');
+  });
+
   group('escapes identifiers', () {
     test("when they're keywords", () {
       testFormat('SELECT * FROM "create";');

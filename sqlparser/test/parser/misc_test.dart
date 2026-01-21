@@ -49,6 +49,18 @@ void main() {
         VacuumStatement(schemaName: 'schema', into: NumberedVariable(null)));
   });
 
+  test('attach', () {
+    testStatement('ATTACH ? AS foo',
+        AttachStatement(path: NumberedVariable(null), as: 'foo'));
+    testStatement('ATTACH DATABASE ? AS bar',
+        AttachStatement(path: NumberedVariable(null), as: 'bar'));
+  });
+
+  test('detach', () {
+    testStatement('DETACH foo', DetachStatement('foo'));
+    testStatement('DETACH DATABASE bar', DetachStatement('bar'));
+  });
+
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');

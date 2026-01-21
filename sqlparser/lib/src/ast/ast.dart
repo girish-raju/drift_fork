@@ -20,6 +20,7 @@ export 'drift/nested_star_result_column.dart';
 export 'expressions/expressions.dart';
 export 'expressions/raise.dart';
 export 'node.dart';
+export 'statements/attach.dart';
 export 'statements/block.dart';
 export 'statements/create_index.dart';
 export 'statements/create_table.dart';

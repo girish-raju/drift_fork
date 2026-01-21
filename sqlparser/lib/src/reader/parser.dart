@@ -244,6 +244,14 @@ class Parser {
       return _vacuum();
     }
 
+    if (_check(TokenType.attach)) {
+      return _attach();
+    }
+
+    if (_check(TokenType.detach)) {
+      return _detach();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2645,6 +2653,26 @@ class Parser {
 
     return VacuumStatement(schemaName: schemaName?.identifier, into: into)
       ..setSpan(first, _previous);
+  }
+
+  AttachStatement _attach() {
+    _consume(TokenType.attach);
+    final first = _previous;
+    _matchOne(TokenType.database);
+    final path = expression();
+    final as = _as() ?? _error('Expected AS');
+
+    return AttachStatement(path: path, as: as.identifier)
+      ..setSpan(first, _previous);
+  }
+
+  DetachStatement _detach() {
+    _consume(TokenType.detach);
+    final first = _previous;
+    _matchOne(TokenType.database);
+
+    final schemaName = _consumeIdentifier('Expected name of schema');
+    return DetachStatement(schemaName.identifier)..setSpan(first, schemaName);
   }
 
   /// Parses `IF NOT EXISTS` | epsilon
