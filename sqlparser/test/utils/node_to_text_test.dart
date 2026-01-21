@@ -517,6 +517,15 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('SELECT my_function(*) FROM foo');
       testFormat('SELECT my_function(DISTINCT a, b) FROM foo');
       testFormat('SELECT my_function(a, b) FROM foo');
+
+      expect(
+        FunctionExpression(
+                name: 'bar',
+                schemaName: 'foo',
+                parameters: ExprFunctionParameters())
+            .toSql(),
+        'foo.bar()',
+      );
     });
 
     test('is', () {

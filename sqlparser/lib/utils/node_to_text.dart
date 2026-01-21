@@ -725,6 +725,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitFunction(FunctionExpression e, void arg) {
+    if (e.schemaName != null) {
+      identifier(e.schemaName!, spaceAfter: false);
+      symbol('.');
+    }
     identifier(e.name);
     symbol('(');
     visit(e.parameters, arg);
