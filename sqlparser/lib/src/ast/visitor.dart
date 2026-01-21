@@ -13,6 +13,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg);
   R visitCreateIndexStatement(CreateIndexStatement e, A arg);
   R visitCreateViewStatement(CreateViewStatement e, A arg);
+  R visitDropStatement(DropStatement e, A arg);
   R visitInvalidStatement(InvalidStatement e, A arg);
 
   R visitReturning(Returning e, A arg);
@@ -162,6 +163,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitCreateIndexStatement(CreateIndexStatement e, A arg) {
+    return visitSchemaStatement(e, arg);
+  }
+
+  @override
+  R? visitDropStatement(DropStatement e, A arg) {
     return visitSchemaStatement(e, arg);
   }
 

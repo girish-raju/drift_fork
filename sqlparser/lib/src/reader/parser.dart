@@ -232,6 +232,10 @@ class Parser {
       return _create()!;
     }
 
+    if (_check(TokenType.drop)) {
+      return _drop();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2574,6 +2578,44 @@ class Parser {
     } while (_matchOne(TokenType.comma));
 
     return indexes;
+  }
+
+  DropStatement _drop() {
+    _consume(TokenType.drop);
+    final first = _previous;
+    if (!_match(const [
+      TokenType.$index,
+      TokenType.table,
+      TokenType.trigger,
+      TokenType.view
+    ])) {
+      _error('Expected INDEX, TABLE, TRIGGER or VIEW here');
+    }
+
+    final typeToken = _previous;
+    final type = switch (_previous.type) {
+      TokenType.$index => DropType.$index,
+      TokenType.table => DropType.table,
+      TokenType.trigger => DropType.trigger,
+      TokenType.view => DropType.view,
+      _ => throw AssertionError(),
+    };
+
+    var ifExists = _matchOne(TokenType.$if);
+    if (ifExists) {
+      _consume(TokenType.exists);
+    }
+
+    final TableReference(:schemaName, :tableName) =
+        _tableReference(allowAlias: false);
+
+    return DropStatement(
+        type: type,
+        schemaName: schemaName,
+        elementName: tableName,
+        ifExists: ifExists)
+      ..setSpan(first, _previous)
+      ..typeToken = typeToken;
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

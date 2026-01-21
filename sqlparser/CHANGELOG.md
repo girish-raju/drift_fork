@@ -1,6 +1,7 @@
 ## 0.43.1-dev
 
 - Make `NamedWindowDeclaration` an AST node.
+- Support parsing `DROP` statements.
 
 ## 0.43.0
 

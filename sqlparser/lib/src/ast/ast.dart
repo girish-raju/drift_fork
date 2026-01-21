@@ -26,6 +26,7 @@ export 'statements/create_table.dart';
 export 'statements/create_trigger.dart';
 export 'statements/create_view.dart';
 export 'statements/delete.dart';
+export 'statements/drop.dart';
 export 'statements/insert.dart';
 export 'statements/invalid.dart';
 export 'statements/select.dart';

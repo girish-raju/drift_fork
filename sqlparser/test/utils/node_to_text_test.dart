@@ -196,6 +196,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
   });
 
+  test('drop', () {
+    testFormat('DROP INDEX IF EXISTS foo.bar');
+    testFormat('DROP TABLE bar');
+  });
+
   group('escapes identifiers', () {
     test("when they're keywords", () {
       testFormat('SELECT * FROM "create";');

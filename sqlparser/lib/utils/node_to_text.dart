@@ -538,6 +538,27 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitDropStatement(DropStatement e, void arg) {
+    keyword(TokenType.drop);
+    keyword(switch (e.type) {
+      DropType.$index => TokenType.$index,
+      DropType.table => TokenType.table,
+      DropType.trigger => TokenType.trigger,
+      DropType.view => TokenType.view,
+    });
+    if (e.ifExists) {
+      keyword(TokenType.$if);
+      keyword(TokenType.exists);
+    }
+
+    if (e.schemaName != null) {
+      identifier(e.schemaName!, spaceAfter: false);
+      symbol('.');
+    }
+    identifier(e.elementName, spaceBefore: e.schemaName == null);
+  }
+
+  @override
   void visitDefaultValues(DefaultValues e, void arg) {
     keyword(TokenType.$default);
     keyword(TokenType.$values);
