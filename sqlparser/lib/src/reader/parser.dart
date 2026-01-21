@@ -275,6 +275,9 @@ class Parser {
     if (_check(TokenType.rollback)) {
       return _rollback();
     }
+    if (_check(TokenType.alter)) {
+      return _alterTable();
+    }
 
     if (enableDriftExtensions) {
       if (_check(TokenType.import)) {
@@ -2748,6 +2751,54 @@ class Parser {
     }
 
     return RollbackStatement(toSavepoint: name)..setSpan(first, _previous);
+  }
+
+  AlterTableStatement _alterTable() {
+    final first = _consume(TokenType.alter);
+    _consume(TokenType.table);
+
+    final name = _tableReference(allowAlias: false);
+    final instruction = _alterTableInstruction();
+
+    return AlterTableStatement(name, instruction)..setSpan(first, _previous);
+  }
+
+  AlterTableInstruction _alterTableInstruction() {
+    if (_matchOne(TokenType.rename)) {
+      final first = _previous;
+
+      if (_matchOne(TokenType.to)) {
+        final name = _consumeIdentifier('Expected new table name').identifier;
+        return RenameTo(name)..setSpan(first, _previous);
+      } else {
+        _matchOne(TokenType.column);
+        final oldName = _consumeIdentifier('Expected old name');
+        _consume(TokenType.to);
+        final newName = _consumeIdentifier('Expected new name');
+        return RenameColumnTo(
+            Reference(columnName: oldName.identifier)
+              ..setSpan(oldName, oldName),
+            newName.identifier)
+          ..setSpan(first, _previous);
+      }
+    }
+
+    if (_matchOne(TokenType.add)) {
+      final first = _previous;
+      _matchOne(TokenType.column);
+      return AddColumn(_columnDefinition())..setSpan(first, _previous);
+    }
+
+    if (_matchOne(TokenType.drop)) {
+      final first = _previous;
+      _matchOne(TokenType.column);
+      final name = _consumeIdentifier('Expected column to drop');
+      return DropColumn(
+          Reference(columnName: name.identifier)..setSpan(name, name))
+        ..setSpan(first, _previous);
+    }
+
+    _error('Expected RENAME, ADD or DROP instruction here');
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

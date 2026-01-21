@@ -1439,6 +1439,41 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _join(e.ctes, ',');
   }
 
+  @override
+  void visitAlterTableStatement(AlterTableStatement e, void arg) {
+    keyword(TokenType.alter);
+    keyword(TokenType.table);
+    e.table.accept(this, arg);
+    e.instruction.accept(this, arg);
+  }
+
+  @override
+  void visitRenameTo(RenameTo e, void arg) {
+    keyword(TokenType.rename);
+    keyword(TokenType.to);
+    identifier(e.newTableName);
+  }
+
+  @override
+  void visitRenameColumnTo(RenameColumnTo e, void arg) {
+    keyword(TokenType.rename);
+    identifier(e.oldName.columnName);
+    keyword(TokenType.to);
+    identifier(e.newName);
+  }
+
+  @override
+  void visitAddColumn(AddColumn e, void arg) {
+    keyword(TokenType.add);
+    e.definition.accept(this, arg);
+  }
+
+  @override
+  void visitDropColumn(DropColumn e, void arg) {
+    keyword(TokenType.drop);
+    identifier(e.column.columnName);
+  }
+
   void _conflictClause(ConflictClause? clause) {
     if (clause != null) {
       keyword(TokenType.on);

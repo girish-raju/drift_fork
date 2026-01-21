@@ -258,6 +258,24 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
   });
 
+  group('alter table', () {
+    test('rename', () {
+      testFormat('ALTER TABLE foo.bar RENAME TO baz');
+    });
+
+    test('rename column', () {
+      testFormat('ALTER TABLE foo RENAME COLUMN bar TO baz');
+    });
+
+    test('add column', () {
+      testFormat('ALTER TABLE foo ADD bar TEXT NOT NULL REFERENCES other(x)');
+    });
+
+    test('drop column', () {
+      testFormat('ALTER TABLE foo DROP COLUMN bar');
+    });
+  });
+
   group('query statements', () {
     group('select', () {
       test('with common table expressions', () {

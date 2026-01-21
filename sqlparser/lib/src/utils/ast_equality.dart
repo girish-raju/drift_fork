@@ -842,6 +842,36 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
+  @override
+  void visitAlterTableStatement(AlterTableStatement e, void arg) {
+    _currentAs<AlterTableStatement>(e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitRenameTo(RenameTo e, void arg) {
+    _assert(_currentAs<RenameTo>(e).newTableName == e.newTableName, e);
+  }
+
+  @override
+  void visitRenameColumnTo(RenameColumnTo e, void arg) {
+    final current = _currentAs<RenameColumnTo>(e);
+    _assert(current.newName == e.newName, e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitAddColumn(AddColumn e, void arg) {
+    _currentAs<AddColumn>(e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitDropColumn(DropColumn e, void arg) {
+    _currentAs<DropColumn>(e);
+    _checkChildren(e);
+  }
+
   void _assert(bool contentEqual, AstNode context) {
     if (!contentEqual) _notEqual(context);
   }

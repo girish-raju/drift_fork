@@ -5,17 +5,21 @@ SQLite dialect only.
 
 ## Features
 
-This library aims to support every SQLite feature, which includes parsing and detailed
-static analysis.
+This library supports every SQLite statement and expression, which includes parsing and
+detailed static analysis.
 We can resolve what type a column in a `SELECT` statement has, infer types for variables,
 find semantic errors and more.
 
 This library supports most SQLite features:
+
 - DQL: Full support, including joins, `group by`, nested and compound selects, `WITH` clauses
-  and window functions
-- DDL: Supports `CREATE TABLE` statements, including advanced features like foreign keys or
-  virtual tables (when a matching module like `fts5` is enabled). This library also supports
-  `CREATE TRIGGER` and `CREATE INDEX` statements.
+  and window function.
+- DDL: Supports all `CREATE` and `DROP` statements supported by SQLite, including advanced
+  features like foreign keys or virtual tables (when a matching module like `fts5` is enabled).
+  `ALTER TABLE` statements can also be parsed.
+- Transactions: Supports parsing `BEGIN`, `SAVEPOINT`, `RELEASE`, `COMMIT` and `ROLLBACK`
+  statements.
+- Management: All statements (`VACUUM`, `ATTACH`, `REINDEX`, `ANALYZE`, `PRAGMA`).
 
 ### Using the parser
 To obtain an abstract syntax tree from an SQL statement, use `SqlEngine.parse`.

@@ -108,6 +108,12 @@ abstract class AstVisitor<A, R> {
   R visitReleaseStatement(ReleaseStatement e, A arg);
   R visitRollbackStatement(RollbackStatement e, A arg);
 
+  R visitAlterTableStatement(AlterTableStatement e, A arg);
+  R visitRenameTo(RenameTo e, A arg);
+  R visitRenameColumnTo(RenameColumnTo e, A arg);
+  R visitAddColumn(AddColumn e, A arg);
+  R visitDropColumn(DropColumn e, A arg);
+
   R visitDriftSpecificNode(DriftSpecificNode e, A arg);
 }
 
@@ -640,6 +646,35 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   R? visitExpressionInvocation(ExpressionInvocation e, A arg) {
     return visitInvocation(e, arg);
+  }
+
+  @override
+  R? visitAlterTableStatement(AlterTableStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitRenameTo(RenameTo e, A arg) {
+    return defaultAlterTableInstructrion(e, arg);
+  }
+
+  @override
+  R? visitRenameColumnTo(RenameColumnTo e, A arg) {
+    return defaultAlterTableInstructrion(e, arg);
+  }
+
+  @override
+  R? visitAddColumn(AddColumn e, A arg) {
+    return defaultAlterTableInstructrion(e, arg);
+  }
+
+  @override
+  R? visitDropColumn(DropColumn e, A arg) {
+    return defaultAlterTableInstructrion(e, arg);
+  }
+
+  R? defaultAlterTableInstructrion(AlterTableInstruction e, A arg) {
+    return defaultNode(e, arg);
   }
 
   R? visitInvocation(SqlInvocation e, A arg) {
