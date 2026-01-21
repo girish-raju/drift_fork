@@ -88,6 +88,21 @@ void main() {
         'ANALYZE a.b', AnalyzeStatement(schemaName: 'a', elementName: 'b'));
   });
 
+  test('pragma', () {
+    testStatement('PRAGMA foo', PragmaCommand(pragmaName: 'foo'));
+    testStatement(
+        'PRAGMA foo.bar', PragmaCommand(schemaName: 'foo', pragmaName: 'bar'));
+
+    testStatement('PRAGMA foo = 1',
+        PragmaCommand(pragmaName: 'foo', value: NumericLiteral(1)));
+    testStatement('PRAGMA foo = true',
+        PragmaCommand(pragmaName: 'foo', value: BooleanLiteral(true)));
+    testStatement('PRAGMA foo = on',
+        PragmaCommand(pragmaName: 'foo', value: Reference(columnName: 'on')));
+    testStatement('PRAGMA foo(on)',
+        PragmaCommand(pragmaName: 'foo', value: Reference(columnName: 'on')));
+  });
+
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');

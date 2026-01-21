@@ -31,6 +31,7 @@ export 'statements/delete.dart';
 export 'statements/drop.dart';
 export 'statements/insert.dart';
 export 'statements/invalid.dart';
+export 'statements/pragma.dart';
 export 'statements/reindex.dart';
 export 'statements/select.dart';
 export 'statements/statement.dart';

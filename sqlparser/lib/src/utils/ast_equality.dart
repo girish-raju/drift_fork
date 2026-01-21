@@ -284,6 +284,16 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitPragmaCommand(PragmaCommand e, void arg) {
+    final current = _currentAs<PragmaCommand>(e);
+    _assert(
+        current.schemaName == e.schemaName &&
+            current.pragmaName == e.pragmaName,
+        e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitSavepointStatement(SavepointStatement e, void arg) {
     _assert(
         _currentAs<SavepointStatement>(e).savepointName == e.savepointName, e);

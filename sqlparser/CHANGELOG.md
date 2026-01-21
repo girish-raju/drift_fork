@@ -2,7 +2,7 @@
 
 - Make `NamedWindowDeclaration` an AST node.
 - Support parsing `DROP`, `VACUUM`, `REINDEX`, `ATTACH`, `DETACH`, `SAVEPOINT`
-  `RELEASE`, `ROLLBACK` and `ANALYZE` statements.
+  `RELEASE`, `ROLLBACK`, `ANALYZE` and `PRAGMA` statements.
 
 ## 0.43.0
 

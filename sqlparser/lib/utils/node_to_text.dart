@@ -608,6 +608,20 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitPragmaCommand(PragmaCommand e, void arg) {
+    keyword(TokenType.pragma);
+    if (e.schemaName case final schema?) {
+      identifier(schema);
+      symbol('.');
+    }
+    identifier(e.pragmaName);
+    if (e.value case final value?) {
+      symbol('=', spaceBefore: true, spaceAfter: true);
+      value.accept(this, arg);
+    }
+  }
+
+  @override
   void visitSavepointStatement(SavepointStatement e, void arg) {
     keyword(TokenType.savepoint);
     identifier(e.savepointName);

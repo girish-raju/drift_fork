@@ -20,6 +20,7 @@ abstract class AstVisitor<A, R> {
   R visitAttachStatement(AttachStatement e, A arg);
   R visitDetachStatement(DetachStatement e, A arg);
   R visitAnalyzeStatement(AnalyzeStatement e, A arg);
+  R visitPragmaCommand(PragmaCommand e, A arg);
 
   R visitReturning(Returning e, A arg);
   R visitWithClause(WithClause e, A arg);
@@ -201,6 +202,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitAnalyzeStatement(AnalyzeStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitPragmaCommand(PragmaCommand e, A arg) {
     return visitStatement(e, arg);
   }
 

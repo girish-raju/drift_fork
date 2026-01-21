@@ -256,6 +256,10 @@ class Parser {
       return _analyze();
     }
 
+    if (_check(TokenType.pragma)) {
+      return _pragma();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2690,6 +2694,32 @@ class Parser {
 
     return AnalyzeStatement(
         schemaName: tableRef?.schemaName, elementName: tableRef?.tableName)
+      ..setSpan(first, _previous);
+  }
+
+  PragmaCommand _pragma() {
+    final first = _consume(TokenType.pragma);
+    final name = _tableReference(allowAlias: false);
+
+    Expression? value;
+    void readValue() {
+      if (_literalOrNull() case final literal?) {
+        value = literal;
+      } else {
+        final id = _consumeIdentifier('Expected value', lenient: true);
+        value = Reference(columnName: id.identifier)..setSpan(id, id);
+      }
+    }
+
+    if (_matchOne(TokenType.equal)) {
+      readValue();
+    } else if (_matchOne(TokenType.leftParen)) {
+      readValue();
+      _consume(TokenType.rightParen);
+    }
+
+    return PragmaCommand(
+        schemaName: name.schemaName, pragmaName: name.tableName, value: value)
       ..setSpan(first, _previous);
   }
 

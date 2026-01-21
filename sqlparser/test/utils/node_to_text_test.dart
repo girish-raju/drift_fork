@@ -250,6 +250,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('ANALYZE a');
       testFormat('ANALYZE a.b');
     });
+
+    test('pragma', () {
+      testFormat('PRAGMA foo');
+      testFormat('PRAGMA foo.bar(1)');
+      testFormat('PRAGMA foo.bar = 2');
+    });
   });
 
   group('query statements', () {
