@@ -34,6 +34,7 @@ export 'statements/select.dart';
 export 'statements/statement.dart';
 export 'statements/transaction.dart';
 export 'statements/update.dart';
+export 'statements/vacuum.dart';
 export 'visitor.dart';
 
 // todo: Split up this mega-library

@@ -569,6 +569,19 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitVacuumStatement(VacuumStatement e, void arg) {
+    keyword(TokenType.vacuum);
+    if (e.schemaName case final schemaName?) {
+      identifier(schemaName);
+    }
+
+    if (e.into case final into?) {
+      keyword(TokenType.into);
+      into.accept(this, arg);
+    }
+  }
+
+  @override
   void visitDefaultValues(DefaultValues e, void arg) {
     keyword(TokenType.$default);
     keyword(TokenType.$values);

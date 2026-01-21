@@ -240,6 +240,10 @@ class Parser {
       return _reindex();
     }
 
+    if (_check(TokenType.vacuum)) {
+      return _vacuum();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2629,6 +2633,17 @@ class Parser {
         _tableReference(allowAlias: false);
 
     return ReindexStatement(elementName: tableName, schemaName: schemaName)
+      ..setSpan(first, _previous);
+  }
+
+  VacuumStatement _vacuum() {
+    _consume(TokenType.vacuum);
+    final first = _previous;
+    final schemaName =
+        _matchOneAndGet(TokenType.identifier) as IdentifierToken?;
+    final into = _matchOne(TokenType.into) ? expression() : null;
+
+    return VacuumStatement(schemaName: schemaName?.identifier, into: into)
       ..setSpan(first, _previous);
   }
 

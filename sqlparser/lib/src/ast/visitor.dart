@@ -16,6 +16,7 @@ abstract class AstVisitor<A, R> {
   R visitDropStatement(DropStatement e, A arg);
   R visitInvalidStatement(InvalidStatement e, A arg);
   R visitReindexStatement(ReindexStatement e, A arg);
+  R visitVacuumStatement(VacuumStatement e, A arg);
 
   R visitReturning(Returning e, A arg);
   R visitWithClause(WithClause e, A arg);
@@ -174,7 +175,12 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitReindexStatement(ReindexStatement e, A arg) {
-    return visitReindexStatement(e, arg);
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitVacuumStatement(VacuumStatement e, A arg) {
+    return visitStatement(e, arg);
   }
 
   R? visitBaseSelectStatement(BaseSelectStatement stmt, A arg) {

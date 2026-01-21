@@ -40,6 +40,15 @@ void main() {
         ReindexStatement(schemaName: 'foo', elementName: 'bar'));
   });
 
+  test('vacuum', () {
+    testStatement('VACUUM', VacuumStatement());
+    testStatement('VACUUM schema', VacuumStatement(schemaName: 'schema'));
+    testStatement(
+        'VACUUM INTO ?', VacuumStatement(into: NumberedVariable(null)));
+    testStatement('VACUUM schema INTO ?',
+        VacuumStatement(schemaName: 'schema', into: NumberedVariable(null)));
+  });
+
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');

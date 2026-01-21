@@ -256,6 +256,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
         e);
   }
 
+  @override
+  void visitVacuumStatement(VacuumStatement e, void arg) {
+    final current = _currentAs<VacuumStatement>(e);
+    _assert(current.schemaName == e.schemaName, e);
+    _checkChildren(e);
+  }
+
   void visitDartPlaceholder(DartPlaceholder e, void arg) {
     final current = _currentAs<DartPlaceholder>(e);
     _assert(current.name == e.name && current.runtimeType == e.runtimeType, e);
