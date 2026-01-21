@@ -596,6 +596,27 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitSavepointStatement(SavepointStatement e, void arg) {
+    keyword(TokenType.savepoint);
+    identifier(e.savepointName);
+  }
+
+  @override
+  void visitReleaseStatement(ReleaseStatement e, void arg) {
+    keyword(TokenType.release);
+    identifier(e.savepointName);
+  }
+
+  @override
+  void visitRollbackStatement(RollbackStatement e, void arg) {
+    keyword(TokenType.rollback);
+    if (e.toSavepoint case final savepoint?) {
+      keyword(TokenType.to);
+      identifier(savepoint);
+    }
+  }
+
+  @override
   void visitDefaultValues(DefaultValues e, void arg) {
     keyword(TokenType.$default);
     keyword(TokenType.$values);

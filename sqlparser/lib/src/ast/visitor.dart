@@ -102,6 +102,9 @@ abstract class AstVisitor<A, R> {
   R visitSemicolonSeparatedStatements(SemicolonSeparatedStatements e, A arg);
   R visitBeginTransaction(BeginTransactionStatement e, A arg);
   R visitCommitStatement(CommitStatement e, A arg);
+  R visitSavepointStatement(SavepointStatement e, A arg);
+  R visitReleaseStatement(ReleaseStatement e, A arg);
+  R visitRollbackStatement(RollbackStatement e, A arg);
 
   R visitDriftSpecificNode(DriftSpecificNode e, A arg);
 }
@@ -441,6 +444,21 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitCommitStatement(CommitStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitSavepointStatement(SavepointStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitReleaseStatement(ReleaseStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitRollbackStatement(RollbackStatement e, A arg) {
     return visitStatement(e, arg);
   }
 

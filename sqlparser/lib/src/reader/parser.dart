@@ -258,6 +258,15 @@ class Parser {
     if (_checkAny(const [TokenType.commit, TokenType.end])) {
       return _commit();
     }
+    if (_check(TokenType.savepoint)) {
+      return _savepoint();
+    }
+    if (_check(TokenType.release)) {
+      return _release();
+    }
+    if (_check(TokenType.rollback)) {
+      return _rollback();
+    }
 
     if (enableDriftExtensions) {
       if (_check(TokenType.import)) {
@@ -2635,8 +2644,7 @@ class Parser {
   }
 
   ReindexStatement _reindex() {
-    _consume(TokenType.reindex);
-    final first = _previous;
+    final first = _consume(TokenType.reindex);
     final TableReference(:schemaName, :tableName) =
         _tableReference(allowAlias: false);
 
@@ -2645,8 +2653,7 @@ class Parser {
   }
 
   VacuumStatement _vacuum() {
-    _consume(TokenType.vacuum);
-    final first = _previous;
+    final first = _consume(TokenType.vacuum);
     final schemaName =
         _matchOneAndGet(TokenType.identifier) as IdentifierToken?;
     final into = _matchOne(TokenType.into) ? expression() : null;
@@ -2656,8 +2663,7 @@ class Parser {
   }
 
   AttachStatement _attach() {
-    _consume(TokenType.attach);
-    final first = _previous;
+    final first = _consume(TokenType.attach);
     _matchOne(TokenType.database);
     final path = expression();
     final as = _as() ?? _error('Expected AS');
@@ -2667,12 +2673,38 @@ class Parser {
   }
 
   DetachStatement _detach() {
-    _consume(TokenType.detach);
-    final first = _previous;
+    final first = _consume(TokenType.detach);
     _matchOne(TokenType.database);
 
     final schemaName = _consumeIdentifier('Expected name of schema');
     return DetachStatement(schemaName.identifier)..setSpan(first, schemaName);
+  }
+
+  SavepointStatement _savepoint() {
+    final first = _consume(TokenType.savepoint);
+    final name = _consumeIdentifier('Expected SAVEPOINT name');
+
+    return SavepointStatement(name.identifier)..setSpan(first, name);
+  }
+
+  ReleaseStatement _release() {
+    final first = _consume(TokenType.release);
+    _matchOne(TokenType.savepoint);
+    final name = _consumeIdentifier('Expected SAVEPOINT name');
+    return ReleaseStatement(name.identifier)..setSpan(first, name);
+  }
+
+  RollbackStatement _rollback() {
+    final first = _consume(TokenType.rollback);
+    _matchOne(TokenType.transaction);
+
+    String? name;
+    if (_matchOne(TokenType.to)) {
+      _matchOne(TokenType.savepoint);
+      name = _consumeIdentifier('Expected SAVEPOINT name').identifier;
+    }
+
+    return RollbackStatement(toSavepoint: name)..setSpan(first, _previous);
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

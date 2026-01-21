@@ -1,7 +1,8 @@
 ## 0.43.1-dev
 
 - Make `NamedWindowDeclaration` an AST node.
-- Support parsing `DROP`, `VACUUM`, `REINDEX`, `ATTACH` and `DETACH` statements.
+- Support parsing `DROP`, `VACUUM`, `REINDEX`, `ATTACH`, `DETACH`, `SAVEPOINT`
+  `RELEASE` and `ROLLBACK` statements.
 
 ## 0.43.0
 

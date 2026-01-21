@@ -238,7 +238,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('BEGIN EXCLUSIVE');
 
       testFormat('COMMIT');
+      testFormat('ROLLBACK');
       testFormat('END TRANSACTION');
+      testFormat('SAVEPOINT foo');
+      testFormat('RELEASE SAVEPOINT foo');
+      testFormat('ROLLBACK TO foo');
     });
   });
 

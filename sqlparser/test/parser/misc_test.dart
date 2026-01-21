@@ -34,6 +34,26 @@ void main() {
     testStatement('END TRANSACTION', CommitStatement());
   });
 
+  test('savepoint', () {
+    testStatement('SAVEPOINT foo', SavepointStatement('foo'));
+  });
+
+  test('release', () {
+    testStatement('RELEASE foo', ReleaseStatement('foo'));
+    testStatement('RELEASE SAVEPOINT foo', ReleaseStatement('foo'));
+  });
+
+  test('rollback', () {
+    testStatement('ROLLBACK', RollbackStatement());
+    testStatement('ROLLBACK TRANSACTION', RollbackStatement());
+
+    testStatement('ROLLBACK TO foo', RollbackStatement(toSavepoint: 'foo'));
+    testStatement(
+        'ROLLBACK TO SAVEPOINT foo', RollbackStatement(toSavepoint: 'foo'));
+    testStatement('ROLLBACK TRANSACTION TO SAVEPOINT foo',
+        RollbackStatement(toSavepoint: 'foo'));
+  });
+
   test('reindex', () {
     testStatement('REINDEX foo', ReindexStatement(elementName: 'foo'));
     testStatement('REINDEX foo.bar',
