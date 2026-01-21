@@ -34,6 +34,12 @@ void main() {
     testStatement('END TRANSACTION', CommitStatement());
   });
 
+  test('reindex', () {
+    testStatement('REINDEX foo', ReindexStatement(elementName: 'foo'));
+    testStatement('REINDEX foo.bar',
+        ReindexStatement(schemaName: 'foo', elementName: 'bar'));
+  });
+
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');

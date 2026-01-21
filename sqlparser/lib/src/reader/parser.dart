@@ -236,6 +236,10 @@ class Parser {
       return _drop();
     }
 
+    if (_check(TokenType.reindex)) {
+      return _reindex();
+    }
+
     if (_check(TokenType.begin)) {
       return _beginStatement();
     }
@@ -2616,6 +2620,16 @@ class Parser {
         ifExists: ifExists)
       ..setSpan(first, _previous)
       ..typeToken = typeToken;
+  }
+
+  ReindexStatement _reindex() {
+    _consume(TokenType.reindex);
+    final first = _previous;
+    final TableReference(:schemaName, :tableName) =
+        _tableReference(allowAlias: false);
+
+    return ReindexStatement(elementName: tableName, schemaName: schemaName)
+      ..setSpan(first, _previous);
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

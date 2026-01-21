@@ -559,6 +559,16 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitReindexStatement(ReindexStatement e, void arg) {
+    keyword(TokenType.reindex);
+    if (e.schemaName != null) {
+      identifier(e.schemaName!, spaceAfter: false);
+      symbol('.');
+    }
+    identifier(e.elementName, spaceBefore: e.schemaName == null);
+  }
+
+  @override
   void visitDefaultValues(DefaultValues e, void arg) {
     keyword(TokenType.$default);
     keyword(TokenType.$values);
