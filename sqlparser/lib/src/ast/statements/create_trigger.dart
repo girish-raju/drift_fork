@@ -3,6 +3,7 @@ import '../ast.dart'; // todo: Remove this import
 
 /// A "CREATE TRIGGER" statement, see https://sqlite.org/lang_createtrigger.html
 class CreateTriggerStatement extends Statement implements CreatingStatement {
+  @override
   final bool ifNotExists;
   final String triggerName;
   IdentifierToken? triggerNameToken;

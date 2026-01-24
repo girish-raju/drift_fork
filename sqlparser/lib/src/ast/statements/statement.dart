@@ -80,4 +80,7 @@ abstract class SchemaStatement extends Statement implements PartOfDriftFile {}
 /// Marker interface for schema statements that create a schematic entity.
 abstract class CreatingStatement extends SchemaStatement {
   String get createdName;
+
+  /// Whether this statement has an `IF NOT EXISTS` clause.
+  bool get ifNotExists;
 }

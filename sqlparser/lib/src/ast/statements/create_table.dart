@@ -5,8 +5,9 @@ import '../ast.dart'; // todo: Remove this import
 
 abstract class TableInducingStatement extends Statement
     implements CreatingStatement {
+  @override
   final bool ifNotExists;
-  final String tableName;
+  String tableName;
 
   /// Drift-specific information about the desired name of a Dart class for this
   /// table.

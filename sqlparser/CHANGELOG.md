@@ -3,6 +3,8 @@
 - Make `NamedWindowDeclaration` an AST node.
 - Support parsing `DROP`, `VACUUM`, `REINDEX`, `ATTACH`, `DETACH`, `SAVEPOINT`
   `RELEASE`, `ROLLBACK`, `ANALYZE`, `PRAGMA` and `ALTER TABLE` statements.
+- Add `SchemaBuffer` class to apply `ALTER TABLE` and `DROP` statements to `CREATE`
+  statements.
 
 ## 0.43.0
 

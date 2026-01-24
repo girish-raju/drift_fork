@@ -1,3 +1,4 @@
+import '../../reader/tokenizer/token.dart';
 import '../ast.dart';
 
 /// An `ALTER TABLE` statement in SQLite.
@@ -27,6 +28,7 @@ sealed class AlterTableInstruction extends AstNode {}
 
 final class RenameTo extends AlterTableInstruction {
   String newTableName;
+  Token? newTableNameToken;
 
   RenameTo(this.newTableName);
 
@@ -45,6 +47,7 @@ final class RenameTo extends AlterTableInstruction {
 final class RenameColumnTo extends AlterTableInstruction {
   Reference oldName;
   String newName;
+  Token? newNameToken;
 
   RenameColumnTo(this.oldName, this.newName);
 

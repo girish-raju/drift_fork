@@ -5,6 +5,7 @@ class CreateIndexStatement extends Statement
     implements CreatingStatement, StatementWithWhere {
   final String indexName;
   final bool unique;
+  @override
   final bool ifNotExists;
   IdentifierToken? nameToken;
 

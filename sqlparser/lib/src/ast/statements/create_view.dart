@@ -3,6 +3,7 @@ import '../ast.dart'; // todo: Remove this import
 
 /// A "CREATE VIEW" statement, see https://sqlite.org/lang_createview.html
 class CreateViewStatement extends Statement implements CreatingStatement {
+  @override
   final bool ifNotExists;
 
   final String viewName;

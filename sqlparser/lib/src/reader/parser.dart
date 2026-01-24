@@ -2768,8 +2768,10 @@ class Parser {
       final first = _previous;
 
       if (_matchOne(TokenType.to)) {
-        final name = _consumeIdentifier('Expected new table name').identifier;
-        return RenameTo(name)..setSpan(first, _previous);
+        final name = _consumeIdentifier('Expected new table name');
+        return RenameTo(name.identifier)
+          ..setSpan(first, _previous)
+          ..newTableNameToken = name;
       } else {
         _matchOne(TokenType.column);
         final oldName = _consumeIdentifier('Expected old name');
@@ -2779,7 +2781,8 @@ class Parser {
             Reference(columnName: oldName.identifier)
               ..setSpan(oldName, oldName),
             newName.identifier)
-          ..setSpan(first, _previous);
+          ..setSpan(first, _previous)
+          ..newNameToken = newName;
       }
     }
 
