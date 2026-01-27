@@ -14,7 +14,7 @@ physical device to run them.
 
 For this guide, we're going to test a very simple database that stores user names. The only important change from a regular drift
 database is the constructor: We make the `QueryExecutor` argument explicit instead of having a no-args constructor that passes
-a fixed executor (like a `FlutterQueryExecutor` or a `NativeDatabase`) to the superclass:
+a fixed executor (like a `NativeDatabase`) to the superclass:
 
 ```dart
 import 'package:drift/drift.dart';
@@ -73,9 +73,6 @@ class MyDatabase extends _$MyDatabase {
     The minimum sqlite version tested with drift is 3.29.0, but many drift features
     like `returning` or generated columns will require more recent versions.
 
-
-
-
 ## Writing tests
 
 We can create an in-memory version of the database by using a
@@ -120,3 +117,30 @@ test('stream emits a new user when the name updates', () async {
 
 Drift can help you generate code for schema migrations. For more details, see
 [this guide](migrations/tests.md).
+
+## Deterministic time in tests
+
+In Flutter widget tests (and in plain Dart tests using `fakeAsync` or `withClock`), you may
+want to mock the current date and time to make tests deterministic or to reliably replay
+code depending on the current time.
+
+In Dart, you'd typically use `clock.now()` instead of `DateTime.now()` to observe mocked clocks.
+Being a C library, SQLite obviously can't know about faked clocks in Dart. This means that
+`CURRENT_TIMESTAMP` or expressions like `datetime('now')` would continue to evaluate to the time
+from the system running the test.
+
+It is possible to fix this by installing a custom [virtual file system](https://www.sqlite.org/vfs.html) (VFS).
+This intercepts all IO done by the SQLite library, and allows making it fully deterministic.
+For tests, the prebuilt `TestSqliteFileSystem` from the `sqlite3_test` package can be used to
+observe clocks installed by `withClock` (including widget tests).
+
+The file system should be configured in `setUpAll`, and can be unregistered in `tearDownAll`.
+Each test file using this should register the VFS under a unique name, since different tests might
+run in parallel in the same process.
+
+<Snippet href="/lib/src/snippets/setup/testing_deterministic.dart" name="setup" />
+
+You can still set up your database as described in [writing tests](#writing-tests). In tests,
+all time-related SQLite functions will then use mocked time values from Dart:
+
+<Snippet href="/lib/src/snippets/setup/testing_deterministic.dart" name="test" />

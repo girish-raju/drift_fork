@@ -3,6 +3,8 @@ import 'package:drift/native.dart';
 import 'package:drift_website/src/snippets/dart_api/datetime_conversion.dart';
 import 'package:drift_website/src/snippets/log_interceptor.dart';
 import 'package:drift_website/src/snippets/modular/schema_inspection.dart';
+import 'package:drift_website/src/snippets/setup/testing_deterministic.dart'
+    as test_deterministic;
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 import 'package:test/test.dart';
 
@@ -179,5 +181,9 @@ void main() {
         ),
       ),
     );
+  });
+
+  group('custom time in tests', () {
+    test_deterministic.main();
   });
 }
