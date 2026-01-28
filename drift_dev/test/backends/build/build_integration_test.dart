@@ -1313,4 +1313,52 @@ foo: SELECT * FROM my_table;
       logger: loggerThat(neverEmits(anything)),
     );
   });
+
+  test('nullable reference to non-nullable intEnum column', () async {
+    // regression test for https://github.com/simolus3/drift/issues/3748
+    final results = await emulateDriftBuild(
+      inputs: {
+        'a|lib/table.dart': '''
+import 'package:drift/drift.dart';
+
+class Orders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class Actions extends Table {
+  late final IntColumn orderId = integer()();
+  late final IntColumn code = intEnum<ActionCodeModel>()();
+}
+
+enum ActionCodeModel { DELIVER, PICKUP }
+''',
+        'a|lib/view.drift': '''
+import 'table.dart';
+
+CREATE VIEW orders_view AS
+SELECT
+    o.id AS order_id,
+    a.code AS action_code
+FROM
+    orders o
+LEFT JOIN
+    actions a
+ON
+    o.id = a.order_id;
+'''
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/view.drift.dart': decodedMatches(
+        allOf(
+            contains('actionCode: i0.JsonTypeConverter2.asNullable('),
+            contains(
+                "'action_code': serializer.toJson<int?>(i0.JsonTypeConverter2.asNullable(")),
+      ),
+      'a|lib/table.drift.dart': anything,
+    }, results.dartOutputs, results.writer);
+  });
 }

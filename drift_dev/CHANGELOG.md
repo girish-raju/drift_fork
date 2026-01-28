@@ -1,3 +1,8 @@
+## 2.30.2-dev
+
+- Fix JSON serialization for views referencing a nullable wrapper of a non-nullable column
+  with a type converter attached to it.
+
 ## 2.30.1
 
 - `make_migrations`: Don't generate schema test helpers when `--no-test` is set.

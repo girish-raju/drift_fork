@@ -168,7 +168,11 @@ abstract class _NodeOrWriter {
         case (false, _):
           addRegularConverter();
         case (true, false):
-          b.addSymbol('NullAwareTypeConverter.wrap(', AnnotatedDartCode.drift);
+          b.addSymbol(
+              converter.alsoAppliesToJsonConversion
+                  ? 'JsonTypeConverter2.asNullable('
+                  : 'NullAwareTypeConverter.wrap(',
+              AnnotatedDartCode.drift);
           b.addCode(converter.expression);
           b.addText(')');
         case (true, true):
