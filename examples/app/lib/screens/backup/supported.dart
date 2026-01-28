@@ -48,7 +48,7 @@ class BackupDialog extends ConsumerWidget {
             await db.close();
 
             // Open the selected database file
-            final backupFile = await FilePicker.pickFiles();
+            final backupFile = await FilePicker.platform.pickFiles();
             if (backupFile == null) return;
             final backupDb = sqlite3.open(backupFile.files.single.path!);
 
@@ -75,7 +75,7 @@ class BackupDialog extends ConsumerWidget {
 }
 
 Future<void> createDatabaseBackup(DatabaseConnectionUser database) async {
-  final choosenDirectory = await FilePicker.getDirectoryPath();
+  final choosenDirectory = await FilePicker.platform.getDirectoryPath();
   if (choosenDirectory == null) return;
 
   final parent = Directory(choosenDirectory);
