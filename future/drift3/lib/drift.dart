@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 export 'src/connection/connection.dart';
 export 'src/connection/interceptor.dart';
 export 'src/connection/result_set.dart' show QueryResult, RawResultSet, RawRow;
@@ -20,3 +22,7 @@ export 'src/exceptions.dart';
 
 export 'src/query_builder.dart' hide SingleTableStatementMixin;
 export 'src/runtime_options.dart';
+
+/// A [ListEquality] instance used by generated drift code for the `==` and
+/// [Object.hashCode] implementation of generated classes if they contain lists.
+const ListEquality<int> $driftBlobEquality = ListEquality();

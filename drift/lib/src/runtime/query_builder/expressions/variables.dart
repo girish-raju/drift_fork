@@ -117,6 +117,7 @@ final class Variable<T extends Object> extends Expression<T> {
 /// An expression that represents the value of a dart object encoded to sql
 /// by writing them into the sql statements. For most cases, consider using
 /// [Variable] instead.
+@pragma('drift:v3-rename', 'Literal')
 final class Constant<T extends Object> extends Expression<T> {
   /// The value that will be converted to an sql literal.
   final T? value;

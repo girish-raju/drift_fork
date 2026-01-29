@@ -13,7 +13,7 @@ extension StringExpressionOperators on Expression<String> {
   Expression<bool> like(String regex, {String? escapeChar}) {
     return likeExp(
       Variable.withString(regex),
-      escape: Variable<String>(escapeChar),
+      escape: escapeChar != null ? Variable<String>(escapeChar) : null,
     );
   }
 

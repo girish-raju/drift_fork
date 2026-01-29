@@ -13,7 +13,7 @@ final class PostgresDialect extends DriftDialect {
   final bool useJsonb;
 
   /// @nodoc
-  PostgresDialect({this.useJsonb = true});
+  const PostgresDialect({this.useJsonb = true});
 
   @override
   PhysicalSqlType<bool> get boolType =>

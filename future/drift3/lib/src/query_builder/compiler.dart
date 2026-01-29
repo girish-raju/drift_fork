@@ -110,6 +110,7 @@ final class StatementBuffer {
       needsResultSet: resultSetStructure != null,
       isReadOnly: isReadOnly,
       expectedWrites: possibleUpdates,
+      watchedTables: [for (final table in watchedTables) table.entityName],
     );
   }
 }

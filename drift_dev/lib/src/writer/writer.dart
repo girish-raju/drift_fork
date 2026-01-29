@@ -400,6 +400,7 @@ abstract class _NodeOrWriter {
     return switch (sqlType) {
       ColumnDriftType(builtin: DriftSqlType.string) => builtinType('text'),
       ColumnDriftType(builtin: DriftSqlType.blob) => builtinType('byteArray'),
+      ColumnDriftType(builtin: DriftSqlType.bigInt) => builtinType('int64'),
       ColumnDriftType(builtin: DriftSqlType.any) =>
         AnnotatedDartCode.build((b) {
           b.addText('const ');
