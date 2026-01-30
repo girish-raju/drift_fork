@@ -535,6 +535,23 @@ void main() {
     expect(underlying.userVersion, 3);
   });
 
+  test('step-by-step migrations throw on downgrades', () async {
+    final underlying = sqlite3.openInMemory()..userVersion = 5;
+    addTearDown(underlying.dispose);
+
+    final db = TodoDb(NativeDatabase.opened(underlying))
+      ..schemaVersion = 3
+      ..migration =
+          MigrationStrategy(onUpgrade: VersionedSchema.stepByStepHelper(
+        step: (version, database) async {
+          return version + 1;
+        },
+      ));
+
+    await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
+    expect(underlying.userVersion, 5);
+  });
+
   test("alterTable works for databases that can't set legacy alter table",
       () async {
     final interceptor = _NoLegacyAlterTable();

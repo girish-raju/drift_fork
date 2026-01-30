@@ -1,3 +1,9 @@
+## 2.31.0-dev
+
+- In step-by-step migrations, automatically throw an error if a database
+  downgrade is attempted. This has always been unsupported, but could lead to
+  the database silently having a wrong `user_version`.
+
 ## 2.30.1
 
 - Web: Fix databases being moved from IndexedDB to OPFS even if
