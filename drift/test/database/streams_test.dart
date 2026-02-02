@@ -465,4 +465,24 @@ void main() {
 
     await db.users.all().watch().first;
   });
+
+  test('tables from subqueries update streams', () async {
+    // Attempted regression test for https://github.com/simolus3/drift/issues/3750
+    final query = db.selectOnly(db.todosTable)
+      ..addColumns([db.todosTable.content]);
+
+    final categorySubquery = db.selectOnly(db.categories)
+      ..addColumns([db.categories.id])
+      ..where(db.categories.description.like('test'));
+    query.where(db.todosTable.category.isInQuery(categorySubquery));
+
+    final stream = StreamQueue(query.watch());
+    await stream.next;
+
+    db.markTablesUpdated([db.categories]);
+    await stream.next;
+
+    db.markTablesUpdated([db.todosTable]);
+    await stream.next;
+  });
 }
