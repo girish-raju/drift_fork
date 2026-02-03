@@ -1,4 +1,4 @@
-## 0.43.1-dev
+## 0.43.1
 
 - Make `NamedWindowDeclaration` an AST node.
 - Support parsing `DROP`, `VACUUM`, `REINDEX`, `ATTACH`, `DETACH`, `SAVEPOINT`

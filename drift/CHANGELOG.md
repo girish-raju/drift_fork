@@ -1,4 +1,4 @@
-## 2.31.0-dev
+## 2.31.0
 
 - In step-by-step migrations, automatically throw an error if a database
   downgrade is attempted. This has always been unsupported, but could lead to

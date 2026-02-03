@@ -1,4 +1,4 @@
-## 2.30.2-dev
+## 2.31.0
 
 - Fix JSON serialization for views referencing a nullable wrapper of a non-nullable column
   with a type converter attached to it.
