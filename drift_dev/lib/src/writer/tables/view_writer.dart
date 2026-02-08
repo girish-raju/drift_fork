@@ -190,9 +190,10 @@ class ViewWriter extends TableOrViewWriter {
 
   void _writeAliasGenerator() {
     final typeName = view.entityInfoName;
+    final methodName = scope.drift3 ? 'withAlias' : 'createAlias';
     buffer
       ..writeln('@override')
-      ..write('$typeName withAlias(String alias) {\n')
+      ..write('$typeName $methodName(String alias) {\n')
       ..write('return $typeName($_attachedDatabase, alias);')
       ..writeln('}');
   }
