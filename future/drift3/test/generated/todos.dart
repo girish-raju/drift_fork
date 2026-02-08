@@ -120,6 +120,15 @@ class CustomRowClass {
   }
 }
 
+class PureDefaults extends Table {
+  // name after keyword to ensure it's escaped properly
+  TextColumn get txt =>
+      text().named('insert').map(const CustomJsonConverter()).nullable();
+
+  @override
+  Set<Column> get primaryKey => {txt};
+}
+
 // example object used for custom mapping
 class MyCustomObject {
   final String data;
@@ -145,6 +154,22 @@ class TableWithoutPK extends Table {
 
   TextColumn get custom =>
       text().map(const CustomConverter()).clientDefault(_uuid.v4);
+}
+
+class TableWithEveryColumnType extends Table with AutoIncrement {
+  BoolColumn get aBool => boolean().nullable();
+  DateTimeColumn get aDateTime => dateTime().nullable();
+  TextColumn get aText => text().nullable();
+  IntColumn get anInt => integer().nullable();
+  Int64Column get anInt64 => int64().nullable();
+  RealColumn get aReal => real().nullable();
+  BlobColumn get aBlob => blob().nullable();
+  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable();
+  TextColumn get aTextWithConverter => text()
+      .named('insert')
+      .map(const CustomJsonConverter())
+      .nullable()
+      .nullable();
 }
 
 class CustomConverter extends TypeConverter<MyCustomObject, String> {
@@ -176,11 +201,85 @@ class CustomJsonConverter extends CustomConverter
   }
 }
 
+abstract class CategoryTodoCountView extends View {
+  TodosTable get todos;
+  Categories get categories;
+
+  Expression<int> get categoryId => categories.id;
+  Expression<String> get description =>
+      categories.description + const Variable('!');
+  Expression<int> get itemCount => todos.id.count();
+
+  @override
+  BaseSelectStatement as() => select([categoryId, description, itemCount])
+      .from(categories)
+      .innerJoin(todos, on: todos.category.equalsExp(categories.id))
+      .groupBy([categories.id]);
+}
+
+abstract class TodoWithCategoryView extends View {
+  TodosTable get todos;
+  Categories get categories;
+
+  @override
+  BaseSelectStatement as() => select([todos.title, categories.description])
+      .from(todos)
+      .innerJoin(categories, on: categories.id.equalsExp(todos.category));
+}
+
+class WithCustomType extends Table {
+  Column<UuidValue> get id => col(uuidType);
+}
+
+final class UuidType extends PhysicalSqlType<UuidValue> {
+  final bool isSupported;
+
+  const UuidType({required this.isSupported});
+
+  @override
+  String get typeName => isSupported ? 'uuid' : 'text';
+
+  @override
+  String sqlLiteral(UuidValue value) {
+    return "'$value'";
+  }
+
+  @override
+  Object sqlParameter(UuidValue dartValue) {
+    return dartValue.toString();
+  }
+
+  @override
+  UuidValue dartValue(Object fromSql) {
+    if (isSupported) {
+      return fromSql as UuidValue;
+    } else {
+      return UuidValue.fromString(fromSql as String);
+    }
+  }
+}
+
+const uuidType = SqlType<UuidValue>.dialectSpecific(
+  fallback: UuidType(isSupported: false),
+  overrides: {.postgres: UuidType(isSupported: true)},
+);
+
 @DriftDatabase(
-  tables: [Categories, SharedTodos, Users, TodosTable, TableWithoutPK],
-  views: [],
+  tables: [
+    Categories,
+    SharedTodos,
+    Users,
+    TodosTable,
+    TableWithEveryColumnType,
+    TableWithoutPK,
+    PureDefaults,
+    WithCustomType,
+  ],
+  views: [CategoryTodoCountView, TodoWithCategoryView],
   daos: [],
-  queries: {},
+  queries: {
+    'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
+  },
 )
 final class TodoDb extends _$TodoDb {
   TodoDb([DriftConnection? e]) : super(e ?? _nullConnection) {
@@ -188,7 +287,10 @@ final class TodoDb extends _$TodoDb {
   }
 
   @override
-  int get schemaVersion => 1;
+  MigrationStrategy migration = MigrationStrategy();
+
+  @override
+  int schemaVersion = 1;
 }
 
 DriftConnection get _nullConnection => DriftConnection(

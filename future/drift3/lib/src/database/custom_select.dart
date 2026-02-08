@@ -146,7 +146,9 @@ final class CustomRow {
   /// use [readNullableWithType] if needed.
   @optionalTypeArgs
   T readWithType<T extends Object>(SqlType<T> type, String key) {
-    return type.resolveIn(_db.dialect).dartValue(_indexByName(key));
+    final index = _indexByName(key);
+
+    return type.resolveIn(_db.dialect).dartValue(row[index]!);
   }
 
   /// Reads a nullable value from this row.

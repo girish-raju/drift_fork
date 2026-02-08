@@ -120,7 +120,7 @@ sealed class BaseSelectStatement<
   }
 
   /// Adds [table] to this query using a `LEFT OUTER JOIN` operator.
-  SelectStatement leftOuter(
+  SelectStatement leftOuterJoin(
     ResultSetDsl table, {
     Expression<bool>? on,
     bool? includeInResult,
@@ -130,8 +130,30 @@ sealed class BaseSelectStatement<
     );
   }
 
+  /// Adds [table] to this query using a `RIGHT OUTER JOIN` operator.
+  SelectStatement rightOuterJoin(
+    ResultSetDsl table, {
+    Expression<bool>? on,
+    bool? includeInResult,
+  }) {
+    return _withAddedJoin(
+      Join.rightOuter(table, on: on, includeInResult: includeInResult),
+    );
+  }
+
+  /// Adds [table] to this query using a `FULL OUTER JOIN` operator.
+  SelectStatement fullOuterJoin(
+    ResultSetDsl table, {
+    Expression<bool>? on,
+    bool? includeInResult,
+  }) {
+    return _withAddedJoin(
+      Join.fullOuter(table, on: on, includeInResult: includeInResult),
+    );
+  }
+
   /// Adds [table] to this query using a `CROSS JOIN` operator.
-  SelectStatement cross(ResultSetDsl table, {bool? includeInResult}) {
+  SelectStatement crossJoin(ResultSetDsl table, {bool? includeInResult}) {
     return _withAddedJoin(Join.cross(table, includeInResult: includeInResult));
   }
 
@@ -584,6 +606,16 @@ final class Join extends FromClauseElement {
   /// Create an `LEFT OUTER JOIN` for the [table].
   Join.leftOuter(ResultSetDsl table, {this.on, this.includeInResult})
     : operator = JoinOperator.leftOuter,
+      table = FromResultSet(ResultSet.fromDsl(table));
+
+  /// Create an `RIGHT OUTER JOIN` for the [table].
+  Join.rightOuter(ResultSetDsl table, {this.on, this.includeInResult})
+    : operator = JoinOperator.rightOuter,
+      table = FromResultSet(ResultSet.fromDsl(table));
+
+  /// Create an `FULL OUTER JOIN` for the [table].
+  Join.fullOuter(ResultSetDsl table, {this.on, this.includeInResult})
+    : operator = JoinOperator.fullOuter,
       table = FromResultSet(ResultSet.fromDsl(table));
 
   /// Create a `CROSS JOIN` for the [table].

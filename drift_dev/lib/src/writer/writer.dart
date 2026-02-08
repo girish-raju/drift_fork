@@ -470,19 +470,17 @@ abstract class _NodeOrWriter {
     buffer.write('{');
 
     for (final dialect in writer.options.supportedDialects) {
-      buffer
-        ..write(drift(
-            writer.options.drift3Preview ? 'KnownSqlDialect' : 'SqlDialect'))
-        ..write(".${dialect.name}: '");
-
       final dialectBuffer = StringBuffer();
       SqlWriter(writer.options, dialect: dialect, buffer: dialectBuffer)
           .writeSql(node);
       if (dialectBuffer.toString() != defaultSql) {
-        buffer.write(dialectBuffer);
+        buffer
+          ..write(drift(
+              writer.options.drift3Preview ? 'KnownSqlDialect' : 'SqlDialect'))
+          ..write(".${dialect.name}: '")
+          ..write(dialectBuffer)
+          ..writeln("',");
       }
-
-      buffer.writeln("',");
     }
 
     buffer.write('}');

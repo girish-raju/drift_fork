@@ -1612,10 +1612,7 @@ class MyView
   @override
   CustomComponent? get sqlDefinition => CustomComponent(
     'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2',
-    dialectSpecificSql: {
-      KnownSqlDialect.sqlite: '',
-      KnownSqlDialect.postgres: '',
-    },
+    dialectSpecificSql: {},
   );
   @override
   MyView asSelfType() => this;
@@ -1692,10 +1689,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     'value_idx',
     CustomComponent(
       'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)',
-      dialectSpecificSql: {
-        KnownSqlDialect.sqlite: '',
-        KnownSqlDialect.postgres: '',
-      },
+      dialectSpecificSql: {},
     ),
   );
   late final Mytable mytable = Mytable();
@@ -1705,10 +1699,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     'my_trigger',
     CustomComponent(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
-      dialectSpecificSql: {
-        KnownSqlDialect.sqlite: '',
-        KnownSqlDialect.postgres: '',
-      },
+      dialectSpecificSql: {},
     ),
   );
   late final MyView myView = MyView(this);
@@ -1789,13 +1780,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedpredicate = $write(
       predicate?.call(this.config) ??
           const Expression.customComponent(
-            CustomComponent(
-              '(TRUE)',
-              dialectSpecificSql: {
-                KnownSqlDialect.sqlite: '',
-                KnownSqlDialect.postgres: '',
-              },
-            ),
+            CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
       startIndex: $arrayStartIndex,
     );
@@ -1827,13 +1812,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedpred = $write(
       pred?.call(this.config) ??
           const Expression.customComponent(
-            CustomComponent(
-              '(TRUE)',
-              dialectSpecificSql: {
-                KnownSqlDialect.sqlite: '',
-                KnownSqlDialect.postgres: '',
-              },
-            ),
+            CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
       startIndex: $arrayStartIndex,
     );
@@ -2004,13 +1983,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedwhere = $write(
       where?.call(this.myView) ??
           const Expression.customComponent(
-            CustomComponent(
-              '(TRUE)',
-              dialectSpecificSql: {
-                KnownSqlDialect.sqlite: '',
-                KnownSqlDialect.postgres: '',
-              },
-            ),
+            CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
       startIndex: $arrayStartIndex,
     );

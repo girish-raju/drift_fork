@@ -458,33 +458,47 @@ abstract class TableOrViewWriter {
     bool isForTable = false,
     bool? isRequiredForInsert,
   }) {
+    AnnotatedDartCode? viewExpression;
+
+    if (!isForTable) {
+      for (final constraint in column.constraints) {
+        // TODO: Store this on the view instead
+        if (constraint is ColumnGeneratedAs) {
+          viewExpression = constraint.dartExpression;
+        }
+      }
+    }
+
     final namedParameters = <String, String>{
       'name': asDartLiteral(column.nameInSql),
       'sqlType': emitter.drift3SqlType(column.sqlType),
-//      if (column.viewExpression case final viewExpression?)
-//        'expression': emitter.dartCode(viewExpression),
+      if (viewExpression case final viewExpression?)
+        'expression': emitter.dartCode(viewExpression),
     };
     final expressionBuffer = StringBuffer();
-    final constraints = columnConstraintsDrift3(emitter, column);
 
     if (isRequiredForInsert != null) {
       namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
     }
 
-    if (column.customConstraints != null) {
-      final list = '[${emitter.drift('ColumnConstraint.customSql')}'
-          '(${asDartLiteral(column.customConstraints!)})]';
+    if (isForTable) {
+      final constraints = columnConstraintsDrift3(emitter, column);
 
-      namedParameters['constraints'] = '() => $list';
-    } else if (constraints.isNotEmpty) {
-      // Use the default constraints supported by drift
-      namedParameters['constraints'] = '() => [${constraints.join(', ')}]';
-    }
+      if (column.customConstraints != null) {
+        final list = '[${emitter.drift('ColumnConstraint.customSql')}'
+            '(${asDartLiteral(column.customConstraints!)})]';
 
-    if (column.clientDefaultCode != null &&
-        !emitter.writer.generationOptions.avoidUserCode) {
-      namedParameters['clientDefault'] =
-          emitter.dartCode(column.clientDefaultCode!);
+        namedParameters['constraints'] = '() => $list';
+      } else if (constraints.isNotEmpty) {
+        // Use the default constraints supported by drift
+        namedParameters['constraints'] = '() => [${constraints.join(', ')}]';
+      }
+
+      if (column.clientDefaultCode != null &&
+          !emitter.writer.generationOptions.avoidUserCode) {
+        namedParameters['clientDefault'] =
+            emitter.dartCode(column.clientDefaultCode!);
+      }
     }
 
     final innerType = emitter.innerColumnType(column.sqlType);
@@ -497,9 +511,7 @@ abstract class TableOrViewWriter {
       // Use ViewColumn.forDriftFile constructor if we don't have a Dart
       // expression backing the column (which is the case for SQL-defined
       // views).
-      ..write(!isForTable && true /*column.viewExpression == null */
-          ? '.forDriftFile'
-          : '')
+      ..write(!isForTable && viewExpression == null ? '.forDriftFile' : '')
       ..write('(');
 
     var first = true;

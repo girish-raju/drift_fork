@@ -104,13 +104,22 @@ final class StatementBuffer {
   /// Returns a [StatementInfo] reflecting the current state of this compiled
   /// statement buffer.
   StatementInfo toStatementInfo() {
+    final watchedTables = <String>{};
+    for (final watchedResultSet in this.watchedTables) {
+      if (watchedResultSet is GeneratedView) {
+        watchedTables.addAll(watchedResultSet.readsFrom);
+      } else {
+        watchedTables.add(watchedResultSet.entityName);
+      }
+    }
+
     return StatementInfo(
       buffer.toString(),
       variables: variables.toList(),
       needsResultSet: resultSetStructure != null,
       isReadOnly: isReadOnly,
       expectedWrites: possibleUpdates,
-      watchedTables: [for (final table in watchedTables) table.entityName],
+      watchedTables: watchedTables.toList(),
     );
   }
 }
@@ -619,7 +628,25 @@ abstract base class StatementCompiler {
   void addReturningClause(ReturningClause returning) {
     // We currently only support the `RETURNING *` format without arbitrary
     // columns.
-    statement.buffer.write('RETURNING *');
+    statement.buffer.write('RETURNING ');
+    addResultSetExpressions(returning.structure);
+  }
+
+  void addResultSetExpressions(ResultSetStructure structure) {
+    var first = true;
+    structure.expressions.forEach((expr, position) {
+      if (!first) {
+        statement.comma();
+      }
+      first = false;
+
+      expr.compileWith(this);
+
+      if (structure.nameForColumn(position) case final alias?) {
+        statement.buffer.write(' AS ');
+        addReference(alias);
+      }
+    });
   }
 
   void addSelectStatement(BaseSelectStatement select) {
@@ -636,21 +663,8 @@ abstract base class StatementCompiler {
 
     statement.hasMultipleTables |= select.from.length > 1;
 
-    var first = true;
     if (!_ignoreResultSet) {
-      select.structure.expressions.forEach((expr, position) {
-        if (!first) {
-          statement.comma();
-        }
-        first = false;
-
-        expr.compileWith(this);
-
-        if (select.structure.nameForColumn(position) case final alias?) {
-          statement.buffer.write(' AS ');
-          addReference(alias);
-        }
-      });
+      addResultSetExpressions(select.structure);
     } else {
       statement.buffer.write('1');
     }
@@ -1158,6 +1172,8 @@ abstract base class StatementCompiler {
       statement.buffer.write('_source.');
       addReference(source.select.structure.nameForColumn(value)!);
     }
+
+    statement.buffer.write(' FROM _source');
   }
 
   void addGroupBy(GroupBy groupBy) {

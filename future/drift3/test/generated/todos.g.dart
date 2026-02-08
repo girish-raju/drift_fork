@@ -1216,6 +1216,590 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   }
 }
 
+class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
+    with ResultSet<TableWithEveryColumnTypeData, $TableWithEveryColumnTypeTable>
+    implements
+        GeneratedTable<
+          TableWithEveryColumnTypeData,
+          $TableWithEveryColumnTypeTable
+        > {
+  @override
+  final String? alias;
+  $TableWithEveryColumnTypeTable([this.alias]);
+  @override
+  late final TableColumnWithTypeConverter<RowId, int> id =
+      TableColumn<int>(
+          name: 'id',
+          sqlType: BuiltinDriftType.int,
+          requiredDuringInsert: false,
+          constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+            const ColumnNotNullConstraint(),
+          ],
+        ).withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid)
+        ..owningResultSet = this;
+  @override
+  late final TableColumn<bool> aBool = TableColumn<bool>(
+    name: 'a_bool',
+    sqlType: BuiltinDriftType.bool,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<DateTime> aDateTime = TableColumn<DateTime>(
+    name: 'a_date_time',
+    sqlType: BuiltinDriftType.dateTime,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<String> aText = TableColumn<String>(
+    name: 'a_text',
+    sqlType: BuiltinDriftType.text,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<int> anInt = TableColumn<int>(
+    name: 'an_int',
+    sqlType: BuiltinDriftType.int,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<BigInt> anInt64 = TableColumn<BigInt>(
+    name: 'an_int64',
+    sqlType: BuiltinDriftType.int64,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<double> aReal = TableColumn<double>(
+    name: 'a_real',
+    sqlType: BuiltinDriftType.double,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<Uint8List> aBlob = TableColumn<Uint8List>(
+    name: 'a_blob',
+    sqlType: BuiltinDriftType.byteArray,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  late final TableColumnWithTypeConverter<TodoStatus?, int> anIntEnum =
+      TableColumn<int>(
+          name: 'an_int_enum',
+          sqlType: BuiltinDriftType.int,
+          requiredDuringInsert: false,
+        ).withConverter<TodoStatus?>(
+          $TableWithEveryColumnTypeTable.$converteranIntEnumn,
+        )
+        ..owningResultSet = this;
+  @override
+  late final TableColumnWithTypeConverter<MyCustomObject?, String>
+  aTextWithConverter =
+      TableColumn<String>(
+          name: 'insert',
+          sqlType: BuiltinDriftType.text,
+          requiredDuringInsert: false,
+        ).withConverter<MyCustomObject?>(
+          $TableWithEveryColumnTypeTable.$converteraTextWithConvertern,
+        )
+        ..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [
+    id,
+    aBool,
+    aDateTime,
+    aText,
+    anInt,
+    anInt64,
+    aReal,
+    aBlob,
+    anIntEnum,
+    aTextWithConverter,
+  ];
+  @override
+  String get entityName => $name;
+  static const String $name = 'table_with_every_column_type';
+  @override
+  $TableWithEveryColumnTypeTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  TableWithEveryColumnTypeData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$aBool = positions[1].index;
+    final type$1 = BuiltinDriftType.bool.resolveIn(dialect);
+    final pos$aDateTime = positions[2].index;
+    final type$2 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final pos$aText = positions[3].index;
+    final type$3 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$anInt = positions[4].index;
+    final pos$anInt64 = positions[5].index;
+    final type$4 = BuiltinDriftType.int64.resolveIn(dialect);
+    final pos$aReal = positions[6].index;
+    final type$5 = BuiltinDriftType.double.resolveIn(dialect);
+    final pos$aBlob = positions[7].index;
+    final type$6 = BuiltinDriftType.byteArray.resolveIn(dialect);
+    final pos$anIntEnum = positions[8].index;
+    final pos$aTextWithConverter = positions[9].index;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return TableWithEveryColumnTypeData(
+        id: $TableWithEveryColumnTypeTable.$converterid.fromSql(
+          type$0.dartValue(row[pos$id]!),
+        ),
+        aBool: type$1.nullableDartValue(row[pos$aBool]),
+        aDateTime: type$2.nullableDartValue(row[pos$aDateTime]),
+        aText: type$3.nullableDartValue(row[pos$aText]),
+        anInt: type$0.nullableDartValue(row[pos$anInt]),
+        anInt64: type$4.nullableDartValue(row[pos$anInt64]),
+        aReal: type$5.nullableDartValue(row[pos$aReal]),
+        aBlob: type$6.nullableDartValue(row[pos$aBlob]),
+        anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromSql(
+          type$0.nullableDartValue(row[pos$anIntEnum]),
+        ),
+        aTextWithConverter: $TableWithEveryColumnTypeTable
+            .$converteraTextWithConvertern
+            .fromSql(type$3.nullableDartValue(row[pos$aTextWithConverter])),
+      );
+    };
+  }
+
+  @override
+  $TableWithEveryColumnTypeTable withAlias(String alias) {
+    return $TableWithEveryColumnTypeTable(alias);
+  }
+
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<TodoStatus, int, int> $converteranIntEnum =
+      const EnumIndexConverter<TodoStatus>(TodoStatus.values);
+  static JsonTypeConverter2<TodoStatus?, int?, int?> $converteranIntEnumn =
+      JsonTypeConverter2.asNullable($converteranIntEnum);
+  static JsonTypeConverter2<MyCustomObject, String, Map<String, Object?>>
+  $converteraTextWithConverter = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<String, Object?>?>
+  $converteraTextWithConvertern = JsonTypeConverter2.asNullable(
+    $converteraTextWithConverter,
+  );
+}
+
+class TableWithEveryColumnTypeData extends LegacyDataClass
+    implements Insertable<TableWithEveryColumnTypeData> {
+  final RowId id;
+  final bool? aBool;
+  final DateTime? aDateTime;
+  final String? aText;
+  final int? anInt;
+  final BigInt? anInt64;
+  final double? aReal;
+  final Uint8List? aBlob;
+  final TodoStatus? anIntEnum;
+  final MyCustomObject? aTextWithConverter;
+  const TableWithEveryColumnTypeData({
+    required this.id,
+    this.aBool,
+    this.aDateTime,
+    this.aText,
+    this.anInt,
+    this.anInt64,
+    this.aReal,
+    this.aBlob,
+    this.anIntEnum,
+    this.aTextWithConverter,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    {
+      map['id'] = Variable<int>(
+        $TableWithEveryColumnTypeTable.$converterid.toSql(id),
+        BuiltinDriftType.int,
+      );
+    }
+    if (!nullToAbsent || aBool != null) {
+      map['a_bool'] = Variable<bool>(aBool, BuiltinDriftType.bool);
+    }
+    if (!nullToAbsent || aDateTime != null) {
+      map['a_date_time'] = Variable<DateTime>(
+        aDateTime,
+        BuiltinDriftType.dateTime,
+      );
+    }
+    if (!nullToAbsent || aText != null) {
+      map['a_text'] = Variable<String>(aText, BuiltinDriftType.text);
+    }
+    if (!nullToAbsent || anInt != null) {
+      map['an_int'] = Variable<int>(anInt, BuiltinDriftType.int);
+    }
+    if (!nullToAbsent || anInt64 != null) {
+      map['an_int64'] = Variable<BigInt>(anInt64, BuiltinDriftType.int64);
+    }
+    if (!nullToAbsent || aReal != null) {
+      map['a_real'] = Variable<double>(aReal, BuiltinDriftType.double);
+    }
+    if (!nullToAbsent || aBlob != null) {
+      map['a_blob'] = Variable<Uint8List>(aBlob, BuiltinDriftType.byteArray);
+    }
+    if (!nullToAbsent || anIntEnum != null) {
+      map['an_int_enum'] = Variable<int>(
+        $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(anIntEnum),
+        BuiltinDriftType.int,
+      );
+    }
+    if (!nullToAbsent || aTextWithConverter != null) {
+      map['insert'] = Variable<String>(
+        $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toSql(
+          aTextWithConverter,
+        ),
+        BuiltinDriftType.text,
+      );
+    }
+    return map;
+  }
+
+  TableWithEveryColumnTypeCompanion toCompanion(bool nullToAbsent) {
+    return TableWithEveryColumnTypeCompanion(
+      id: Value(id),
+      aBool: aBool == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aBool),
+      aDateTime: aDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aDateTime),
+      aText: aText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aText),
+      anInt: anInt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anInt),
+      anInt64: anInt64 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anInt64),
+      aReal: aReal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aReal),
+      aBlob: aBlob == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aBlob),
+      anIntEnum: anIntEnum == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anIntEnum),
+      aTextWithConverter: aTextWithConverter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aTextWithConverter),
+    );
+  }
+
+  factory TableWithEveryColumnTypeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TableWithEveryColumnTypeData(
+      id: $TableWithEveryColumnTypeTable.$converterid.fromJson(
+        serializer.fromJson<int>(json['id']),
+      ),
+      aBool: serializer.fromJson<bool?>(json['aBool']),
+      aDateTime: serializer.fromJson<DateTime?>(json['aDateTime']),
+      aText: serializer.fromJson<String?>(json['aText']),
+      anInt: serializer.fromJson<int?>(json['anInt']),
+      anInt64: serializer.fromJson<BigInt?>(json['anInt64']),
+      aReal: serializer.fromJson<double?>(json['aReal']),
+      aBlob: serializer.fromJson<Uint8List?>(json['aBlob']),
+      anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromJson(
+        serializer.fromJson<int?>(json['anIntEnum']),
+      ),
+      aTextWithConverter: $TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .fromJson(
+            serializer.fromJson<Map<String, Object?>?>(
+              json['aTextWithConverter'],
+            ),
+          ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(
+        $TableWithEveryColumnTypeTable.$converterid.toJson(id),
+      ),
+      'aBool': serializer.toJson<bool?>(aBool),
+      'aDateTime': serializer.toJson<DateTime?>(aDateTime),
+      'aText': serializer.toJson<String?>(aText),
+      'anInt': serializer.toJson<int?>(anInt),
+      'anInt64': serializer.toJson<BigInt?>(anInt64),
+      'aReal': serializer.toJson<double?>(aReal),
+      'aBlob': serializer.toJson<Uint8List?>(aBlob),
+      'anIntEnum': serializer.toJson<int?>(
+        $TableWithEveryColumnTypeTable.$converteranIntEnumn.toJson(anIntEnum),
+      ),
+      'aTextWithConverter': serializer.toJson<Map<String, Object?>?>(
+        $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toJson(
+          aTextWithConverter,
+        ),
+      ),
+    };
+  }
+
+  TableWithEveryColumnTypeData copyWith({
+    RowId? id,
+    Value<bool?> aBool = const Value.absent(),
+    Value<DateTime?> aDateTime = const Value.absent(),
+    Value<String?> aText = const Value.absent(),
+    Value<int?> anInt = const Value.absent(),
+    Value<BigInt?> anInt64 = const Value.absent(),
+    Value<double?> aReal = const Value.absent(),
+    Value<Uint8List?> aBlob = const Value.absent(),
+    Value<TodoStatus?> anIntEnum = const Value.absent(),
+    Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+  }) => TableWithEveryColumnTypeData(
+    id: id ?? this.id,
+    aBool: aBool.present ? aBool.value : this.aBool,
+    aDateTime: aDateTime.present ? aDateTime.value : this.aDateTime,
+    aText: aText.present ? aText.value : this.aText,
+    anInt: anInt.present ? anInt.value : this.anInt,
+    anInt64: anInt64.present ? anInt64.value : this.anInt64,
+    aReal: aReal.present ? aReal.value : this.aReal,
+    aBlob: aBlob.present ? aBlob.value : this.aBlob,
+    anIntEnum: anIntEnum.present ? anIntEnum.value : this.anIntEnum,
+    aTextWithConverter: aTextWithConverter.present
+        ? aTextWithConverter.value
+        : this.aTextWithConverter,
+  );
+  TableWithEveryColumnTypeData copyWithCompanion(
+    TableWithEveryColumnTypeCompanion data,
+  ) {
+    return TableWithEveryColumnTypeData(
+      id: data.id.present ? data.id.value : this.id,
+      aBool: data.aBool.present ? data.aBool.value : this.aBool,
+      aDateTime: data.aDateTime.present ? data.aDateTime.value : this.aDateTime,
+      aText: data.aText.present ? data.aText.value : this.aText,
+      anInt: data.anInt.present ? data.anInt.value : this.anInt,
+      anInt64: data.anInt64.present ? data.anInt64.value : this.anInt64,
+      aReal: data.aReal.present ? data.aReal.value : this.aReal,
+      aBlob: data.aBlob.present ? data.aBlob.value : this.aBlob,
+      anIntEnum: data.anIntEnum.present ? data.anIntEnum.value : this.anIntEnum,
+      aTextWithConverter: data.aTextWithConverter.present
+          ? data.aTextWithConverter.value
+          : this.aTextWithConverter,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeData(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    aBool,
+    aDateTime,
+    aText,
+    anInt,
+    anInt64,
+    aReal,
+    $driftBlobEquality.hash(aBlob),
+    anIntEnum,
+    aTextWithConverter,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TableWithEveryColumnTypeData &&
+          other.id == this.id &&
+          other.aBool == this.aBool &&
+          other.aDateTime == this.aDateTime &&
+          other.aText == this.aText &&
+          other.anInt == this.anInt &&
+          other.anInt64 == this.anInt64 &&
+          other.aReal == this.aReal &&
+          $driftBlobEquality.equals(other.aBlob, this.aBlob) &&
+          other.anIntEnum == this.anIntEnum &&
+          other.aTextWithConverter == this.aTextWithConverter);
+}
+
+class TableWithEveryColumnTypeCompanion
+    extends UpdateCompanion<TableWithEveryColumnTypeData> {
+  final Value<RowId> id;
+  final Value<bool?> aBool;
+  final Value<DateTime?> aDateTime;
+  final Value<String?> aText;
+  final Value<int?> anInt;
+  final Value<BigInt?> anInt64;
+  final Value<double?> aReal;
+  final Value<Uint8List?> aBlob;
+  final Value<TodoStatus?> anIntEnum;
+  final Value<MyCustomObject?> aTextWithConverter;
+  const TableWithEveryColumnTypeCompanion({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  TableWithEveryColumnTypeCompanion.insert({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  static Insertable<TableWithEveryColumnTypeData> custom({
+    Expression<int>? id,
+    Expression<bool>? aBool,
+    Expression<DateTime>? aDateTime,
+    Expression<String>? aText,
+    Expression<int>? anInt,
+    Expression<BigInt>? anInt64,
+    Expression<double>? aReal,
+    Expression<Uint8List>? aBlob,
+    Expression<int>? anIntEnum,
+    Expression<String>? aTextWithConverter,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (aBool != null) 'a_bool': aBool,
+      if (aDateTime != null) 'a_date_time': aDateTime,
+      if (aText != null) 'a_text': aText,
+      if (anInt != null) 'an_int': anInt,
+      if (anInt64 != null) 'an_int64': anInt64,
+      if (aReal != null) 'a_real': aReal,
+      if (aBlob != null) 'a_blob': aBlob,
+      if (anIntEnum != null) 'an_int_enum': anIntEnum,
+      if (aTextWithConverter != null) 'insert': aTextWithConverter,
+    });
+  }
+
+  TableWithEveryColumnTypeCompanion copyWith({
+    Value<RowId>? id,
+    Value<bool?>? aBool,
+    Value<DateTime?>? aDateTime,
+    Value<String?>? aText,
+    Value<int?>? anInt,
+    Value<BigInt?>? anInt64,
+    Value<double?>? aReal,
+    Value<Uint8List?>? aBlob,
+    Value<TodoStatus?>? anIntEnum,
+    Value<MyCustomObject?>? aTextWithConverter,
+  }) {
+    return TableWithEveryColumnTypeCompanion(
+      id: id ?? this.id,
+      aBool: aBool ?? this.aBool,
+      aDateTime: aDateTime ?? this.aDateTime,
+      aText: aText ?? this.aText,
+      anInt: anInt ?? this.anInt,
+      anInt64: anInt64 ?? this.anInt64,
+      aReal: aReal ?? this.aReal,
+      aBlob: aBlob ?? this.aBlob,
+      anIntEnum: anIntEnum ?? this.anIntEnum,
+      aTextWithConverter: aTextWithConverter ?? this.aTextWithConverter,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(
+        $TableWithEveryColumnTypeTable.$converterid.toSql(id.value),
+        BuiltinDriftType.int,
+      );
+    }
+    if (aBool.present) {
+      map['a_bool'] = Variable<bool>(aBool.value, BuiltinDriftType.bool);
+    }
+    if (aDateTime.present) {
+      map['a_date_time'] = Variable<DateTime>(
+        aDateTime.value,
+        BuiltinDriftType.dateTime,
+      );
+    }
+    if (aText.present) {
+      map['a_text'] = Variable<String>(aText.value, BuiltinDriftType.text);
+    }
+    if (anInt.present) {
+      map['an_int'] = Variable<int>(anInt.value, BuiltinDriftType.int);
+    }
+    if (anInt64.present) {
+      map['an_int64'] = Variable<BigInt>(anInt64.value, BuiltinDriftType.int64);
+    }
+    if (aReal.present) {
+      map['a_real'] = Variable<double>(aReal.value, BuiltinDriftType.double);
+    }
+    if (aBlob.present) {
+      map['a_blob'] = Variable<Uint8List>(
+        aBlob.value,
+        BuiltinDriftType.byteArray,
+      );
+    }
+    if (anIntEnum.present) {
+      map['an_int_enum'] = Variable<int>(
+        $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(
+          anIntEnum.value,
+        ),
+        BuiltinDriftType.int,
+      );
+    }
+    if (aTextWithConverter.present) {
+      map['insert'] = Variable<String>(
+        $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toSql(
+          aTextWithConverter.value,
+        ),
+        BuiltinDriftType.text,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeCompanion(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TableWithoutPKTable extends TableWithoutPK
     with ResultSet<CustomRowClass, $TableWithoutPKTable>
     implements GeneratedTable<CustomRowClass, $TableWithoutPKTable> {
@@ -1424,30 +2008,629 @@ extension CustomRowClassToInsertable on CustomRowClass {
   }
 }
 
+class $PureDefaultsTable extends PureDefaults
+    with ResultSet<PureDefault, $PureDefaultsTable>
+    implements GeneratedTable<PureDefault, $PureDefaultsTable> {
+  @override
+  final String? alias;
+  $PureDefaultsTable([this.alias]);
+  @override
+  late final TableColumnWithTypeConverter<MyCustomObject?, String> txt =
+      TableColumn<String>(
+          name: 'insert',
+          sqlType: BuiltinDriftType.text,
+          requiredDuringInsert: false,
+        ).withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxtn)
+        ..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [txt];
+  @override
+  String get entityName => $name;
+  static const String $name = 'pure_defaults';
+  @override
+  $PureDefaultsTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {txt};
+  @override
+  PureDefault? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$txt = positions[0].index;
+    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    return (RawRow row) {
+      return PureDefault(
+        txt: $PureDefaultsTable.$convertertxtn.fromSql(
+          type$0.nullableDartValue(row[pos$txt]),
+        ),
+      );
+    };
+  }
+
+  @override
+  $PureDefaultsTable withAlias(String alias) {
+    return $PureDefaultsTable(alias);
+  }
+
+  static JsonTypeConverter2<MyCustomObject, String, Map<String, Object?>>
+  $convertertxt = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<String, Object?>?>
+  $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);
+}
+
+class PureDefault extends LegacyDataClass implements Insertable<PureDefault> {
+  final MyCustomObject? txt;
+  const PureDefault({this.txt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || txt != null) {
+      map['insert'] = Variable<String>(
+        $PureDefaultsTable.$convertertxtn.toSql(txt),
+        BuiltinDriftType.text,
+      );
+    }
+    return map;
+  }
+
+  PureDefaultsCompanion toCompanion(bool nullToAbsent) {
+    return PureDefaultsCompanion(
+      txt: txt == null && nullToAbsent ? const Value.absent() : Value(txt),
+    );
+  }
+
+  factory PureDefault.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PureDefault(
+      txt: $PureDefaultsTable.$convertertxtn.fromJson(
+        serializer.fromJson<Map<String, Object?>?>(json['txt']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'txt': serializer.toJson<Map<String, Object?>?>(
+        $PureDefaultsTable.$convertertxtn.toJson(txt),
+      ),
+    };
+  }
+
+  PureDefault copyWith({Value<MyCustomObject?> txt = const Value.absent()}) =>
+      PureDefault(txt: txt.present ? txt.value : this.txt);
+  PureDefault copyWithCompanion(PureDefaultsCompanion data) {
+    return PureDefault(txt: data.txt.present ? data.txt.value : this.txt);
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PureDefault(')
+          ..write('txt: $txt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => txt.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is PureDefault && other.txt == this.txt);
+}
+
+class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
+  final Value<MyCustomObject?> txt;
+  final Value<int> rowid;
+  const PureDefaultsCompanion({
+    this.txt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PureDefaultsCompanion.insert({
+    this.txt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  static Insertable<PureDefault> custom({
+    Expression<String>? txt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (txt != null) 'insert': txt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PureDefaultsCompanion copyWith({
+    Value<MyCustomObject?>? txt,
+    Value<int>? rowid,
+  }) {
+    return PureDefaultsCompanion(
+      txt: txt ?? this.txt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (txt.present) {
+      map['insert'] = Variable<String>(
+        $PureDefaultsTable.$convertertxtn.toSql(txt.value),
+        BuiltinDriftType.text,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PureDefaultsCompanion(')
+          ..write('txt: $txt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WithCustomTypeTable extends WithCustomType
+    with ResultSet<WithCustomTypeData, $WithCustomTypeTable>
+    implements GeneratedTable<WithCustomTypeData, $WithCustomTypeTable> {
+  @override
+  final String? alias;
+  $WithCustomTypeTable([this.alias]);
+  @override
+  late final TableColumn<UuidValue> id = TableColumn<UuidValue>(
+    name: 'id',
+    sqlType: uuidType,
+    requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
+  )..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [id];
+  @override
+  String get entityName => $name;
+  static const String $name = 'with_custom_type';
+  @override
+  $WithCustomTypeTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => const {};
+  @override
+  WithCustomTypeData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = uuidType.resolveIn(dialect);
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return WithCustomTypeData(id: type$0.dartValue(row[pos$id]!));
+    };
+  }
+
+  @override
+  $WithCustomTypeTable withAlias(String alias) {
+    return $WithCustomTypeTable(alias);
+  }
+}
+
+class WithCustomTypeData extends LegacyDataClass
+    implements Insertable<WithCustomTypeData> {
+  final UuidValue id;
+  const WithCustomTypeData({required this.id});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<UuidValue>(id, uuidType);
+    return map;
+  }
+
+  WithCustomTypeCompanion toCompanion(bool nullToAbsent) {
+    return WithCustomTypeCompanion(id: Value(id));
+  }
+
+  factory WithCustomTypeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WithCustomTypeData(id: serializer.fromJson<UuidValue>(json['id']));
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{'id': serializer.toJson<UuidValue>(id)};
+  }
+
+  WithCustomTypeData copyWith({UuidValue? id}) =>
+      WithCustomTypeData(id: id ?? this.id);
+  WithCustomTypeData copyWithCompanion(WithCustomTypeCompanion data) {
+    return WithCustomTypeData(id: data.id.present ? data.id.value : this.id);
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WithCustomTypeData(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WithCustomTypeData && other.id == this.id);
+}
+
+class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
+  final Value<UuidValue> id;
+  final Value<int> rowid;
+  const WithCustomTypeCompanion({
+    this.id = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WithCustomTypeCompanion.insert({
+    required UuidValue id,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id);
+  static Insertable<WithCustomTypeData> custom({
+    Expression<UuidValue>? id,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WithCustomTypeCompanion copyWith({Value<UuidValue>? id, Value<int>? rowid}) {
+    return WithCustomTypeCompanion(
+      id: id ?? this.id,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<UuidValue>(id.value, uuidType);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WithCustomTypeCompanion(')
+          ..write('id: $id, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class CategoryTodoCountViewData extends LegacyDataClass {
+  final int? categoryId;
+  final String? description;
+  final int? itemCount;
+  const CategoryTodoCountViewData({
+    this.categoryId,
+    this.description,
+    this.itemCount,
+  });
+  factory CategoryTodoCountViewData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryTodoCountViewData(
+      categoryId: serializer.fromJson<int?>(json['categoryId']),
+      description: serializer.fromJson<String?>(json['description']),
+      itemCount: serializer.fromJson<int?>(json['itemCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'categoryId': serializer.toJson<int?>(categoryId),
+      'description': serializer.toJson<String?>(description),
+      'itemCount': serializer.toJson<int?>(itemCount),
+    };
+  }
+
+  CategoryTodoCountViewData copyWith({
+    Value<int?> categoryId = const Value.absent(),
+    Value<String?> description = const Value.absent(),
+    Value<int?> itemCount = const Value.absent(),
+  }) => CategoryTodoCountViewData(
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    description: description.present ? description.value : this.description,
+    itemCount: itemCount.present ? itemCount.value : this.itemCount,
+  );
+  @override
+  String toString() {
+    return (StringBuffer('CategoryTodoCountViewData(')
+          ..write('categoryId: $categoryId, ')
+          ..write('description: $description, ')
+          ..write('itemCount: $itemCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(categoryId, description, itemCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryTodoCountViewData &&
+          other.categoryId == this.categoryId &&
+          other.description == this.description &&
+          other.itemCount == this.itemCount);
+}
+
+class $CategoryTodoCountViewView extends CategoryTodoCountView
+    with ResultSet<CategoryTodoCountViewData, $CategoryTodoCountViewView>
+    implements
+        GeneratedView<CategoryTodoCountViewData, $CategoryTodoCountViewView> {
+  @override
+  final String? alias;
+  final _$TodoDb _attachedDatabase;
+  $CategoryTodoCountViewView(this._attachedDatabase, [this.alias]);
+  $TodosTableTable get todos => _attachedDatabase.todosTable.withAlias('t0');
+  $CategoriesTable get categories =>
+      _attachedDatabase.categories.withAlias('t1');
+  @override
+  List<SchemaColumn> get columns => [categoryId, description, itemCount];
+  @override
+  String get entityName => 'category_todo_count_view';
+  @override
+  Null get sqlDefinition => null;
+  @override
+  $CategoryTodoCountViewView asSelfType() => this;
+
+  @override
+  CategoryTodoCountViewData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$categoryId = positions[0].index;
+    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$description = positions[1].index;
+    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$itemCount = positions[2].index;
+    return (RawRow row) {
+      return CategoryTodoCountViewData(
+        categoryId: type$0.nullableDartValue(row[pos$categoryId]),
+        description: type$1.nullableDartValue(row[pos$description]),
+        itemCount: type$0.nullableDartValue(row[pos$itemCount]),
+      );
+    };
+  }
+
+  late final ViewColumn<int> categoryId = ViewColumn<int>(
+    name: 'category_id',
+    sqlType: BuiltinDriftType.int,
+    expression: categories.id,
+  )..owningResultSet = this;
+  late final ViewColumn<String> description = ViewColumn<String>(
+    name: 'description',
+    sqlType: BuiltinDriftType.text,
+    expression: categories.description + const Variable('!'),
+  )..owningResultSet = this;
+  late final ViewColumn<int> itemCount = ViewColumn<int>(
+    name: 'item_count',
+    sqlType: BuiltinDriftType.int,
+    expression: BaseAggregate(todos.id).count(),
+  )..owningResultSet = this;
+  @override
+  $CategoryTodoCountViewView withAlias(String alias) {
+    return $CategoryTodoCountViewView(_attachedDatabase, alias);
+  }
+
+  @override
+  SelectStatement? get query =>
+      (_attachedDatabase.selectOnly(categories)..addColumns(columns))
+          .innerJoin(todos, on: todos.category.equalsExp(categories.id))
+          .groupBy([categories.id]);
+  @override
+  Set<String> get readsFrom => const {'todos', 'categories'};
+}
+
+class TodoWithCategoryViewData extends LegacyDataClass {
+  final String? title;
+  final String? description;
+  const TodoWithCategoryViewData({this.title, this.description});
+  factory TodoWithCategoryViewData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoWithCategoryViewData(
+      title: serializer.fromJson<String?>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'title': serializer.toJson<String?>(title),
+      'description': serializer.toJson<String?>(description),
+    };
+  }
+
+  TodoWithCategoryViewData copyWith({
+    Value<String?> title = const Value.absent(),
+    Value<String?> description = const Value.absent(),
+  }) => TodoWithCategoryViewData(
+    title: title.present ? title.value : this.title,
+    description: description.present ? description.value : this.description,
+  );
+  @override
+  String toString() {
+    return (StringBuffer('TodoWithCategoryViewData(')
+          ..write('title: $title, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(title, description);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoWithCategoryViewData &&
+          other.title == this.title &&
+          other.description == this.description);
+}
+
+class $TodoWithCategoryViewView extends TodoWithCategoryView
+    with ResultSet<TodoWithCategoryViewData, $TodoWithCategoryViewView>
+    implements
+        GeneratedView<TodoWithCategoryViewData, $TodoWithCategoryViewView> {
+  @override
+  final String? alias;
+  final _$TodoDb _attachedDatabase;
+  $TodoWithCategoryViewView(this._attachedDatabase, [this.alias]);
+  $TodosTableTable get todos => _attachedDatabase.todosTable.withAlias('t0');
+  $CategoriesTable get categories =>
+      _attachedDatabase.categories.withAlias('t1');
+  @override
+  List<SchemaColumn> get columns => [title, description];
+  @override
+  String get entityName => 'todo_with_category_view';
+  @override
+  Null get sqlDefinition => null;
+  @override
+  $TodoWithCategoryViewView asSelfType() => this;
+
+  @override
+  TodoWithCategoryViewData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$title = positions[0].index;
+    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$description = positions[1].index;
+    return (RawRow row) {
+      return TodoWithCategoryViewData(
+        title: type$0.nullableDartValue(row[pos$title]),
+        description: type$0.nullableDartValue(row[pos$description]),
+      );
+    };
+  }
+
+  late final ViewColumn<String> title = ViewColumn<String>(
+    name: 'title',
+    sqlType: BuiltinDriftType.text,
+    expression: todos.title,
+  )..owningResultSet = this;
+  late final ViewColumn<String> description = ViewColumn<String>(
+    name: 'desc',
+    sqlType: BuiltinDriftType.text,
+    expression: categories.description,
+  )..owningResultSet = this;
+  @override
+  $TodoWithCategoryViewView withAlias(String alias) {
+    return $TodoWithCategoryViewView(_attachedDatabase, alias);
+  }
+
+  @override
+  SelectStatement? get query =>
+      (_attachedDatabase.selectOnly(todos)..addColumns(columns)).innerJoin(
+        categories,
+        on: categories.id.equalsExp(todos.category),
+      );
+  @override
+  Set<String> get readsFrom => const {'todos', 'categories'};
+}
+
 abstract base class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(super.implementation);
   late final $CategoriesTable categories = $CategoriesTable();
   late final $TodosTableTable todosTable = $TodosTableTable();
   late final $UsersTable users = $UsersTable();
   late final $SharedTodosTable sharedTodos = $SharedTodosTable();
+  late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
+      $TableWithEveryColumnTypeTable();
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable();
+  late final $PureDefaultsTable pureDefaults = $PureDefaultsTable();
+  late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable();
+  late final $CategoryTodoCountViewView categoryTodoCountView =
+      $CategoryTodoCountViewView(this);
+  late final $TodoWithCategoryViewView todoWithCategoryView =
+      $TodoWithCategoryViewView(this);
   late final Index categoriesDesc = Index(
     'categories_desc',
     CustomComponent(
       'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
-      dialectSpecificSql: {
-        KnownSqlDialect.sqlite: '',
-        KnownSqlDialect.postgres: '',
-      },
+      dialectSpecificSql: {},
     ),
   );
+  Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
+    var $arrayStartIndex = 3;
+    final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
+    $arrayStartIndex += var3.length;
+    return customSelectMapped<TodoEntry>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT "_s:0".id, "_s:0".title, "_s:0".content, "_s:0".target_date, "_s:0".category, "_s:0".status FROM todos AS "_s:0" WHERE "_s:0".title = ?2 OR "_s:0".id IN ($expandedvar3) OR "_s:0".title = ?1',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT "_s:0".id, "_s:0".title, "_s:0".content, "_s:0".target_date, "_s:0".category, "_s:0".status FROM todos AS "_s:0" WHERE "_s:0".title = \$2 OR "_s:0".id IN ($expandedvar3) OR "_s:0".title = \$1',
+      },
+      variables: [
+        mapValue(BuiltinDriftType.text, var1),
+        mapValue(BuiltinDriftType.text, var2),
+        for (var $ in var3)
+          mapValue(
+            BuiltinDriftType.int,
+            $TodosTableTable.$converterid.toSql($),
+          ),
+      ],
+      readsFrom: {todosTable},
+      createMapper: (RawResultSet _) {
+        final map_0 = todosTable.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+          ColumnPosition(4),
+          ColumnPosition(5),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
+
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     categories,
     todosTable,
     users,
     sharedTodos,
+    tableWithEveryColumnType,
     tableWithoutPK,
+    pureDefaults,
+    withCustomType,
+    categoryTodoCountView,
+    todoWithCategoryView,
     categoriesDesc,
   ];
 }

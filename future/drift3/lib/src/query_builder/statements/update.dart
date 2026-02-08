@@ -100,6 +100,10 @@ final class UpdateStatement<
   /// Note that this requires sqlite 3.35 or later.
   Future<List<Row>> writeReturning(Insertable<Row> entity) async {
     _applyColumns(entity, true);
+    if (updatedColumns.isEmpty) {
+      return const [];
+    }
+
     returning = ReturningClause(resultSet);
 
     final result = await _run();
