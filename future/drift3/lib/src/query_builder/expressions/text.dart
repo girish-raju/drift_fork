@@ -120,11 +120,7 @@ extension StringExpressionOperators on Expression<String> {
     Expression<int> start, [
     Expression<int>? length,
   ]) {
-    return FunctionCallExpression('SUBSTR', [
-      this,
-      start,
-      if (length != null) length,
-    ]);
+    return FunctionCallExpression('SUBSTR', [this, start, ?length]);
   }
 }
 
