@@ -32,7 +32,7 @@ final class PostgresDialect extends DriftDialect {
       const PhysicalPostgresType(Type.double, 'double');
 
   @override
-  PhysicalSqlType<BigInt> get int64Type => throw UnimplementedError();
+  PhysicalSqlType<BigInt> get int64Type => const DartBigIntType();
 
   @override
   PhysicalSqlType<int> get intType =>

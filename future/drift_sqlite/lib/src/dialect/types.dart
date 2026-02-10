@@ -287,7 +287,7 @@ final class AnyType extends _SqliteType<DriftAny> {
 
   @override
   String sqlLiteral(DriftAny value) {
-    return switch (value) {
+    return switch (value.fromDb) {
       final String s => textType.sqlLiteral(s),
       final Uint8List blob => blobType.sqlLiteral(blob),
       _ => value.toString(),

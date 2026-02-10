@@ -91,6 +91,7 @@ abstract class TypeConverter<D, S> {
     'Use TypeConverter.json2 instead. This converter causes a double JSON '
     'conversion when serializing drift row classes to JSON.',
   )
+  @pragma('drift:v3-rename', 'legacyJson')
   static JsonTypeConverter<D, String> json<D>({
     required D Function(dynamic json) fromJson,
     dynamic Function(D column)? toJson,

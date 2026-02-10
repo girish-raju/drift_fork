@@ -18,6 +18,7 @@ dev_dependencies:
   drift_dev:
   drift_sqlite:
   drift3_postgres:
+  postgres: ^3.5.9
   sqlite3: ^2.9.2
   lints: ^6.0.0
   test: ^1.25.6

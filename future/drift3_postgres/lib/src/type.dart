@@ -37,7 +37,7 @@ base class PhysicalPostgresType<T extends Object> extends PhysicalSqlType<T> {
 
   @override
   String sqlLiteral(T value) {
-    return '${_encoder.convert(dartValue)}::$typeName';
+    return '${_encoder.convert(value)}::$typeName';
   }
 
   @override
@@ -139,5 +139,21 @@ final class ArrayType<T> extends PhysicalPostgresType<List<T>> {
     );
 
     return '$asStringLiteral::$typeName';
+  }
+}
+
+/// A type storing 64-bit values as [BigInt]s in Dart.
+final class DartBigIntType extends PhysicalPostgresType<BigInt> {
+  /// Implementation for drift's `int64` type.
+  const DartBigIntType() : super(pg.Type.bigInteger, 'bigint');
+
+  @override
+  BigInt dartValue(Object databaseValue) {
+    return BigInt.from(databaseValue as int);
+  }
+
+  @override
+  pg.TypedValue<Object> sqlParameter(BigInt value) {
+    return pg.TypedValue(postgresType, value.toInt(), isSqlNull: false);
   }
 }

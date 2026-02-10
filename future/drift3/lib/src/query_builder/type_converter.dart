@@ -107,9 +107,15 @@ abstract class TypeConverter<D, S> {
   /// parsed JSON structure to the Dart type [D]. Optionally, you can also
   /// be explicit about the other direction via [toJson]. By default, Dart's
   /// JSON encoder simply calls `toJson()` on the object.
+  ///
+  /// Finally, the [json] codec itself can be customized as well if needed.
+  ///
+  /// For sqlite3 databases, [jsonb] can be used as an alternative encoding for
+  /// binary columns.
   static JsonTypeConverter2<D, DatabaseJson, Object?> json<D>({
     required D Function(Object? json) fromJson,
     Object? Function(D column)? toJson,
+    convert.JsonCodec json = convert.json,
   }) {
     return _DefaultJsonConverter<D, Object?>(
       mapFromJson: fromJson,
