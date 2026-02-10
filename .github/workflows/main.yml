@@ -272,6 +272,18 @@ jobs:
         run: |
           dart pub upgrade
           dart test
+      - name: Analyze temporary drift3 packages
+        working-directory: future
+        run: dart analyze --fatal-infos --fatal-warnings
+      - name: Test drift3
+        working-directory: future/drift3
+        run: dart test
+      - name: Test drift3_postgres
+        working-directory: future/drift3_postgres
+        run: dart test
+      - name: Test drift_sqlite
+        working-directory: future/drift_sqlite
+        run: dart test
   test_flutter:
     runs-on: ubuntu-latest
     needs: [setup]
