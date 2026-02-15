@@ -2,6 +2,7 @@
 
 - `serializableConnection()`, `json1` and `TableMigration` are no longer marked
   as experimental.
+- Improve performance of mapping large result sets through joined select statements.
 
 ## 2.31.0
 

@@ -472,40 +472,21 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   }
 
   @override
-  Future<TypedResult> _mapRow(Map<String, Object?> row) async {
-    return await _mapWithStructure(_computeResultStructure(), row);
-  }
-
-  /// Reads a raw database [row] into a [TypedResult] by using information that
-  /// doesn't change between rows, such as the expected columns or tables.
-  Future<TypedResult> _mapWithStructure(
-      _ResultStructure structure, Map<String, Object?> row) async {
-    final readTables = <ResultSetImplementation, dynamic>{};
-
-    for (final table in structure.queriedTables) {
-      final prefix = '${table.aliasedName}.';
-      // if all columns of this table are null, skip the table
-      if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-        readTables[table] =
-            await table.map(row, tablePrefix: table.aliasedName);
-      }
-    }
-
-    final driftRow = QueryRow(row, database);
-    return TypedResult(
-      readTables,
-      driftRow,
-      _LazyExpressionMap(
-        structure.columnAliases,
-        driftRow,
-      ),
-    );
+  FutureOr<TypedResult> _mapRow(Map<String, Object?> row) {
+    return _computeResultStructure().map(database, row);
   }
 
   Future<List<TypedResult>> _mapResponse(List<Map<String, Object?>> rows) {
     final structure = _computeResultStructure();
-
-    return Future.wait(rows.map((row) => _mapWithStructure(structure, row)));
+    if (structure is _SyncResultStructure) {
+      // We can map all rows synchronously.
+      return Future(() {
+        return [for (final row in rows) structure.map(database, row)];
+      });
+    } else {
+      // We have to await each row individually.
+      return Future.wait(rows.map((row) => structure.mapAsync(database, row)));
+    }
   }
 
   Never _warnAboutDuplicate(
@@ -558,11 +539,101 @@ class _LazyExpressionMap extends UnmodifiableMapBase<Expression, Object?> {
   bool containsKey(Object? key) => _columnAliases.containsKey(key);
 }
 
-class _ResultStructure {
+/// Shared information about the structure of a result set.
+///
+/// Mainly, this shares [columnAliases] between rows to make lookups for
+/// individual rows more efficient.
+base class _ResultStructure {
   final Map<Expression, String> columnAliases;
   final List<ResultSetImplementation> queriedTables;
 
-  _ResultStructure({required this.columnAliases, required this.queriedTables});
+  _ResultStructure._(this.columnAliases, this.queriedTables);
+
+  factory _ResultStructure({
+    required Map<Expression, String> columnAliases,
+    required List<ResultSetImplementation> queriedTables,
+  }) {
+    final hasAsynchronousMappingMethod = queriedTables.any((tbl) {
+      final map = tbl.map;
+
+      // If the map method returns a future, we have to await it when mapping
+      // results.
+      if (map is Future Function(Map<String, dynamic> data,
+          {String? tablePrefix})) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return hasAsynchronousMappingMethod
+        ? _ResultStructure._(columnAliases, queriedTables)
+        : _SyncResultStructure(columnAliases, queriedTables);
+  }
+
+  TypedResult _intoTypedResult(
+      DatabaseConnectionUser database,
+      Map<String, Object?> row,
+      Map<ResultSetImplementation, dynamic> readTables) {
+    final driftRow = QueryRow(row, database);
+    return TypedResult(
+      readTables,
+      driftRow,
+      _LazyExpressionMap(
+        columnAliases,
+        driftRow,
+      ),
+    );
+  }
+
+  FutureOr<TypedResult> map(
+      DatabaseConnectionUser database, Map<String, Object?> row) {
+    return mapAsync(database, row);
+  }
+
+  Future<TypedResult> mapAsync(
+      DatabaseConnectionUser database, Map<String, Object?> row) async {
+    final readTables = <ResultSetImplementation, dynamic>{};
+
+    for (final table in queriedTables) {
+      final prefix = '${table.aliasedName}.';
+      // if all columns of this table are null, skip the table
+      if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
+        final FutureOr<Object?> mapped =
+            table.map(row, tablePrefix: table.aliasedName);
+        readTables[table] = await mapped;
+      }
+    }
+
+    return _intoTypedResult(database, row, readTables);
+  }
+}
+
+/// A [_ResultStructure] in which all [queriedTables] are known to have a
+/// synchronous [ResultSetImplementation.map] method.
+///
+/// This is the case for most tables, and allows us to map joined rows
+/// synchronously (which is much faster).
+///
+/// Asynchronous map methods were mostly a design mistake, and they will be
+/// removed entirely in a major drift update.
+final class _SyncResultStructure extends _ResultStructure {
+  _SyncResultStructure(super.columnAliases, super.queriedTables) : super._();
+
+  @override
+  TypedResult map(DatabaseConnectionUser database, Map<String, Object?> row) {
+    final readTables = <ResultSetImplementation, dynamic>{};
+
+    for (final table in queriedTables) {
+      final prefix = '${table.aliasedName}.';
+      // if all columns of this table are null, skip the table
+      if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
+        readTables[table] = table.map(row, tablePrefix: table.aliasedName);
+      }
+    }
+
+    return _intoTypedResult(database, row, readTables);
+  }
 }
 
 @internal
