@@ -1,9 +1,18 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:stack_trace/stack_trace.dart';
 
 import 'database.dart';
 
 void main() {
+  FlutterError.demangleStackTrace = (StackTrace stack) {
+    if (stack is Trace) return stack.vmTrace;
+    if (stack is Chain) return stack.toTrace().vmTrace;
+    return stack;
+  };
+
+  debugPrint(sqlite3.version.toString());
   runApp(const MyApp());
 }
 
