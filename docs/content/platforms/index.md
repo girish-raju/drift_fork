@@ -24,7 +24,7 @@ This table list all supported drift implementations and on which platforms they 
 | Implementation                                      | Supported platforms                 | Notes                                                                                                                                                                                                                                            |
 | --------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS                        | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter`                                                                                                                       |
-| `NativeDatabase` from `package:drift/native.dart`   | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate](../isolates.md) is recommended. Formerly known as `package:moor/ffi.dart`. |
+| `NativeDatabase` from `package:drift/native.dart`   | Android, iOS, Windows, Linux, macOS | No further setup is required. Usage in a [isolate](../isolates.md) is recommended. Formerly known as `package:moor/ffi.dart`. |
 | `WasmDatabase` from `package:drift/wasm.dart`       | Web                                 | Works with or without Flutter. A bit of [additional setup](web.md) is required.                                                                                                                                                                  |
 | `WebDatabase` from `package:drift/web.dart`         | Web                                 | Deprecated in favor of `WasmDatabase`.                                                                                                                                                                                                           |
 
@@ -50,18 +50,16 @@ is maintaned and supported too.
 The new `package:drift/native.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
 This is the recommended approach for newer projects as described in the [getting started](../setup.md) guide.
 
-To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
-package when using `package:drift/native.dart`!
-`sqlite3_flutter_libs` will configure your app to use a fixed sqlite3 version on Android, iOS and macOS.
-It only applies to your full Flutter app though, it can't override the sqlite3 version when running tests
-with `flutter test`.
+Starting with version `3.0.0` of the `sqlite3` package (that drift depends on), a recent version of SQLite is automatically
+bundled with your Flutter app.
+More information about that mechanism and how to configure it is available [here](https://pub.dev/documentation/sqlite3/latest/topics/hook-topic.html).
+
 
 !!! note "A note on ffi and Android"
 
-    
     `package:drift/native.dart` is the recommended drift implementation for new Android apps.
     However, there are some smaller issues on some devices that you should be aware of:
-    
+
     - Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
     `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
     Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/drift/issues/895#issuecomment-720195005)
@@ -69,7 +67,6 @@ with `flutter test`.
     - Out of memory errors for very complex queries: Since the regular tmp directory isn't available on Android, you need to inform
     sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/drift/issues/876#issuecomment-710013503)
     for an example on how to do that.
-    
 
 ## Web
 
@@ -127,25 +124,3 @@ Again, note that this only works with full Flutter apps and not in say `flutter 
 
 For tests or using a custom sqlite3 version without `sqlite3_flutter_libs`, see the following
 section.
-
-### Bundling sqlite with your app
-
-If you don't want to use the `sqlite3` version from the operating system (or if it's not
-available), you can also ship `sqlite3` with your app.
-The best way to do that depends on how you ship your app. Here, we assume that you can
-install the dynamic library for `sqlite` next to your application executable.
-
-This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
-lives next to your application:
-
-<Snippet href="/lib/src/snippets/platforms/platforms.dart" name="(full)" />
-
-Be sure to use drift _after_ you set the platform-specific overrides.
-When you use drift in [another isolate](../isolates.md),
-you'll also need to apply the opening overrides on that background isolate.
-You can call them in the isolate's entrypoint before using any drift apis.
-
-For standard Flutter tests running in a Dart VM without native plugins, you can use a
-`flutter_test_config.dart` file to ensure that a recent version of sqlite3 is available.
-An example for this is available [here](https://github.com/simolus3/drift/discussions/1745#discussioncomment-2326294).
-For Dart tests, a similar logic could be put into a `setupAll` callback.
