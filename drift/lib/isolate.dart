@@ -6,7 +6,6 @@ library;
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'drift.dart';
@@ -220,7 +219,6 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   ///
   /// The example of running a short-lived database for a single task unit
   /// requiring a database is also available through [computeWithDatabase].
-  @experimental
   Future<DriftIsolate> serializableConnection() async {
     final currentlyInRootConnection = resolvedEngine is GeneratedDatabase;
     // ignore: invalid_use_of_protected_member

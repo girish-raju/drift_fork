@@ -1,3 +1,8 @@
+## 2.32.0
+
+- `serializableConnection()`, `json1` and `TableMigration` are no longer marked
+  as experimental.
+
 ## 2.31.0
 
 - In step-by-step migrations, automatically throw an error if a database

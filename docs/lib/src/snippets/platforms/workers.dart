@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 // #docregion worker
 // Note: This snippet describes a legacy API! Please consider migrating to
 // `package:drift/wasm.dart`, which has builtin support for web workers!

@@ -4,10 +4,8 @@
 /// Note that the json1 extension might not be available on all runtimes.
 /// When using this library, it is recommended to use a `NativeDatabase` with
 /// a dependency on `sqlite3_flutter_libs`.
-@experimental
 library;
 
-import 'package:meta/meta.dart';
 import '../drift.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.

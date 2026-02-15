@@ -665,7 +665,6 @@ extension DestructiveMigrationExtension on GeneratedDatabase {
 /// the steps described in [Making other kinds of table schema changes](https://www.sqlite.org/lang_altertable.html#otheralter).
 ///
 /// For examples and more details, see [the documentation](https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations).
-@experimental
 class TableMigration {
   /// The table to migrate. It is assumed that this table already exists at the
   /// time the migration is running. If you need to create a new table, use

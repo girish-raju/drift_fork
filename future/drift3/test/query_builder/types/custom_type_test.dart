@@ -1,16 +1,16 @@
 import 'package:drift3/drift.dart';
-import 'package:drift3_postgres/drift_postgres.dart';
+import 'package:drift3_postgres/drift_postgres.dart' hide UuidValue;
 import 'package:mockito/mockito.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
-import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid.dart' hide UuidValue;
 
 import '../../generated/todos.dart';
 import '../../test_utils.dart';
 import '../../test_utils/mocks.dart';
 
 void main() {
-  final uuid = Uuid().v4obj();
+  final uuid = UuidValue(Uuid().v4());
 
   group('in expression', () {
     test('variable', () {
@@ -55,7 +55,7 @@ void main() {
     var database = TodoDb(createConnection(sqlite3Executor));
     addTearDown(database.close);
 
-    final uuid = Uuid().v4obj();
+    final uuid = UuidValue(Uuid().v4());
     await database
         .into(database.withCustomType)
         .insert(WithCustomTypeCompanion.insert(id: uuid));

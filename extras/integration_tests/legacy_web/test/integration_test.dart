@@ -39,6 +39,7 @@ class WebExecutorIndexedDb extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection(
+      // ignore: experimental_member_use
       WebDatabase.withStorage(DriftWebStorage.indexedDb('foo')),
     );
   }

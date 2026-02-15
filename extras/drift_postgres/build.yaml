@@ -7,3 +7,9 @@ targets:
             dialects:
               - sqlite # remove this line if you only need postgres
               - postgres
+
+      source_gen:combining_builder:
+        options:
+          ignore_for_file:
+            # Due to UuidValue being experimental
+            - experimental_member_use

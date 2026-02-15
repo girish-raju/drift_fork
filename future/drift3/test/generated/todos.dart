@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
-import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid.dart' hide UuidValue;
 
 part 'todos.g.dart';
 
@@ -227,6 +227,10 @@ abstract class TodoWithCategoryView extends View {
       .innerJoin(categories, on: categories.id.equalsExp(todos.category));
 }
 
+/// Custom `UuidValue` wrapper because the one from `package:uuid` is marked as
+/// experimental.
+extension type const UuidValue(String value) implements Object {}
+
 class WithCustomType extends Table {
   Column<UuidValue> get id => col(uuidType);
 }
@@ -254,12 +258,12 @@ final class UuidType extends PhysicalSqlType<UuidValue> {
     if (isSupported) {
       return fromSql as UuidValue;
     } else {
-      return UuidValue.fromString(fromSql as String);
+      return UuidValue(fromSql as String);
     }
   }
 }
 
-const uuidType = SqlType<UuidValue>.dialectSpecific(
+final uuidType = SqlType<UuidValue>.dialectSpecific(
   fallback: UuidType(isSupported: false),
   overrides: {.postgres: UuidType(isSupported: true)},
 );

@@ -190,6 +190,7 @@ void main() {
 
   test('can initialize database when absent - IndexedDB', () async {
     await _testWith(
+        // ignore: experimental_member_use
         DriftWebStorage.indexedDb('name', migrateFromLocalStorage: false));
   });
 

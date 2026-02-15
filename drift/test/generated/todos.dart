@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:drift/drift.dart';
 import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
