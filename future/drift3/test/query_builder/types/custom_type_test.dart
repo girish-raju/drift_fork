@@ -85,7 +85,7 @@ void main() {
   });
 
   test('for selects', () async {
-    final uuid = Uuid().v4obj();
+    final uuid = UuidValue(Uuid().v4());
 
     final sqlite3Executor = MockSession();
     when(sqlite3Executor.execute(any)).thenAnswer((_) async {

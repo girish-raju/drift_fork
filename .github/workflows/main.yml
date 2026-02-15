@@ -289,9 +289,7 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        # We currently need 3.38 because we want to support recent analyzer versions.
-        # Generally, we try to support the latest two stable Flutter releases.
-        flutter: ["3.38.2"]
+        flutter: ["3.41.1"]
 
     steps:
       - uses: actions/checkout@v4
