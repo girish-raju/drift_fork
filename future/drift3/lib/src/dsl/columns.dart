@@ -358,9 +358,8 @@ extension type ColumnBuilder<T extends Object>._(BaseColumnBuilder<T> _dslOnly)
   /// cannot be updated easily. When changing the [generatedAs] expression for a
   /// column, you need to re-generate the table with a [TableMigration].
   ///
-  /// Note that generated columns are only available in sqlite3 version
-  /// `3.31.0`. When using `sqlite3_flutter_libs` or a web database, this is not
-  /// a problem.
+  /// Note that generated columns are only available from sqlite3 version
+  /// `3.31.0`.
   VirtualColumnBuilder<T> generatedAs(
     Expression<T> generatedAs, {
     bool stored = false,

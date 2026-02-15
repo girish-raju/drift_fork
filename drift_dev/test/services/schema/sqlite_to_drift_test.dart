@@ -16,7 +16,7 @@ void main() {
           'CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN '
           'UPDATE foo SET bar = old.bar; '
           'END;');
-    addTearDown(database.dispose);
+    addTearDown(database.close);
 
     final elements = await extractDriftElementsFromDatabase(database);
     expect(
@@ -45,7 +45,7 @@ void main() {
       ..execute('CREATE TABLE my_table (id INTEGER PRIMARY KEY AUTOINCREMENT)')
       ..execute('CREATE VIRTUAL TABLE foo USING fts5(x,y, z);');
 
-    addTearDown(database.dispose);
+    addTearDown(database.close);
 
     final elements = await extractDriftElementsFromDatabase(database);
     expect(

@@ -35,7 +35,7 @@ void main() {
       await db.close();
 
       expect(() => underlying.execute('SELECT 1'), isNot(throwsA(anything)));
-      underlying.dispose();
+      underlying.close();
     });
   });
 
@@ -44,7 +44,7 @@ void main() {
     sqlite3.registerVirtualFileSystem(indexedDb);
     final db = sqlite3.open('/database', vfs: indexedDb.name);
     db.execute('CREATE TABLE foo (bar TEXT);');
-    db.dispose();
+    db.close();
     await indexedDb.close();
 
     await moveIndexedDBDatabaseToOpfs('test_move');

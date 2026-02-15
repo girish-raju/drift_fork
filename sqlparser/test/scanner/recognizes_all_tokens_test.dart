@@ -3,9 +3,9 @@ library;
 
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:ffi/ffi.dart';
-import 'package:sqlite3/open.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:test/test.dart';
 
@@ -22,7 +22,13 @@ void main() {
   late DynamicLibrary library;
 
   try {
-    library = open.openSqlite();
+    if (Platform.isLinux) {
+      library = DynamicLibrary.open('libsqlite3.so');
+    } else if (Platform.isWindows) {
+      library = DynamicLibrary.open('winsqlite3.dll');
+    } else if (Platform.isMacOS) {
+      library = DynamicLibrary.open('libsqlite3.dylib');
+    }
 
     // Some platforms have sqlite3, but no sqlite3_keyword_count
     library.lookup('sqlite3_keyword_count');

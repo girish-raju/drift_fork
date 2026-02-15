@@ -1,5 +1,6 @@
 ## 2.32.0
 
+- __Potentially breaking change__ Migrate to version 3.x of the `sqlite3` package.
 - `serializableConnection()`, `json1` and `TableMigration` are no longer marked
   as experimental.
 

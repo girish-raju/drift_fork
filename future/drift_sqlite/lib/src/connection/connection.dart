@@ -144,7 +144,7 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
       _preparedStmtsCache.disposeAll();
 
       if (closeUnderlyingWhenClosed) {
-        database.dispose();
+        database.close();
       }
       _closedCompleter.complete(_maybeFlush());
     }
@@ -191,7 +191,7 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
     // When using a statement cache, prepared statements are disposed as they
     // get evicted from the cache, so we don't need to do anything.
     if (!cached) {
-      stmt.dispose();
+      stmt.close();
     }
   }
 
@@ -270,7 +270,7 @@ final class PreparedStatementsCache {
 
     if (_cachedStatements.length == maxSize) {
       final lru = _cachedStatements.remove(_cachedStatements.keys.first)!;
-      lru.dispose();
+      lru.close();
     }
 
     _cachedStatements[sql] = statement;
@@ -279,7 +279,7 @@ final class PreparedStatementsCache {
   /// Removes all cached statements.
   void disposeAll() {
     for (final statement in _cachedStatements.values) {
-      statement.dispose();
+      statement.close();
     }
 
     _cachedStatements.clear();

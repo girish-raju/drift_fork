@@ -10,7 +10,6 @@ import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift/src/sqlite3/database.dart';
-import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -19,8 +18,6 @@ import '../../generated/todos.dart';
 import '../../test_utils/database_vm.dart';
 
 void main() {
-  preferLocalSqlite3();
-
   group('implicit isolates', () {
     test('work with direct executors', () async {
       final file = File(d.path('test.db'));
@@ -122,7 +119,7 @@ void main() {
       await db.close();
 
       expect(() => underlying.execute('SELECT 1'), isNot(throwsA(anything)));
-      underlying.dispose();
+      underlying.close();
     });
   });
 
@@ -204,7 +201,7 @@ void main() {
 
   test('disposes statements eventually if cache is enabled', () async {
     final underlying = sqlite3.openInMemory();
-    addTearDown(underlying.dispose);
+    addTearDown(underlying.close);
     final db = NativeDatabase.opened(
       underlying,
       cachePreparedStatements: true,

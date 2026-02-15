@@ -43,8 +43,7 @@ final class OrderingTerm implements SqlComponent {
   /// When [nulls] is [null], then it's ignored.
   ///
   /// Note that this feature are only available in sqlite3 version `3.30.0` and
-  /// newer. When using `sqlite3_flutter_libs` or a web database, this is not
-  /// a problem.
+  /// newer.
   final NullsOrder? nulls;
 
   /// Creates an ordering term by the [expression], the [mode] (defaults to

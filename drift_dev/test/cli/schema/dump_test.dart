@@ -19,7 +19,7 @@ void main() {
           'END;')
       ..execute('CREATE INDEX idx ON users (name);')
       ..execute('pragma user_version = 1234;')
-      ..dispose();
+      ..close();
 
     await project
         .runDriftCli(['schema', 'dump', 'test.db', 'drift_migrations/']);
