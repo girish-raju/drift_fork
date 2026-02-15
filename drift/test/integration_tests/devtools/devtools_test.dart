@@ -22,7 +22,9 @@ void main() {
 
     String sdk = p.dirname(p.dirname(Platform.resolvedExecutable));
     child = await Process.start(p.join(sdk, 'bin', 'dart'), [
-      'run',
+      // Don't use dart run here to avoid https://github.com/dart-lang/native/issues/2921.
+      // Build hooks would have run for the parent process anyway.
+      //'run',
       '--enable-vm-service=$port',
       '--disable-service-auth-codes',
       '--enable-asserts',

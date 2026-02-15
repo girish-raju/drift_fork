@@ -44,7 +44,7 @@ void main() {
     // Make sure this doesn't block the database
     await expectLater(
         driftDb.select(driftDb.categories).get(), completion(hasLength(1)));
-  });
+  }, skip: 'Relies on deprecated shared cache');
 
   test('DatabaseConnection constructor can wrap inner', () async {
     final raw = NativeDatabase.memory();
