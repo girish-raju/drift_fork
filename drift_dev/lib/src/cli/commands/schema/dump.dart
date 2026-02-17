@@ -94,7 +94,7 @@ class DumpSchemaCommand extends Command {
 
       return (elements: elements, schemaVersion: userVersion, db: null);
     } finally {
-      opened.dispose();
+      opened.close();
     }
   }
 }

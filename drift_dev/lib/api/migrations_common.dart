@@ -154,14 +154,14 @@ class InitializedSchema<DB extends CommonDatabase> {
   /// ```
   DatabaseConnection newConnection() => _createConnection();
 
-  /// [CommonDatabase.dispose]s the underlying [rawDatabase] backing the initial
+  /// [CommonDatabase.close]s the underlying [rawDatabase] backing the initial
   /// schema.
   ///
   /// Not calling this method technically leaks resources, but [rawDatabase] is
   /// an in-memory database that also has finalizers closing it when it's not
   /// used anymore. Further, unit tests are typically short-lived processes, so
   /// forgetting to call [close] does not have terrible side-effects.
-  void close() => rawDatabase.dispose();
+  void close() => rawDatabase.close();
 }
 
 /// Options that control how schemas are compared to find mismatches.

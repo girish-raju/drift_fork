@@ -1,22 +1,10 @@
 import 'dart:io';
 import 'package:drift/native.dart';
-import 'package:drift_website/src/snippets/isolates.dart';
 import 'package:sqlite3/sqlite3.dart';
-
-// #docregion setup
-import 'package:sqlite3/open.dart';
-import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
-
-// call this method before using drift
-Future<void> setupSqlCipher() async {
-  await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
-  open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
-}
-// #enddocregion setup
 
 // #docregion check_cipher
 bool _debugCheckHasCipher(Database database) {
-  return database.select('PRAGMA cipher_version;').isNotEmpty;
+  return database.select('PRAGMA cipher;').isNotEmpty;
 }
 // #enddocregion check_cipher
 
@@ -24,18 +12,10 @@ void databases() {
   final myDatabaseFile = File('/dev/null');
 
   // #docregion encrypted1
-  final token = RootIsolateToken.instance!;
   NativeDatabase.createInBackground(
     myDatabaseFile,
-    isolateSetup: () async {
-      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-      await setupSqlCipher();
-    },
     setup: (rawDb) {
       rawDb.execute("PRAGMA key = 'passphrase';");
-
-      // Recommended option, not enabled by default on SQLCipher
-      rawDb.config.doubleQuotedStringLiterals = false;
     },
   );
   // #enddocregion encrypted1
@@ -43,16 +23,9 @@ void databases() {
   // #docregion encrypted2
   NativeDatabase.createInBackground(
     myDatabaseFile,
-    isolateSetup: () async {
-      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-      await setupSqlCipher();
-    },
     setup: (rawDb) {
       assert(_debugCheckHasCipher(rawDb));
       rawDb.execute("PRAGMA key = 'passphrase';");
-
-      // Recommended option, not enabled by default on SQLCipher
-      rawDb.config.doubleQuotedStringLiterals = false;
     },
   );
   // #enddocregion encrypted2
@@ -70,42 +43,35 @@ void databases() {
   NativeDatabase.createInBackground(
     File(encryptedDatabasePath),
     isolateSetup: () async {
-      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-      await setupSqlCipher();
-
       final existing = File(existingDatabasePath);
       final encrypted = File(encryptedDatabasePath);
 
       if (await existing.exists() && !await encrypted.exists()) {
+        // Copy an unencrypted database into a .tmp file, encrypt that file,
+        // then rename the .tmp into the encrypted path.
+        final tmp = File('${encrypted.path}.tmp');
+        if (await tmp.exists()) {
+          await tmp.delete();
+        }
+
         // We have an existing database to migrate.
         final plaintextDb = sqlite3.open(existingDatabasePath)
-          ..execute(
-            "ATTACH DATABASE '${escapeString(encryptedDatabasePath)}' "
-            "AS encrypted KEY '${escapeString(yourKey)}';",
-          )
-          ..execute("SELECT sqlcipher_export('encrypted');");
+          ..execute("VACUUM INTO '${escapeString(tmp.path)}';");
+        plaintextDb.close();
 
-        // sqlcipher_export doesn't apply the user_version pragma used by drift
-        // to implement migrations. The version of the encrypted database must
-        // match the previous state.
-        final userVersion =
-            plaintextDb.select('PRAGMA user_version;').first.columnAt(0) as int;
-        plaintextDb
-          ..execute('PRAGMA encrypted.user_version = $userVersion;')
-          ..execute('DETACH DATABASE encrypted;')
-          ..dispose();
+        final encryptedDb = sqlite3.open(tmp.path);
+        encryptedDb.execute("PRAGMA rekey = '${escapeString(yourKey)}';");
+        encryptedDb.close();
 
         // This should have created the encrypted database.
-        assert(await encrypted.exists());
+        assert(await tmp.exists());
+        await tmp.rename(encryptedDatabasePath);
         await existing.delete();
       }
     },
     setup: (rawDb) {
       assert(_debugCheckHasCipher(rawDb));
       rawDb.execute("PRAGMA key = '${escapeString(yourKey)}';");
-
-      // Recommended option, not enabled by default on SQLCipher
-      rawDb.config.doubleQuotedStringLiterals = false;
     },
   );
   // #enddocregion migration

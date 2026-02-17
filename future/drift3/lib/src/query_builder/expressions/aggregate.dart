@@ -12,8 +12,7 @@ import 'variables.dart';
 /// {@template drift_aggregate_filter}
 /// To only consider rows matching a predicate, you can set the optional
 /// [filter]. Note that [filter] is only available from sqlite 3.30, released on
-/// 2019-10-04. Most devices will use an older sqlite version when not using
-/// `sqlite3_flutter_libs`.
+/// 2019-10-04.
 /// {@endtemplate}
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The

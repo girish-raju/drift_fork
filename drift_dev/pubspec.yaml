@@ -35,8 +35,8 @@ dependencies:
   io: ^1.0.3
 
   # Drift-specific analysis and apis
-  drift: ">=2.30.0 <2.32.0"
-  sqlite3: ^2.4.6
+  drift: ">=2.30.0 <2.33.0"
+  sqlite3: ^3.0.0
   sqlparser: ^0.43.1
 
   # Dart analysis
