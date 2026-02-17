@@ -28,6 +28,7 @@ dependencies:
   # version 0.5.x because the sqlite3 package has been migrated to hooks.
   # Flutter-specific build scripts should be removed.
   sqlite3_flutter_libs: ^0.6.0+eol
+  sqlcipher_flutter_libs: ^0.7.0+eol
 
 dev_dependencies:
   build_runner: ^2.4.14

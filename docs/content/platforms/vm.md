@@ -10,17 +10,11 @@ description: Run drift on both mobile and desktop
 ## Supported platforms
 
 The `drift/native.dart` library uses the `sqlite3` package to send queries.
-At the moment, that package supports iOS, macOS and Android out of the box. Most Linux
-Distros have sqlite available as a shared library, those are supported as well.
+Starting from drift version 2.32.0, all native Dart and Flutter platforms are
+supported without any further setup or dependencies.
 
-If you're shipping apps for Windows and Linux, it is recommended that you bundle a
-`sqlite3.so` and `sqlite3.dll` file with your app. You can then make `drift`
-support your setup by running this code before opening the database:
-
-<Snippet href="/lib/src/snippets/platforms/vm.dart" name="setup" />
-
-For Flutter apps, using the `drift_flutter` package as suggested in the
-[setup instructions](../setup.md) takes care of these steps.
+Older versions required the use of `sqlite3_flutter_libs` (or custom solutions
+outside of Flutter). These are no longer necessary.
 
 ## Drift-managed background isolates
 

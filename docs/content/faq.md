@@ -22,6 +22,7 @@ It would be cleaner to use `InheritedWidgets` for that, and the `provider` packa
 ### Provider
 If you're using the [provider](https://pub.dev/packages/provider) package, you can wrap your top-level widget in a
 provider that manages the database instance:
+
 ```dart
 void main() {
   runApp(
@@ -33,7 +34,9 @@ void main() {
   );
 }
 ```
+
 Your widgets would then have access to the database using `Provider.of<MyDatabase>(context)`.
+
 ### GetX
 If you're using the [GetX](https://pub.dev/packages/get) package, you can add it as a service that manages the database instance:.
 
