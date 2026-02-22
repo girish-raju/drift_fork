@@ -86,7 +86,7 @@ void main() {
       test(sql, () {
         final scanner = Scanner(fakeSpan(sql));
         final tokens = scanner.scanTokens();
-        final parser = Parser(tokens);
+        final parser = ParserState(tokens);
         final expression = parser.expression();
 
         enforceHasSpan(expression);

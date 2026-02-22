@@ -39,7 +39,7 @@ void main() {
   test('recovers from invalid statements', () {
     const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
     final tokens = Scanner(fakeSpan(sql)).scanTokens();
-    final statements = Parser(tokens).driftFile().statements;
+    final statements = ParserState(tokens).driftFile().statements;
 
     expect(statements, hasLength(1));
     enforceEqual(
@@ -61,10 +61,10 @@ void main() {
      ''';
 
     final tokens = Scanner(fakeSpan(sql), scanDriftTokens: true).scanTokens();
-    final statements =
-        Parser(tokens, options: EngineOptions(driftOptions: DriftSqlOptions()))
-            .driftFile()
-            .statements;
+    final statements = ParserState(tokens,
+            options: EngineOptions(driftOptions: DriftSqlOptions()))
+        .driftFile()
+        .statements;
 
     expect(statements, hasLength(2));
 

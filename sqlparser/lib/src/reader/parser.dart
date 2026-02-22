@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
 import '../ast/ast.dart';
@@ -32,7 +33,8 @@ class ParsingError implements Exception {
   }
 }
 
-class Parser {
+@internal
+final class ParserState {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
   final AutoCompleteEngine? autoComplete;
@@ -42,9 +44,11 @@ class Parser {
   int _current = 0;
   final List<ErrorRecoveryScope> _errorRecovery = [];
 
-  Parser(this.tokens, {EngineOptions? options, this.autoComplete})
+  ParserState(this.tokens, {EngineOptions? options, this.autoComplete})
       : options = options ?? EngineOptions();
+}
 
+extension Parser on ParserState {
   bool get _reportAutoComplete => autoComplete != null;
 
   bool get enableDriftExtensions => options.useDriftExtensions;

@@ -142,7 +142,7 @@ class SqlEngine {
     return tokenize(stringSpan(sql));
   }
 
-  (List<Token>, Parser, AutoCompleteEngine?) _createParser(
+  (List<Token>, ParserState, AutoCompleteEngine?) _createParser(
     FileSpan source, {
     bool autoComplete = false,
     bool? driftExtensions,
@@ -154,7 +154,7 @@ class SqlEngine {
     final autoCompleteEngine =
         autoComplete ? AutoCompleteEngine(allTokens, this) : null;
 
-    final parser = Parser(
+    final parser = ParserState(
       tokensForParser,
       options: EngineOptions(
         driftOptions: driftExtensions == false ? null : options.driftOptions,
