@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   void check(String sql, List<String> problems) {
     final engine = SqlEngine();
-    final parseResult = engine.parse(sql);
+    final parseResult = engine.parse(ParserEntrypoint.statement, sql);
     engine.registerTable(const SchemaFromCreateTable()
         .read(parseResult.rootNode as CreateTableStatement));
 

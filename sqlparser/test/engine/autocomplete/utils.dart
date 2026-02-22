@@ -13,8 +13,11 @@ ComputedSuggestions completionsFor(String driftFile,
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
   setup?.call(engine);
 
-  final result =
-      engine.parseDriftFile(fakeSpan(driftFile.replaceFirst('^', '')));
+  final result = engine.parseSpan(
+    ParserEntrypoint.driftFile,
+    fakeSpan(driftFile.replaceFirst('^', '')),
+    autoComplete: true,
+  );
   return result.autoCompleteEngine!.suggestCompletions(position - 1);
 }
 

@@ -106,7 +106,8 @@ void main() {
   test('can parse substring', () {
     final engine = SqlEngine();
     final source = SourceFile.fromString('PREFIXSELECT * FROM fooSUFFIX');
-    final parsed = engine.parseSpan(source.span(6, 23));
+    final parsed =
+        engine.parseSpan(ParserEntrypoint.statement, source.span(6, 23));
     expect(parsed.errors, isEmpty);
     expect(parsed.sql.text, 'SELECT * FROM foo');
     expect(parsed.rootNode.span!.text, 'SELECT * FROM foo');

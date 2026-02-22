@@ -12,21 +12,24 @@ void _enforceFrom(SelectStatement stmt, Queryable expected) {
 void main() {
   group('from', () {
     test('a simple table', () {
-      final stmt =
-          SqlEngine().parse('SELECT * FROM tbl').rootNode as SelectStatement;
+      final stmt = SqlEngine()
+          .parse(ParserEntrypoint.statement, 'SELECT * FROM tbl')
+          .rootNode as SelectStatement;
 
       _enforceFrom(stmt, TableReference('tbl'));
     });
 
     test('schema name and alias', () {
-      final stmt = SqlEngine().parse('SELECT * FROM main.tbl foo').rootNode
-          as SelectStatement;
+      final stmt = SqlEngine()
+          .parse(ParserEntrypoint.statement, 'SELECT * FROM main.tbl foo')
+          .rootNode as SelectStatement;
       _enforceFrom(stmt, TableReference('tbl', schemaName: 'main', as: 'foo'));
     });
 
     test('from more than one table', () {
       final stmt = SqlEngine()
-          .parse('SELECT * FROM tbl AS test, table2')
+          .parse(
+              ParserEntrypoint.statement, 'SELECT * FROM tbl AS test, table2')
           .rootNode as SelectStatement;
 
       _enforceFrom(
@@ -45,7 +48,8 @@ void main() {
 
     test('more than one table with ON constraint', () {
       final stmt = SqlEngine()
-          .parse('SELECT * FROM tbl AS test, table2 ON TRUE')
+          .parse(ParserEntrypoint.statement,
+              'SELECT * FROM tbl AS test, table2 ON TRUE')
           .rootNode as SelectStatement;
 
       _enforceFrom(
@@ -67,7 +71,7 @@ void main() {
 
     test('inner select statements', () {
       final stmt = SqlEngine()
-          .parse(
+          .parse(ParserEntrypoint.statement,
               'SELECT * FROM table1, (SELECT * FROM table2 WHERE a) as "inner"')
           .rootNode as SelectStatement;
 
@@ -94,7 +98,9 @@ void main() {
 
     test('inner compound select statements', () {
       final stmt = SqlEngine()
-          .parse('SELECT SUM(*) FROM (SELECT COUNT(*) FROM table1 UNION ALL '
+          .parse(
+              ParserEntrypoint.statement,
+              'SELECT SUM(*) FROM (SELECT COUNT(*) FROM table1 UNION ALL '
               'SELECT COUNT(*) from table2)')
           .rootNode as SelectStatement;
 
@@ -129,7 +135,9 @@ void main() {
 
     test('from a join', () {
       final stmt = SqlEngine()
-          .parse('SELECT * FROM table1 '
+          .parse(
+              ParserEntrypoint.statement,
+              'SELECT * FROM table1 '
               'INNER JOIN table2 USING (test) '
               'LEFT OUTER JOIN table3 ON TRUE')
           .rootNode as SelectStatement;

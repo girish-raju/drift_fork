@@ -87,7 +87,7 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
     final engineForParsing = resolver.driver.newSqlEngine();
     // TODO: Use Dart AST offsets
     final span = SourceFile.fromString(createIndexStatement).span(0);
-    final result = engineForParsing.parseSpan(span);
+    final result = engineForParsing.parseSpan(ParserEntrypoint.statement, span);
     for (final error in result.errors) {
       reportError(DriftAnalysisError.forDartElement(
           discovered.dartElement, error.message));

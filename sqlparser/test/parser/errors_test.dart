@@ -56,7 +56,7 @@ void main() {
 }
 
 void expectError(String sql, errorsMatcher) {
-  final parsed = SqlEngine().parse(sql);
+  final parsed = SqlEngine().parse(ParserEntrypoint.statement, sql);
 
   expect(parsed.errors, errorsMatcher);
 }

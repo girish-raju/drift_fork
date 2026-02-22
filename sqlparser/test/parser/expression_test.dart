@@ -1,6 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/parser.dart';
-import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
@@ -228,12 +226,10 @@ void main() {
   group('expresssion test cases', () {
     _testCases.forEach((sql, expected) {
       test(sql, () {
-        final scanner = Scanner(fakeSpan(sql));
-        final tokens = scanner.scanTokens();
-        final parser = ParserState(tokens);
-        final expression = parser.expression();
-        expect(parser.errors, isEmpty);
+        final result = SqlEngine().parse(ParserEntrypoint.expression, sql);
+        final expression = result.rootNode;
 
+        expect(result.errors, isEmpty);
         enforceHasSpan(expression);
         enforceEqual(expression, expected);
       });
@@ -243,7 +239,8 @@ void main() {
   group('named variables', () {
     test('support all kinds when not in drift mode', () {
       for (final prefix in [':', '@', r'$']) {
-        final result = SqlEngine().parse('SELECT ${prefix}name;');
+        final result = SqlEngine()
+            .parse(ParserEntrypoint.statement, 'SELECT ${prefix}name;');
         final value = ((result.rootNode as SelectStatement).columns.single
                 as ExpressionResultColumn)
             .expression as NamedVariable;
@@ -255,9 +252,10 @@ void main() {
 
     test('does not parse at and dollar signs as variables in drift mode', () {
       final engine = SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()));
-      expect(engine.parse('SELECT @name').rootNode, isA<InvalidStatement>());
+      expect(engine.parse(ParserEntrypoint.statement, 'SELECT @name').rootNode,
+          isA<InvalidStatement>());
 
-      final result = engine.parse(r'SELECT $name;');
+      final result = engine.parse(ParserEntrypoint.statement, r'SELECT $name;');
       final value = ((result.rootNode as SelectStatement).columns.single
               as ExpressionResultColumn)
           .expression;
@@ -267,7 +265,8 @@ void main() {
 
   test('schema in function names', () {
     final engine = SqlEngine();
-    expect(engine.parse('SELECT foo.bar(1)').errors, [
+    expect(
+        engine.parse(ParserEntrypoint.statement, 'SELECT foo.bar(1)').errors, [
       isParsingError(
         message: 'Invalid schema name for function call',
         span: 'foo',
@@ -277,7 +276,8 @@ void main() {
     final optInEngine =
         SqlEngine(EngineOptions(supportSchemaInFunctionNames: true));
 
-    final parsed = optInEngine.parse('SELECT foo.bar(1)');
+    final parsed =
+        optInEngine.parse(ParserEntrypoint.statement, 'SELECT foo.bar(1)');
     enforceHasSpan(parsed.rootNode);
     enforceEqual(
       parsed.rootNode,

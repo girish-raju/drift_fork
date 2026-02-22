@@ -1,4 +1,3 @@
-import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/schema_buffer.dart';
 import 'package:test/test.dart';
@@ -13,7 +12,7 @@ void main() {
   });
 
   void process(String text) {
-    final results = engine.parseMultiple(SourceFile.fromString(text).span(0));
+    final results = engine.parse(ParserEntrypoint.multiple, text);
     expect(results.errors, isEmpty);
 
     for (final stmt in results.rootNode.childNodes) {
@@ -22,10 +21,10 @@ void main() {
   }
 
   List<AnalysisError> processWithErrors(String text) {
-    final results = engine.parse(text);
+    final results = engine.parse(ParserEntrypoint.statement, text);
     expect(results.errors, isEmpty);
 
-    return buffer.process(results.rootNode as Statement);
+    return buffer.process(results.rootNode);
   }
 
   group('create', () {

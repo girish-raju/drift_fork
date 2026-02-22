@@ -103,13 +103,14 @@ class DiscoverStep {
           break;
         }
 
-        final parsed = engine.parseDriftFile(contents.span(0));
+        final parsed =
+            engine.parseSpan(ParserEntrypoint.driftFile, contents.span(0));
         for (final error in parsed.errors) {
           _file.errorsDuringDiscovery
               .add(DriftAnalysisError(error.token.span, error.message));
         }
 
-        final ast = parsed.rootNode as DriftFile;
+        final ast = parsed.rootNode;
         final imports = <DriftFileImport>[];
 
         var specialQueryNameCount = 0;
@@ -149,7 +150,7 @@ class DiscoverStep {
 
         _file.discovery = DiscoveredDriftFile(
           originalSource: contents,
-          ast: parsed.rootNode as DriftFile,
+          ast: ast,
           imports: imports,
           locallyDefinedElements: _checkForDuplicates(pendingElements),
         );
@@ -304,7 +305,7 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
         String? indexName;
         if (sql != null) {
           final engine = _discoverStep._driver.newSqlEngine();
-          final result = engine.parse(sql);
+          final result = engine.parse(ParserEntrypoint.statement, sql);
           if (result.rootNode case CreateIndexStatement stmt) {
             indexName = stmt.createdName;
           }

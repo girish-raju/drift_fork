@@ -12,7 +12,7 @@ void main() {
     engine = SqlEngine();
 
     Table addTableFromStmt(String create) {
-      final parsed = engine.parse(create);
+      final parsed = engine.parse(ParserEntrypoint.statement, create);
       final table = schemaReader.read(parsed.rootNode as CreateTableStatement);
 
       engine.registerTable(table);
@@ -104,7 +104,7 @@ void main() {
 
   group('find references without analysis', () {
     void testWith(String sql, Set<String> references) {
-      final result = engine.parse(sql);
+      final result = engine.parse(ParserEntrypoint.statement, sql);
       expect(result.errors, isEmpty);
 
       final found = engine.findReferencedSchemaTables(result.rootNode);

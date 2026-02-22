@@ -26,8 +26,8 @@ IdentifierToken identifier(String content) {
 
 DriftFile parseDrift(String content) {
   return SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-      .parseDriftFile(fakeSpan(content))
-      .rootNode as DriftFile;
+      .parse(ParserEntrypoint.driftFile, content)
+      .rootNode;
 }
 
 void testDriftFile(String driftFile, DriftFile expected) {
@@ -39,7 +39,7 @@ void testDriftFile(String driftFile, DriftFile expected) {
 void testStatement(String sql, AstNode expected, {bool driftMode = false}) {
   final result = SqlEngine(EngineOptions(
           driftOptions: driftMode ? const DriftSqlOptions() : null))
-      .parse(sql);
+      .parse(ParserEntrypoint.statement, sql);
   expect(result.errors, isEmpty);
 
   final parsed = result.rootNode;
@@ -52,7 +52,7 @@ void expectParseError(
   dynamic message = anything,
   dynamic span = anything,
 }) {
-  final result = SqlEngine().parse(sql);
+  final result = SqlEngine().parse(ParserEntrypoint.statement, sql);
 
   expect(result.errors, [isParsingError(message: message, span: span)]);
 }

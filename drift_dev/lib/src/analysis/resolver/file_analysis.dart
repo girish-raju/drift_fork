@@ -102,7 +102,8 @@ class FileAnalyzer {
         } else if (element is DriftIndex) {
           if (element.createStmt != null) {
             final engine = driver.newSqlEngine();
-            final parsed = engine.parse(element.createStmt!);
+            final parsed =
+                engine.parse(ParserEntrypoint.statement, element.createStmt!);
 
             if (parsed.rootNode case CreateIndexStatement stmt) {
               element.parsedStatement = stmt;
@@ -122,8 +123,8 @@ class FileAnalyzer {
       final sourceSpan =
           SourceFile.fromString(source, url: state.ownUri).span(0);
       final parsedFile = genericEngineForParsing
-          .parseDriftFile(sourceSpan)
-          .rootNode as DriftFile;
+          .parseSpan(ParserEntrypoint.driftFile, sourceSpan)
+          .rootNode;
 
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;

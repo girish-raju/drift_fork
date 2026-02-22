@@ -1,36 +1,17 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/engine/sql_engine.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
-
-enum _ParseKind {
-  statement,
-  driftFile,
-  multipleStatements,
-}
 
 void main() {
   final engine =
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
 
   void testFormat(String input,
-      {_ParseKind kind = _ParseKind.statement, String? expectedOutput}) {
+      {ParserEntrypoint entrypoint = ParserEntrypoint.statement,
+      String? expectedOutput}) {
     AstNode parse(String input) {
-      late ParseResult result;
-      final span = stringSpan(input);
-
-      switch (kind) {
-        case _ParseKind.statement:
-          result = engine.parseSpan(span);
-          break;
-        case _ParseKind.driftFile:
-          result = engine.parseDriftFile(span);
-          break;
-        case _ParseKind.multipleStatements:
-          result = engine.parseMultiple(span);
-          break;
-      }
+      final result = engine.parse(entrypoint, input);
 
       if (result.errors.isNotEmpty) {
         fail('Error parsing $input: ${result.errors.join('\n')}');
@@ -686,22 +667,23 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
 
     test('imports', () {
-      testFormat('import \'foo.bar\';', kind: _ParseKind.driftFile);
+      testFormat('import \'foo.bar\';', entrypoint: ParserEntrypoint.driftFile);
     });
 
     test('declared statements', () {
       testFormat('foo (?1 AS INT): SELECT * FROM bar WHERE ? < 10;',
-          kind: _ParseKind.driftFile);
+          entrypoint: ParserEntrypoint.driftFile);
       testFormat('foo: SELECT * FROM bar WHERE :id < 10;',
-          kind: _ParseKind.driftFile);
+          entrypoint: ParserEntrypoint.driftFile);
       testFormat('foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
-          kind: _ParseKind.driftFile);
+          entrypoint: ParserEntrypoint.driftFile);
       testFormat(r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
-          kind: _ParseKind.driftFile);
+          entrypoint: ParserEntrypoint.driftFile);
     });
 
     test('nested star', () {
-      testFormat('q: SELECT foo.** FROM foo;', kind: _ParseKind.driftFile);
+      testFormat('q: SELECT foo.** FROM foo;',
+          entrypoint: ParserEntrypoint.driftFile);
     });
 
     test('transaction block', () {
@@ -714,7 +696,7 @@ test: BEGIN TRANSACTION
   INSERT INTO foo VALUES (x, y, z);
 COMMIT TRANSACTION;
 ''',
-        kind: _ParseKind.driftFile,
+        entrypoint: ParserEntrypoint.driftFile,
       );
     });
   });
@@ -735,6 +717,6 @@ BEGIN;
 INSERT INTO foo (bar, baz) VALUES ('hi', 3);
 
 COMMIT;
-''', kind: _ParseKind.multipleStatements);
+''', entrypoint: ParserEntrypoint.multiple);
   });
 }

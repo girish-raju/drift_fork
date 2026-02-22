@@ -6,7 +6,8 @@ import 'package:test/test.dart';
 void main() {
   final engine =
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-  final result = engine.parse('CREATE TABLE a (id INTEGER);');
+  final result =
+      engine.parse(ParserEntrypoint.statement, 'CREATE TABLE a (id INTEGER);');
   engine.registerTable(const SchemaFromCreateTable()
       .read(result.rootNode as CreateTableStatement));
 

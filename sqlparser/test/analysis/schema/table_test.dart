@@ -7,7 +7,8 @@ void main() {
     const schemaParser = SchemaFromCreateTable();
 
     Column? findWith(String createTbl, String columnName) {
-      final stmt = engine.parse(createTbl).rootNode as CreateTableStatement;
+      final stmt = engine.parse(ParserEntrypoint.statement, createTbl).rootNode
+          as CreateTableStatement;
       final table = schemaParser.read(stmt);
       return table.findColumn(columnName);
     }

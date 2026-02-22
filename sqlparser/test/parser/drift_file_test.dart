@@ -169,8 +169,8 @@ END;
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/drift/issues/280#issuecomment-570789454
     final parsed =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-            .parseDriftFile(fakeSpan('name: NSERT INTO foo DEFAULT VALUES;'));
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions())).parse(
+            ParserEntrypoint.driftFile, 'name: NSERT INTO foo DEFAULT VALUES;');
 
     expect(
       parsed.errors,
@@ -181,7 +181,7 @@ END;
       )),
     );
 
-    final root = parsed.rootNode as DriftFile;
+    final root = parsed.rootNode;
     expect(
       root.allDescendants,
       isNot(contains(const TypeMatcher<DeclaredStatement>())),
@@ -191,11 +191,11 @@ END;
   test('syntax errors contain correct position', () {
     final engine =
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-    final result = engine.parseDriftFile(fakeSpan('''
+    final result = engine.parse(ParserEntrypoint.driftFile, '''
 worksByComposer:
 SELECT DISTINCT A.* FROM works A, works B ON A.id =
     WHERE A.composer = :id OR B.composer = :id;
-    '''));
+    ''');
 
     expect(result.errors, hasLength(1));
     expect(
@@ -231,7 +231,7 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
   test('allows statements to appear in any order', () {
     final result =
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-            .parseDriftFile(fakeSpan('''
+            .parse(ParserEntrypoint.driftFile, '''
 CREATE TABLE foo (
   a INTEGER NOT NULL
 );
@@ -241,7 +241,7 @@ import 'b.dart';
 a: SELECT * FROM foo;
 
 CREATE INDEX x ON foo (a);
-'''));
+''');
 
     expect(result.errors, isEmpty);
   });

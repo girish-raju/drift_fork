@@ -10,7 +10,8 @@ void main() {
     late ParseResult result;
 
     try {
-      result = engine.parse('UDPATE foo SET bar = foo;');
+      result =
+          engine.parse(ParserEntrypoint.statement, 'UDPATE foo SET bar = foo;');
     } on ParsingError {
       fail('Calling engine.parse threw an error');
     }
@@ -20,8 +21,8 @@ void main() {
 
   test('does not throw when encountering tokenizer errors', () {
     final engine = SqlEngine();
-    final result = engine
-        .parse("SELECT * FROM foo WHERE bar = 'unterminated string literal");
+    final result = engine.parse(ParserEntrypoint.statement,
+        "SELECT * FROM foo WHERE bar = 'unterminated string literal");
 
     expect(result.errors,
         [isParsingError(message: contains('Unterminated string'))]);
@@ -42,10 +43,9 @@ void main() {
 
   group('parseColumnConstraints', () {
     test('parses constraints', () {
-      final result = SqlEngine().parseColumnConstraints(
-          fakeSpan('PRIMARY KEY NOT NULL CHECK (1) DEFAULT 0'));
-      final parsedConstraints =
-          (result.rootNode as ColumnDefinition).constraints;
+      final result = SqlEngine().parse(ParserEntrypoint.columnConstraints,
+          'PRIMARY KEY NOT NULL CHECK (1) DEFAULT 0');
+      final parsedConstraints = result.rootNode.constraints;
       final expectedConstraints = [
         PrimaryKeyColumn(null),
         NotNull(null),
@@ -61,10 +61,9 @@ void main() {
     });
 
     test('parses until error', () {
-      final result = SqlEngine().parseColumnConstraints(
-          fakeSpan('PRIMARY KEY NOT NULL invalid syntax CHECK (1)'));
-      final parsedConstraints =
-          (result.rootNode as ColumnDefinition).constraints;
+      final result = SqlEngine().parse(ParserEntrypoint.columnConstraints,
+          'PRIMARY KEY NOT NULL invalid syntax CHECK (1)');
+      final parsedConstraints = result.rootNode.constraints;
 
       expect(parsedConstraints, hasLength(2));
       expect(result.errors, [
@@ -75,8 +74,8 @@ void main() {
 
     test('never allows drift extensions', () {
       final result =
-          SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-              .parseColumnConstraints(fakeSpan('MAPPED BY `myconverter()`'));
+          SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions())).parse(
+              ParserEntrypoint.columnConstraints, 'MAPPED BY `myconverter()`');
       expect(result.errors, [
         isA<ParsingError>().having(
             (e) => e.message, 'message', contains('Expected a constraint')),
@@ -86,8 +85,8 @@ void main() {
 
   group('parseTableConstraint', () {
     test('parses constraint', () {
-      final result = SqlEngine().parseTableConstraint(
-          fakeSpan('CONSTRAINT foo FOREIGN KEY (a, b) REFERENCES c (d, e);'));
+      final result = SqlEngine().parse(ParserEntrypoint.tableConstraint,
+          'CONSTRAINT foo FOREIGN KEY (a, b) REFERENCES c (d, e);');
       expect(result.errors, isEmpty);
 
       enforceEqual(
@@ -110,7 +109,8 @@ void main() {
     });
 
     test('report errors', () {
-      final result = SqlEngine().parseTableConstraint(fakeSpan('parse error'));
+      final result =
+          SqlEngine().parse(ParserEntrypoint.tableConstraint, 'parse error');
       expect(result.errors, isNotEmpty);
     });
   });

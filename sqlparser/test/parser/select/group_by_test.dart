@@ -7,7 +7,8 @@ import '../utils.dart';
 void main() {
   test('parses group by statements', () {
     final stmt = SqlEngine()
-        .parse("SELECT * FROM test GROUP BY country HAVING country LIKE '%G%'")
+        .parse(ParserEntrypoint.statement,
+            "SELECT * FROM test GROUP BY country HAVING country LIKE '%G%'")
         .rootNode as SelectStatement;
 
     enforceHasSpan(stmt);

@@ -62,7 +62,8 @@ Future<List<DriftElement>> extractDriftElementsFromSql(
       sql += ';';
     }
 
-    final parsed = engineForParsing.parse(sql).rootNode;
+    final parsed =
+        engineForParsing.parse(ParserEntrypoint.statement, sql).rootNode;
 
     // Virtual table modules often add auxiliary tables that aren't part of the
     // user-defined database schema. So we need to keep track of them to be
@@ -89,16 +90,16 @@ Future<List<DriftElement>> extractDriftElementsFromSql(
     switch (result) {
       case DriftTrigger():
         result.parsedStatement = engine
-            .parse(entities[element.ownId.name]!)
+            .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
             .rootNode as CreateTriggerStatement;
       case DriftIndex():
         result.parsedStatement = engine
-            .parse(entities[element.ownId.name]!)
+            .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
             .rootNode as CreateIndexStatement;
       case DriftView():
         if (result.source case final SqlViewSource source) {
           source.parsedStatement = engine
-              .parse(entities[element.ownId.name]!)
+              .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
               .rootNode as CreateViewStatement;
         }
     }

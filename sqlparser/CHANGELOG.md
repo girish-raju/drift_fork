@@ -1,3 +1,8 @@
+## 0.44.0
+
+- Refactor the different `parse` methods on `SqlEngine` into a single one
+  taking an `ParserEntrypoint` enum.
+
 ## 0.43.1
 
 - Make `NamedWindowDeclaration` an AST node.

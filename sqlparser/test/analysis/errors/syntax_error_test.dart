@@ -49,7 +49,7 @@ void main() {
 
   test('complex expressions in PRIMARY KEY clause', () {
     final engine = SqlEngine();
-    final parseResult = engine.parse('''
+    final parseResult = engine.parse(ParserEntrypoint.statement, '''
       CREATE TABLE tbl (
         foo INTEGER NOT NULL,
         bar TEXT NOT NULL,

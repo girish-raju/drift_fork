@@ -59,7 +59,8 @@ void main() {
 
   test('export table structure', () {
     final engine = SqlEngine();
-    final stmt = engine.parse(createTableStmt).rootNode;
+    final stmt =
+        engine.parse(ParserEntrypoint.statement, createTableStmt).rootNode;
 
     final table =
         const SchemaFromCreateTable().read(stmt as CreateTableStatement);
@@ -78,7 +79,7 @@ void main() {
 
   test('reads isGenerated', () {
     final engine = SqlEngine();
-    final stmt = engine.parse('''
+    final stmt = engine.parse(ParserEntrypoint.statement, '''
       CREATE TABLE tbl (
         a TEXT,
         b TEXT GENERATED ALWAYS AS (UPPER(b))
@@ -101,7 +102,7 @@ void main() {
   test('supports booleans when drift extensions are enabled', () {
     final engine =
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-    final stmt = engine.parse('''
+    final stmt = engine.parse(ParserEntrypoint.statement, '''
     CREATE TABLE foo (
       a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL, e INT64
     )
@@ -158,7 +159,9 @@ void main() {
 
   test('can read columns without type name', () {
     final engine = SqlEngine();
-    final stmt = engine.parse('CREATE TABLE foo (id);').rootNode;
+    final stmt = engine
+        .parse(ParserEntrypoint.statement, 'CREATE TABLE foo (id);')
+        .rootNode;
 
     final table = engine.schemaReader.read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.single.type.type, BasicType.blob);
@@ -166,8 +169,10 @@ void main() {
 
   test('aliases to rowid are non-nullable', () {
     final engine = SqlEngine();
-    final stmt =
-        engine.parse('CREATE TABLE foo (id INTEGER PRIMARY KEY);').rootNode;
+    final stmt = engine
+        .parse(ParserEntrypoint.statement,
+            'CREATE TABLE foo (id INTEGER PRIMARY KEY);')
+        .rootNode;
 
     final table = engine.schemaReader.read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.single.type,
@@ -179,7 +184,8 @@ void main() {
 
     test('when declared on the column', () {
       final stmt = engine
-          .parse('CREATE TABLE foo (bar TEXT PRIMARY KEY) STRICT;')
+          .parse(ParserEntrypoint.statement,
+              'CREATE TABLE foo (bar TEXT PRIMARY KEY) STRICT;')
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -188,7 +194,8 @@ void main() {
 
     test('when declared on the table', () {
       final stmt = engine
-          .parse('CREATE TABLE foo (bar TEXT, PRIMARY KEY (bar)) STRICT;')
+          .parse(ParserEntrypoint.statement,
+              'CREATE TABLE foo (bar TEXT, PRIMARY KEY (bar)) STRICT;')
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -197,7 +204,8 @@ void main() {
 
     test('even when it has a NULL constraint', () {
       final stmt = engine
-          .parse('CREATE TABLE foo (bar TEXT NULL, PRIMARY KEY (bar)) STRICT;')
+          .parse(ParserEntrypoint.statement,
+              'CREATE TABLE foo (bar TEXT NULL, PRIMARY KEY (bar)) STRICT;')
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -208,7 +216,7 @@ void main() {
   test('resolves types in strict tables', () {
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
 
-    final stmt = engine.parse('''
+    final stmt = engine.parse(ParserEntrypoint.statement, '''
 CREATE TABLE foo (
   a INTEGER PRIMARY KEY,
   b TEXT,
@@ -231,8 +239,10 @@ CREATE TABLE foo (
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
 
     void testWith(String suffix, bool withoutRowid, bool strict) {
-      final stmt =
-          engine.parse('CREATE TABLE foo (bar TEXT) $suffix;').rootNode;
+      final stmt = engine
+          .parse(ParserEntrypoint.statement,
+              'CREATE TABLE foo (bar TEXT) $suffix;')
+          .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
       expect(table.withoutRowId, withoutRowid);

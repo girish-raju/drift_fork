@@ -127,7 +127,7 @@ class SchemaWriter {
         final sql = knownSql.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
         final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
 
-        final result = engine.parse(sql);
+        final result = engine.parse(ParserEntrypoint.statement, sql);
         if (result.rootNode case final CreateTableStatement create) {
           actualTable = create;
         }
@@ -533,8 +533,9 @@ class SchemaReader {
       );
 
       if (sql != null) {
-        index.parsedStatement =
-            _engine.parse(sql).rootNode as CreateIndexStatement;
+        index.parsedStatement = _engine
+            .parse(ParserEntrypoint.statement, sql)
+            .rootNode as CreateIndexStatement;
       } else {
         index.createStatementForDartDefinition();
       }
@@ -542,7 +543,8 @@ class SchemaReader {
       return index;
     } else {
       // In older versions, we always had an SQL statement!
-      final stmt = _engine.parse(sql!).rootNode as CreateIndexStatement;
+      final stmt = _engine.parse(ParserEntrypoint.statement, sql!).rootNode
+          as CreateIndexStatement;
 
       return DriftIndex(
         _id(name),
@@ -582,7 +584,8 @@ class SchemaReader {
       ],
       createStmt: sql,
       writes: const [],
-    )..parsedStatement = _engine.parse(sql).rootNode as CreateTriggerStatement;
+    )..parsedStatement = _engine.parse(ParserEntrypoint.statement, sql).rootNode
+        as CreateTriggerStatement;
   }
 
   DriftTable _readTable(Map<String, dynamic> content) {
@@ -597,8 +600,8 @@ class SchemaReader {
 
     if (isVirtual) {
       final create = content['create_virtual_stmt'] as String;
-      final parsed =
-          _engine.parse(create).rootNode as CreateVirtualTableStatement;
+      final parsed = _engine.parse(ParserEntrypoint.statement, create).rootNode
+          as CreateVirtualTableStatement;
 
       return DriftTable(
         _id(sqlName),

@@ -9,7 +9,7 @@ import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'autocomplete/engine.dart';
 import 'builtin_tables.dart';
 
-class SqlEngine {
+final class SqlEngine {
   /// All tables registered with [registerTable].
   final List<NamedResultSet> knownResultSets = [];
   final List<Module> _knownModules = [];
@@ -144,8 +144,8 @@ class SqlEngine {
 
   (List<Token>, ParserState, AutoCompleteEngine?) _createParser(
     FileSpan source, {
-    bool autoComplete = false,
-    bool? driftExtensions,
+    required bool autoComplete,
+    required bool driftExtensions,
   }) {
     final tokenizer = _scan(source);
     final allTokens = tokenizer.tokens;
@@ -157,7 +157,7 @@ class SqlEngine {
     final parser = ParserState(
       tokensForParser,
       options: EngineOptions(
-        driftOptions: driftExtensions == false ? null : options.driftOptions,
+        driftOptions: driftExtensions ? options.driftOptions : null,
         supportSchemaInFunctionNames: options.supportSchemaInFunctionNames,
       ),
       autoComplete: autoCompleteEngine,
@@ -170,105 +170,43 @@ class SqlEngine {
     return (allTokens, parser, autoCompleteEngine);
   }
 
-  /// Parses a single [sql] statement into an AST-representation.
+  /// Parses an SQL structure starting from the given [ParserEntrypoint].
   ///
   /// This method generally doesn't throw, but instead collects parsing errors
   /// through [ParseResult.errors]. Callers should check that value instead of
   /// blindly trusting the returned AST, as it will be an approximation if
   /// parsing errors were encountered.
-  ParseResult parseSpan(FileSpan sql) {
-    final (tokens, parser, _) = _createParser(sql);
+  ///
+  /// When [autoComplete] is enabled (it's disabled by default), the returned
+  /// [ParseResult.autoCompleteEngine] will be set and can be queries for auto-
+  /// complete inference.
+  ParseResult<Root> parseSpan<Root extends AstNode>(
+      ParserEntrypoint<Root> entrypoint, FileSpan sql,
+      {bool autoComplete = false}) {
+    final (tokens, parser, autoCompleteEngine) = _createParser(
+      sql,
+      autoComplete: autoComplete,
+      driftExtensions: switch (entrypoint) {
+        // Constraints should never be parsed with drift support.
+        ParserEntrypoint.columnConstraints ||
+        ParserEntrypoint.tableConstraint =>
+          false,
+        _ => options.driftOptions != null,
+      },
+    );
 
-    final stmt = parser.safeStatement();
-    return ParseResult._(stmt, tokens, parser.errors, sql, null);
+    final node = entrypoint._parse(parser);
+    if (node is DriftFile) {
+      node.scope = _constructRootScope();
+    }
+
+    return ParseResult._(node, tokens, parser.errors, sql, autoCompleteEngine);
   }
 
   /// Like [parseSpan], but with a [FileSpan] created from the [sql] string.
-  ParseResult parse(String sql) {
-    return parseSpan(stringSpan(sql));
-  }
-
-  /// Parses multiple [sql] statements, separated by a semicolon.
-  ///
-  /// You can use the [AstNode.childNodes] of the returned [ParseResult.rootNode]
-  /// to inspect the returned statements.
-  ///
-  /// This method generally doesn't throw, but instead collects parsing errors
-  /// through [ParseResult.errors]. Callers should check that value instead of
-  /// blindly trusting the returned AST, as it will be an approximation if
-  /// parsing errors were encountered.
-  ParseResult parseMultiple(FileSpan sql) {
-    final (tokens, parser, _) = _createParser(sql);
-
-    final ast = parser.safeStatements();
-    return ParseResult._(ast, tokens, parser.errors, sql, null);
-  }
-
-  /// Parses [sql] as a list of column constraints.
-  ///
-  /// The [ParseResult.rootNode] will be a [ColumnDefinition] with the parsed
-  /// constraints.
-  ///
-  /// This method generally doesn't throw, but instead collects parsing errors
-  /// through [ParseResult.errors]. Callers should check that value instead of
-  /// blindly trusting the returned AST, as it will be an approximation if
-  /// parsing errors were encountered.
-  ParseResult parseColumnConstraints(FileSpan sql) {
-    final (tokens, parser, _) = _createParser(sql, driftExtensions: false);
-
-    return ParseResult._(
-      ColumnDefinition(
-        columnName: '',
-        typeName: '',
-        constraints: parser.columnConstraintsUntilEnd(),
-      ),
-      tokens,
-      parser.errors,
-      sql,
-      null,
-    );
-  }
-
-  /// Parses [sql] as a single table constraint.
-  ///
-  /// The [ParseResult.rootNode] will either be a [TableConstraint] or an
-  /// [InvalidStatement] in case of parsing errors.
-  ///
-  /// This method generally doesn't throw, but instead collects parsing errors
-  /// through [ParseResult.errors]. Callers should check that value instead of
-  /// blindly trusting the returned AST, as it will be an approximation if
-  /// parsing errors were encountered.
-  ParseResult parseTableConstraint(FileSpan sql) {
-    final (tokens, parser, _) = _createParser(sql, driftExtensions: false);
-
-    AstNode? constraint;
-    try {
-      constraint = parser.tableConstraintOrNull(requireConstraint: true);
-    } on ParsingError {
-      // Ignore, will be added to parser.errors anyway
-    }
-
-    return ParseResult._(
-      constraint ?? InvalidStatement(),
-      tokens,
-      parser.errors,
-      sql,
-      null,
-    );
-  }
-
-  /// Parses a `.drift` file, which can consist of multiple statements and
-  /// additional components like import statements.
-  ParseResult parseDriftFile(FileSpan content) {
-    assert(options.useDriftExtensions);
-    final (tokens, parser, autoComplete) =
-        _createParser(content, autoComplete: true);
-
-    final driftFile = parser.driftFile();
-    driftFile.scope = _constructRootScope();
-
-    return ParseResult._(
-        driftFile, tokens, parser.errors, content, autoComplete);
+  ParseResult<Root> parse<Root extends AstNode>(
+      ParserEntrypoint<Root> entrypoint, String sql) {
+    return parseSpan(entrypoint, stringSpan(sql));
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned
@@ -281,7 +219,7 @@ class SqlEngine {
   /// this statement only.
   AnalysisContext analyzeSpan(FileSpan sql,
       {AnalyzeStatementOptions? stmtOptions}) {
-    final result = parseSpan(sql);
+    final result = parseSpan(ParserEntrypoint.statement, sql);
     final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
 
     // Add parsing errors that occurred at the beginning since they are the most
@@ -354,11 +292,80 @@ class SqlEngine {
   }
 }
 
+/// Different parse entrypoints that can be used by [SqlEngine.parseSpan] and
+/// [SqlEngine.parse] to parse SQL text.
+enum ParserEntrypoint<Root extends AstNode> {
+  /// Parse a single SQL statement.
+  statement<Statement>(_parseStatement),
+
+  /// Parse multiple SQL statements separated by a semicolon.
+  multiple<SemicolonSeparatedStatements>(_parseStatements),
+
+  /// Used internally by `drift_dev`.
+  driftFile<DriftFile>(_parseDriftFile),
+
+  /// Parse a single table constraint.
+  ///
+  /// The [ParseResult.rootNode] will either be a [TableConstraint] or an
+  /// [InvalidStatement] in case of parsing errors.
+  tableConstraint<AstNode>(_parseTableConstraint),
+
+  /// Parse a list of column constraints.
+  ///
+  /// The [ParseResult.rootNode] will be a [ColumnDefinition] with the parsed
+  /// constraints.
+  columnConstraints<ColumnDefinition>(_parseColumnConstraints),
+
+  /// Parse a single expression.
+  expression<Expression>(_parseExpression);
+
+  final Root Function(ParserState) _parse;
+
+  const ParserEntrypoint(this._parse);
+
+  static Statement _parseStatement(ParserState state) {
+    return state.safeStatement();
+  }
+
+  static SemicolonSeparatedStatements _parseStatements(ParserState state) {
+    return state.safeStatements();
+  }
+
+  static DriftFile _parseDriftFile(ParserState state) {
+    return state.driftFile();
+  }
+
+  static ColumnDefinition _parseColumnConstraints(ParserState state) {
+    return ColumnDefinition(
+      columnName: '',
+      typeName: '',
+      constraints: state.columnConstraintsUntilEnd(),
+    );
+  }
+
+  static AstNode _parseTableConstraint(ParserState state) {
+    try {
+      if (state.tableConstraintOrNull(requireConstraint: true)
+          case final constraint?) {
+        return constraint;
+      }
+    } on ParsingError {
+      // Ignore, will be added to parser.errors anyway
+    }
+
+    return InvalidStatement();
+  }
+
+  static Expression _parseExpression(ParserState state) {
+    return state.expression();
+  }
+}
+
 /// The result of parsing an sql query. Contains the root of the AST and all
 /// errors that might have occurred during parsing.
-class ParseResult {
+final class ParseResult<Root extends AstNode> {
   /// The topmost node in the sql AST that was parsed.
-  final AstNode rootNode;
+  final Root rootNode;
 
   /// The tokens that were scanned in the source file, including those that are
   /// [Token.invisibleToParser].

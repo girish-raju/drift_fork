@@ -103,8 +103,7 @@ class MigrateCommand extends DriftCommand {
         driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
     final originalContent = await file.readAsString();
     var output = originalContent;
-    final result =
-        engine.parseDriftFile(SourceFile.fromString(originalContent).span(0));
+    final result = engine.parse(ParserEntrypoint.driftFile, originalContent);
 
     if (result.errors.isNotEmpty) {
       cli.logger.warning('Could not parse ${file.path}, skipping...');
@@ -112,7 +111,7 @@ class MigrateCommand extends DriftCommand {
     }
 
     // Change imports to point from .moor to .drift files
-    final root = result.rootNode as DriftFile;
+    final root = result.rootNode;
     for (final import in root.imports) {
       final importedFile = import.importedFile;
       if (p.url.extension(importedFile) == '.moor') {

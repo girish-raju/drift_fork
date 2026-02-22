@@ -101,7 +101,7 @@ void main() {
   ''';
 
     final engine = SqlEngine();
-    final ast = engine.parseMultiple(fakeSpan(sql)).rootNode;
+    final ast = engine.parse(ParserEntrypoint.multiple, sql).rootNode;
     enforceHasSpan(ast);
 
     enforceEqual(
@@ -155,7 +155,7 @@ SELECT * FROM users;
 ''';
 
     final engine = SqlEngine();
-    final ast = engine.parseMultiple(fakeSpan(sql)).rootNode;
+    final ast = engine.parse(ParserEntrypoint.multiple, sql).rootNode;
     enforceHasSpan(ast);
 
     final statements = ast.childNodes.toList();

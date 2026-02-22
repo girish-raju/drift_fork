@@ -1,5 +1,4 @@
 import 'package:benchmarks/benchmarks.dart';
-import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 const file = '''
@@ -52,6 +51,6 @@ class ParseDriftFile extends BenchmarkBase {
   }
 
   ParseResult _parse() {
-    return _engine.parseDriftFile(SourceFile.fromString(file).span(0));
+    return _engine.parse(ParserEntrypoint.driftFile, file);
   }
 }

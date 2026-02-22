@@ -12,7 +12,8 @@ import 'package:sqlparser/sqlparser.dart'
         SqlEngine,
         SqliteVersion,
         Table,
-        TableInducingStatement;
+        TableInducingStatement,
+        ParserEntrypoint;
 import 'package:string_scanner/string_scanner.dart';
 
 part '../generated/analysis/options.g.dart';
@@ -329,7 +330,7 @@ final class _TableFromSql extends JsonConverter<Table, String> {
   @override
   Table fromJson(String json) {
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
-    final result = engine.parse(json);
+    final result = engine.parse(ParserEntrypoint.statement, json);
     if (result.errors.isNotEmpty) {
       throw ArgumentError.value(json,
           'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}');

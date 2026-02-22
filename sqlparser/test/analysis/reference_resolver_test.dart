@@ -415,7 +415,7 @@ CREATE TABLE points (
 );
 ''');
 
-    final parseResult = engine.parse('''
+    final parseResult = engine.parse(ParserEntrypoint.statement, '''
 CREATE TABLE routes (
   route_id INTEGER NOT NULL PRIMARY KEY,
   "from" INTEGER NOT NULL REFERENCES points (id),

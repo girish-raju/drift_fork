@@ -158,7 +158,7 @@ extension FindReferenceAnalysis on SqlEngine {
     // Poorly clone the AST so that the analysis doesn't bring the original one
     // into a weird state.
     final sql = SourceFile.fromString(root.toSql()).span(0);
-    final clone = parseSpan(sql).rootNode;
+    final clone = parseSpan(ParserEntrypoint.statement, sql).rootNode;
 
     final scope = _FakeRootScope();
     final context = AnalysisContext(clone, sql, scope, EngineOptions(),

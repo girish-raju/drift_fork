@@ -8,7 +8,7 @@ void main() {
   group('limit clauses', () {
     test('with just a limit', () {
       final select = SqlEngine()
-          .parse('SELECT * FROM test LIMIT 5 * 3')
+          .parse(ParserEntrypoint.statement, 'SELECT * FROM test LIMIT 5 * 3')
           .rootNode as SelectStatement;
 
       enforceHasSpan(select);
@@ -26,7 +26,8 @@ void main() {
 
     test('with offset', () {
       final select = SqlEngine()
-          .parse('SELECT * FROM test LIMIT 10 OFFSET 2')
+          .parse(ParserEntrypoint.statement,
+              'SELECT * FROM test LIMIT 10 OFFSET 2')
           .rootNode as SelectStatement;
 
       enforceHasSpan(select);
@@ -44,7 +45,7 @@ void main() {
       // with the comma notation, the offset comes first.
       // https://www.sqlite.org/lang_select.html#limitoffset
       final select = SqlEngine()
-          .parse('SELECT * FROM test LIMIT 10, 2')
+          .parse(ParserEntrypoint.statement, 'SELECT * FROM test LIMIT 10, 2')
           .rootNode as SelectStatement;
 
       enforceHasSpan(select);

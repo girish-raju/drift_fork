@@ -4,7 +4,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/resolver/shared/data_class.dart';
-import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
@@ -437,8 +436,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     final engine = resolver.driver.newSqlEngine();
     for (var i = 0; i < foundConstraintSources.length; i++) {
       final parsed = engine
-          .parseTableConstraint(
-              SourceFile.fromString(foundConstraints[i]).span(0))
+          .parse(sql.ParserEntrypoint.tableConstraint, foundConstraints[i])
           .rootNode;
 
       if (parsed is sql.InvalidStatement) {

@@ -16,7 +16,7 @@ void main() {
     final engine = SqlEngine();
 
     for (final stmt in stmts) {
-      final result = engine.parse(stmt);
+      final result = engine.parse(ParserEntrypoint.statement, stmt);
       expect(result.errors, isEmpty);
       expect(result.rootNode, isA<CreateTableStatement>());
     }

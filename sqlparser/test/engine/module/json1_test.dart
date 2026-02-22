@@ -11,8 +11,10 @@ void main() {
     ));
     // add user (name, phone) table
     final table = engine.schemaReader.read(
-      engine.parse('CREATE TABLE user (name TEXT, phone TEXT)').rootNode
-          as TableInducingStatement,
+      engine
+          .parse(ParserEntrypoint.statement,
+              'CREATE TABLE user (name TEXT, phone TEXT)')
+          .rootNode as TableInducingStatement,
     );
     engine.registerTable(table);
 

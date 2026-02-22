@@ -16,8 +16,9 @@ void main() {
     };
 
     isAlias.forEach((createTblString, isAlias) {
-      final parsed =
-          engine.parse(createTblString).rootNode as CreateTableStatement;
+      final parsed = engine
+          .parse(ParserEntrypoint.statement, createTblString)
+          .rootNode as CreateTableStatement;
       final table = schemaParser.read(parsed);
 
       expect(

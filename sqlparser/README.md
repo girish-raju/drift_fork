@@ -10,7 +10,7 @@ detailed static analysis.
 We can resolve what type a column in a `SELECT` statement has, infer types for variables,
 find semantic errors and more.
 
-This library supports most SQLite features:
+This library supports SQLite features:
 
 - DQL: Full support, including joins, `group by`, nested and compound selects, `WITH` clauses
   and window function.
@@ -22,12 +22,13 @@ This library supports most SQLite features:
 - Management: All statements (`VACUUM`, `ATTACH`, `REINDEX`, `ANALYZE`, `PRAGMA`).
 
 ### Using the parser
+
 To obtain an abstract syntax tree from an SQL statement, use `SqlEngine.parse`.
 ```dart
 import 'package:sqlparser/sqlparser.dart';
 
 final engine = SqlEngine();
-final result = engine.parse('''
+final result = engine.parse(ParserEntrypoint.statement, '''
 SELECT f.* FROM frameworks f
   INNER JOIN uses_language ul ON ul.framework = f.id
   INNER JOIN languages l ON l.id = ul.language
@@ -39,6 +40,7 @@ LIMIT 5 OFFSET 5 * 3
 ```
 
 ### Analysis
+
 Given information about all tables and an SQL statement, this library can:
 
 1. Determine which result columns a query is going to have, including types and nullability
@@ -73,9 +75,11 @@ resolvedColumns.map((c) => context.typeOf(c).type.type); // int, text, int, text
 ```
 
 ## But why?
+
 [Drift](https://pub.dev/packages/drift), a persistence library for Dart apps, uses this
 package to generate type-safe methods from SQL.
 
 ## Thanks
+
 - To [Bob Nystrom](https://github.com/munificent) for his amazing ["Crafting Interpreters"](https://craftinginterpreters.com/)
   book, which was incredibly helpful when writing the parser.

@@ -187,7 +187,7 @@ abstract class SqlQuery {
   /// AST node.
   factory SqlQuery.astOnly(
       {required SqlEngine engine, required String name, required String sql}) {
-    final result = engine.parse(sql);
+    final result = engine.parse(ParserEntrypoint.statement, sql);
 
     return UpdatingQuery(
       name,

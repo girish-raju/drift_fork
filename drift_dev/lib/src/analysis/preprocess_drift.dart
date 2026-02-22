@@ -71,8 +71,8 @@ class DriftPreprocessor {
     final contents = await backend.readAsString(uri);
     final engine = SqlEngine(EngineOptions(
         driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
-    final parsedInput = engine
-        .parseDriftFile(SourceFile.fromString(contents, url: uri).span(0));
+    final parsedInput = engine.parseSpan(ParserEntrypoint.driftFile,
+        SourceFile.fromString(contents, url: uri).span(0));
 
     final directImports = _imports(parsedInput.rootNode, uri).toList();
 
@@ -100,10 +100,11 @@ class DriftPreprocessor {
           if (extension == '.moor' || extension == '.drift') {
             ParseResult parsed;
             try {
-              parsed = engine.parseDriftFile(SourceFile.fromString(
-                      await backend.readAsString(foundImport),
-                      url: foundImport)
-                  .span(0));
+              parsed = engine.parseSpan(
+                  ParserEntrypoint.driftFile,
+                  SourceFile.fromString(await backend.readAsString(foundImport),
+                          url: foundImport)
+                      .span(0));
             } catch (e, s) {
               // Not being able to read or parse this file isn't critical, we'll
               // just ignore the imports it contributes.

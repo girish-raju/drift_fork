@@ -91,8 +91,10 @@ class FindSchemaDifferences {
   }
 
   CompareResult _compareInput(Input reference, Input actual) {
-    final parsedReference = _engine.parse(reference.create);
-    final parsedActual = _engine.parse(actual.create);
+    final parsedReference =
+        _engine.parse(ParserEntrypoint.statement, reference.create);
+    final parsedActual =
+        _engine.parse(ParserEntrypoint.statement, actual.create);
 
     if (parsedReference.errors.isNotEmpty) {
       return FoundDifference(

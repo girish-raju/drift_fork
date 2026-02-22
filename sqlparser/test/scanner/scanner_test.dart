@@ -96,7 +96,7 @@ class Screen extends ConsumerStatefulWidget {
     expect(() => SqlEngine().tokenizeString(badInput),
         throwsA(isA<CumulatedTokenizerException>()));
 
-    final parsed = SqlEngine().parse(badInput);
+    final parsed = SqlEngine().parse(ParserEntrypoint.statement, badInput);
     expect(parsed.errors, isNotEmpty);
     expect(parsed.rootNode, isA<InvalidStatement>());
   });

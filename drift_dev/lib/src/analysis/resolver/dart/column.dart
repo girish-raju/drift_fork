@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
-    show InitialDeferrableMode, ReferenceAction;
+    show InitialDeferrableMode, ReferenceAction, ParserEntrypoint;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
@@ -658,10 +658,9 @@ class ColumnParser {
     }
 
     final engine = _resolver.resolver.driver.newSqlEngine();
-    final parseResult = engine.parseColumnConstraints(
-        SourceFile.fromString(customConstraints).span(0));
-    final constraints =
-        (parseResult.rootNode as sql.ColumnDefinition).constraints;
+    final parseResult =
+        engine.parse(ParserEntrypoint.columnConstraints, customConstraints);
+    final constraints = parseResult.rootNode.constraints;
 
     for (final error in parseResult.errors) {
       _resolver.reportError(DriftAnalysisError(translateSpan(error.token.span),
