@@ -2,13 +2,13 @@ import 'dart:math';
 
 import 'package:benchmarks/benchmarks.dart';
 import 'package:source_span/source_span.dart';
-// ignore: implementation_imports
-import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
+import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 class TokenizerBenchmark extends BenchmarkBase {
   late SourceFile input;
+  final engine = SqlEngine();
 
   static const int size = 10000;
 
@@ -33,7 +33,6 @@ class TokenizerBenchmark extends BenchmarkBase {
 
   @override
   void run() {
-    final scanner = Scanner(input.span(0));
-    scanner.scanTokens();
+    engine.tokenize(input.span(0));
   }
 }
