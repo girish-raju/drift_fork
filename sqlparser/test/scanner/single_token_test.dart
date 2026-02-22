@@ -1,18 +1,11 @@
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:test/test.dart';
 
 import '../parser/utils.dart';
 
 void expectFullToken(String token, TokenType type) {
-  final scanner = Scanner(fakeSpan(token));
-  List<Token> tokens;
-  try {
-    tokens = scanner.scanTokens();
-  } catch (e, s) {
-    print(e);
-    print(s);
-    fail('Parsing error while parsing $token');
-  }
+  final tokens = SqlEngine().tokenizeString(token);
 
   if (tokens.length != 2 || tokens.last.type != TokenType.eof) {
     fail('Expected exactly one token when parsing $token, '
@@ -62,21 +55,21 @@ void main() {
   });
 
   test('can escape strings', () {
-    final scanner = Scanner(fakeSpan("'what''s up'"));
-    scanner.scanTokens();
+    final tokens = SqlEngine().tokenizeString("'what''s up'");
 
-    expect(scanner.tokens, hasLength(2)); // eof token at the end
+    expect(tokens, hasLength(2)); // eof token at the end
     expect(
-      scanner.tokens.first,
+      tokens.first,
       const TypeMatcher<StringLiteralToken>()
           .having((token) => token.value, 'value', "what's up"),
     );
-    expect(scanner.tokens[1].type, TokenType.eof);
+    expect(tokens[1].type, TokenType.eof);
   });
 
   group("parse unterminated string literals", () {
     test('issues error', () {
-      final scanner = Scanner(fakeSpan("'unterminated"))..scanTokens();
+      final scanner = Scanner(fakeSpan("'unterminated"));
+      final token = scanner.scanToken();
 
       expect(
         scanner.errors,
@@ -84,15 +77,17 @@ void main() {
             .having((e) => e.message, 'message', 'Unterminated string')),
       );
 
-      expect(scanner.tokens, [
+      expect(
+        token,
         isA<StringLiteralToken>()
             .having((e) => e.value, 'value', 'unterminated'),
-        isA<Token>().having((e) => e.type, 'type', TokenType.eof),
-      ]);
+      );
+      expect(scanner.scanToken().type, TokenType.eof);
     });
 
     test('does not crash if the input ends with apostrophe', () {
-      final scanner = Scanner(fakeSpan("'"))..scanTokens();
+      final scanner = Scanner(fakeSpan("'"));
+      scanner.scanToken();
 
       expect(
         scanner.errors,
@@ -103,29 +98,28 @@ void main() {
   });
 
   test('binary string literal', () {
-    final scanner = Scanner(fakeSpan("X'1234' x'5678'"));
-    scanner.scanTokens();
+    final tokens = SqlEngine().tokenizeString("X'1234' x'5678'");
 
-    expect(scanner.tokens, hasLength(3));
+    expect(tokens, hasLength(3));
     expect(
-      scanner.tokens[0],
+      tokens[0],
       const TypeMatcher<StringLiteralToken>()
           .having((token) => token.binary, 'binary', isTrue)
           .having((token) => token.value, 'value', '1234'),
     );
     expect(
-      scanner.tokens[1],
+      tokens[1],
       const TypeMatcher<StringLiteralToken>()
           .having((token) => token.binary, 'binary', isTrue)
           .having((token) => token.value, 'value', '5678'),
     );
-    expect(scanner.tokens[2].type, TokenType.eof);
+    expect(tokens[2].type, TokenType.eof);
   });
 
   group('parses numeric literals', () {
     void checkLiteral(String lexeme, NumericToken other, num value) {
-      final scanner = Scanner(fakeSpan(lexeme))..scanTokens();
-      final token = scanner.tokens.first as NumericToken;
+      final tokens = SqlEngine().tokenizeString(lexeme);
+      final token = tokens.first as NumericToken;
 
       expect(token.hasSameStructureAs(other), isTrue,
           reason: '$token should have the same structure as $other');
@@ -216,8 +210,8 @@ void main() {
 
   test('named variables', () {
     for (final prefix in [':', '@', r'$']) {
-      final scanner = Scanner(fakeSpan('${prefix}name'))..scanTokens();
-      final token = scanner.tokens.first as NamedVariableToken;
+      final tokens = SqlEngine().tokenizeString('${prefix}name');
+      final token = tokens[0] as NamedVariableToken;
 
       expect(token.name, 'name');
       expect(token.fullName, '${prefix}name');

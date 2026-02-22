@@ -1,12 +1,11 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:test/test.dart';
 
 import '../parser/utils.dart';
 
 void main() {
   test('parses ** as two tokens when not using drift mode', () {
-    final tokens = Scanner(fakeSpan('**')).scanTokens();
+    final tokens = SqlEngine().tokenizeString('**');
     expect(tokens.map((e) => e.type),
         containsAllInOrder([TokenType.star, TokenType.star]));
   });
@@ -20,7 +19,7 @@ void main() {
 
   test('scans identifiers with backticks', () {
     expect(
-      Scanner(fakeSpan('`SELECT`')).scanTokens(),
+      SqlEngine().tokenizeString('`SELECT`'),
       contains(isA<IdentifierToken>()
           .having((e) => e.identifier, 'identifier', 'SELECT')),
     );
@@ -28,14 +27,14 @@ void main() {
 
   test('scans identifiers with double quotes', () {
     expect(
-      Scanner(fakeSpan('"SELECT"')).scanTokens(),
+      SqlEngine().tokenizeString('"SELECT"'),
       contains(isA<IdentifierToken>()
           .having((e) => e.identifier, 'identifier', 'SELECT')),
     );
   });
 
   test('scans new tokens for JSON extraction', () {
-    expect(Scanner(fakeSpan('- -> ->>')).scanTokens(), [
+    expect(SqlEngine().tokenizeString('- -> ->>'), [
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.minus),
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.dashRangle),
       isA<Token>()

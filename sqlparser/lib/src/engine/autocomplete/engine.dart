@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 part 'descriptions/description.dart';
@@ -23,7 +24,7 @@ class AutoCompleteEngine {
   late final UnmodifiableListView<Hint> _hintsView =
       UnmodifiableListView(_hints);
 
-  final List<Token> _tokens;
+  late final List<Token> _tokens;
   final SqlEngine _engine;
 
   void addHint(Hint hint) {
@@ -44,7 +45,7 @@ class AutoCompleteEngine {
     }
   }
 
-  AutoCompleteEngine(this._tokens, this._engine);
+  AutoCompleteEngine(this._engine);
 
   /// Suggest completions at a specific [offset].
   ///
@@ -103,6 +104,11 @@ class AutoCompleteEngine {
     }
 
     return min;
+  }
+
+  @internal
+  void installTokens(List<Token> tokens) {
+    _tokens = tokens;
   }
 }
 

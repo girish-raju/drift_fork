@@ -1734,7 +1734,7 @@ extension Parser on ParserState {
     // the columns must come before the table constraints!
     var encounteredTableConstraint = false;
 
-    _withErrorRecovery(InParentheses(leftParen, leftParen.match), () {
+    _withErrorRecovery(InParentheses(leftParen), () {
       do {
         _withErrorRecovery(InCommaSeparatedList(), () {
           final tableConstraint = tableConstraintOrNull();

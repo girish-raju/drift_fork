@@ -4,17 +4,49 @@ import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
 
 import 'token.dart';
+import 'token_source.dart';
 import 'utils.dart';
+
+final class ScannerTokenSource extends TokenSource {
+  final List<Token> tokens = [];
+  final Scanner scanner;
+
+  ScannerTokenSource(this.scanner);
+
+  int _index = 0;
+  Token? _previous;
+
+  @override
+  Token readToken() {
+    while (true) {
+      final read = scanner.scanToken();
+      if (read is TokenizerError) {
+        scanner.errors.add(read);
+        continue;
+      }
+
+      read
+        ..index = _index++
+        ..previous = _previous;
+      _previous?.next = read;
+      _previous = read;
+      tokens.add(read);
+      if (read.invisibleToParser) {
+        continue;
+      }
+
+      return read;
+    }
+  }
+}
 
 class Scanner {
   final Uint16List _charCodes;
+  final List<TokenizerError> errors = [];
 
   /// Whether to scan tokens that are only relevant for drift files.
   final bool scanDriftTokens;
   final SourceFile _file;
-
-  final List<Token> tokens = [];
-  final List<TokenizerError> errors = [];
 
   /// Pending opening tokens used to associate them with closing tokens.
   ///
@@ -44,117 +76,96 @@ class Scanner {
         _endOffset = span.end.offset,
         _charCodes = Uint16List.fromList(span.file.codeUnits);
 
-  List<Token> scanTokens() {
-    while (!_isAtEnd) {
+  Token scanToken() {
+    while (true) {
+      if (_isAtEnd) {
+        final endSpan = _file.span(_endOffset, _endOffset);
+        return Token(TokenType.eof, endSpan);
+      }
+
       _startOffset = _currentOffset;
-      _scanToken();
+
+      // We might have to call this multiple times to skip past whitespace.
+      if (_consumeToken() case final token?) {
+        return token;
+      }
     }
-
-    final endSpan = _file.span(_endOffset, _endOffset);
-    tokens.add(Token(TokenType.eof, endSpan));
-
-    Token? previous;
-    for (var i = 0; i < tokens.length; i++) {
-      final current = tokens[i];
-      current.index = i;
-      current.previous = previous;
-      previous?.next = current;
-
-      previous = current;
-    }
-
-    return tokens;
   }
 
-  void _scanToken() {
+  Token? _consumeToken() {
     final char = _nextChar();
     switch (char) {
       case $lparen:
-        _addToken(TokenType.leftParen, closedBy: TokenType.rightParen);
-        break;
+        return _addToken(TokenType.leftParen, closedBy: TokenType.rightParen);
       case $rparen:
-        _addToken(TokenType.rightParen, mayClose: true);
-        break;
+        return _addToken(TokenType.rightParen, mayClose: true);
       case $comma:
-        _addToken(TokenType.comma);
-        break;
+        return _addToken(TokenType.comma);
       case $dot:
         if (!_isAtEnd && isDigit(_peek())) {
-          _numeric(char);
+          return _numeric(char);
         } else {
-          _addToken(TokenType.dot);
+          return _addToken(TokenType.dot);
         }
-        break;
       case $plus:
-        _addToken(TokenType.plus);
-        break;
+        return _addToken(TokenType.plus);
       case $minus:
         if (_match($minus)) {
-          _lineComment();
+          return _lineComment();
         } else if (_match($rangle)) {
-          _addToken(_match($rangle)
+          return _addToken(_match($rangle)
               ? TokenType.dashRangleRangle
               : TokenType.dashRangle);
         } else {
-          _addToken(TokenType.minus);
+          return _addToken(TokenType.minus);
         }
-        break;
       case $asterisk:
         if (scanDriftTokens && _match($asterisk)) {
-          _addToken(TokenType.doubleStar);
+          return _addToken(TokenType.doubleStar);
         } else {
-          _addToken(TokenType.star);
+          return _addToken(TokenType.star);
         }
-        break;
       case $slash:
         if (_match($asterisk)) {
-          _cStyleComment();
+          return _cStyleComment();
         } else {
-          _addToken(TokenType.slash);
+          return _addToken(TokenType.slash);
         }
-        break;
       case $percent:
-        _addToken(TokenType.percent);
-        break;
+        return _addToken(TokenType.percent);
       case $ampersand:
-        _addToken(TokenType.ampersand);
-        break;
+        return _addToken(TokenType.ampersand);
       case $pipe:
-        _addToken(_match($pipe) ? TokenType.doublePipe : TokenType.pipe);
-        break;
+        return _addToken(_match($pipe) ? TokenType.doublePipe : TokenType.pipe);
       case $less_than:
         if (_match($equal)) {
-          _addToken(TokenType.lessEqual);
+          return _addToken(TokenType.lessEqual);
         } else if (_match($less_than)) {
-          _addToken(TokenType.shiftLeft);
+          return _addToken(TokenType.shiftLeft);
         } else if (_match($greater_than)) {
-          _addToken(TokenType.lessMore);
+          return _addToken(TokenType.lessMore);
         } else {
-          _addToken(TokenType.less);
+          return _addToken(TokenType.less);
         }
-        break;
       case $greater_than:
         if (_match($equal)) {
-          _addToken(TokenType.moreEqual);
+          return _addToken(TokenType.moreEqual);
         } else if (_match($greater_than)) {
-          _addToken(TokenType.shiftRight);
+          return _addToken(TokenType.shiftRight);
         } else {
-          _addToken(TokenType.more);
+          return _addToken(TokenType.more);
         }
-        break;
       case $exclamation:
         if (_match($equal)) {
-          _addToken(TokenType.exclamationEqual);
+          return _addToken(TokenType.exclamationEqual);
         } else {
-          _unexpectedToken();
+          return _unexpectedToken();
         }
-        break;
       case $equal:
-        _addToken(_match($equal) ? TokenType.doubleEqual : TokenType.equal);
-        break;
+        return _addToken(
+            _match($equal) ? TokenType.doubleEqual : TokenType.equal);
       case $tilde:
-        _addToken(TokenType.tilde);
-        break;
+        return _addToken(TokenType.tilde);
       case $question:
         // if the next chars are numbers, this is an explicitly indexed variable
         final buffer = StringBuffer();
@@ -167,84 +178,72 @@ class Scanner {
           explicitIndex = int.parse(buffer.toString());
         }
 
-        tokens.add(QuestionMarkVariableToken(_currentSpan, explicitIndex));
-        break;
+        return QuestionMarkVariableToken(_currentSpan, explicitIndex);
       case $colon:
         final name = _matchColumnName();
         if (name == null) {
-          _addToken(TokenType.colon);
+          return _addToken(TokenType.colon);
         } else {
-          tokens.add(ColonVariableToken(_currentSpan, name));
+          return ColonVariableToken(_currentSpan, name);
         }
-        break;
       case $dollar:
         final name = _matchColumnName();
         if (name == null) {
-          errors.add(TokenizerError(
-              r'Expected identifier after `$`', _currentLocation));
-          break;
+          return TokenizerError(
+              r'Expected identifier after `$`', _currentLocation);
         }
 
-        tokens.add(DollarSignVariableToken(_currentSpan, name));
-        break;
+        return DollarSignVariableToken(_currentSpan, name);
       case $at:
         final name = _matchColumnName();
         if (name == null) {
-          errors.add(TokenizerError(
-              r'Expected identifier after `@`', _currentLocation));
-          break;
+          return TokenizerError(
+              r'Expected identifier after `@`', _currentLocation);
         }
-        tokens.add(AtSignVariableToken(_currentSpan, name));
-        break;
+        return AtSignVariableToken(_currentSpan, name);
       case $semicolon:
-        _addToken(TokenType.semicolon);
+        final token = _addToken(TokenType.semicolon);
         _tokenStack.clear();
-        break;
+        return token;
       case $x:
       case $X:
         if (_match($apostrophe)) {
-          _string(binary: true);
+          return _string(binary: true);
         } else {
-          _identifier();
+          return _identifier();
         }
-        break;
       case $apostrophe:
-        _string();
-        break;
+        return _string();
       case $double_quote:
-        _identifier(escapeChar: $double_quote);
-        break;
+        return _identifier(escapeChar: $double_quote);
       case $backquote:
         if (scanDriftTokens) {
-          _inlineDart();
+          return _inlineDart();
         } else {
-          _identifier(escapeChar: $backquote);
+          return _identifier(escapeChar: $backquote);
         }
-        break;
       case $lbracket:
-        _identifier(escapeChar: $rbracket);
-        break;
+        return _identifier(escapeChar: $rbracket);
       case $space:
       case $cr:
       case $tab:
       case $lf:
         // ignore whitespace
-        break;
+        return null;
 
       default:
         if (isDigit(char)) {
-          _numeric(char);
+          return _numeric(char);
         } else if (canStartIdentifier(char)) {
-          _identifier();
+          return _identifier();
         } else {
-          _unexpectedToken();
+          return _unexpectedToken();
         }
-        break;
     }
   }
 
-  void _unexpectedToken() {
-    errors.add(TokenizerError('Unexpected character', _currentLocation));
+  Token _unexpectedToken() {
+    return TokenizerError('Unexpected character', _currentLocation);
   }
 
   int _nextChar() {
@@ -268,13 +267,12 @@ class Scanner {
     return true;
   }
 
-  void _addToken(
+  Token _addToken(
     TokenType type, {
     TokenType? closedBy,
     bool mayClose = false,
   }) {
     final token = Token(type, _currentSpan);
-    tokens.add(token);
 
     if (closedBy != null) {
       _tokenStack.add((token, closedBy));
@@ -290,9 +288,11 @@ class Scanner {
         _tokenStack.clear();
       }
     }
+
+    return token;
   }
 
-  void _string({bool binary = false}) {
+  Token _string({bool binary = false}) {
     var properlyClosed = false;
 
     while (!_isAtEnd) {
@@ -321,10 +321,10 @@ class Scanner {
           _currentOffset - (properlyClosed ? 1 : 0),
         )
         .replaceAll("''", "'");
-    tokens.add(StringLiteralToken(value, _currentSpan, binary: binary));
+    return StringLiteralToken(value, _currentSpan, binary: binary);
   }
 
-  void _numeric(int firstChar) {
+  Token _numeric(int firstChar) {
     // https://www.sqlite.org/syntax/numeric-literal.html
 
     /// Recognizes either a digit or a underscore followed by a digit.
@@ -361,9 +361,8 @@ class Scanner {
           digit = digitCode(isHexDigit);
         }
 
-        tokens.add(
-            NumericToken(_currentSpan, hexDigits: hexDigitsBuffer.toString()));
-        return;
+        return NumericToken(_currentSpan,
+            hexDigits: hexDigitsBuffer.toString());
       }
     }
 
@@ -380,12 +379,12 @@ class Scanner {
 
     /// Returns true without advancing if the next char is a digit. Returns
     /// false and logs an error with the message otherwise.
-    bool requireDigit(String message) {
+    TokenizerError? requireDigit(String message) {
       final noDigit = _isAtEnd || !isDigit(_peek());
       if (noDigit) {
-        errors.add(TokenizerError(message, _currentLocation));
+        return TokenizerError(message, _currentLocation);
       }
-      return !noDigit;
+      return null;
     }
 
     String? beforeDecimal;
@@ -396,15 +395,16 @@ class Scanner {
     if (firstChar == $dot) {
       // started with a decimal point. the next char has to be numeric
       hasDecimal = true;
-      if (requireDigit('Expected a digit after the decimal dot')) {
-        afterDecimal = consumeDigits();
+      if (requireDigit('Expected a digit after the decimal dot')
+          case final error?) {
+        return error;
       }
+      afterDecimal = consumeDigits();
     } else {
       // ok, not starting with a decimal dot. In that case, the first char must
       // be a digit
       if (!isDigit(firstChar)) {
-        errors.add(TokenizerError('Expected a digit', _currentLocation));
-        return;
+        return TokenizerError('Expected a digit', _currentLocation);
       }
       beforeDecimal = String.fromCharCode(firstChar) + consumeDigits();
 
@@ -428,11 +428,10 @@ class Scanner {
       _nextChar(); // consume e or E
 
       if (_isAtEnd) {
-        errors.add(TokenizerError(
+        return TokenizerError(
             'Unexpected end of file. '
             'Expected digits for the scientific notation',
-            _currentLocation));
-        return;
+            _currentLocation);
       }
 
       final char = _nextChar();
@@ -447,20 +446,21 @@ class Scanner {
           parsedExponent =
               char == $plus ? int.parse(exponent) : -int.parse(exponent);
         } else {
-          errors
-              .add(TokenizerError('Expected plus or minus', _currentLocation));
+          return TokenizerError('Expected plus or minus', _currentLocation);
         }
       }
     }
 
-    tokens.add(NumericToken(_currentSpan,
-        digitsBeforeDecimal: beforeDecimal,
-        digitsAfterDecimal: afterDecimal,
-        hasDecimalPoint: hasDecimal,
-        exponent: parsedExponent));
+    return NumericToken(
+      _currentSpan,
+      digitsBeforeDecimal: beforeDecimal,
+      digitsAfterDecimal: afterDecimal,
+      hasDecimalPoint: hasDecimal,
+      exponent: parsedExponent,
+    );
   }
 
-  void _identifier({int? escapeChar}) {
+  Token _identifier({int? escapeChar}) {
     if (escapeChar != null) {
       // find the closing quote
       while (!_isAtEnd && _peek() != escapeChar) {
@@ -468,12 +468,11 @@ class Scanner {
       }
       // Issue an error if the column name is unterminated
       if (_isAtEnd) {
-        errors
-            .add(TokenizerError('Unterminated column name', _currentLocation));
+        return TokenizerError('Unterminated column name', _currentLocation);
       } else {
         // consume the closing char
         _nextChar();
-        tokens.add(IdentifierToken(true, _currentSpan));
+        return IdentifierToken(true, _currentSpan);
       }
     } else {
       while (!_isAtEnd && continuesIdentifier(_peek())) {
@@ -482,12 +481,12 @@ class Scanner {
 
       // not escaped, so it could be a keyword
       final text = _currentSpan.text.toUpperCase();
-      if (keywords.containsKey(text)) {
-        tokens.add(KeywordToken(keywords[text]!, _currentSpan));
+      if (keywords[text] case final keyword?) {
+        return KeywordToken(keyword, _currentSpan);
       } else if (scanDriftTokens && driftKeywords.containsKey(text)) {
-        tokens.add(KeywordToken(driftKeywords[text]!, _currentSpan));
+        return KeywordToken(driftKeywords[text]!, _currentSpan);
       } else {
-        tokens.add(IdentifierToken(false, _currentSpan));
+        return IdentifierToken(false, _currentSpan);
       }
     }
   }
@@ -503,7 +502,7 @@ class Scanner {
     return buffer.toString();
   }
 
-  void _inlineDart() {
+  Token _inlineDart() {
     // inline starts with a `, we just need to find the matching ` that
     // terminates this token.
     while (_peek() != $backquote && !_isAtEnd) {
@@ -511,30 +510,29 @@ class Scanner {
     }
 
     if (_isAtEnd) {
-      errors.add(
-          TokenizerError('Unterminated inline Dart code', _currentLocation));
+      return TokenizerError('Unterminated inline Dart code', _currentLocation);
     } else {
       // consume the `
       _nextChar();
-      tokens.add(InlineDartToken(_currentSpan));
+      return InlineDartToken(_currentSpan);
     }
   }
 
   /// Scans a line comment after the -- has already been read.
-  void _lineComment() {
+  CommentToken _lineComment() {
     final contentBuilder = StringBuffer();
     while (!_isAtEnd && _peek() != $lf) {
       contentBuilder.writeCharCode(_nextChar());
     }
 
-    tokens.add(CommentToken(
-        CommentMode.line, contentBuilder.toString(), _currentSpan));
+    return CommentToken(
+        CommentMode.line, contentBuilder.toString(), _currentSpan);
   }
 
   /// Scans a /* ... */ comment after the first /* has already been read.
   /// Note that in sqlite, these comments don't have to be terminated - they
   /// will be closed by the end of input without causing a parsing error.
-  void _cStyleComment() {
+  CommentToken _cStyleComment() {
     final contentBuilder = StringBuffer();
     while (!_isAtEnd) {
       if (_match($asterisk)) {
@@ -549,7 +547,7 @@ class Scanner {
       }
     }
 
-    tokens.add(CommentToken(
-        CommentMode.cStyle, contentBuilder.toString(), _currentSpan));
+    return CommentToken(
+        CommentMode.cStyle, contentBuilder.toString(), _currentSpan);
   }
 }

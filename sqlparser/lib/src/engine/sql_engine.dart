@@ -6,7 +6,6 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 
-import '../reader/tokenizer/token_source.dart';
 import 'autocomplete/engine.dart';
 import 'builtin_tables.dart';
 
@@ -113,10 +112,10 @@ final class SqlEngine {
     return scope;
   }
 
-  Scanner _scan(FileSpan source) {
+  ScannerTokenSource _prepareScanning(FileSpan source) {
     final scanner =
         Scanner(source, scanDriftTokens: options.useDriftExtensions);
-    return scanner..scanTokens();
+    return ScannerTokenSource(scanner);
   }
 
   /// Tokenizes the [source] into a list list [Token]s. Each [Token] contains
@@ -130,9 +129,16 @@ final class SqlEngine {
   /// you need to filter them. When using the methods in this class, this will
   /// be taken care of automatically.
   List<Token> tokenize(FileSpan source) {
-    final scanner = _scan(source);
-    if (scanner.errors.isNotEmpty) {
-      throw CumulatedTokenizerException(scanner.errors);
+    final scanner = _prepareScanning(source);
+    // Read until end
+    Token token;
+    do {
+      token = scanner.readToken();
+    } while (token.type != TokenType.eof);
+
+    final errors = scanner.scanner.errors;
+    if (errors.isNotEmpty) {
+      throw CumulatedTokenizerException(errors);
     }
 
     return scanner.tokens;
@@ -141,32 +147,6 @@ final class SqlEngine {
   /// Like [tokenize], but with a [FileSpan] created from the [sql] string.
   List<Token> tokenizeString(String sql) {
     return tokenize(stringSpan(sql));
-  }
-
-  (List<Token>, ParserState, AutoCompleteEngine?) _createParser(
-    FileSpan source, {
-    required bool autoComplete,
-    required bool driftExtensions,
-  }) {
-    final tokenizer = _scan(source);
-    final allTokens = tokenizer.tokens;
-    final autoCompleteEngine =
-        autoComplete ? AutoCompleteEngine(allTokens, this) : null;
-
-    final parser = ParserState(
-      TokenSource.fromIterator(tokenizer.tokens.iterator),
-      options: EngineOptions(
-        driftOptions: driftExtensions ? options.driftOptions : null,
-        supportSchemaInFunctionNames: options.supportSchemaInFunctionNames,
-      ),
-      autoComplete: autoCompleteEngine,
-    );
-
-    for (final error in tokenizer.errors) {
-      parser.errors.add(ParsingError(error, error.message));
-    }
-
-    return (allTokens, parser, autoCompleteEngine);
   }
 
   /// Parses an SQL structure starting from the given [ParserEntrypoint].
@@ -180,18 +160,23 @@ final class SqlEngine {
   /// [ParseResult.autoCompleteEngine] will be set and can be queries for auto-
   /// complete inference.
   ParseResult<Root> parseSpan<Root extends AstNode>(
-      ParserEntrypoint<Root> entrypoint, FileSpan sql,
-      {bool autoComplete = false}) {
-    final (tokens, parser, autoCompleteEngine) = _createParser(
-      sql,
-      autoComplete: autoComplete,
-      driftExtensions: switch (entrypoint) {
-        // Constraints should never be parsed with drift support.
-        ParserEntrypoint.columnConstraints ||
-        ParserEntrypoint.tableConstraint =>
-          false,
-        _ => options.driftOptions != null,
-      },
+    ParserEntrypoint<Root> entrypoint,
+    FileSpan sql, {
+    bool autoComplete = false,
+  }) {
+    final tokenizer = _prepareScanning(sql);
+    final autoCompleteEngine = autoComplete ? AutoCompleteEngine(this) : null;
+    final disableDriftExtensions =
+        entrypoint == ParserEntrypoint.columnConstraints ||
+            entrypoint == ParserEntrypoint.tableConstraint;
+
+    final parser = ParserState(
+      tokenizer,
+      options: EngineOptions(
+        driftOptions: disableDriftExtensions ? null : options.driftOptions,
+        supportSchemaInFunctionNames: options.supportSchemaInFunctionNames,
+      ),
+      autoComplete: autoCompleteEngine,
     );
 
     final node = entrypoint._parse(parser);
@@ -199,7 +184,13 @@ final class SqlEngine {
       node.scope = _constructRootScope();
     }
 
-    return ParseResult._(node, tokens, parser.errors, sql, autoCompleteEngine);
+    autoCompleteEngine?.installTokens(tokenizer.tokens);
+    for (final error in tokenizer.scanner.errors) {
+      parser.errors.add(ParsingError(error, error.message));
+    }
+
+    return ParseResult._(
+        node, tokenizer.tokens, parser.errors, sql, autoCompleteEngine);
   }
 
   /// Like [parseSpan], but with a [FileSpan] created from the [sql] string.

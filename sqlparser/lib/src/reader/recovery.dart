@@ -48,12 +48,11 @@ final class InCommaSeparatedList implements ErrorRecoveryScope {
 /// scope is active.
 final class InParentheses implements ErrorRecoveryScope {
   final Token leftParentheses;
-  final Token? rightParenthesis;
 
-  InParentheses(this.leftParentheses, this.rightParenthesis);
+  InParentheses(this.leftParentheses);
 
   @override
   bool indicatesEnd(Token token) {
-    return token == rightParenthesis;
+    return token.match == leftParentheses;
   }
 }
