@@ -36,16 +36,27 @@ class ParsingError implements Exception {
 @internal
 final class ParserState {
   final List<Token> tokens;
-  final List<ParsingError> errors = [];
+  final List<ParsingError> errors;
   final AutoCompleteEngine? autoComplete;
 
   final EngineOptions options;
 
   int _current = 0;
-  final List<ErrorRecoveryScope> _errorRecovery = [];
+  final List<ErrorRecoveryScope> _errorRecovery;
 
   ParserState(this.tokens, {EngineOptions? options, this.autoComplete})
-      : options = options ?? EngineOptions();
+      : options = options ?? EngineOptions(),
+        errors = [],
+        _errorRecovery = [];
+
+  ParserState.fromParent(ParserState parent)
+      : tokens = parent.tokens,
+        errors = parent.errors,
+        autoComplete = parent.autoComplete,
+        options = parent.options,
+        _errorRecovery = parent._errorRecovery {
+    _current = parent._current;
+  }
 }
 
 extension Parser on ParserState {
@@ -540,296 +551,10 @@ extension Parser on ParserState {
   }
 
   Expression expression() {
-    return _or();
-  }
-
-  /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
-  /// both a and b are expressions with a higher precedence parsed from
-  /// [higherPrecedence].
-  Expression _parseSimpleBinary(
-      List<TokenType> types, Expression Function() higherPrecedence) {
-    var expression = higherPrecedence();
-
-    while (_match(types)) {
-      final operator = _previous;
-      final right = higherPrecedence();
-      expression = BinaryExpression(expression, operator, right)
-        ..setSpan(expression.first!, _previous);
-    }
-    return expression;
-  }
-
-  Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
-  Expression _and() => _parseSimpleBinary(const [TokenType.and], _in);
-
-  Expression _in() {
-    final left = _equals();
-
-    if (_checkWithNot(TokenType.$in)) {
-      final not = _matchOne(TokenType.not);
-      _matchOne(TokenType.$in);
-
-      InExpressionTarget inside;
-      if (_variableOrNull() case var variable?) {
-        inside = variable;
-      } else if (_check(TokenType.leftParen)) {
-        inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
-      } else {
-        final target = _tableOrSubquery(allowAlias: false);
-        // TableOrSubquery is either a table reference, a table-valued function,
-        // or a Subquery. We don't support subqueries, but they can't be parsed
-        // here because we would have entered the tuple case above.
-        assert(target is! SubQuery);
-        inside = target as InExpressionTarget;
-      }
-
-      return InExpression(left: left, inside: inside, not: not)
-        ..setSpan(left.first!, _previous);
-    }
-
-    return left;
-  }
-
-  /// Parses expressions with the "equals" precedence. This contains
-  /// comparisons, "IS (NOT) IN" expressions, between expressions and "like"
-  /// expressions.
-  Expression _equals() {
-    var expression = _comparison();
-    final first = expression.first;
-
-    const ops = [
-      TokenType.equal,
-      TokenType.doubleEqual,
-      TokenType.exclamationEqual,
-      TokenType.lessMore,
-      TokenType.$is,
-    ];
-    const stringOps = [
-      TokenType.like,
-      TokenType.glob,
-      TokenType.match,
-      TokenType.regexp,
-    ];
-
-    for (;;) {
-      if (_checkWithNot(TokenType.between)) {
-        final not = _matchOne(TokenType.not);
-        _consume(TokenType.between, 'expected a BETWEEN');
-
-        final lower = _comparison();
-        _consume(TokenType.and, 'expected AND');
-        final upper = _comparison();
-
-        expression = BetweenExpression(
-            not: not, check: expression, lower: lower, upper: upper)
-          ..setSpan(first!, _previous);
-      } else if (_match(ops)) {
-        final operator = _previous;
-        if (operator.type == TokenType.$is) {
-          final isToken = _previous;
-          final not = _matchOne(TokenType.not);
-          // Ansi sql `DISTINCT FROM` syntax introduced by sqlite 3.39
-          var distinctFrom = false;
-          Token? distinct, from;
-
-          if (_matchOne(TokenType.distinct)) {
-            distinct = _previous;
-            from = _consume(TokenType.from, 'Expected DISTINCT FROM');
-            distinctFrom = true;
-          }
-
-          expression = IsExpression(not, expression, _comparison(),
-              distinctFromSyntax: distinctFrom)
-            ..setSpan(first!, _previous)
-            ..$is = isToken
-            ..distinct = distinct
-            ..from = from;
-        } else {
-          expression = BinaryExpression(expression, operator, _comparison())
-            ..setSpan(first!, _previous);
-        }
-      } else if (_checkAnyWithNot(stringOps)) {
-        final not = _matchOne(TokenType.not);
-        _match(stringOps); // will consume, existence was verified with check
-        final operator = _previous;
-
-        final right = _comparison();
-        Expression? escape;
-        if (_matchOne(TokenType.escape)) {
-          escape = _comparison();
-        }
-
-        expression = StringComparisonExpression(
-            not: not,
-            left: expression,
-            operator: operator,
-            right: right,
-            escape: escape)
-          ..setSpan(first!, _previous);
-      } else {
-        break; // no matching operator with this precedence was found
-      }
-    }
-
-    return expression;
-  }
-
-  Expression _comparison() {
-    return _parseSimpleBinary(_comparisonOperators, _binaryOperation);
-  }
-
-  Expression _binaryOperation() {
-    return _parseSimpleBinary(_binaryOperators, _addition);
-  }
-
-  Expression _addition() {
-    return _parseSimpleBinary(const [
-      TokenType.plus,
-      TokenType.minus,
-    ], _multiplication);
-  }
-
-  Expression _multiplication() {
-    return _parseSimpleBinary(const [
-      TokenType.star,
-      TokenType.slash,
-      TokenType.percent,
-    ], _concatenation);
-  }
-
-  Expression _concatenation() {
-    return _parseSimpleBinary(const [
-      TokenType.doublePipe,
-      TokenType.dashRangle,
-      TokenType.dashRangleRangle
-    ], _unary);
-  }
-
-  Expression _unary() {
-    if (_match(const [
-      TokenType.minus,
-      TokenType.plus,
-      TokenType.tilde,
-      TokenType.not,
-    ])) {
-      final operator = _previous;
-      final expression = _unary();
-      return UnaryExpression(operator, expression)
-        ..setSpan(operator, expression.last!);
-    } else if (_matchOne(TokenType.exists)) {
-      final existsToken = _previous;
-      _consume(
-          TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
-      final selectStmt = _fullSelect() ?? _error('Expected a select statement');
-      _consume(TokenType.rightParen,
-          'Expected closing paranthesis to finish EXISTS expression');
-      return ExistsExpression(select: selectStmt)
-        ..setSpan(existsToken, _previous);
-    }
-
-    return _postfix();
-  }
-
-  Expression _postfix() {
-    var expression = _prefix();
-    final firstToken = expression.first;
-
-    // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
-    // with NOT BETWEEN / NOT IN / ... expressions
-    const matchedTokens = [
-      TokenType.collate,
-      TokenType.notNull,
-      TokenType.isNull
-    ];
-
-    while (_match(matchedTokens)) {
-      final operator = _previous;
-      switch (operator.type) {
-        case TokenType.collate:
-          final collateOp = _previous;
-          final collateFun =
-              _consume(TokenType.identifier, 'Expected a collating sequence')
-                  as IdentifierToken;
-          expression = CollateExpression(
-            inner: expression,
-            operator: collateOp,
-            collateFunction: collateFun,
-          );
-          break;
-        case TokenType.isNull:
-          expression = IsNullExpression(expression);
-          break;
-        case TokenType.notNull:
-          expression = IsNullExpression(expression, true);
-          break;
-        default:
-          // we checked with _match, this may never happen
-          throw AssertionError();
-      }
-      expression.setSpan(firstToken ?? operator, _previous);
-    }
-
-    return expression;
-  }
-
-  Expression _prefix() {
-    if (_matchOne(TokenType.$case)) {
-      final caseToken = _previous;
-
-      final base = _check(TokenType.when) ? null : _primary();
-      final whens = <WhenComponent>[];
-      Expression? $else;
-
-      while (_matchOne(TokenType.when)) {
-        final whenToken = _previous;
-
-        final whenExpr = _or();
-        _consume(TokenType.then, 'Expected THEN');
-        final then = expression();
-        whens.add(WhenComponent(when: whenExpr, then: then)
-          ..setSpan(whenToken, _previous));
-      }
-
-      if (_matchOne(TokenType.$else)) {
-        $else = expression();
-      }
-
-      _consume(TokenType.end, 'Expected END to finish the case operator');
-      return CaseExpression(whens: whens, base: base, elseExpr: $else)
-        ..setSpan(caseToken, _previous);
-    } else if (_matchOne(TokenType.raise)) {
-      final raiseToken = _previous;
-      _consume(TokenType.leftParen, 'Expected a left parenthesis after RAISE');
-
-      RaiseKind kind;
-      const tokenToRaiseKind = {
-        TokenType.ignore: RaiseKind.ignore,
-        TokenType.rollback: RaiseKind.rollback,
-        TokenType.abort: RaiseKind.abort,
-        TokenType.fail: RaiseKind.fail,
-      };
-      if (_match(tokenToRaiseKind.keys)) {
-        kind = tokenToRaiseKind[_previous.type]!;
-      } else {
-        _error('Expected IGNORE, ROLLBACK, ABORT or FAIL here');
-      }
-
-      String? message;
-      if (kind != RaiseKind.ignore) {
-        _consume(TokenType.comma, 'Expected a comma here');
-
-        final messageToken =
-            _consume(TokenType.stringLiteral, 'Expected an error message here')
-                as StringLiteralToken;
-        message = messageToken.value;
-      }
-
-      final end = _consume(
-          TokenType.rightParen, 'Expected a right parenthesis to finish RAISE');
-      return RaiseExpression(kind, message)..setSpan(raiseToken, end);
-    }
-
-    return _primary();
+    final subParser = _ExpressionParser(this);
+    final parsed = subParser._or();
+    _current = subParser._current;
+    return parsed;
   }
 
   Literal? _literalOrNull() {
@@ -881,160 +606,6 @@ extension Parser on ParserState {
       ..setSpan(number, number);
   }
 
-  Expression _primary() {
-    final literal = _literalOrNull();
-    if (literal != null) return literal;
-
-    final variable = _variableOrNull();
-    if (variable != null) return variable;
-
-    if (_matchOne(TokenType.leftParen)) {
-      final left = _previous;
-
-      final selectStmt = _fullSelect(); // returns null if there's no select
-      if (selectStmt != null) {
-        _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return SubQuery(select: selectStmt)..setSpan(left, _previous);
-      } else {
-        final expr = expression();
-
-        if (_matchOne(TokenType.comma)) {
-          // It's a row value!
-          final expressions = [expr];
-
-          do {
-            expressions.add(expression());
-          } while (_matchOne(TokenType.comma));
-
-          _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return Tuple(expressions: expressions, usedAsRowValue: true)
-            ..setSpan(left, _previous);
-        }
-
-        _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return Parentheses(expr)
-          ..openingLeft = left
-          ..closingRight = _previous
-          ..setSpan(left, _previous);
-      }
-    } else if (_matchOne(TokenType.dollarSignVariable)) {
-      if (enableDriftExtensions) {
-        final typedToken = _previous as DollarSignVariableToken;
-        return DartExpressionPlaceholder(name: typedToken.name)
-          ..token = typedToken
-          ..setSpan(_previous, _previous);
-      }
-    } else if (_matchOne(TokenType.cast)) {
-      final first = _previous;
-
-      _consume(TokenType.leftParen, 'Expected opening parenthesis after CAST');
-      final operand = expression();
-      _consume(TokenType.as, 'Expected AS operator here');
-      final type = _typeName()!;
-      final typeName = type.lexeme;
-      _consume(TokenType.rightParen, 'Expected closing bracket here');
-
-      return CastExpression(operand, typeName)..setSpan(first, _previous);
-    } else if (_checkIdentifier()) {
-      return _referenceOrFunctionCall();
-    }
-
-    if (_peek is KeywordToken) {
-      // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
-      if (tokens.length > _current + 1 &&
-          _peekNext?.type == TokenType.leftParen) {
-        _error(
-          'Expected an expression here, but got a reserved keyword. Did you '
-          'mean to call a function? Try wrapping the keyword in double quotes.',
-        );
-      } else {
-        _error(
-          'Expected an expression here, but got a reserved keyword. Did you '
-          'mean to use it as a column? Try wrapping it in double quotes '
-          '("${_peek.lexeme}").',
-        );
-      }
-    } else {
-      _error('Could not parse this expression');
-    }
-  }
-
-  Expression _referenceOrFunctionCall() {
-    final first = _consumeIdentifier(
-        'This error message should never be displayed. Please report.');
-
-    // An expression starting with an identifier could be three things:
-    //  - a simple reference: "foo"
-    //  - a reference with a table: "foo.bar"
-    //  - a reference with a table and a schema: "foo.bar.baz"
-    //  - a function call: "foo()" or "bar.foo()"
-
-    Expression functionIfParens(IdentifierToken? second) {
-      if (_matchOne(TokenType.leftParen)) {
-        // We have something like "foo(" -> that's a function!
-        final parameters = _functionParameters();
-
-        // Aggregate functions can use `ORDER BY` in their argument list.
-        final orderBy = _orderBy();
-
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
-
-        final nameToken = second ?? first;
-        final schemaNameToken = second != null ? first : null;
-
-        if (schemaNameToken != null && !options.supportSchemaInFunctionNames) {
-          final error = ParsingError(
-              schemaNameToken, 'Invalid schema name for function call');
-          errors.add(error);
-        }
-
-        if (orderBy != null ||
-            _peek.type == TokenType.filter ||
-            _peek.type == TokenType.over) {
-          return _aggregate(schemaNameToken, first, parameters, orderBy);
-        }
-
-        return FunctionExpression(
-            schemaName: schemaNameToken?.identifier,
-            name: nameToken.identifier,
-            parameters: parameters)
-          ..nameToken = nameToken
-          ..schemaNameToken = schemaNameToken
-          ..setSpan(first, rightParen);
-      } else {
-        // Ok, so it's a reference.
-        return second == null
-            ? (Reference(columnName: first.identifier)..setSpan(first, first))
-            : (Reference(
-                entityName: first.identifier,
-                columnName: second.identifier,
-              )..setSpan(first, second));
-      }
-    }
-
-    if (_matchOne(TokenType.dot)) {
-      // Ok, we're down to two here. it's either a table or a schema ref
-      final second = _consumeIdentifier('Expected a column or table name here',
-          lenient: true);
-
-      if (_matchOne(TokenType.dot)) {
-        // Three identifiers, that's a schema reference
-        final third =
-            _consumeIdentifier('Expected a column name here', lenient: true);
-        return Reference(
-          schemaName: first.identifier,
-          entityName: second.identifier,
-          columnName: third.identifier,
-        )..setSpan(first, third);
-      } else {
-        return functionIfParens(second);
-      }
-    } else {
-      return functionIfParens(null);
-    }
-  }
-
   Variable? _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
       final token = _previous as QuestionMarkVariableToken;
@@ -1083,57 +654,6 @@ extension Parser on ParserState {
         distinct: distinct != null, parameters: parameters)
       ..distinctKeyword = distinct
       ..setSpan(first, _previous);
-  }
-
-  AggregateFunctionInvocation _aggregate(
-    Token? schemaName,
-    IdentifierToken name,
-    FunctionParameters params,
-    OrderByBase? orderBy,
-  ) {
-    Expression? filter;
-
-    // https://www.sqlite.org/syntax/filter.html (it's optional)
-    if (_matchOne(TokenType.filter)) {
-      _consume(TokenType.leftParen,
-          'Expected opening parenthesis after filter statement');
-      _consume(TokenType.where, 'Expected WHERE clause');
-      filter = expression();
-      _consume(TokenType.rightParen, 'Expecteded closing parenthes');
-    }
-
-    if (_matchOne(TokenType.over)) {
-      String? windowName;
-      WindowDefinition? window;
-
-      if (_matchOne(TokenType.identifier)) {
-        windowName = (_previous as IdentifierToken).identifier;
-      } else {
-        window = _windowDefinition();
-      }
-
-      return WindowFunctionInvocation(
-        function: name,
-        parameters: params,
-        orderBy: orderBy,
-        filter: filter,
-        windowDefinition: window,
-        windowName: windowName,
-        schemaName: schemaName?.lexeme,
-      )
-        ..setSpan(name, _previous)
-        ..schemaNameToken = schemaName;
-    } else {
-      return AggregateFunctionInvocation(
-        schemaName: schemaName?.lexeme,
-        function: name,
-        parameters: params,
-        orderBy: orderBy,
-        filter: filter,
-      )
-        ..setSpan(name, _previous)
-        ..schemaNameToken = schemaName;
-    }
   }
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
@@ -2125,35 +1645,6 @@ extension Parser on ParserState {
       return StarResultColumn(null)..setSpan(_previous, _previous);
     }
 
-    final positionBefore = _current;
-
-    if (_matchOne(TokenType.identifier)) {
-      // two options. the identifier could be followed by ".*", in which case
-      // we have a star result column. If it's followed by anything else, it can
-      // still refer to a column in a table as part of a expression
-      // result column
-      final identifier = _previous as IdentifierToken;
-
-      if (_matchOne(TokenType.dot)) {
-        if (_matchOne(TokenType.star)) {
-          return StarResultColumn(identifier.identifier)
-            ..setSpan(identifier, _previous);
-        } else if (enableDriftExtensions && _matchOne(TokenType.doubleStar)) {
-          final as = _as();
-
-          return NestedStarResultColumn(
-            tableName: identifier.identifier,
-            as: as?.identifier,
-          )..setSpan(identifier, _previous);
-        }
-      }
-
-      // not a star result column. go back and parse the expression.
-      // todo this is a bit unorthodox. is there a better way to parse the
-      // expression from before?
-      _current = positionBefore;
-    }
-
     // parsing for the nested query column
     if (enableDriftExtensions && _matchOne(TokenType.list)) {
       final list = _previous;
@@ -2179,8 +1670,19 @@ extension Parser on ParserState {
     }
 
     final tokenBefore = _peek;
+    Expression expr;
 
-    final expr = expression();
+    {
+      final parser = _ExpressionParser(this, allowResultColumn: true);
+      try {
+        expr = parser._or();
+      } on _ParsedResultColumn catch (e) {
+        return e._resultColumn;
+      } finally {
+        _current = parser._current;
+      }
+    }
+
     MappedBy? mappedBy;
     if (enableDriftExtensions && _matchOne(TokenType.mapped)) {
       final mapped = _previous;
@@ -3214,6 +2716,541 @@ extension Parser on ParserState {
 
     return columnNames;
   }
+}
+
+final class _ExpressionParser extends ParserState {
+  /// Whether this parser should also support parsing result columns.
+  ///
+  /// Result columns can have the form `foo.*`, while expressions can have the
+  /// form `foo.bar = ...`. This means that after consuming `foo.`, we don't
+  /// know if we have a star result column or a regular expression.
+  ///
+  /// To avoid having to backtrace in the parser, we support parsing result
+  /// columns in the expression parser by throwing an [_ParsedResultColumn]
+  /// instead of returning regularly if this is enabled.
+  final bool allowResultColumn;
+
+  _ExpressionParser(super.state, {this.allowResultColumn = false})
+      : super.fromParent();
+
+  /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
+  /// both a and b are expressions with a higher precedence parsed from
+  /// [higherPrecedence].
+  Expression _parseSimpleBinary(
+      List<TokenType> types, Expression Function() higherPrecedence) {
+    var expression = higherPrecedence();
+
+    while (_match(types)) {
+      final operator = _previous;
+      final right = higherPrecedence();
+      expression = BinaryExpression(expression, operator, right)
+        ..setSpan(expression.first!, _previous);
+    }
+    return expression;
+  }
+
+  Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
+  Expression _and() => _parseSimpleBinary(const [TokenType.and], _in);
+
+  Expression _in() {
+    final left = _equals();
+
+    if (_checkWithNot(TokenType.$in)) {
+      final not = _matchOne(TokenType.not);
+      _matchOne(TokenType.$in);
+
+      InExpressionTarget inside;
+      if (_variableOrNull() case var variable?) {
+        inside = variable;
+      } else if (_check(TokenType.leftParen)) {
+        inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
+      } else {
+        final target = _tableOrSubquery(allowAlias: false);
+        // TableOrSubquery is either a table reference, a table-valued function,
+        // or a Subquery. We don't support subqueries, but they can't be parsed
+        // here because we would have entered the tuple case above.
+        assert(target is! SubQuery);
+        inside = target as InExpressionTarget;
+      }
+
+      return InExpression(left: left, inside: inside, not: not)
+        ..setSpan(left.first!, _previous);
+    }
+
+    return left;
+  }
+
+  /// Parses expressions with the "equals" precedence. This contains
+  /// comparisons, "IS (NOT) IN" expressions, between expressions and "like"
+  /// expressions.
+  Expression _equals() {
+    var expression = _comparison();
+    final first = expression.first;
+
+    const ops = [
+      TokenType.equal,
+      TokenType.doubleEqual,
+      TokenType.exclamationEqual,
+      TokenType.lessMore,
+      TokenType.$is,
+    ];
+    const stringOps = [
+      TokenType.like,
+      TokenType.glob,
+      TokenType.match,
+      TokenType.regexp,
+    ];
+
+    for (;;) {
+      if (_checkWithNot(TokenType.between)) {
+        final not = _matchOne(TokenType.not);
+        _consume(TokenType.between, 'expected a BETWEEN');
+
+        final lower = _comparison();
+        _consume(TokenType.and, 'expected AND');
+        final upper = _comparison();
+
+        expression = BetweenExpression(
+            not: not, check: expression, lower: lower, upper: upper)
+          ..setSpan(first!, _previous);
+      } else if (_match(ops)) {
+        final operator = _previous;
+        if (operator.type == TokenType.$is) {
+          final isToken = _previous;
+          final not = _matchOne(TokenType.not);
+          // Ansi sql `DISTINCT FROM` syntax introduced by sqlite 3.39
+          var distinctFrom = false;
+          Token? distinct, from;
+
+          if (_matchOne(TokenType.distinct)) {
+            distinct = _previous;
+            from = _consume(TokenType.from, 'Expected DISTINCT FROM');
+            distinctFrom = true;
+          }
+
+          expression = IsExpression(not, expression, _comparison(),
+              distinctFromSyntax: distinctFrom)
+            ..setSpan(first!, _previous)
+            ..$is = isToken
+            ..distinct = distinct
+            ..from = from;
+        } else {
+          expression = BinaryExpression(expression, operator, _comparison())
+            ..setSpan(first!, _previous);
+        }
+      } else if (_checkAnyWithNot(stringOps)) {
+        final not = _matchOne(TokenType.not);
+        _match(stringOps); // will consume, existence was verified with check
+        final operator = _previous;
+
+        final right = _comparison();
+        Expression? escape;
+        if (_matchOne(TokenType.escape)) {
+          escape = _comparison();
+        }
+
+        expression = StringComparisonExpression(
+            not: not,
+            left: expression,
+            operator: operator,
+            right: right,
+            escape: escape)
+          ..setSpan(first!, _previous);
+      } else {
+        break; // no matching operator with this precedence was found
+      }
+    }
+
+    return expression;
+  }
+
+  Expression _comparison() {
+    return _parseSimpleBinary(_comparisonOperators, _binaryOperation);
+  }
+
+  Expression _binaryOperation() {
+    return _parseSimpleBinary(_binaryOperators, _addition);
+  }
+
+  Expression _addition() {
+    return _parseSimpleBinary(const [
+      TokenType.plus,
+      TokenType.minus,
+    ], _multiplication);
+  }
+
+  Expression _multiplication() {
+    return _parseSimpleBinary(const [
+      TokenType.star,
+      TokenType.slash,
+      TokenType.percent,
+    ], _concatenation);
+  }
+
+  Expression _concatenation() {
+    return _parseSimpleBinary(const [
+      TokenType.doublePipe,
+      TokenType.dashRangle,
+      TokenType.dashRangleRangle
+    ], _unary);
+  }
+
+  Expression _unary() {
+    if (_match(const [
+      TokenType.minus,
+      TokenType.plus,
+      TokenType.tilde,
+      TokenType.not,
+    ])) {
+      final operator = _previous;
+      final expression = _unary();
+      return UnaryExpression(operator, expression)
+        ..setSpan(operator, expression.last!);
+    } else if (_matchOne(TokenType.exists)) {
+      final existsToken = _previous;
+      _consume(
+          TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
+      final selectStmt = _fullSelect() ?? _error('Expected a select statement');
+      _consume(TokenType.rightParen,
+          'Expected closing paranthesis to finish EXISTS expression');
+      return ExistsExpression(select: selectStmt)
+        ..setSpan(existsToken, _previous);
+    }
+
+    return _postfix();
+  }
+
+  Expression _postfix() {
+    var expression = _prefix();
+    final firstToken = expression.first;
+
+    // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
+    // with NOT BETWEEN / NOT IN / ... expressions
+    const matchedTokens = [
+      TokenType.collate,
+      TokenType.notNull,
+      TokenType.isNull
+    ];
+
+    while (_match(matchedTokens)) {
+      final operator = _previous;
+      switch (operator.type) {
+        case TokenType.collate:
+          final collateOp = _previous;
+          final collateFun =
+              _consume(TokenType.identifier, 'Expected a collating sequence')
+                  as IdentifierToken;
+          expression = CollateExpression(
+            inner: expression,
+            operator: collateOp,
+            collateFunction: collateFun,
+          );
+          break;
+        case TokenType.isNull:
+          expression = IsNullExpression(expression);
+          break;
+        case TokenType.notNull:
+          expression = IsNullExpression(expression, true);
+          break;
+        default:
+          // we checked with _match, this may never happen
+          throw AssertionError();
+      }
+      expression.setSpan(firstToken ?? operator, _previous);
+    }
+
+    return expression;
+  }
+
+  Expression _prefix() {
+    if (_matchOne(TokenType.$case)) {
+      final caseToken = _previous;
+
+      final base = _check(TokenType.when) ? null : _primary();
+      final whens = <WhenComponent>[];
+      Expression? $else;
+
+      while (_matchOne(TokenType.when)) {
+        final whenToken = _previous;
+
+        final whenExpr = _or();
+        _consume(TokenType.then, 'Expected THEN');
+        final then = expression();
+        whens.add(WhenComponent(when: whenExpr, then: then)
+          ..setSpan(whenToken, _previous));
+      }
+
+      if (_matchOne(TokenType.$else)) {
+        $else = expression();
+      }
+
+      _consume(TokenType.end, 'Expected END to finish the case operator');
+      return CaseExpression(whens: whens, base: base, elseExpr: $else)
+        ..setSpan(caseToken, _previous);
+    } else if (_matchOne(TokenType.raise)) {
+      final raiseToken = _previous;
+      _consume(TokenType.leftParen, 'Expected a left parenthesis after RAISE');
+
+      RaiseKind kind;
+      const tokenToRaiseKind = {
+        TokenType.ignore: RaiseKind.ignore,
+        TokenType.rollback: RaiseKind.rollback,
+        TokenType.abort: RaiseKind.abort,
+        TokenType.fail: RaiseKind.fail,
+      };
+      if (_match(tokenToRaiseKind.keys)) {
+        kind = tokenToRaiseKind[_previous.type]!;
+      } else {
+        _error('Expected IGNORE, ROLLBACK, ABORT or FAIL here');
+      }
+
+      String? message;
+      if (kind != RaiseKind.ignore) {
+        _consume(TokenType.comma, 'Expected a comma here');
+
+        final messageToken =
+            _consume(TokenType.stringLiteral, 'Expected an error message here')
+                as StringLiteralToken;
+        message = messageToken.value;
+      }
+
+      final end = _consume(
+          TokenType.rightParen, 'Expected a right parenthesis to finish RAISE');
+      return RaiseExpression(kind, message)..setSpan(raiseToken, end);
+    }
+
+    return _primary();
+  }
+
+  Expression _primary() {
+    final literal = _literalOrNull();
+    if (literal != null) return literal;
+
+    final variable = _variableOrNull();
+    if (variable != null) return variable;
+
+    if (_matchOne(TokenType.leftParen)) {
+      final left = _previous;
+
+      final selectStmt = _fullSelect(); // returns null if there's no select
+      if (selectStmt != null) {
+        _consume(TokenType.rightParen, 'Expected a closing bracket');
+        return SubQuery(select: selectStmt)..setSpan(left, _previous);
+      } else {
+        final expr = expression();
+
+        if (_matchOne(TokenType.comma)) {
+          // It's a row value!
+          final expressions = [expr];
+
+          do {
+            expressions.add(expression());
+          } while (_matchOne(TokenType.comma));
+
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return Tuple(expressions: expressions, usedAsRowValue: true)
+            ..setSpan(left, _previous);
+        }
+
+        _consume(TokenType.rightParen, 'Expected a closing bracket');
+        return Parentheses(expr)
+          ..openingLeft = left
+          ..closingRight = _previous
+          ..setSpan(left, _previous);
+      }
+    } else if (_matchOne(TokenType.dollarSignVariable)) {
+      if (enableDriftExtensions) {
+        final typedToken = _previous as DollarSignVariableToken;
+        return DartExpressionPlaceholder(name: typedToken.name)
+          ..token = typedToken
+          ..setSpan(_previous, _previous);
+      }
+    } else if (_matchOne(TokenType.cast)) {
+      final first = _previous;
+
+      _consume(TokenType.leftParen, 'Expected opening parenthesis after CAST');
+      final operand = expression();
+      _consume(TokenType.as, 'Expected AS operator here');
+      final type = _typeName()!;
+      final typeName = type.lexeme;
+      _consume(TokenType.rightParen, 'Expected closing bracket here');
+
+      return CastExpression(operand, typeName)..setSpan(first, _previous);
+    } else if (_checkIdentifier()) {
+      return _referenceOrFunctionCall();
+    }
+
+    if (_peek is KeywordToken) {
+      // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
+      if (tokens.length > _current + 1 &&
+          _peekNext?.type == TokenType.leftParen) {
+        _error(
+          'Expected an expression here, but got a reserved keyword. Did you '
+          'mean to call a function? Try wrapping the keyword in double quotes.',
+        );
+      } else {
+        _error(
+          'Expected an expression here, but got a reserved keyword. Did you '
+          'mean to use it as a column? Try wrapping it in double quotes '
+          '("${_peek.lexeme}").',
+        );
+      }
+    } else {
+      _error('Could not parse this expression');
+    }
+  }
+
+  Expression _referenceOrFunctionCall() {
+    final first = _consumeIdentifier(
+        'This error message should never be displayed. Please report.');
+
+    // An expression starting with an identifier could be three things:
+    //  - a simple reference: "foo"
+    //  - a reference with a table: "foo.bar"
+    //  - a reference with a table and a schema: "foo.bar.baz"
+    //  - a function call: "foo()" or "bar.foo()"
+
+    // If allowResultColumn is set, this also parses:
+    // - foo.*
+
+    Expression functionIfParens(IdentifierToken? second) {
+      if (_matchOne(TokenType.leftParen)) {
+        // We have something like "foo(" -> that's a function!
+        final parameters = _functionParameters();
+
+        // Aggregate functions can use `ORDER BY` in their argument list.
+        final orderBy = _orderBy();
+
+        final rightParen = _consume(TokenType.rightParen,
+            'Expected closing bracket after argument list');
+
+        final nameToken = second ?? first;
+        final schemaNameToken = second != null ? first : null;
+
+        if (schemaNameToken != null && !options.supportSchemaInFunctionNames) {
+          final error = ParsingError(
+              schemaNameToken, 'Invalid schema name for function call');
+          errors.add(error);
+        }
+
+        if (orderBy != null ||
+            _peek.type == TokenType.filter ||
+            _peek.type == TokenType.over) {
+          return _aggregate(schemaNameToken, first, parameters, orderBy);
+        }
+
+        return FunctionExpression(
+            schemaName: schemaNameToken?.identifier,
+            name: nameToken.identifier,
+            parameters: parameters)
+          ..nameToken = nameToken
+          ..schemaNameToken = schemaNameToken
+          ..setSpan(first, rightParen);
+      } else {
+        // Ok, so it's a reference.
+        return second == null
+            ? (Reference(columnName: first.identifier)..setSpan(first, first))
+            : (Reference(
+                entityName: first.identifier,
+                columnName: second.identifier,
+              )..setSpan(first, second));
+      }
+    }
+
+    if (_matchOne(TokenType.dot)) {
+      if (allowResultColumn) {
+        if (_matchOne(TokenType.star)) {
+          final column = StarResultColumn(first.identifier)
+            ..setSpan(first, _previous);
+          throw _ParsedResultColumn(column);
+        } else if (enableDriftExtensions && _matchOne(TokenType.doubleStar)) {
+          final as = _as();
+
+          final column = NestedStarResultColumn(
+            tableName: first.identifier,
+            as: as?.identifier,
+          )..setSpan(first, _previous);
+          throw _ParsedResultColumn(column);
+        }
+      }
+
+      // Ok, we're down to two here. it's either a table or a schema ref
+      final second = _consumeIdentifier('Expected a column or table name here',
+          lenient: true);
+
+      if (_matchOne(TokenType.dot)) {
+        // Three identifiers, that's a schema reference
+        final third =
+            _consumeIdentifier('Expected a column name here', lenient: true);
+        return Reference(
+          schemaName: first.identifier,
+          entityName: second.identifier,
+          columnName: third.identifier,
+        )..setSpan(first, third);
+      } else {
+        return functionIfParens(second);
+      }
+    } else {
+      return functionIfParens(null);
+    }
+  }
+
+  AggregateFunctionInvocation _aggregate(
+    Token? schemaName,
+    IdentifierToken name,
+    FunctionParameters params,
+    OrderByBase? orderBy,
+  ) {
+    Expression? filter;
+
+    // https://www.sqlite.org/syntax/filter.html (it's optional)
+    if (_matchOne(TokenType.filter)) {
+      _consume(TokenType.leftParen,
+          'Expected opening parenthesis after filter statement');
+      _consume(TokenType.where, 'Expected WHERE clause');
+      filter = expression();
+      _consume(TokenType.rightParen, 'Expecteded closing parenthes');
+    }
+
+    if (_matchOne(TokenType.over)) {
+      String? windowName;
+      WindowDefinition? window;
+
+      if (_matchOne(TokenType.identifier)) {
+        windowName = (_previous as IdentifierToken).identifier;
+      } else {
+        window = _windowDefinition();
+      }
+
+      return WindowFunctionInvocation(
+        function: name,
+        parameters: params,
+        orderBy: orderBy,
+        filter: filter,
+        windowDefinition: window,
+        windowName: windowName,
+        schemaName: schemaName?.lexeme,
+      )
+        ..setSpan(name, _previous)
+        ..schemaNameToken = schemaName;
+    } else {
+      return AggregateFunctionInvocation(
+        schemaName: schemaName?.lexeme,
+        function: name,
+        parameters: params,
+        orderBy: orderBy,
+        filter: filter,
+      )
+        ..setSpan(name, _previous)
+        ..schemaNameToken = schemaName;
+    }
+  }
+}
+
+final class _ParsedResultColumn implements Exception {
+  final ResultColumn _resultColumn;
+
+  _ParsedResultColumn(this._resultColumn);
 }
 
 extension on List<Token> {
