@@ -1,6 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/parser.dart';
-import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
@@ -84,11 +82,11 @@ void main() {
   group('partition parses', () {
     _testCases.forEach((sql, expected) {
       test(sql, () {
-        final scanner = Scanner(fakeSpan(sql));
-        final tokens = scanner.scanTokens();
-        final parser = ParserState(tokens);
-        final expression = parser.expression();
+        final engine = SqlEngine();
+        final root = engine.parse(ParserEntrypoint.expression, sql);
+        expect(root.errors, isEmpty);
 
+        final expression = root.rootNode;
         enforceHasSpan(expression);
         enforceEqual(expression, expected);
       });

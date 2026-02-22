@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 
+import '../reader/tokenizer/token_source.dart';
 import 'autocomplete/engine.dart';
 import 'builtin_tables.dart';
 
@@ -149,13 +150,11 @@ final class SqlEngine {
   }) {
     final tokenizer = _scan(source);
     final allTokens = tokenizer.tokens;
-    final tokensForParser =
-        allTokens.where((t) => !t.invisibleToParser).toList();
     final autoCompleteEngine =
         autoComplete ? AutoCompleteEngine(allTokens, this) : null;
 
     final parser = ParserState(
-      tokensForParser,
+      TokenSource.fromIterator(tokenizer.tokens.iterator),
       options: EngineOptions(
         driftOptions: driftExtensions ? options.driftOptions : null,
         supportSchemaInFunctionNames: options.supportSchemaInFunctionNames,

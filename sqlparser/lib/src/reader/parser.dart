@@ -7,6 +7,7 @@ import '../engine/autocomplete/engine.dart';
 import '../engine/options.dart';
 import 'recovery.dart';
 import 'tokenizer/token.dart';
+import 'tokenizer/token_source.dart';
 
 const _comparisonOperators = [
   TokenType.less,
@@ -35,13 +36,12 @@ class ParsingError implements Exception {
 
 @internal
 final class ParserState {
-  final List<Token> tokens;
+  final TokenSource tokens;
   final List<ParsingError> errors;
   final AutoCompleteEngine? autoComplete;
 
   final EngineOptions options;
 
-  int _current = 0;
   final List<ErrorRecoveryScope> _errorRecovery;
 
   ParserState(this.tokens, {EngineOptions? options, this.autoComplete})
@@ -54,9 +54,7 @@ final class ParserState {
         errors = parent.errors,
         autoComplete = parent.autoComplete,
         options = parent.options,
-        _errorRecovery = parent._errorRecovery {
-    _current = parent._current;
-  }
+        _errorRecovery = parent._errorRecovery;
 }
 
 extension Parser on ParserState {
@@ -65,8 +63,7 @@ extension Parser on ParserState {
   bool get enableDriftExtensions => options.useDriftExtensions;
 
   void _suggestHint(HintDescription description) {
-    final tokenBefore = _current == 0 ? null : _previous;
-    autoComplete?.addHint(Hint(tokenBefore, description));
+    autoComplete?.addHint(Hint(tokens.previous, description));
   }
 
   void _suggestHintForTokens(Iterable<TokenType> types) {
@@ -82,14 +79,9 @@ extension Parser on ParserState {
   }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
-  Token get _peek => tokens[_current];
-  Token? get _peekNext {
-    if (_isAtEnd) return null;
+  Token get _peek => tokens.lookahead1();
 
-    return tokens[_current + 1];
-  }
-
-  Token get _previous => tokens[_current - 1];
+  Token get _previous => tokens.previous!;
 
   bool _match(Iterable<TokenType> types) {
     if (_reportAutoComplete) _suggestHintForTokens(types);
@@ -122,15 +114,15 @@ extension Parser on ParserState {
   /// "NOT" followed by [type]. Does not consume any tokens.
   bool _checkWithNot(TokenType type) {
     if (_check(type)) return true;
-    if (_check(TokenType.not) && _peekNext?.type == type) return true;
-    return false;
+    final (peek, next) = tokens.lookahead2();
+    return peek.type == TokenType.not && next?.type == type;
   }
 
   /// Like [_checkWithNot], but with more than one token type.
   bool _checkAnyWithNot(List<TokenType> types) {
     if (types.any(_check)) return true;
-    if (_check(TokenType.not) && types.contains(_peekNext?.type)) return true;
-    return false;
+    final (peek, next) = tokens.lookahead2();
+    return peek.type == TokenType.not && types.contains(next?.type);
   }
 
   bool _check(TokenType type) {
@@ -156,7 +148,7 @@ extension Parser on ParserState {
 
   Token _advance() {
     if (!_isAtEnd) {
-      _current++;
+      tokens.consume();
     }
     return _previous;
   }
@@ -552,9 +544,7 @@ extension Parser on ParserState {
 
   Expression expression() {
     final subParser = _ExpressionParser(this);
-    final parsed = subParser._or();
-    _current = subParser._current;
-    return parsed;
+    return subParser._or();
   }
 
   Literal? _literalOrNull() {
@@ -1678,8 +1668,6 @@ extension Parser on ParserState {
         expr = parser._or();
       } on _ParsedResultColumn catch (e) {
         return e._resultColumn;
-      } finally {
-        _current = parser._current;
       }
     }
 
@@ -3082,8 +3070,8 @@ final class _ExpressionParser extends ParserState {
 
     if (_peek is KeywordToken) {
       // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
-      if (tokens.length > _current + 1 &&
-          _peekNext?.type == TokenType.leftParen) {
+      final (_, next) = tokens.lookahead2();
+      if (next?.type == TokenType.leftParen) {
         _error(
           'Expected an expression here, but got a reserved keyword. Did you '
           'mean to call a function? Try wrapping the keyword in double quotes.',

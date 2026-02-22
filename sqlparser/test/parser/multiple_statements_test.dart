@@ -1,6 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/parser.dart';
-import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
@@ -38,8 +36,8 @@ void main() {
 
   test('recovers from invalid statements', () {
     const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
-    final tokens = Scanner(fakeSpan(sql)).scanTokens();
-    final statements = ParserState(tokens).driftFile().statements;
+    final statements =
+        SqlEngine().parse(ParserEntrypoint.driftFile, sql).rootNode.statements;
 
     expect(statements, hasLength(1));
     enforceEqual(
@@ -60,11 +58,11 @@ void main() {
     query: SELECT * FROM tbl;
      ''';
 
-    final tokens = Scanner(fakeSpan(sql), scanDriftTokens: true).scanTokens();
-    final statements = ParserState(tokens,
-            options: EngineOptions(driftOptions: DriftSqlOptions()))
-        .driftFile()
-        .statements;
+    final parseResult =
+        SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()))
+            .parse(ParserEntrypoint.driftFile, sql);
+    final statements = parseResult.rootNode.statements;
+    final tokens = parseResult.tokens;
 
     expect(statements, hasLength(2));
 
