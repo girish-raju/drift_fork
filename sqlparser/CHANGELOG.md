@@ -2,6 +2,7 @@
 
 - Refactor the different `parse` methods on `SqlEngine` into a single one
   taking an `ParserEntrypoint` enum.
+- In drift files, allow reading imports and statement metadata from comments.
 
 ## 0.43.1
 

@@ -42,6 +42,17 @@ what we got:
   above, thats the `AllTodosResult` class, which contains all fields from
   `todos` and the description of the associated category.
 
+!!! tip "Comment syntax for better editor support"
+
+    While drift files are mostly just SQL, `import` statements and names for
+    statements prevents some editors from recognizing that.
+    Starting from drift 2.32, you can also write drift files using comments:
+
+    <Snippet href="/lib/src/snippets/drift_files/tables_comments.drift" name="(full)" />
+
+    Configuring your editor to treat drift files as SQL text then allows syntax highlighting
+    and formatting tools to interpret them correctly.
+
 ## Variables
 
 Inside of named queries, you can use variables just like you would expect with

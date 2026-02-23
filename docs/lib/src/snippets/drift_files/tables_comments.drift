@@ -1,0 +1,11 @@
+-- import 'tables.drift';
+
+-- we can put named SQL queries in here as well:
+-- createEntry:
+INSERT INTO todos (title, content) VALUES (:title, :content);
+
+-- deleteById:
+DELETE FROM todos WHERE id = :id;
+
+-- allTodos:
+SELECT * FROM todos;

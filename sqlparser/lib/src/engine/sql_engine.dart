@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 
+import '../reader/tokenizer/token_source.dart';
 import 'autocomplete/engine.dart';
 import 'builtin_tables.dart';
 
@@ -112,10 +113,10 @@ final class SqlEngine {
     return scope;
   }
 
-  ScannerTokenSource _prepareScanning(FileSpan source) {
+  TokenSource _prepareScanning(FileSpan source) {
     final scanner =
         Scanner(source, scanDriftTokens: options.useDriftExtensions);
-    return ScannerTokenSource(scanner);
+    return TokenSource(scanner);
   }
 
   /// Tokenizes the [source] into a list list [Token]s. Each [Token] contains
@@ -129,12 +130,7 @@ final class SqlEngine {
   /// you need to filter them. When using the methods in this class, this will
   /// be taken care of automatically.
   List<Token> tokenize(FileSpan source) {
-    final scanner = _prepareScanning(source);
-    // Read until end
-    Token token;
-    do {
-      token = scanner.readToken();
-    } while (token.type != TokenType.eof);
+    final scanner = _prepareScanning(source)..readTokensUntilEnd();
 
     final errors = scanner.scanner.errors;
     if (errors.isNotEmpty) {

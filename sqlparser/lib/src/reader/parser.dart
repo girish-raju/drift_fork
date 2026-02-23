@@ -63,7 +63,7 @@ extension Parser on ParserState {
   bool get enableDriftExtensions => options.useDriftExtensions;
 
   void _suggestHint(HintDescription description) {
-    autoComplete?.addHint(Hint(tokens.previous, description));
+    autoComplete?.addHint(Hint(tokens.lastConsumedToken, description));
   }
 
   void _suggestHintForTokens(Iterable<TokenType> types) {
@@ -81,7 +81,7 @@ extension Parser on ParserState {
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens.lookahead1();
 
-  Token get _previous => tokens.previous!;
+  Token get _previous => tokens.lastConsumedToken!;
 
   bool _match(Iterable<TokenType> types) {
     if (_reportAutoComplete) _suggestHintForTokens(types);
@@ -114,14 +114,14 @@ extension Parser on ParserState {
   /// "NOT" followed by [type]. Does not consume any tokens.
   bool _checkWithNot(TokenType type) {
     if (_check(type)) return true;
-    final (peek, next) = tokens.lookahead2();
+    final (peek, next) = tokens.keywordLookahead2();
     return peek.type == TokenType.not && next?.type == type;
   }
 
   /// Like [_checkWithNot], but with more than one token type.
   bool _checkAnyWithNot(List<TokenType> types) {
     if (types.any(_check)) return true;
-    final (peek, next) = tokens.lookahead2();
+    final (peek, next) = tokens.keywordLookahead2();
     return peek.type == TokenType.not && types.contains(next?.type);
   }
 
@@ -313,16 +313,20 @@ extension Parser on ParserState {
   }
 
   DriftFile driftFile() {
+    tokens.scanner.isInTopLevelDriftFile = true;
     final first = _peek;
-    final foundComponents = <PartOfDriftFile?>[];
+    final foundComponents = <PartOfDriftFile>[];
 
-    while (!_isAtEnd) {
-      foundComponents.add(_parseAsStatement(_partOfDriftFile));
+    while (true) {
+      tokens.scanner.isInTopLevelDriftFile = true;
+      if (_isAtEnd) break;
+
+      if (_parseAsStatement(_partOfDriftFile) case final component?) {
+        foundComponents.add(component);
+      }
     }
 
-    foundComponents.removeWhere((c) => c == null);
-
-    final file = DriftFile(foundComponents.cast());
+    final file = DriftFile(foundComponents);
     if (foundComponents.isNotEmpty) {
       file.setSpan(first, _previous);
     } else {
@@ -334,6 +338,9 @@ extension Parser on ParserState {
   }
 
   PartOfDriftFile _partOfDriftFile() {
+    _peek;
+    tokens.scanner.isInTopLevelDriftFile = false;
+
     final found = _import() ?? _create() ?? _declaredStatement();
 
     if (found != null) {
@@ -3070,7 +3077,7 @@ final class _ExpressionParser extends ParserState {
 
     if (_peek is KeywordToken) {
       // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
-      final (_, next) = tokens.lookahead2();
+      final (_, next) = tokens.keywordLookahead2();
       if (next?.type == TokenType.leftParen) {
         _error(
           'Expected an expression here, but got a reserved keyword. Did you '

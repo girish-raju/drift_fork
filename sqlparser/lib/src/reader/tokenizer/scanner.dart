@@ -4,41 +4,7 @@ import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
 
 import 'token.dart';
-import 'token_source.dart';
 import 'utils.dart';
-
-final class ScannerTokenSource extends TokenSource {
-  final List<Token> tokens = [];
-  final Scanner scanner;
-
-  ScannerTokenSource(this.scanner);
-
-  int _index = 0;
-  Token? _previous;
-
-  @override
-  Token readToken() {
-    while (true) {
-      final read = scanner.scanToken();
-      if (read is TokenizerError) {
-        scanner.errors.add(read);
-        continue;
-      }
-
-      read
-        ..index = _index++
-        ..previous = _previous;
-      _previous?.next = read;
-      _previous = read;
-      tokens.add(read);
-      if (read.invisibleToParser) {
-        continue;
-      }
-
-      return read;
-    }
-  }
-}
 
 class Scanner {
   final Uint16List _charCodes;
@@ -47,6 +13,8 @@ class Scanner {
   /// Whether to scan tokens that are only relevant for drift files.
   final bool scanDriftTokens;
   final SourceFile _file;
+
+  bool isInTopLevelDriftFile = false;
 
   /// Pending opening tokens used to associate them with closing tokens.
   ///
@@ -520,13 +488,28 @@ class Scanner {
 
   /// Scans a line comment after the -- has already been read.
   CommentToken _lineComment() {
-    final contentBuilder = StringBuffer();
-    while (!_isAtEnd && _peek() != $lf) {
-      contentBuilder.writeCharCode(_nextChar());
+    var nextLineBreak = _charCodes.indexOf($lf, _currentOffset);
+    if (nextLineBreak == -1) {
+      nextLineBreak = _endOffset;
     }
 
-    return CommentToken(
-        CommentMode.line, contentBuilder.toString(), _currentSpan);
+    final content = String.fromCharCodes(
+        _charCodes.getRange(_currentOffset, nextLineBreak));
+    if (scanDriftTokens && isInTopLevelDriftFile) {
+      // We can parse line comments as import statements or named statements.
+      // We currently use fairly crude heuristics for this: The structures we
+      // want to parse end with colons or semicolons, so we'll parse those if
+      // the comment is at the right location.
+      if (_importComment.hasMatch(content) ||
+          _statementMeta.hasMatch(content)) {
+        // End the comment token without consuming the line. This will treat the
+        // initial `--` as a comment and allows us to parse the rest.
+        return CommentToken(CommentMode.line, '', _currentSpan);
+      }
+    }
+
+    _currentOffset = nextLineBreak;
+    return CommentToken(CommentMode.line, content, _currentSpan);
   }
 
   /// Scans a /* ... */ comment after the first /* has already been read.
@@ -550,4 +533,9 @@ class Scanner {
     return CommentToken(
         CommentMode.cStyle, contentBuilder.toString(), _currentSpan);
   }
+
+  static final _importComment = RegExp(r'^\s*import.*;', caseSensitive: false);
+  // match `foo:` or `myQuery (:variable AS TEXT):`
+  static final _statementMeta =
+      RegExp(r'^\s*\w+\s*(?:\(.*\)\s*)?:', caseSensitive: false);
 }

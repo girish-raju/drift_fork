@@ -3,6 +3,8 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
+final _engine = SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()));
+
 const content = r'''
 import 'other.dart';
 import 'another.drift';
@@ -168,9 +170,8 @@ END;
 
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/drift/issues/280#issuecomment-570789454
-    final parsed =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions())).parse(
-            ParserEntrypoint.driftFile, 'name: NSERT INTO foo DEFAULT VALUES;');
+    final parsed = _engine.parse(
+        ParserEntrypoint.driftFile, 'name: NSERT INTO foo DEFAULT VALUES;');
 
     expect(
       parsed.errors,
@@ -189,9 +190,7 @@ END;
   });
 
   test('syntax errors contain correct position', () {
-    final engine =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-    final result = engine.parse(ParserEntrypoint.driftFile, '''
+    final result = _engine.parse(ParserEntrypoint.driftFile, '''
 worksByComposer:
 SELECT DISTINCT A.* FROM works A, works B ON A.id =
     WHERE A.composer = :id OR B.composer = :id;
@@ -229,9 +228,7 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
   });
 
   test('allows statements to appear in any order', () {
-    final result =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-            .parse(ParserEntrypoint.driftFile, '''
+    final result = _engine.parse(ParserEntrypoint.driftFile, '''
 CREATE TABLE foo (
   a INTEGER NOT NULL
 );
@@ -265,5 +262,59 @@ CREATE INDEX x ON foo (a);
         ),
       ]),
     );
+  });
+
+  group('comment syntax', () {
+    test('basic example', () {
+      final driftFile = _engine.parse(ParserEntrypoint.driftFile, r'''
+-- import 'status.dart';
+
+-- createEntry:
+INSERT INTO todos (title, content) VALUES (:title, :content);
+
+-- deleteById:
+DELETE FROM todos WHERE id = :id;
+
+-- myQuery(:variable AS TEXT): 
+SELECT :variable;
+
+-- normal comments are still ignored
+
+-- current syntax still works
+getTodos ($predicate = TRUE):
+SELECT * FROM todos WHERE $predicate;
+''').rootNode;
+
+      final stmts = driftFile.statements;
+      expect(stmts, [
+        isA<ImportStatement>()
+            .having((e) => e.importedFile, 'importedFile', 'status.dart'),
+        isA<DeclaredStatement>()
+            .having((e) => e.identifier.name, 'identifier.name', 'createEntry'),
+        isA<DeclaredStatement>()
+            .having((e) => e.identifier.name, 'identifier.name', 'deleteById'),
+        isA<DeclaredStatement>()
+            .having((e) => e.identifier.name, 'identifier.name', 'myQuery'),
+        isA<DeclaredStatement>()
+            .having((e) => e.identifier.name, 'identifier.name', 'getTodos'),
+      ]);
+    });
+
+    test('keeps comments in definitions', () {
+      final driftFile = _engine.parse(ParserEntrypoint.driftFile, r'''
+-- import 'status.dart';
+
+CREATE TABLE users (
+  id INTEGER NOT NULL,
+-- import 'status.dart';
+  foo TEXT
+);
+''').rootNode;
+
+      expect(driftFile.statements, [
+        isA<ImportStatement>(),
+        isA<CreateTableStatement>(),
+      ]);
+    });
   });
 }
