@@ -468,10 +468,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         usedColumns.add(column);
         resultColumn.resolvedColumns = [column];
 
-        if (resultColumn.as != null) {
+        if (resultColumn.as case AliasClause(:final name)) {
           // make this column available for references if there is no other
           // column with the same name
-          final name = resultColumn.as;
           if (!availableColumns.any((c) => c.name == name)) {
             availableColumns.add(column);
             scope.namedResultColumns.add(column);
