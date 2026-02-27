@@ -1963,10 +1963,7 @@ extension Parser on ParserState {
     }
 
     _consume(TokenType.on, 'Expected ON');
-    _suggestHint(const TableNameDescription());
-    final nameToken = _consumeIdentifier('Expected a table name');
-    final tableRef = TableReference(nameToken.identifier)
-      ..setSpan(nameToken, nameToken);
+    final tableRef = _tableReference(allowAlias: false);
 
     if (_matchOne(TokenType.$for)) {
       const msg = 'Expected FOR EACH ROW';
@@ -2062,11 +2059,7 @@ extension Parser on ParserState {
     final name = _consumeIdentifier('Expected a name for this index');
 
     _consume(TokenType.on, 'Expected ON table');
-    _suggestHint(const TableNameDescription());
-    final nameToken = _consumeIdentifier('Expected a table name');
-    final tableRef = TableReference(nameToken.identifier)
-      ..setSpan(nameToken, nameToken);
-
+    final tableRef = _tableReference(allowAlias: false);
     _consume(TokenType.leftParen, 'Expected indexed columns in parentheses');
 
     final indexes = _indexedColumns();
@@ -2589,26 +2582,27 @@ extension Parser on ParserState {
   TableReference _tableReference({bool allowAlias = true}) {
     _suggestHint(const TableNameDescription());
 
-    final first = _consumeIdentifier('Expected table or schema name here');
-    IdentifierToken? second;
+    var tableName = _consumeIdentifier('Expected table or schema name here');
+
+    IdentifierToken? schemaName;
     IdentifierToken? as;
     if (_matchOne(TokenType.dot)) {
-      second = _consumeIdentifier('Expected a table name here');
+      schemaName = tableName;
+      tableName = _consumeIdentifier('Expected a table name here');
     }
 
     if (allowAlias) {
       as = _as();
     }
 
-    final tableNameToken = second ?? first;
-
     return TableReference(
-      tableNameToken.identifier,
+      tableName.identifier,
       as: as?.identifier,
-      schemaName: second == null ? null : first.identifier,
+      schemaName: schemaName?.identifier,
     )
-      ..setSpan(first, _previous)
-      ..tableNameToken = tableNameToken;
+      ..setSpan(schemaName ?? tableName, _previous)
+      ..schemaNameToken = schemaName
+      ..tableNameToken = tableName;
   }
 
   ForeignKeyClause _foreignKeyClause() {

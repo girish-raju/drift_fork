@@ -97,6 +97,11 @@ void enforceHasSpan(AstNode node) {
       checkHasToken(node.entityName, node.entityNameToken, 'entityName');
       checkHasToken(node.columnName, node.columnNameToken, 'columnName');
     }
+
+    if (node is TableReference) {
+      checkHasToken(node.schemaName, node.schemaNameToken, 'schemaName');
+      checkHasToken(node.tableName, node.tableNameToken, 'tableName');
+    }
   }
 
   final problematic = [node]

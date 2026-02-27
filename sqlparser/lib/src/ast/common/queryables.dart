@@ -23,6 +23,7 @@ class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet, InExpressionTarget {
   final String? schemaName;
+  Token? schemaNameToken;
   final String tableName;
   Token? tableNameToken;
 
