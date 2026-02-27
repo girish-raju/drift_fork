@@ -6,7 +6,7 @@ library;
 import 'package:charcode/charcode.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-class NodeSqlBuilder extends AstVisitor<void, void> {
+base class NodeSqlBuilder extends AstVisitor<void, void> {
   final StringSink buffer;
 
   /// Whether we need to insert a space before writing the next identifier.
@@ -822,7 +822,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitFunction(FunctionExpression e, void arg) {
     if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
+      identifier(e.schemaName!,
+          fromToken: e.schemaNameToken, spaceAfter: false);
       symbol('.');
     }
     identifier(e.name);
@@ -1080,25 +1081,30 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     var didWriteSpaceBefore = false;
 
     if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
+      identifier(e.schemaName!,
+          fromToken: e.schemaNameToken, spaceAfter: false);
       symbol('.');
       didWriteSpaceBefore = true;
     }
     if (e.entityName != null) {
       identifier(e.entityName!,
-          spaceAfter: false, spaceBefore: !didWriteSpaceBefore);
+          spaceAfter: false,
+          fromToken: e.entityNameToken,
+          spaceBefore: !didWriteSpaceBefore);
       symbol('.');
       didWriteSpaceBefore = true;
     }
 
     identifier(e.columnName,
-        spaceAfter: true, spaceBefore: !didWriteSpaceBefore);
+        fromToken: e.columnNameToken,
+        spaceAfter: true,
+        spaceBefore: !didWriteSpaceBefore);
   }
 
   @override
   visitAliasClause(AliasClause e, void arg) {
     keyword(TokenType.as);
-    identifier(e.name);
+    identifier(e.name, fromToken: e.nameToken);
   }
 
   @override
@@ -1251,10 +1257,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitTableReference(TableReference e, void arg) {
     if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
+      identifier(e.schemaName!,
+          fromToken: e.schemaNameToken, spaceAfter: false);
       symbol('.');
     }
-    identifier(e.tableName, spaceBefore: e.schemaName == null);
+    identifier(e.tableName,
+        fromToken: e.tableNameToken, spaceBefore: e.schemaName == null);
     visitNullable(e.as, arg);
   }
 
@@ -1482,8 +1490,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   /// Writes an identifier, escaping it if necessary.
-  void identifier(String identifier,
-      {bool spaceBefore = true, bool spaceAfter = true}) {
+  void identifier(
+    String identifier, {
+    IdentifierToken? fromToken,
+    bool spaceBefore = true,
+    bool spaceAfter = true,
+  }) {
     if (isKeyword(identifier) || _notAKeywordRegex.hasMatch(identifier)) {
       identifier = escapeIdentifier(identifier);
     }

@@ -10,7 +10,7 @@ class AggregateFunctionInvocation extends Expression
   String get name => function.identifier;
 
   @override
-  Token? schemaNameToken;
+  IdentifierToken? schemaNameToken;
 
   @override
   Token? nameToken;

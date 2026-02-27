@@ -13,7 +13,7 @@ abstract class SqlInvocation implements AstNode {
   /// The name of the function being called
   String get name;
 
-  Token? schemaNameToken;
+  IdentifierToken? schemaNameToken;
   Token? nameToken;
 
   FunctionParameters get parameters;
@@ -41,7 +41,7 @@ class FunctionExpression extends Expression
   FunctionParameters parameters;
 
   @override
-  Token? schemaNameToken;
+  IdentifierToken? schemaNameToken;
   @override
   Token? nameToken;
 

@@ -35,7 +35,7 @@ extension ToSqlText on AstNode {
   }
 }
 
-class SqlWriter extends NodeSqlBuilder {
+final class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
   final DriftOptions options;

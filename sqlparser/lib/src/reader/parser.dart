@@ -3182,7 +3182,7 @@ final class _ExpressionParser extends ParserState {
   }
 
   AggregateFunctionInvocation _aggregate(
-    Token? schemaName,
+    IdentifierToken? schemaName,
     IdentifierToken name,
     FunctionParameters params,
     OrderByBase? orderBy,

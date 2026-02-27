@@ -23,9 +23,9 @@ class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet, InExpressionTarget {
   final String? schemaName;
-  Token? schemaNameToken;
+  IdentifierToken? schemaNameToken;
   final String tableName;
-  Token? tableNameToken;
+  IdentifierToken? tableNameToken;
 
   @override
   AliasClause? as;
@@ -210,7 +210,7 @@ class TableValuedFunction extends Queryable
   final String name;
 
   @override
-  Token? schemaNameToken;
+  IdentifierToken? schemaNameToken;
 
   @override
   Token? nameToken;
