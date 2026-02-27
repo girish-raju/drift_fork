@@ -28,12 +28,12 @@ class TableReference extends TableOrSubquery
   Token? tableNameToken;
 
   @override
-  String? as;
+  AliasClause? as;
 
   TableReference(this.tableName, {this.as, this.schemaName});
 
   @override
-  Iterable<AstNode> get childNodes => const [];
+  Iterable<AstNode> get childNodes => [if (as case final alias?) alias];
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -41,7 +41,9 @@ class TableReference extends TableOrSubquery
   }
 
   @override
-  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    as = transformer.transformNullableChild(as, this, arg);
+  }
 
   @override
   ResultSet? get resultSet {
@@ -56,7 +58,7 @@ class TableReference extends TableOrSubquery
 /// different from nested select expressions, which can only return one value.
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
-  String? as;
+  AliasClause? as;
   BaseSelectStatement statement;
 
   SelectStatementAsSource({required this.statement, this.as});
@@ -67,11 +69,13 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [statement];
+  Iterable<AstNode> get childNodes =>
+      [statement, if (as case final alias?) alias];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     statement = transformer.transformChild(statement, this, arg);
+    as = transformer.transformNullableChild(as, this, arg);
   }
 }
 
@@ -212,7 +216,7 @@ class TableValuedFunction extends Queryable
   Token? nameToken;
 
   @override
-  String? as;
+  AliasClause? as;
 
   @override
   FunctionParameters parameters;
@@ -228,11 +232,13 @@ class TableValuedFunction extends Queryable
   }
 
   @override
-  Iterable<AstNode> get childNodes => [parameters];
+  Iterable<AstNode> get childNodes =>
+      [parameters, if (as case final alias?) alias];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     parameters = transformer.transformChild(parameters, this, arg);
+    as = transformer.transformNullableChild(as, this, arg);
   }
 
   @override

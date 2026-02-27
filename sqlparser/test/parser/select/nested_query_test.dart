@@ -33,7 +33,7 @@ void main() {
     return enforceEqual(
       stmt.columns[0],
       NestedQueryColumn(
-        as: 'newname',
+        as: AliasClause('newname'),
         select: SelectStatement(
           columns: [StarResultColumn(null)],
           from: TableReference('test'),

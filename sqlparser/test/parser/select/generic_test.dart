@@ -10,7 +10,7 @@ final Map<String, AstNode> testCases = {
       StarResultColumn(null),
       ExpressionResultColumn(
         expression: NumericLiteral(1),
-        as: 'name',
+        as: AliasClause('name'),
       ),
     ],
     where: NumericLiteral(1),
@@ -60,7 +60,7 @@ final Map<String, AstNode> testCases = {
         left: Reference(columnName: 'col'),
         inside: TableReference('tbl'),
       ),
-      as: 'in_tbl',
+      as: AliasClause('in_tbl'),
     ),
   ]),
   'SELECT col IN (SELECT 2) AS in_select': SelectStatement(columns: [
@@ -73,7 +73,7 @@ final Map<String, AstNode> testCases = {
           ),
         ),
       ),
-      as: 'in_select',
+      as: AliasClause('in_select'),
     ),
   ]),
   'SELECT col IN tbl_valued() AS in_select': SelectStatement(columns: [
@@ -85,7 +85,7 @@ final Map<String, AstNode> testCases = {
           ExprFunctionParameters(parameters: []),
         ),
       ),
-      as: 'in_select',
+      as: AliasClause('in_select'),
     ),
   ]),
 };
@@ -100,7 +100,7 @@ void main() {
         ExpressionResultColumn(
           expression: NumericLiteral(1),
           mappedBy: MappedBy(null, inlineDart('foo')),
-          as: 'r',
+          as: AliasClause('r'),
         ),
       ]),
       driftMode: true,

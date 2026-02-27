@@ -45,7 +45,7 @@ void main() {
                   expression: Reference(columnName: 'a'),
                 ),
               ],
-              from: TableReference('bar', as: 'b'),
+              from: TableReference('bar', as: AliasClause('b')),
               where: BinaryExpression(
                 Reference(entityName: 'b', columnName: 'id'),
                 token(TokenType.equal),
@@ -108,7 +108,7 @@ void main() {
                     parameters: [Reference(columnName: 'quantity')],
                   ),
                 ),
-                as: 'amt',
+                as: AliasClause('amt'),
               ),
               ExpressionResultColumn(
                 expression: Reference(columnName: 'itemId'),
@@ -119,7 +119,7 @@ void main() {
               by: [NumericLiteral(2)],
             ),
           ),
-          as: 'daily',
+          as: AliasClause('daily'),
         ),
         where: BinaryExpression(
           Reference(entityName: 'inventory', columnName: 'itemId'),

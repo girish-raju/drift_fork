@@ -75,7 +75,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
       final name = '_c${_aliasCounter++}';
       _renamed[expr] = name;
       return super.visitExpressionResultColumn(
-        ExpressionResultColumn(expression: expr, as: name),
+        ExpressionResultColumn(expression: expr, as: AliasClause(name)),
         arg,
       );
     } else {
@@ -152,7 +152,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
   @override
   AstNode? visitTableReference(TableReference e, bool arg) {
     if (_renamedResultSets[e.availableResultSet] case final newName?) {
-      e.as = newName;
+      e.as = AliasClause(newName);
     }
 
     return super.visitTableReference(e, arg);
@@ -161,7 +161,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
   @override
   AstNode? visitTableValuedFunction(TableValuedFunction e, bool arg) {
     if (_renamedResultSets[e.availableResultSet] case final newName?) {
-      e.as = newName;
+      e.as = AliasClause(newName);
     }
 
     return super.visitTableValuedFunction(e, arg);
@@ -170,7 +170,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
   @override
   AstNode? visitSelectStatementAsSource(SelectStatementAsSource e, bool arg) {
     if (_renamedResultSets[e.availableResultSet] case final newName?) {
-      e.as = newName;
+      e.as = AliasClause(newName);
     }
 
     return super.visitSelectStatementAsSource(e, arg);

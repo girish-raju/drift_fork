@@ -177,7 +177,7 @@ class ExpressionResultColumn extends ResultColumn
   MappedBy? mappedBy;
 
   @override
-  final String? as;
+  AliasClause? as;
 
   ExpressionResultColumn({required this.expression, this.mappedBy, this.as});
 
@@ -188,12 +188,14 @@ class ExpressionResultColumn extends ResultColumn
   Iterable<AstNode> get childNodes => [
         expression,
         if (mappedBy != null) mappedBy!,
+        if (as case final alias?) alias,
       ];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     expression = transformer.transformChild(expression, this, arg);
     mappedBy = transformer.transformNullableChild(mappedBy, this, arg);
+    as = transformer.transformNullableChild(as, this, arg);
   }
 
   @override

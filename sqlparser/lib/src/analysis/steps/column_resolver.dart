@@ -51,7 +51,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
     if (e.target case final UpdateTarget onUpdate) {
       onUpdate.scope = SingleTableReferenceScope(scope, e.onTable.tableName,
-          ResultSetAvailableInStatement(e.onTable, table, e.onTable.as));
+          ResultSetAvailableInStatement(e.onTable, table, e.onTable.as?.name));
     }
 
     visitChildren(e, arg);
@@ -164,7 +164,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       e.foreignTable.tableName,
       resolved != null
           ? ResultSetAvailableInStatement(
-              e.foreignTable, resolved, e.foreignTable.as)
+              e.foreignTable, resolved, e.foreignTable.as?.name)
           : null,
     );
     e.scope = scope;
@@ -303,7 +303,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           source,
           resultSet,
           switch (source) {
-            Renamable(as: final alias) => alias,
+            Renamable(as: final alias?) => alias.name,
             _ => null,
           });
 
@@ -318,13 +318,13 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       case final TableReference table:
         final resolved = _resolveTableReference(table, state);
         markAvailableResultSet(
-            table, resolved ?? table, table.as ?? table.tableName);
+            table, resolved ?? table, table.as?.name ?? table.tableName);
 
         if (resolved != null) {
           addColumns(table.resultSet!.resolvedColumns!);
         }
       case final SelectStatementAsSource select:
-        markAvailableResultSet(select, select.statement, select.as);
+        markAvailableResultSet(select, select.statement, select.as?.name);
 
         // Inside subqueries, references don't take the name of the referenced
         // column.
@@ -356,13 +356,14 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         if (resolved == null) {
           final table = scope.resolveResultSetToAdd(function.name);
           if (table is Table && table.isVirtual) {
-            resolved =
-                function.as != null ? TableAlias(table, function.as!) : table;
+            resolved = function.as != null
+                ? TableAlias(table, function.as!.name)
+                : table;
           }
         }
 
         markAvailableResultSet(
-            function, resolved ?? function, function.as ?? function.name);
+            function, resolved ?? function, function.as?.name ?? function.name);
 
         if (resolved == null) {
           context.reportError(AnalysisError(
@@ -445,7 +446,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         Column column;
 
         if (expression is Reference) {
-          var fixedName = resultColumn.as;
+          var fixedName = resultColumn.as?.name;
           if (!state.referencesUseNameOfReferencedColumn) {
             fixedName = _nameOfResultColumn(resultColumn);
           }
@@ -561,7 +562,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   }
 
   String? _nameOfResultColumn(ExpressionResultColumn c) {
-    if (c.as != null) return c.as;
+    if (c.as case final alias?) return alias.name;
 
     if (c.expression is Reference) {
       return (c.expression as Reference).columnName;
@@ -596,7 +597,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
     if (resolvedInSchema != null) {
       return r.resolved = createdName != null
-          ? TableAlias(resolvedInSchema, createdName)
+          ? TableAlias(resolvedInSchema, createdName.name)
           : resolvedInSchema;
     } else {
       Iterable<String>? available;

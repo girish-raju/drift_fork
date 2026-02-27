@@ -23,7 +23,8 @@ void main() {
       final stmt = SqlEngine()
           .parse(ParserEntrypoint.statement, 'SELECT * FROM main.tbl foo')
           .rootNode as SelectStatement;
-      _enforceFrom(stmt, TableReference('tbl', schemaName: 'main', as: 'foo'));
+      _enforceFrom(stmt,
+          TableReference('tbl', schemaName: 'main', as: AliasClause('foo')));
     });
 
     test('from more than one table', () {
@@ -35,7 +36,7 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('tbl', as: 'test'),
+          primary: TableReference('tbl', as: AliasClause('test')),
           joins: [
             Join(
               operator: JoinOperator.comma(),
@@ -55,7 +56,7 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('tbl', as: 'test'),
+          primary: TableReference('tbl', as: AliasClause('test')),
           joins: [
             Join(
               operator: JoinOperator.comma(),
@@ -88,7 +89,7 @@ void main() {
                   from: TableReference('table2'),
                   where: Reference(columnName: 'a'),
                 ),
-                as: 'inner',
+                as: AliasClause('inner'),
               ),
             ),
           ],

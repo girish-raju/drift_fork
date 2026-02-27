@@ -970,17 +970,24 @@ extension Parser on ParserState {
     return null;
   }
 
-  /// Returns an identifier followed after an optional "AS" token in sql.
-  /// Returns null if there is
-  IdentifierToken? _as() {
+  /// Parses an otional [AliasClause].
+  AliasClause? _as() {
+    Token? as;
+    IdentifierToken id;
+
     if (_match(const [TokenType.as])) {
-      return _consume(TokenType.identifier, 'Expected an identifier')
-          as IdentifierToken;
+      as = _previous;
+      id = _consumeIdentifier('Expected an identifier');
     } else if (_match(const [TokenType.identifier])) {
-      return _previous as IdentifierToken;
+      id = _previous as IdentifierToken;
     } else {
       return null;
     }
+
+    return AliasClause(id.identifier)
+      ..as = as
+      ..nameToken = id
+      ..setSpan(as ?? id, id);
   }
 
   Queryable? _from() {
@@ -1008,7 +1015,7 @@ extension Parser on ParserState {
         final alias = allowAlias ? _as() : null;
 
         return TableValuedFunction(tableRef.tableName, params,
-            as: alias?.identifier, schemaName: tableRef.schemaName)
+            as: alias, schemaName: tableRef.schemaName)
           ..setSpan(tableRef.first!, _previous);
       }
 
@@ -1020,8 +1027,7 @@ extension Parser on ParserState {
           'Expected a right bracket to terminate the inner select');
 
       final alias = allowAlias ? _as() : null;
-      return SelectStatementAsSource(
-          statement: innerStmt, as: alias?.identifier)
+      return SelectStatementAsSource(statement: innerStmt, as: alias)
         ..setSpan(first, _previous);
     }
 
@@ -1659,7 +1665,7 @@ extension Parser on ParserState {
       );
 
       final as = _as();
-      return NestedQueryColumn(select: statement, as: as?.identifier)
+      return NestedQueryColumn(select: statement, as: as)
         ..setSpan(list, _previous);
     }
 
@@ -1690,7 +1696,7 @@ extension Parser on ParserState {
     return ExpressionResultColumn(
       expression: expr,
       mappedBy: mappedBy,
-      as: as?.identifier,
+      as: as,
     )..setSpan(tokenBefore, _previous);
   }
 
@@ -2169,8 +2175,7 @@ extension Parser on ParserState {
     final path = expression();
     final as = _as() ?? _error('Expected AS');
 
-    return AttachStatement(path: path, as: as.identifier)
-      ..setSpan(first, _previous);
+    return AttachStatement(path: path, as: as)..setSpan(first, _previous);
   }
 
   DetachStatement _detach() {
@@ -2585,7 +2590,7 @@ extension Parser on ParserState {
     var tableName = _consumeIdentifier('Expected table or schema name here');
 
     IdentifierToken? schemaName;
-    IdentifierToken? as;
+    AliasClause? as;
     if (_matchOne(TokenType.dot)) {
       schemaName = tableName;
       tableName = _consumeIdentifier('Expected a table name here');
@@ -2597,7 +2602,7 @@ extension Parser on ParserState {
 
     return TableReference(
       tableName.identifier,
-      as: as?.identifier,
+      as: as,
       schemaName: schemaName?.identifier,
     )
       ..setSpan(schemaName ?? tableName, _previous)
@@ -3149,7 +3154,7 @@ final class _ExpressionParser extends ParserState {
 
           final column = NestedStarResultColumn(
             tableName: first.identifier,
-            as: as?.identifier,
+            as: as,
           )..setSpan(first, _previous);
           throw _ParsedResultColumn(column);
         }

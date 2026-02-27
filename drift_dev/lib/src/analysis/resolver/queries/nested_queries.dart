@@ -132,7 +132,7 @@ class _AnalyzerState {
             entityName: variable.reference.entityName,
             columnName: variable.reference.columnName,
           ),
-          as: variable.helperColumn,
+          as: AliasClause(variable.helperColumn),
         ),
       );
     }

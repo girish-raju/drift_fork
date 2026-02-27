@@ -525,11 +525,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       symbol('LIST(', spaceBefore: true);
       visit(e.select, arg);
       symbol(')', spaceAfter: true);
-
-      if (e.as != null) {
-        keyword(TokenType.as);
-        identifier(e.as!);
-      }
+      visitNullable(e.as, arg);
     } else if (e is TransactionBlock) {
       visit(e.begin, arg);
       _writeStatements(e.innerStatements);
@@ -585,8 +581,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitAttachStatement(AttachStatement e, void arg) {
     keyword(TokenType.attach);
     e.path.accept(this, arg);
-    keyword(TokenType.as);
-    identifier(e.as);
+    visit(e.as, arg);
   }
 
   @override
@@ -718,11 +713,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
     visit(e.expression, arg);
     visitNullable(e.mappedBy, arg);
-
-    if (e.as != null) {
-      keyword(TokenType.as);
-      identifier(e.as!);
-    }
+    visitNullable(e.as, arg);
   }
 
   @override
@@ -1105,6 +1096,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  visitAliasClause(AliasClause e, void arg) {
+    keyword(TokenType.as);
+    identifier(e.name);
+  }
+
+  @override
   void visitReturning(Returning e, void arg) {
     keyword(TokenType.returning);
     _join(e.columns, ',');
@@ -1142,11 +1139,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     symbol('(', spaceBefore: true);
     visit(e.statement, arg);
     symbol(')', spaceAfter: true);
-
-    if (e.as != null) {
-      keyword(TokenType.as);
-      identifier(e.as!);
-    }
+    visitNullable(e.as, arg);
   }
 
   @override
@@ -1262,11 +1255,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       symbol('.');
     }
     identifier(e.tableName, spaceBefore: e.schemaName == null);
-
-    if (e.as != null) {
-      keyword(TokenType.as);
-      identifier(e.as!);
-    }
+    visitNullable(e.as, arg);
   }
 
   @override
@@ -1275,11 +1264,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     symbol('(');
     visit(e.parameters, arg);
     symbol(')');
-
-    if (e.as != null) {
-      keyword(TokenType.as);
-      identifier(e.as!);
-    }
+    visitNullable(e.as, arg);
   }
 
   @override

@@ -71,9 +71,9 @@ void main() {
 
   test('attach', () {
     testStatement('ATTACH ? AS foo',
-        AttachStatement(path: NumberedVariable(null), as: 'foo'));
+        AttachStatement(path: NumberedVariable(null), as: AliasClause('foo')));
     testStatement('ATTACH DATABASE ? AS bar',
-        AttachStatement(path: NumberedVariable(null), as: 'bar'));
+        AttachStatement(path: NumberedVariable(null), as: AliasClause('bar')));
   });
 
   test('detach', () {

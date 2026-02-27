@@ -918,8 +918,8 @@ final class NestedResultQuery extends NestedResult {
   }
 
   String filedName() {
-    if (from.as != null) {
-      return from.as!;
+    if (from.as case final alias?) {
+      return alias.name;
     }
 
     return ReCase(query.name).camelCase;

@@ -5,6 +5,7 @@
 - In drift files, allow reading imports and statement metadata from comments.
 - Make `Queryable` and `TableOrSubquery` sealed classes, remove `Queryable.when`.
 - Expose tokens making up `Reference`s and `TableReference`s.
+- Turn `AS` clauses into an explicit AST node with better spans.
 
 ## 0.43.1
 

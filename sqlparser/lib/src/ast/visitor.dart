@@ -22,6 +22,7 @@ abstract class AstVisitor<A, R> {
   R visitAnalyzeStatement(AnalyzeStatement e, A arg);
   R visitPragmaCommand(PragmaCommand e, A arg);
 
+  R visitAliasClause(AliasClause e, A arg);
   R visitReturning(Returning e, A arg);
   R visitWithClause(WithClause e, A arg);
   R visitUpsertClause(UpsertClause e, A arg);
@@ -255,6 +256,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitExpressionResultColumn(ExpressionResultColumn e, A arg) {
     return visitResultColumn(e, arg);
+  }
+
+  @override
+  visitAliasClause(AliasClause e, A arg) {
+    return defaultNode(e, arg);
   }
 
   @override

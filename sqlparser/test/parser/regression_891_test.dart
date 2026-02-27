@@ -47,7 +47,7 @@ void main() {
          and n.folderId = :selectedFolderId;
       ''',
       SelectStatement(
-        from: TableReference('notes', as: 'n'),
+        from: TableReference('notes', as: AliasClause('n')),
         columns: [StarResultColumn()],
         where: BinaryExpression(
           caseExpr,
@@ -69,7 +69,7 @@ void main() {
       END;
       ''',
       SelectStatement(
-        from: TableReference('notes', as: 'n'),
+        from: TableReference('notes', as: AliasClause('n')),
         columns: [StarResultColumn()],
         where: BinaryExpression(
           folderExpr,

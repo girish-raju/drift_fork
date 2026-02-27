@@ -111,10 +111,10 @@ void main() {
             columns: [
               NestedStarResultColumn(
                 tableName: 'foo',
-                as: 'fooRename',
+                as: AliasClause('fooRename'),
               )
             ],
-            from: TableReference('tbl', as: 'foo'),
+            from: TableReference('tbl', as: AliasClause('foo')),
           ),
           as: DriftTableName(
             overriddenDataClassName: 'MyResultSet',

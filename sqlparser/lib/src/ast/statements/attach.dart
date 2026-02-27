@@ -1,3 +1,4 @@
+import '../ast.dart' show AliasClause;
 import '../expressions/expressions.dart';
 import '../node.dart';
 import '../visitor.dart';
@@ -6,7 +7,7 @@ import 'statement.dart';
 /// An [`ATTACH`](https://sqlite.org/lang_attach.html) statement.
 final class AttachStatement extends Statement {
   Expression path;
-  String as;
+  AliasClause as;
 
   AttachStatement({required this.path, required this.as});
 
@@ -16,11 +17,12 @@ final class AttachStatement extends Statement {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [path];
+  Iterable<AstNode> get childNodes => [path, as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     path = transformer.transformChild(path, this, arg);
+    as = transformer.transformChild(as, this, arg);
   }
 }
 

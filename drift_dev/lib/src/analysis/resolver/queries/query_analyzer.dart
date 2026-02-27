@@ -482,7 +482,7 @@ class QueryAnalyzer {
 
     return NestedResultTable(
       from: column,
-      name: column.as ?? column.tableName,
+      name: column.as?.name ?? column.tableName,
       innerResultSet: driftResultSet,
       nameForGeneratedRowClass: resultClassName,
       isNullable: isNullable,
@@ -512,8 +512,8 @@ class QueryAnalyzer {
     column.queryName = name;
 
     var resultClassName = ReCase(queryContext.queryName).pascalCase;
-    if (column.as != null) {
-      resultClassName += ReCase(column.as!).pascalCase;
+    if (column.as case final alias?) {
+      resultClassName += ReCase(alias.name).pascalCase;
     } else {
       resultClassName += 'NestedQuery$queryIndex';
     }

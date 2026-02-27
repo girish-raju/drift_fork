@@ -265,7 +265,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
   @override
   void visitAttachStatement(AttachStatement e, void arg) {
-    _assert(_currentAs<AttachStatement>(e).as == e.as, e);
+    _currentAs<AttachStatement>(e);
     _checkChildren(e);
   }
 
@@ -371,8 +371,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
   @override
   void visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
-    final current = _currentAs<ExpressionResultColumn>(e);
-    _assert(current.as == e.as, e);
+    _currentAs<ExpressionResultColumn>(e);
     _checkChildren(e);
   }
 
@@ -523,13 +522,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitDriftNestedStarResultColumn(NestedStarResultColumn e, void arg) {
     final current = _currentAs<NestedStarResultColumn>(e);
     _assert(current.tableName == e.tableName, e);
-    _assert(current.as == e.as, e);
     _checkChildren(e);
   }
 
   void visitDriftNestedQueryColumn(NestedQueryColumn e, void arg) {
-    final current = _currentAs<NestedQueryColumn>(e);
-    _assert(current.as == e.as, e);
+    _currentAs<NestedQueryColumn>(e);
     _checkChildren(e);
   }
 
@@ -649,6 +646,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  visitAliasClause(AliasClause e, void arg) {
+    final current = _currentAs<AliasClause>(e);
+    _assert(current.name == e.name, e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitReturning(Returning e, void arg) {
     _currentAs<Returning>(e);
     _checkChildren(e);
@@ -669,8 +673,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
   @override
   void visitSelectStatementAsSource(SelectStatementAsSource e, void arg) {
-    final current = _currentAs<SelectStatementAsSource>(e);
-    _assert(current.as == e.as, e);
+    _currentAs<SelectStatementAsSource>(e);
     _checkChildren(e);
   }
 
@@ -737,9 +740,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitTableReference(TableReference e, void arg) {
     final current = _currentAs<TableReference>(e);
     _assert(
-        current.schemaName == e.schemaName &&
-            current.tableName == e.tableName &&
-            current.as == e.as,
+        current.schemaName == e.schemaName && current.tableName == e.tableName,
         e);
     _checkChildren(e);
   }

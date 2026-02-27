@@ -1,4 +1,4 @@
-import '../ast.dart' show ResultColumn, Renamable, SelectStatement;
+import '../ast.dart' show ResultColumn, Renamable, SelectStatement, AliasClause;
 import '../node.dart';
 import '../visitor.dart';
 import 'drift_file.dart';
@@ -20,18 +20,19 @@ class _NestedColumnNameMetadata {
 class NestedQueryColumn extends ResultColumn
     implements DriftSpecificNode, Renamable {
   @override
-  final String? as;
+  AliasClause? as;
 
   SelectStatement select;
 
   NestedQueryColumn({required this.select, this.as});
 
   @override
-  Iterable<AstNode> get childNodes => [select];
+  Iterable<AstNode> get childNodes => [select, if (as case final alias?) alias];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     select = transformer.transformChild(select, this, arg);
+    as = transformer.transformNullableChild(as, this, arg);
   }
 
   @override

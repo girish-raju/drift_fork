@@ -1,5 +1,6 @@
 import '../../analysis/analysis.dart';
-import '../ast.dart' show StarResultColumn, ResultColumn, Renamable;
+import '../ast.dart'
+    show StarResultColumn, ResultColumn, Renamable, AliasClause;
 import '../node.dart';
 import '../visitor.dart';
 import 'drift_file.dart';
@@ -15,15 +16,19 @@ class NestedStarResultColumn extends ResultColumn
   ResultSet? resultSet;
 
   @override
-  final String? as;
+  AliasClause? as;
 
   NestedStarResultColumn({required this.tableName, this.as});
 
   @override
-  Iterable<AstNode> get childNodes => const [];
+  Iterable<AstNode> get childNodes => [
+        if (as case final alias?) alias,
+      ];
 
   @override
-  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    as = transformer.transformNullableChild(as, this, arg);
+  }
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
