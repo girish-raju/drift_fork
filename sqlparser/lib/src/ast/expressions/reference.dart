@@ -12,10 +12,14 @@ class Reference extends Expression with ReferenceOwner {
   ///
   /// When this is non-null, [entityName] will not be null either.
   final String? schemaName;
+  IdentifierToken? schemaNameToken;
 
   /// Entity can be either a table or a view.
   final String? entityName;
+  IdentifierToken? entityNameToken;
+
   final String columnName;
+  IdentifierToken? columnNameToken;
 
   /// The resolved result set from the [entityName].
   ResultSetAvailableInStatement? resultEntity;
@@ -27,6 +31,22 @@ class Reference extends Expression with ReferenceOwner {
           entityName != null || schemaName == null,
           'When setting a schemaName, entityName must not be null either.',
         );
+
+  factory Reference.fromTokens({
+    IdentifierToken? schemaName,
+    IdentifierToken? entityName,
+    required IdentifierToken columnName,
+  }) {
+    return Reference(
+      schemaName: schemaName?.identifier,
+      entityName: entityName?.identifier,
+      columnName: columnName.identifier,
+    )
+      ..schemaNameToken = schemaName
+      ..entityNameToken = entityName
+      ..columnNameToken = columnName
+      ..setSpan(schemaName ?? entityName ?? columnName, columnName);
+  }
 
   /// Returns whether this [Reference] is syntactically derived from a single
   /// identifier token wrapped in double quotes.
@@ -40,13 +60,7 @@ class Reference extends Expression with ReferenceOwner {
       return false;
     }
 
-    if (first == last) {
-      if (first case final IdentifierToken singleToken) {
-        return singleToken.escaped;
-      }
-    }
-
-    return false;
+    return columnNameToken?.escaped ?? false;
   }
 
   @override

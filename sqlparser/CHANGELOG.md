@@ -4,6 +4,7 @@
   taking an `ParserEntrypoint` enum.
 - In drift files, allow reading imports and statement metadata from comments.
 - Make `Queryable` and `TableOrSubquery` sealed classes, remove `Queryable.when`.
+- Expose tokens making up a `Reference`.
 
 ## 0.43.1
 

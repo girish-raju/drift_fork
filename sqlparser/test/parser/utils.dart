@@ -80,6 +80,25 @@ void testAll(Map<String, AstNode> testCases) {
 
 /// The parser should make sure [AstNode.hasSpan] is true on relevant nodes.
 void enforceHasSpan(AstNode node) {
+  for (final node in [node].followedBy(node.allDescendants)) {
+    if (!node.hasSpan && !node.synthetic) {
+      throw ArgumentError('Node $node did not have a span');
+    }
+
+    void checkHasToken(Object? property, Token? token, String name) {
+      if ((property == null) != (token == null)) {
+        throw ArgumentError(
+            'Node $node: $name must have both token and property set or none.');
+      }
+    }
+
+    if (node is Reference) {
+      checkHasToken(node.schemaName, node.schemaNameToken, 'schemaName');
+      checkHasToken(node.entityName, node.entityNameToken, 'entityName');
+      checkHasToken(node.columnName, node.columnNameToken, 'columnName');
+    }
+  }
+
   final problematic = [node]
       .followedBy(node.allDescendants)
       .firstWhereOrNull((node) => !node.hasSpan && !node.synthetic);

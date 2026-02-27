@@ -1318,8 +1318,7 @@ extension Parser on ParserState {
 
   SingleColumnSetComponent _singleColumnSetComponent() {
     final columnName = _consumeIdentifier('Expected a column name to set');
-    final reference = Reference(columnName: columnName.identifier)
-      ..setSpan(columnName, columnName);
+    final reference = Reference.fromTokens(columnName: columnName);
     _consume(TokenType.equal, 'Expected = after the column name');
     final expr = expression();
 
@@ -1334,8 +1333,7 @@ extension Parser on ParserState {
     final targetColumns = <Reference>[];
     do {
       final columnName = _consumeIdentifier('Expected a column');
-      targetColumns.add(Reference(columnName: columnName.identifier)
-        ..setSpan(columnName, columnName));
+      targetColumns.add(Reference.fromTokens(columnName: columnName));
     } while (_matchOne(TokenType.comma));
 
     _consume(
@@ -1400,8 +1398,7 @@ extension Parser on ParserState {
     if (_matchOne(TokenType.leftParen)) {
       do {
         final columnRef = _consumeIdentifier('Expected a column');
-        targetColumns.add(Reference(columnName: columnRef.identifier)
-          ..setSpan(columnRef, columnRef));
+        targetColumns.add(Reference.fromTokens(columnName: columnRef));
       } while (_matchOne(TokenType.comma));
 
       _consume(TokenType.rightParen,
@@ -1955,8 +1952,7 @@ extension Parser on ParserState {
       if (_matchOne(TokenType.of)) {
         do {
           final name = _consumeIdentifier('Expected column name in ON clause');
-          final reference = Reference(columnName: name.identifier)
-            ..setSpan(name, name);
+          final reference = Reference.fromTokens(columnName: name);
           names.add(reference);
         } while (_matchOne(TokenType.comma));
       }
@@ -2211,7 +2207,7 @@ extension Parser on ParserState {
         value = literal;
       } else {
         final id = _consumeIdentifier('Expected value', lenient: true);
-        value = Reference(columnName: id.identifier)..setSpan(id, id);
+        value = Reference.fromTokens(columnName: id);
       }
     }
 
@@ -2279,9 +2275,7 @@ extension Parser on ParserState {
         _consume(TokenType.to);
         final newName = _consumeIdentifier('Expected new name');
         return RenameColumnTo(
-            Reference(columnName: oldName.identifier)
-              ..setSpan(oldName, oldName),
-            newName.identifier)
+            Reference.fromTokens(columnName: oldName), newName.identifier)
           ..setSpan(first, _previous)
           ..newNameToken = newName;
       }
@@ -2297,8 +2291,7 @@ extension Parser on ParserState {
       final first = _previous;
       _matchOne(TokenType.column);
       final name = _consumeIdentifier('Expected column to drop');
-      return DropColumn(
-          Reference(columnName: name.identifier)..setSpan(name, name))
+      return DropColumn(Reference.fromTokens(columnName: name))
         ..setSpan(first, _previous);
     }
 
@@ -2696,8 +2689,7 @@ extension Parser on ParserState {
     if (_matchOne(TokenType.leftParen)) {
       do {
         final referenceId = _consumeIdentifier('Expected a column name');
-        final reference = Reference(columnName: referenceId.identifier)
-          ..setSpan(referenceId, referenceId);
+        final reference = Reference.fromTokens(columnName: referenceId);
         columnNames.add(reference);
       } while (_matchOne(TokenType.comma));
 
@@ -3144,11 +3136,11 @@ final class _ExpressionParser extends ParserState {
       } else {
         // Ok, so it's a reference.
         return second == null
-            ? (Reference(columnName: first.identifier)..setSpan(first, first))
-            : (Reference(
-                entityName: first.identifier,
-                columnName: second.identifier,
-              )..setSpan(first, second));
+            ? (Reference.fromTokens(columnName: first))
+            : (Reference.fromTokens(
+                entityName: first,
+                columnName: second,
+              ));
       }
     }
 
@@ -3177,11 +3169,11 @@ final class _ExpressionParser extends ParserState {
         // Three identifiers, that's a schema reference
         final third =
             _consumeIdentifier('Expected a column name here', lenient: true);
-        return Reference(
-          schemaName: first.identifier,
-          entityName: second.identifier,
-          columnName: third.identifier,
-        )..setSpan(first, third);
+        return Reference.fromTokens(
+          schemaName: first,
+          entityName: second,
+          columnName: third,
+        );
       } else {
         return functionIfParens(second);
       }
