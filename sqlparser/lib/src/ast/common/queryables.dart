@@ -2,31 +2,11 @@ part of '../ast.dart';
 
 /// Marker interface for something that can appear after a "FROM" in a select
 /// statement.
-abstract class Queryable extends AstNode {
-  // todo remove this, introduce more visit methods for subclasses
-  T when<T>({
-    required T Function(TableReference) isTable,
-    required T Function(SelectStatementAsSource) isSelect,
-    required T Function(JoinClause) isJoin,
-    required T Function(TableValuedFunction) isTableFunction,
-  }) {
-    if (this is TableReference) {
-      return isTable(this as TableReference);
-    } else if (this is SelectStatementAsSource) {
-      return isSelect(this as SelectStatementAsSource);
-    } else if (this is JoinClause) {
-      return isJoin(this as JoinClause);
-    } else if (this is TableValuedFunction) {
-      return isTableFunction(this as TableValuedFunction);
-    }
-
-    throw StateError('Unknown subclass');
-  }
-}
+sealed class Queryable extends AstNode {}
 
 /// https://www.sqlite.org/syntax/table-or-subquery.html
 /// Marker interface
-abstract class TableOrSubquery extends Queryable {
+sealed class TableOrSubquery extends Queryable {
   /// The result set that this node made available, if any
   ResultSetAvailableInStatement? availableResultSet;
 }

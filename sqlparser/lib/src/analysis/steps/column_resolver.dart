@@ -314,8 +314,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       scope.addResolvedResultSet(name, added);
     }
 
-    queryable.when(
-      isTable: (table) {
+    switch (queryable) {
+      case final TableReference table:
         final resolved = _resolveTableReference(table, state);
         markAvailableResultSet(
             table, resolved ?? table, table.as ?? table.tableName);
@@ -323,8 +323,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         if (resolved != null) {
           addColumns(table.resultSet!.resolvedColumns!);
         }
-      },
-      isSelect: (select) {
+      case final SelectStatementAsSource select:
         markAvailableResultSet(select, select.statement, select.as);
 
         // Inside subqueries, references don't take the name of the referenced
@@ -337,8 +336,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
         visit(stmt, childState);
         addColumns(stmt.resolvedColumns!);
-      },
-      isJoin: (joinClause) {
+      case final JoinClause joinClause:
         _handle(joinClause.primary, availableColumns, state);
         for (final join in joinClause.joins) {
           _handle(join.query, availableColumns, state);
@@ -348,8 +346,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
             visit(constraint.expression, state);
           }
         }
-      },
-      isTableFunction: (function) {
+      case final TableValuedFunction function:
         final handler = context
             .engineOptions.addedTableFunctions[function.name.toLowerCase()];
         var resolved = handler?.resolveTableValued(context, function);
@@ -377,8 +374,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           function.resultSet = resolved;
           addColumns(resolved.resolvedColumns!);
         }
-      },
-    );
+    }
   }
 
   void _resolveSelect(SelectStatement s, ColumnResolverContext context) {

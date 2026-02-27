@@ -3,6 +3,7 @@
 - Refactor the different `parse` methods on `SqlEngine` into a single one
   taking an `ParserEntrypoint` enum.
 - In drift files, allow reading imports and statement metadata from comments.
+- Make `Queryable` and `TableOrSubquery` sealed classes, remove `Queryable.when`.
 
 ## 0.43.1
 
