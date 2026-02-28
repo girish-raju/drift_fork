@@ -22,6 +22,8 @@ jobs:
       id-token: write # Required for authentication using OIDC
     steps:
       - uses: actions/checkout@v4
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
 
       # We need to build the DevTools extension, which is written in Flutter
       - uses: subosito/flutter-action@v2
@@ -61,6 +63,8 @@ jobs:
         working-directory: drift_dev
     steps:
       - uses: actions/checkout@v4
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
@@ -83,6 +87,8 @@ jobs:
         working-directory: sqlparser
     steps:
       - uses: actions/checkout@v4
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
@@ -102,6 +108,8 @@ jobs:
         working-directory: extras/drift_postgres
     steps:
       - uses: actions/checkout@v4
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
@@ -121,6 +129,8 @@ jobs:
         working-directory: drift_flutter
     steps:
       - uses: actions/checkout@v4
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
