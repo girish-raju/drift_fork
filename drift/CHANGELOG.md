@@ -1,6 +1,9 @@
 ## 2.32.0
 
 - __Potentially breaking change__ Migrate to version 3.x of the `sqlite3` package.
+  To upgrade:
+    - For the web, update `sqlite3.wasm` from a [3.x release](https://github.com/simolus3/sqlite3.dart/releases).
+    - If you've previously used `sqlcipher_flutter_libs`, see [this](https://pub.dev/documentation/sqlite3/latest/topics/hook-topic.html) for encryption support and note that SQLite3MultipleCiphers requires [additional pragmas](https://github.com/simolus3/sqlite3.dart/issues/302#issuecomment-3765247078) to be compatible with SQLCipher databases.
 - `serializableConnection()`, `json1` and `TableMigration` are no longer marked
   as experimental.
 - Improve performance of mapping large result sets through joined select statements.

@@ -1,3 +1,7 @@
+## 2.32.0
+
+- Support version 3.x of the `sqlite3` package.
+
 ## 2.31.0
 
 - Fix JSON serialization for views referencing a nullable wrapper of a non-nullable column
