@@ -1,3 +1,7 @@
+## 0.44.1
+
+- Expose optional table name token for `StarResultColumn`.
+
 ## 0.44.0
 
 - Refactor the different `parse` methods on `SqlEngine` into a single one

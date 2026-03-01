@@ -153,6 +153,7 @@ abstract class ResultColumn extends AstNode {
 /// by using "*" or "table.*".
 class StarResultColumn extends ResultColumn {
   final String? tableName;
+  IdentifierToken? tableNameToken;
 
   StarResultColumn([this.tableName]);
 

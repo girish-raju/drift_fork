@@ -3147,7 +3147,8 @@ final class _ExpressionParser extends ParserState {
       if (allowResultColumn) {
         if (_matchOne(TokenType.star)) {
           final column = StarResultColumn(first.identifier)
-            ..setSpan(first, _previous);
+            ..setSpan(first, _previous)
+            ..tableNameToken = first;
           throw _ParsedResultColumn(column);
         } else if (enableDriftExtensions && _matchOne(TokenType.doubleStar)) {
           final as = _as();

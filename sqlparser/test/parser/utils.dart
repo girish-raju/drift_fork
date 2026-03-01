@@ -102,6 +102,10 @@ void enforceHasSpan(AstNode node) {
       checkHasToken(node.schemaName, node.schemaNameToken, 'schemaName');
       checkHasToken(node.tableName, node.tableNameToken, 'tableName');
     }
+
+    if (node is StarResultColumn) {
+      checkHasToken(node.tableName, node.tableNameToken, 'tableName');
+    }
   }
 
   final problematic = [node]

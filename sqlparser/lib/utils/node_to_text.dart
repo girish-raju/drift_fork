@@ -1182,7 +1182,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitStarResultColumn(StarResultColumn e, void arg) {
     if (e.tableName != null) {
-      identifier(e.tableName!);
+      identifier(e.tableName!, fromToken: e.tableNameToken);
       symbol('.');
     }
 
