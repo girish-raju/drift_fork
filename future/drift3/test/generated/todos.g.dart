@@ -2323,6 +2323,186 @@ class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
   }
 }
 
+class $DepartmentTable extends Department
+    with ResultSet<DepartmentData, $DepartmentTable>
+    implements GeneratedTable<DepartmentData, $DepartmentTable> {
+  @override
+  final String? alias;
+  $DepartmentTable([this.alias]);
+  @override
+  late final TableColumn<int> id = TableColumn<int>(
+    name: 'id',
+    sqlType: BuiltinDriftType.int,
+    requiredDuringInsert: false,
+    constraints: () => [
+      const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+      const ColumnNotNullConstraint(),
+    ],
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<String> name = TableColumn<String>(
+    name: 'name',
+    sqlType: BuiltinDriftType.text,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [id, name];
+  @override
+  String get entityName => $name;
+  static const String $name = 'department';
+  @override
+  $DepartmentTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  DepartmentData? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$name = positions[1].index;
+    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return DepartmentData(
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.nullableDartValue(row[pos$name]),
+      );
+    };
+  }
+
+  @override
+  $DepartmentTable withAlias(String alias) {
+    return $DepartmentTable(alias);
+  }
+}
+
+class DepartmentData extends LegacyDataClass
+    implements Insertable<DepartmentData> {
+  final int id;
+  final String? name;
+  const DepartmentData({required this.id, this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name, BuiltinDriftType.text);
+    }
+    return map;
+  }
+
+  DepartmentCompanion toCompanion(bool nullToAbsent) {
+    return DepartmentCompanion(
+      id: Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+    );
+  }
+
+  factory DepartmentData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DepartmentData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String?>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String?>(name),
+    };
+  }
+
+  DepartmentData copyWith({
+    int? id,
+    Value<String?> name = const Value.absent(),
+  }) => DepartmentData(
+    id: id ?? this.id,
+    name: name.present ? name.value : this.name,
+  );
+  DepartmentData copyWithCompanion(DepartmentCompanion data) {
+    return DepartmentData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DepartmentData(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DepartmentData &&
+          other.id == this.id &&
+          other.name == this.name);
+}
+
+class DepartmentCompanion extends UpdateCompanion<DepartmentData> {
+  final Value<int> id;
+  final Value<String?> name;
+  const DepartmentCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  DepartmentCompanion.insert({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  static Insertable<DepartmentData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  DepartmentCompanion copyWith({Value<int>? id, Value<String?>? name}) {
+    return DepartmentCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DepartmentCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class CategoryTodoCountViewData extends LegacyDataClass {
   final int? categoryId;
   final String? description;
@@ -2572,6 +2752,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable();
   late final $PureDefaultsTable pureDefaults = $PureDefaultsTable();
   late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable();
+  late final $DepartmentTable department = $DepartmentTable();
   late final $CategoryTodoCountViewView categoryTodoCountView =
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
@@ -2583,6 +2764,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
       dialectSpecificSql: {},
     ),
   );
+  late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
@@ -2629,8 +2811,44 @@ abstract base class _$TodoDb extends GeneratedDatabase {
     tableWithoutPK,
     pureDefaults,
     withCustomType,
+    department,
     categoryTodoCountView,
     todoWithCategoryView,
     categoriesDesc,
   ];
+}
+
+base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
+  $UsersTable get users => attachedDatabase.users;
+  $CategoriesTable get categories => attachedDatabase.categories;
+  $TodosTableTable get todosTable => attachedDatabase.todosTable;
+  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $TodoWithCategoryViewView get todoWithCategoryView =>
+      attachedDatabase.todoWithCategoryView;
+  Selectable<TodoEntry> todosForUser({required RowId user}) {
+    return customSelectMapped<TodoEntry>(
+      query: switch (dialect.known) {
+        KnownSqlDialect.sqlite =>
+          'SELECT t.id, t.title, t.content, t.target_date, t.category, t.status FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        KnownSqlDialect.postgres || _ =>
+          'SELECT t.id, t.title, t.content, t.target_date, t.category, t.status FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = \$1',
+      },
+      variables: [
+        mapValue(BuiltinDriftType.int, $UsersTable.$converterid.toSql(user)),
+      ],
+      readsFrom: {todosTable, sharedTodos, users},
+      createMapper: (RawResultSet _) {
+        final map_0 = todosTable.createMapperFromPositions(dialect, const [
+          ColumnPosition(0),
+          ColumnPosition(1),
+          ColumnPosition(2),
+          ColumnPosition(3),
+          ColumnPosition(4),
+          ColumnPosition(5),
+        ]);
+
+        return (RawRow row) => map_0(row)!;
+      },
+    );
+  }
 }

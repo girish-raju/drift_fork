@@ -7,6 +7,7 @@ import '../query_builder/expressions/expression.dart';
 import '../query_builder/schema/table.dart';
 import '../query_builder/statements/delete.dart';
 import '../query_builder/statements/insert.dart';
+import '../query_builder/statements/select.dart';
 import '../query_builder/statements/statement.dart';
 import '../query_builder/statements/query.dart';
 import '../query_builder/statements/update.dart';
@@ -77,7 +78,7 @@ final class Batch {
   /// support it. For details and examples, see [InsertStatement.insert].
   ///
   /// See also:
-  ///  - [InsertStatement.insert], which would be used outside a [Batch].
+  ///  - [InsertStatement.values], which would be used outside a [Batch].
   BatchedStatement
   insert<Row extends Object, RS extends GeneratedTable<Row, RS>>(
     GeneratedTable<Row, RS> table,
@@ -88,6 +89,37 @@ final class Batch {
       _database,
       table,
     )..values(row);
+    if (onConflict != null) {
+      stmt.onConflict(onConflict);
+    }
+
+    return _addStatement(stmt);
+  }
+
+  /// Inserts rows from the [select] statement.
+  ///
+  /// This method creates an `INSERT INTO SELECT` statement in SQL which will
+  /// insert a row into this table for each row returned by the [select]
+  /// statement.
+  ///
+  /// The [columns] map describes which column from the select statement should
+  /// be written into which column of the table. The keys of the map are the
+  /// target column, and values are expressions added to the select statement.
+  ///
+  /// See also:
+  ///  - [InsertStatement.fromSelect], which would be used outside a
+  ///  [Batch].
+  BatchedStatement
+  insertFromSelect<Row extends Object, RS extends GeneratedTable<Row, RS>>(
+    GeneratedTable<Row, RS> table,
+    BaseSelectStatement select, {
+    required Map<TableColumn, Expression> columns,
+    UpsertClause<Row, RS>? onConflict,
+  }) {
+    final stmt = InsertStatement<Row, RS, DatabaseConnectionUser>(
+      _database,
+      table,
+    )..fromSelect(select, columns: columns);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
     }

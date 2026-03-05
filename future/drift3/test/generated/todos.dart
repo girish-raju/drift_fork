@@ -172,6 +172,11 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
       .nullable();
 }
 
+class Department extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+}
+
 class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
 
@@ -278,9 +283,10 @@ final uuidType = SqlType<UuidValue>.dialectSpecific(
     TableWithoutPK,
     PureDefaults,
     WithCustomType,
+    Department,
   ],
   views: [CategoryTodoCountView, TodoWithCategoryView],
-  daos: [],
+  daos: [SomeDao],
   queries: {
     'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
   },
@@ -295,6 +301,21 @@ final class TodoDb extends _$TodoDb {
 
   @override
   int schemaVersion = 1;
+}
+
+@DriftAccessor(
+  tables: [Users, SharedTodos, TodosTable],
+  views: [TodoWithCategoryView],
+  queries: {
+    'todosForUser':
+        'SELECT t.* FROM todos t '
+        'INNER JOIN shared_todos st ON st.todo = t.id '
+        'INNER JOIN users u ON u.id = st.user '
+        'WHERE u.id = :user',
+  },
+)
+final class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
+  SomeDao(super.db);
 }
 
 DriftConnection get _nullConnection => DriftConnection(
