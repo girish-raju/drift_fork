@@ -1,4 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
 import 'utils.dart';
@@ -21,7 +22,7 @@ void main() {
 
   group('when using keywords', () {
     test('for function calls', () {
-      expectError('SELECT replace(a, b, c);', [
+      expectError('SELECT 1, replace(a, b, c);', [
         isParsingError(
           message: contains('Did you mean to call a function?'),
           span: 'replace',
@@ -30,7 +31,7 @@ void main() {
     });
 
     test('as identifiers', () {
-      expectError('SELECT group FROM foo;', [
+      expectError('SELECT * FROM foo WHERE group;', [
         isParsingError(
           message: contains('Did you mean to use it as a column?'),
           span: 'group',
@@ -52,6 +53,22 @@ void main() {
         ),
       ]);
     });
+  });
+
+  test('missing result columns', () {
+    final parsed =
+        SqlEngine().parse(ParserEntrypoint.statement, 'SELECT   FROM users;');
+
+    enforceEqual(
+      parsed.rootNode,
+      SelectStatement(
+        columns: [],
+        from: TableReference('users'),
+      ),
+    );
+    expect(parsed.errors, [
+      isParsingError(message: 'Expected a result column here.', span: 'FROM')
+    ]);
   });
 }
 

@@ -1,3 +1,7 @@
+## 0.44.2
+
+- Better error recovery for select statements without result columns.
+
 ## 0.44.1
 
 - Expose optional table name token for `StarResultColumn`.

@@ -1631,8 +1631,19 @@ extension Parser on ParserState {
 
   List<ResultColumn> _resultColumns() {
     final columns = <ResultColumn>[];
+    var isFirst = true;
+
     do {
-      columns.add(_resultColumn());
+      // While there must be at least one column, making the first optional
+      // allows for better error recovery in queries like `SELECT   FROM ...`.
+      final column = _resultColumn(optional: isFirst);
+      if (column == null) {
+        errors.add(ParsingError(_peek, 'Expected a result column here.'));
+        break;
+      }
+
+      columns.add(column);
+      isFirst = false;
     } while (_matchOne(TokenType.comma));
 
     return columns;
@@ -1640,7 +1651,7 @@ extension Parser on ParserState {
 
   /// Parses a [ResultColumn] or throws if none is found.
   /// https://www.sqlite.org/syntax/result-column.html
-  ResultColumn _resultColumn() {
+  ResultColumn? _resultColumn({bool optional = false}) {
     if (_matchOne(TokenType.star)) {
       return StarResultColumn(null)..setSpan(_previous, _previous);
     }
@@ -1673,11 +1684,14 @@ extension Parser on ParserState {
     Expression expr;
 
     {
-      final parser = _ExpressionParser(this, allowResultColumn: true);
+      final parser =
+          _ExpressionParser(this, allowResultColumn: true, optional: optional);
       try {
         expr = parser._or();
       } on _ParsedResultColumn catch (e) {
         return e._resultColumn;
+      } on _NoExpressionFound {
+        return null;
       }
     }
 
@@ -2716,7 +2730,15 @@ final class _ExpressionParser extends ParserState {
   /// instead of returning regularly if this is enabled.
   final bool allowResultColumn;
 
-  _ExpressionParser(super.state, {this.allowResultColumn = false})
+  /// Whether the expression being parsed is optional, meaning that it's
+  /// acceptable for no expression to be parsed too.
+  ///
+  /// The parser throws a [_NoExpressionFound] exception in this case instead of
+  /// emitting a syntax error.
+  final bool optional;
+
+  _ExpressionParser(super.state,
+      {this.allowResultColumn = false, this.optional = false})
       : super.fromParent();
 
   /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
@@ -3066,6 +3088,10 @@ final class _ExpressionParser extends ParserState {
       return _referenceOrFunctionCall();
     }
 
+    if (optional) {
+      throw const _NoExpressionFound();
+    }
+
     if (_peek is KeywordToken) {
       // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
       final (_, next) = tokens.keywordLookahead2();
@@ -3238,6 +3264,10 @@ final class _ParsedResultColumn implements Exception {
   final ResultColumn _resultColumn;
 
   _ParsedResultColumn(this._resultColumn);
+}
+
+final class _NoExpressionFound implements Exception {
+  const _NoExpressionFound();
 }
 
 extension on List<Token> {
