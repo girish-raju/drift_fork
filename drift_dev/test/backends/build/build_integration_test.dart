@@ -1052,7 +1052,7 @@ class MyDatabase extends \$MyDatabase {}
 
         test('syntax', () async {
           await runTest(
-              'foo: SELECT;', contains('Could not parse this expression'));
+              'foo: SELECT;', contains('Expected a result column here.'));
         });
 
         test('semantic in analysis', () async {
