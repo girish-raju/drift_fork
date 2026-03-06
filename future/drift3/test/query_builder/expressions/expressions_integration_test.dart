@@ -287,6 +287,7 @@ void main() {
           .update(db.categories)
           .write(const CategoriesCompanion(description: Value('changed')));
       await expectLater(stream, emits('changed'));
+      await stream.cancel();
     });
 
     test('custom expressions can introduces new tables to watch', () async {
