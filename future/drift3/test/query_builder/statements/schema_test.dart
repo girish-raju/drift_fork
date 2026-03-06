@@ -124,7 +124,7 @@ void main() {
       );
 
       expect(
-        sql[8],
+        sql[9],
         'CREATE VIEW IF NOT EXISTS "category_todo_count_view"'
         '("category_id","description","item_count") AS SELECT '
         '"t1"."id",'
@@ -137,7 +137,7 @@ void main() {
       );
 
       expect(
-        sql[9],
+        sql[10],
         'CREATE VIEW IF NOT EXISTS "todo_with_category_view"'
         '("title","desc") AS SELECT '
         '"t0"."title",'
@@ -148,7 +148,7 @@ void main() {
       );
 
       expect(
-        sql[10],
+        sql[11],
         'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
       );
     });
