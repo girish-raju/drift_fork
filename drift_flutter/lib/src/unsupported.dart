@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'connect.dart';
 
-QueryExecutor driftDatabase({
+DatabaseConnection driftDatabase({
   required String name,
   DriftWebOptions? web,
   DriftNativeOptions? native,

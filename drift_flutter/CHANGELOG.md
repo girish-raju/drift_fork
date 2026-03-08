@@ -1,3 +1,7 @@
+## 0.3.1-wip
+
+- Return a `DatabaseConnection` instead of the less specific `QueryExecutor` type from `driftDatabase()`.
+
 ## 0.3.0
 
 - Use versions 3.x of the `sqlite3` package.
