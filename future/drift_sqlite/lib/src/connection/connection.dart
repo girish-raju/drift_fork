@@ -7,6 +7,7 @@ import 'package:sqlite3/common.dart' as sqlite;
 
 import '../dialect/dialect.dart';
 import 'native_functions.dart';
+import 'shared.dart';
 
 /// A [DriftSession] implemented by synchronously running queries against a
 /// [sqlite.CommonDatabase].
@@ -91,20 +92,7 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
     sqlite.CommonPreparedStatement stmt,
     StatementInfo info,
   ) {
-    final variables = info.variables.map((e) => e.rawValue).toList();
-    RawResultSet? resultSet;
-
-    if (info.needsResultSet) {
-      resultSet = SqliteResultSet(resultSet: stmt.select(variables));
-    } else {
-      stmt.execute(variables);
-    }
-
-    return QueryResult(
-      affectedRows: database.updatedRows,
-      resultSet: resultSet,
-      lastInsertRowId: database.lastInsertRowId,
-    );
+    return executeWithStatement(database, stmt, info);
   }
 
   @override
@@ -208,22 +196,6 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
       openConnection: () async => SqliteConnection(open()),
     );
   }
-}
-
-@internal
-final class SqliteResultSet extends RawResultSet {
-  final sqlite.ResultSet resultSet;
-
-  SqliteResultSet({required this.resultSet})
-    : super(columnNames: resultSet.columnNames);
-
-  @override
-  RawRow operator [](int index) {
-    return resultSet[index].values;
-  }
-
-  @override
-  int get length => resultSet.length;
 }
 
 /// A cache of prepared statements to avoid having to parse SQL statements
