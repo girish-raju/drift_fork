@@ -1,3 +1,7 @@
+## 0.44.3-wip
+
+- Add support for features added in SQLite 3.52.0
+
 ## 0.44.2
 
 - Better error recovery for select statements without result columns.

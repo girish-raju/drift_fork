@@ -33,6 +33,7 @@ class _Json1Functions implements FunctionHandler {
   static const Set<String> _returnStrings = {
     'json',
     'json_array',
+    'json_array_insert',
     'json_insert',
     'json_replace',
     'json_set',
@@ -48,6 +49,7 @@ class _Json1Functions implements FunctionHandler {
   static const Set<String> _returnBlobs = {
     'jsonb',
     'jsonb_array',
+    'jsonb_array_insert',
     'jsonb_insert',
     'jsonb_object',
     'jsonb_patch',
@@ -55,7 +57,7 @@ class _Json1Functions implements FunctionHandler {
     'jsonb_replace',
     'jsonb_set',
     'jsonb_group_array',
-    'jsonb_group_object'
+    'jsonb_group_object',
   };
 
   @override
@@ -104,11 +106,20 @@ class _Json1Functions implements FunctionHandler {
 
   @override
   void reportErrors(SqlInvocation call, AnalysisContext context) {
-    if (context.engineOptions.version < SqliteVersion.v3_46 &&
-        call.name.toLowerCase() == 'json_pretty') {
+    final minVersions = const {
+      'json_pretty': SqliteVersion.v3_46,
+      'json_array_insert': SqliteVersion.v3_46,
+      'jsonb_array_insert': SqliteVersion.v3_46,
+    };
+
+    final minVersion = minVersions[call.name.toLowerCase()];
+    if (minVersion == null) return;
+
+    if (context.engineOptions.version < minVersion) {
       context.reportError(AnalysisError(
         type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message: 'json_pretty requires sqlite 3.46.0 or later.',
+        message:
+            'This requires sqlite ${minVersion.major}.${minVersion.minor}.${minVersion.patch} or later.',
         relevantNode: call.nameToken ?? call,
       ));
     }
