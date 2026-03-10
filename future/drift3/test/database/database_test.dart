@@ -1,4 +1,5 @@
 import 'package:drift3/drift.dart';
+import 'package:drift3_postgres/drift_postgres.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -150,5 +151,19 @@ void main() {
 
     db = TodoDb(createConnection(executor))..schemaVersion = 1;
     await expectLater(db.customSelect('SELECT 1').get(), completes);
+  });
+
+  test('expand variables', () {
+    final db = TodoDb();
+    expect(db.$expandVar(4, 0), '');
+    expect(db.$expandVar(2, 3), '?2,?3,?4');
+
+    final postgresDb = TodoDb(
+      DriftConnection(
+        dialect: PostgresDialect(),
+        openConnection: () => throw UnsupportedError('stub'),
+      ),
+    );
+    expect(postgresDb.$expandVar(2, 3), r'$2,$3,$4');
   });
 }

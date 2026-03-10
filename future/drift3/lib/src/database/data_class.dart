@@ -217,7 +217,7 @@ abstract class ValueSerializer {
 class _DefaultValueSerializer extends ValueSerializer {
   final bool serializeDateTimeValuesAsString;
 
-  const _DefaultValueSerializer({this.serializeDateTimeValuesAsString = false});
+  const _DefaultValueSerializer({this.serializeDateTimeValuesAsString = true});
 
   @override
   T fromJson<T>(dynamic json) {

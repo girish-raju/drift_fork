@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:drift3/drift.dart' hide ResultSet;
 import 'package:meta/meta.dart';
 import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
+// ignore: implementation_imports
+import 'package:sqlite3_connection_pool/src/connection.dart'
+    show PoolConnection;
 import 'package:sqlite3/sqlite3.dart';
 
 import 'shared.dart';
@@ -15,11 +18,6 @@ final class SqlitePoolSession
         PersistentSchemaVersion,
         DriftTransactionParent,
         DriftSessionWithInternalLocks {
-  // TODO: The connection pool currently doesn't support:
-  //
-  // - Caching prepared statements.
-  // - User-defined functions.
-
   final SqliteConnectionPool pool;
   final Completer<void> _closed = Completer();
 
@@ -157,8 +155,9 @@ Future<List<QueryResult>> _runBatchOnConnection(
   return await connection.unsafeAccessOnIsolate(_runBatch(batch));
 }
 
-List<QueryResult> Function(Database) _runBatch(StatementBatch batch) {
-  return (database) {
+List<QueryResult> Function(PoolConnection) _runBatch(StatementBatch batch) {
+  return (connection) {
+    final database = connection.database;
     final results = <QueryResult>[];
     final prepared = <PreparedStatement>[];
 

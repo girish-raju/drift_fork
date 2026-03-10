@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:drift3/drift.dart';
-import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
 import '../dialect/dialect.dart';
@@ -34,8 +32,6 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
   /// For non-durable file systems, an explicit callback to flush pending
   /// writes.
   final Future<void> Function()? flush;
-
-  final PreparedStatementsCache _preparedStmtsCache = PreparedStatementsCache();
 
   final Completer<void> _closedCompleter = Completer();
 
@@ -78,13 +74,12 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
       );
     }
 
-    final (stmt, isCached) = _getPreparedStatement(sql);
-
+    final stmt = database.prepare(sql, checkNoTail: true);
     try {
       return _executeWithStatement(stmt, statement);
     } finally {
       await _maybeFlush();
-      _returnStatement(stmt, isCached);
+      stmt.close();
     }
   }
 
@@ -98,21 +93,19 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
   @override
   Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
     final results = <QueryResult>[];
-    final prepared = <(sqlite.CommonPreparedStatement, bool)>[];
+    final prepared = <sqlite.CommonPreparedStatement>[];
 
     try {
       for (final sql in batch.sql) {
-        prepared.add(_getPreparedStatement(sql));
+        prepared.add(database.prepare(sql, checkNoTail: true));
       }
 
       for (final stmt in batch.statements) {
-        results.add(
-          _executeWithStatement(prepared[stmt.sqlIndex].$1, stmt.info),
-        );
+        results.add(_executeWithStatement(prepared[stmt.sqlIndex], stmt.info));
       }
     } finally {
-      for (final (stmt, isCached) in prepared) {
-        _returnStatement(stmt, isCached);
+      for (final stmt in prepared) {
+        stmt.close();
       }
     }
 
@@ -129,8 +122,6 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
   @override
   Future<void> close() async {
     if (!_closedCompleter.isCompleted) {
-      _preparedStmtsCache.disposeAll();
-
       if (closeUnderlyingWhenClosed) {
         database.close();
       }
@@ -154,35 +145,6 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
     database.userVersion = version;
   }
 
-  /// Returns a prepared statement for [sql] and reports whether this statement
-  /// was cached.
-  (sqlite.CommonPreparedStatement, bool) _getPreparedStatement(String sql) {
-    if (cachePreparedStatements) {
-      final cachedStmt = _preparedStmtsCache.use(sql);
-      if (cachedStmt != null) {
-        return (cachedStmt, true);
-      }
-
-      final stmt = database.prepare(sql, checkNoTail: true);
-      if (!stmt.isExplain) {
-        _preparedStmtsCache.addNew(sql, stmt);
-      }
-
-      return (stmt, !stmt.isExplain);
-    } else {
-      final stmt = database.prepare(sql, checkNoTail: true);
-      return (stmt, false);
-    }
-  }
-
-  void _returnStatement(sqlite.CommonPreparedStatement stmt, bool cached) {
-    // When using a statement cache, prepared statements are disposed as they
-    // get evicted from the cache, so we don't need to do anything.
-    if (!cached) {
-      stmt.close();
-    }
-  }
-
   /// Returns a [DriftConnection] backed by a SQLite
   /// [sqlite.CommonDatabase] obtained by calling [open].
   ///
@@ -195,70 +157,5 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
       dialect: dialect,
       openConnection: () async => SqliteConnection(open()),
     );
-  }
-}
-
-/// A cache of prepared statements to avoid having to parse SQL statements
-/// multiple time when they're used frequently.
-@internal
-final class PreparedStatementsCache {
-  /// The default amount of prepared statements to keep cached.
-  ///
-  /// This value is used in tests to verify that evicted statements get disposed.
-  @visibleForTesting
-  static const defaultSize = 64;
-
-  /// The maximum amount of cached statements.
-  final int maxSize;
-
-  // The linked map returns entries in the order in which they have been
-  // inserted (with the first insertion being reported first).
-  // So, we treat it as a LRU cache with `entries.last` being the MRU and
-  // `entries.first` being the LRU element.
-  final LinkedHashMap<String, sqlite.CommonPreparedStatement>
-  _cachedStatements = LinkedHashMap();
-
-  /// Create a cache of prepared statements with a capacity of [maxSize].
-  PreparedStatementsCache({this.maxSize = defaultSize});
-
-  /// Attempts to look up the cached [sql] statement, if it exists.
-  ///
-  /// If the statement exists, it is marked as most recently used as well.
-  sqlite.CommonPreparedStatement? use(String sql) {
-    // Remove and add the statement if it was found to move it to the end,
-    // which marks it as the MRU element.
-    final foundStatement = _cachedStatements.remove(sql);
-
-    if (foundStatement != null) {
-      _cachedStatements[sql] = foundStatement;
-    }
-
-    return foundStatement;
-  }
-
-  /// Caches a statement that has not been cached yet for subsequent uses.
-  void addNew(String sql, sqlite.CommonPreparedStatement statement) {
-    assert(!_cachedStatements.containsKey(sql));
-
-    if (_cachedStatements.length == maxSize) {
-      final lru = _cachedStatements.remove(_cachedStatements.keys.first)!;
-      lru.close();
-    }
-
-    _cachedStatements[sql] = statement;
-  }
-
-  /// Removes all cached statements.
-  void disposeAll() {
-    for (final statement in _cachedStatements.values) {
-      statement.close();
-    }
-
-    _cachedStatements.clear();
-  }
-
-  /// Forgets cached statements without explicitly disposing them.
-  void clear() {
-    _cachedStatements.clear();
   }
 }
