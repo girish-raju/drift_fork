@@ -2504,11 +2504,11 @@ class DepartmentCompanion extends UpdateCompanion<DepartmentData> {
 }
 
 class CategoryTodoCountViewData extends LegacyDataClass {
-  final int? categoryId;
+  final RowId categoryId;
   final String? description;
   final int? itemCount;
   const CategoryTodoCountViewData({
-    this.categoryId,
+    required this.categoryId,
     this.description,
     this.itemCount,
   });
@@ -2518,7 +2518,9 @@ class CategoryTodoCountViewData extends LegacyDataClass {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CategoryTodoCountViewData(
-      categoryId: serializer.fromJson<int?>(json['categoryId']),
+      categoryId: $CategoriesTable.$converterid.fromJson(
+        serializer.fromJson<int>(json['categoryId']),
+      ),
       description: serializer.fromJson<String?>(json['description']),
       itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
@@ -2527,18 +2529,20 @@ class CategoryTodoCountViewData extends LegacyDataClass {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'categoryId': serializer.toJson<int?>(categoryId),
+      'categoryId': serializer.toJson<int>(
+        $CategoriesTable.$converterid.toJson(categoryId),
+      ),
       'description': serializer.toJson<String?>(description),
       'itemCount': serializer.toJson<int?>(itemCount),
     };
   }
 
   CategoryTodoCountViewData copyWith({
-    Value<int?> categoryId = const Value.absent(),
+    RowId? categoryId,
     Value<String?> description = const Value.absent(),
     Value<int?> itemCount = const Value.absent(),
   }) => CategoryTodoCountViewData(
-    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    categoryId: categoryId ?? this.categoryId,
     description: description.present ? description.value : this.description,
     itemCount: itemCount.present ? itemCount.value : this.itemCount,
   );
@@ -2594,19 +2598,27 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
     final type$1 = BuiltinDriftType.text.resolveIn(dialect);
     final pos$itemCount = positions[2].index;
     return (RawRow row) {
+      // Not part of row if non-nullable column "categoryId" is missing
+      if (row[pos$categoryId] == null) {
+        return null;
+      }
       return CategoryTodoCountViewData(
-        categoryId: type$0.nullableDartValue(row[pos$categoryId]),
+        categoryId: $CategoriesTable.$converterid.fromSql(
+          type$0.dartValue(row[pos$categoryId]!),
+        ),
         description: type$1.nullableDartValue(row[pos$description]),
         itemCount: type$0.nullableDartValue(row[pos$itemCount]),
       );
     };
   }
 
-  late final ViewColumn<int> categoryId = ViewColumn<int>(
-    name: 'category_id',
-    sqlType: BuiltinDriftType.int,
-    expression: categories.id,
-  )..owningResultSet = this;
+  late final ViewColumnWithTypeConverter<RowId, int> categoryId =
+      ViewColumn<int>(
+          name: 'category_id',
+          sqlType: BuiltinDriftType.int,
+          expression: categories.id,
+        ).withConverter<RowId>($CategoriesTable.$converterid)
+        ..owningResultSet = this;
   late final ViewColumn<String> description = ViewColumn<String>(
     name: 'description',
     sqlType: BuiltinDriftType.text,

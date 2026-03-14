@@ -1,3 +1,8 @@
+## 2.33.0-wip
+
+- For view columns referencing table columns as an alias, we now copy nullability
+  and type converters from the source column ([#3765](https://github.com/simolus3/drift/issues/3765)).
+
 ## 2.32.0
 
 - Support version 3.x of the `sqlite3` package.

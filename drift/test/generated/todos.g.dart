@@ -3090,16 +3090,17 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
 }
 
 class CategoryTodoCountViewData extends DataClass {
-  final int? categoryId;
+  final RowId categoryId;
   final String? description;
   final int? itemCount;
   const CategoryTodoCountViewData(
-      {this.categoryId, this.description, this.itemCount});
+      {required this.categoryId, this.description, this.itemCount});
   factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CategoryTodoCountViewData(
-      categoryId: serializer.fromJson<int?>(json['categoryId']),
+      categoryId: $CategoriesTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['categoryId'])),
       description: serializer.fromJson<String?>(json['description']),
       itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
@@ -3113,18 +3114,19 @@ class CategoryTodoCountViewData extends DataClass {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'categoryId': serializer.toJson<int?>(categoryId),
+      'categoryId': serializer
+          .toJson<int>($CategoriesTable.$converterid.toJson(categoryId)),
       'description': serializer.toJson<String?>(description),
       'itemCount': serializer.toJson<int?>(itemCount),
     };
   }
 
   CategoryTodoCountViewData copyWith(
-          {Value<int?> categoryId = const Value.absent(),
+          {RowId? categoryId,
           Value<String?> description = const Value.absent(),
           Value<int?> itemCount = const Value.absent()}) =>
       CategoryTodoCountViewData(
-        categoryId: categoryId.present ? categoryId.value : this.categoryId,
+        categoryId: categoryId ?? this.categoryId,
         description: description.present ? description.value : this.description,
         itemCount: itemCount.present ? itemCount.value : this.itemCount,
       );
@@ -3174,8 +3176,9 @@ class $CategoryTodoCountViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
-      categoryId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category_id']),
+      categoryId: $CategoriesTable.$converterid.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!),
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
       itemCount: attachedDatabase.typeMapping
@@ -3183,9 +3186,11 @@ class $CategoryTodoCountViewView
     );
   }
 
-  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
-      'category_id', aliasedName, true,
-      generatedAs: GeneratedAs(categories.id, false), type: DriftSqlType.int);
+  late final GeneratedColumnWithTypeConverter<RowId, int> categoryId =
+      GeneratedColumn<int>('category_id', aliasedName, false,
+              generatedAs: GeneratedAs(categories.id, false),
+              type: DriftSqlType.int)
+          .withConverter<RowId>($CategoriesTable.$converterid);
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, true,
       generatedAs:

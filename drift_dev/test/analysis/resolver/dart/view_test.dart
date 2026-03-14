@@ -216,4 +216,47 @@ class UsersView extends View {
       logger: loggerThat(neverEmits(anything)),
     );
   });
+
+  test('aliases keep nullability of source', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3765
+    final test = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
+class UsersView extends View {
+  Users get a;
+  Users get b;
+
+  Expression<int> get aId => a.id;
+  Expression<String> get bId => b.id;
+
+  @override
+  Query as() => select([aId, bId])
+      .from(a)
+      .join([
+        innerJoin(b, b.name.equalsExp(a.id))
+      ]);
+}
+''',
+    });
+
+    final analyzed = await test.analyze('package:a/a.dart');
+    test.expectNoErrors();
+
+    final view = analyzed.analyzedElements.whereType<DriftView>().single;
+    expect(
+      view.columns.map((e) => e.nameInDart),
+      ['aId', 'bId'],
+    );
+    expect(
+      view.columns,
+      everyElement(
+          isA<DriftColumn>().having((e) => e.nullable, 'nullable', isFalse)),
+    );
+  });
 }

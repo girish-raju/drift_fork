@@ -205,6 +205,53 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         resolvedFrom, innerJoins, outerJoins, columnExpressions, query, from);
   }
 
+  DriftColumn? _readTableColumnReference(
+    PrefixedIdentifier expression,
+    _ParsedDartViewSelect structure,
+    List<TableReferenceInDartView> references, {
+    bool warnOnUnresolved = true,
+    ({String dart, String sql})? name,
+  }) {
+    final referencedTableGetter = expression.prefix.name;
+    final referencedColumnName = expression.identifier.name;
+
+    final reference =
+        references.firstWhereOrNull((ref) => ref.name == referencedTableGetter);
+
+    if (reference == null) {
+      if (warnOnUnresolved) {
+        reportError(DriftAnalysisError.inDartAst(
+          discovered.dartElement,
+          expression,
+          'Table named `$referencedTableGetter` not found! Maybe not '
+          'included in @DriftDatabase or not belongs to this database',
+        ));
+      }
+
+      return null;
+    }
+
+    final column = reference.table.columns
+        .firstWhere((col) => col.nameInDart == referencedColumnName);
+    final (:dart, :sql) = name ?? structure.uniqueColumnName(column);
+
+    return DriftColumn(
+      declaration: DriftDeclaration.dartElement(discovered.dartElement),
+      sqlType: column.sqlType,
+      nullable: column.nullable || structure.referenceIsNullable(reference),
+      nameInDart: dart,
+      nameInSql: sql,
+      constraints: [
+        ColumnGeneratedAs(
+            AnnotatedDartCode.build(
+                (b) => b.addText('${reference.name}.${column.nameInDart}')),
+            false),
+      ],
+      typeConverter: column.typeConverter,
+      foreignConverter: true,
+    );
+  }
+
   Future<List<DriftColumn>> _parseColumns(
     _ParsedDartViewSelect structure,
     List<TableReferenceInDartView> references,
@@ -212,45 +259,18 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     final columns = <DriftColumn>[];
 
     for (final columnReference in structure.selectedColumns) {
-      final parts = columnReference.toSource().split('.');
-
-      // Column reference like `foo.bar`, where `foo` is a table that has been
-      // referenced in this view.
-      if (parts.length > 1) {
-        final reference =
-            references.firstWhereOrNull((ref) => ref.name == parts[0]);
-        if (reference == null) {
-          reportError(DriftAnalysisError.inDartAst(
-            discovered.dartElement,
-            columnReference,
-            'Table named `${parts[0]}` not found! Maybe not '
-            'included in @DriftDatabase or not belongs to this database',
-          ));
-          continue;
+      if (columnReference case PrefixedIdentifier tableColumnReference) {
+        // Column reference like `foo.bar`, where `foo` is a table that has been
+        // referenced in this view.
+        final parsed = _readTableColumnReference(
+            tableColumnReference, structure, references);
+        if (parsed != null) {
+          columns.add(parsed);
         }
-
-        final column = reference.table.columns
-            .firstWhere((col) => col.nameInDart == parts[1]);
-        final (:dart, :sql) = structure.uniqueColumnName(column);
-
-        columns.add(DriftColumn(
-          declaration: DriftDeclaration.dartElement(discovered.dartElement),
-          sqlType: column.sqlType,
-          nullable: column.nullable || structure.referenceIsNullable(reference),
-          nameInDart: dart,
-          nameInSql: sql,
-          constraints: [
-            ColumnGeneratedAs(
-                AnnotatedDartCode.build(
-                    (b) => b.addText('${reference.name}.${column.nameInDart}')),
-                false),
-          ],
-          typeConverter: column.typeConverter,
-          foreignConverter: true,
-        ));
-      } else {
+      } else if (columnReference case SimpleIdentifier localColumn) {
         // Locally-defined column, defined as a getter on this view class.
-        final getter = discovered.dartElement.thisType.getGetter(parts[0]);
+        final getter =
+            discovered.dartElement.thisType.getGetter(localColumn.name);
 
         if (getter == null) {
           reportError(DriftAnalysisError.inDartAst(
@@ -259,6 +279,30 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
             'This column could not be found in the local view.',
           ));
           continue;
+        }
+
+        final node = await resolver.driver.backend
+            .loadElementDeclaration(getter) as MethodDeclaration;
+        final nameInDart = getter.name!;
+        final nameInSql = ReCase(nameInDart).snakeCase;
+
+        final expression = (node.body as ExpressionFunctionBody).expression;
+        if (expression is PrefixedIdentifier) {
+          // Column defined as Expression<int> get id => joinedTable.id;
+          // This might be a reference to a joined table, in which case we want
+          // to special-case it to ensure we keep nullability and type
+          // converters.
+          final parsed = _readTableColumnReference(
+            expression,
+            structure,
+            references,
+            warnOnUnresolved: false,
+            name: (dart: nameInDart, sql: nameInSql),
+          );
+          if (parsed != null) {
+            columns.add(parsed);
+            continue;
+          }
         }
 
         final dartType = (getter.returnType as InterfaceType).typeArguments[0];
@@ -280,15 +324,11 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           continue;
         }
 
-        final node = await resolver.driver.backend
-            .loadElementDeclaration(getter) as MethodDeclaration;
-        final expression = (node.body as ExpressionFunctionBody).expression;
-
         columns.add(DriftColumn(
           declaration: DriftDeclaration.dartElement(getter),
           sqlType: ColumnType.drift(sqlType),
-          nameInDart: getter.name!,
-          nameInSql: ReCase(getter.name!).snakeCase,
+          nameInDart: nameInDart,
+          nameInSql: nameInSql,
           nullable: true,
           constraints: [
             resolver.driver.options.assumeCorrectReference
@@ -297,6 +337,13 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
                   }), false)
                 : ColumnGeneratedAs(AnnotatedDartCode.ast(expression), false),
           ],
+        ));
+      } else {
+        reportError(DriftAnalysisError.inDartAst(
+          discovered.dartElement,
+          columnReference,
+          'Entries in select must reference columns as getters on the view, or '
+          'columns referenced from a joined table.',
         ));
       }
     }
