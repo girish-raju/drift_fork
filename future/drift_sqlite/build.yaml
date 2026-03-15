@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          drift3_preview: true
+          generate_manager: false
+          sql:
+            options:
+              version: "3.37"
+              modules:
+                - json1
+                - fts5
+                - geopoly
