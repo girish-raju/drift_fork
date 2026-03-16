@@ -270,7 +270,7 @@ void main() {
   });
 
   test('select from table-valued function', () async {
-    final each = db.todosTable.content.jsonEach(r'$.foo');
+    final each = JsonExpression.parse(db.todosTable.content).jsonEach(r'$.foo');
 
     final query = db
         .select(db.todosTable)
@@ -280,7 +280,7 @@ void main() {
 
     verify(
       executor.executeSql(
-        'SELECT "todos"."id","todos"."title","todos"."content","todos"."target_date","todos"."category","todos"."status" FROM "todos" INNER JOIN json_each("todos"."content",?1) ON "json_each"."atom" IS NOT NULL;',
+        'SELECT "todos"."id","todos"."title","todos"."content","todos"."target_date","todos"."category","todos"."status" FROM "todos" INNER JOIN json_each(jsonb("todos"."content"),?1) ON "json_each"."atom" IS NOT NULL;',
         [r'$.foo'],
       ),
     );

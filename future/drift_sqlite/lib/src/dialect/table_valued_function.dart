@@ -13,10 +13,10 @@ import 'compiler.dart';
 /// class must also implement [withAlias] correctly.
 ///
 /// For an example of a table-valued function in drift, see the
-/// `JsonTableFunction` in `package:drift/json1.dart`. It makes the `json_each`
-/// and `json_tree` table-valued functions available to drift.
+/// `JsonTableFunction` in `package:drift_sqlite/src/json.dart`. It makes the
+/// `json_each` and `json_tree` table-valued functions available to drift.
 abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
-    with ResultSet<RawRow, Self>
+    with ResultSet<DriftRow, Self>
     implements SqlComponent {
   /// The name of the table-valued function being called.
   final String functionName;
@@ -53,11 +53,25 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   String get entityName => functionName;
 
   @override
-  RawRow Function(RawRow p1) createMapperFromPositions(
+  DriftRow Function(RawRow p1) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
-    return (row) => row;
+    final structure = ResultSetStructure();
+    for (final (i, column) in columns.indexed) {
+      structure.expressions[column] = ColumnPosition(i);
+    }
+
+    final rs = DriftResultSet(
+      structure,
+      RawResultSet.fromRows(
+        columnNames: columns.map((c) => c.name).toList(),
+        rows: const [],
+      ),
+      dialect,
+    );
+
+    return (row) => DriftRow(rs, row);
   }
 
   @override
