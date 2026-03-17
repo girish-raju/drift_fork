@@ -54,7 +54,7 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
 
     return database.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Text('unknown error: $err\n$stack'),
+      error: (err, stack) => SelectableText('unknown error: $err\n$stack'),
       data: (database) {
         if (database != null) {
           final theme = Theme.of(context);

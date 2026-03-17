@@ -119,7 +119,7 @@ class DatabaseSchemaCheck extends ConsumerWidget {
       AsyncData(
         value: SchemaComparisonResult(schemaValid: true, :var message)
       ) =>
-        Text.rich(TextSpan(
+        SelectableText.rich(TextSpan(
           children: [
             const TextSpan(
                 text: 'Success! ', style: TextStyle(color: Colors.green)),
@@ -129,7 +129,7 @@ class DatabaseSchemaCheck extends ConsumerWidget {
       AsyncData(
         value: SchemaComparisonResult(schemaValid: false, :var message)
       ) =>
-        Text.rich(TextSpan(
+        SelectableText.rich(TextSpan(
           children: [
             const TextSpan(
                 text: 'Mismatch detected! ',
@@ -139,7 +139,7 @@ class DatabaseSchemaCheck extends ConsumerWidget {
         )),
       AsyncError(:var error) =>
         Text('The schema could not be validated due to an error: $error'),
-      _ => Text.rich(TextSpan(
+      _ => SelectableText.rich(TextSpan(
           text: 'By validating your schema, you can ensure that the current  '
               'state of the database in your app (after migrations ran) '
               'matches the expected state of tables as defined in your sources. ',
