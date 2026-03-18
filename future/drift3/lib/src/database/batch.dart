@@ -85,10 +85,7 @@ final class Batch {
     Insertable<Row> row, {
     UpsertClause<Row, RS>? onConflict,
   }) {
-    final stmt = InsertStatement<Row, RS, DatabaseConnectionUser>(
-      _database,
-      table,
-    )..values(row);
+    final stmt = InsertStatement<Row, RS>(_database, table)..values(row);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
     }
@@ -116,10 +113,8 @@ final class Batch {
     required Map<TableColumn, Expression> columns,
     UpsertClause<Row, RS>? onConflict,
   }) {
-    final stmt = InsertStatement<Row, RS, DatabaseConnectionUser>(
-      _database,
-      table,
-    )..fromSelect(select, columns: columns);
+    final stmt = InsertStatement<Row, RS>(_database, table)
+      ..fromSelect(select, columns: columns);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
     }

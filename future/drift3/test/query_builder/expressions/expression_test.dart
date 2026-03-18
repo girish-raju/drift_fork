@@ -66,7 +66,7 @@ void main() {
       subqueryExpression<String>(
         db.selectOnly(db.users)..addColumns([db.users.name]),
       ),
-      generates('(SELECT "name" FROM "users")'),
+      generates('(SELECT "users"."name" FROM "users")'),
     );
   });
 

@@ -215,7 +215,7 @@ final class DriftRow {
   /// For result sets that might be absent from some rows (e.g. those added as
   /// outer joins), consider using [readTableOrNull] instead.
   Row readTable<Row extends Object, RS extends ResultSet<Row, RS>>(
-    RS resultSet,
+    ResultSet<Row, RS> resultSet,
   ) {
     final parsed = readTableOrNull<Row, RS>(resultSet);
     if (parsed == null) {
@@ -235,7 +235,7 @@ final class DriftRow {
   /// This does not allow reading result sets whose columns don't exist in this
   /// row at all (e.g. a result set not joined into a select statement).
   Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
-    RS resultSet,
+    ResultSet<Row, RS> resultSet,
   ) {
     return this.resultSet._mapperFor(resultSet)(raw) as Row?;
   }

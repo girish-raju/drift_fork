@@ -504,7 +504,6 @@ abstract base class StatementCompiler {
     }
 
     if (delete.returning case final returning?) {
-      statement.resultSetStructure = returning.structure;
       statement.space();
       returning.compileWith(this);
     }
@@ -539,7 +538,6 @@ abstract base class StatementCompiler {
     }
 
     if (update.returning case final returning?) {
-      statement.resultSetStructure = returning.structure;
       statement.space();
       returning.compileWith(this);
     }
@@ -628,6 +626,7 @@ abstract base class StatementCompiler {
   void addReturningClause(ReturningClause returning) {
     // We currently only support the `RETURNING *` format without arbitrary
     // columns.
+    statement.resultSetStructure = returning.structure;
     statement.buffer.write('RETURNING ');
     addResultSetExpressions(returning.structure);
   }
@@ -765,9 +764,16 @@ abstract base class StatementCompiler {
       );
     }
 
+    // The subquery expression can reference outer columns as well, so we need
+    // to make table aliases explicit.
+    final hasMultipleTables = statement.hasMultipleTables;
+    statement.hasMultipleTables = true;
+
     statement.buffer.write('(');
     e.statement.compileWith(this);
     statement.buffer.write(')');
+
+    statement.hasMultipleTables = hasMultipleTables;
   }
 
   void addSubquery(Subquery e) {

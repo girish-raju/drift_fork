@@ -52,7 +52,10 @@ void main() {
         db.selectOnly(db.users)..addColumns([db.users.name]),
       );
 
-      expect(isInExpression, generates('name IN (SELECT "name" FROM "users")'));
+      expect(
+        isInExpression,
+        generates('name IN (SELECT "users"."name" FROM "users")'),
+      );
 
       final stmt = db.dialect.compile(isInExpression);
       expect(stmt.watchedTables, ['users']);
@@ -65,7 +68,7 @@ void main() {
 
       expect(
         isInExpression,
-        generates('name NOT IN (SELECT "name" FROM "users")'),
+        generates('name NOT IN (SELECT "users"."name" FROM "users")'),
       );
     });
 
