@@ -71,7 +71,6 @@ dependency_overrides:
     path: ../extras/drift_postgres
   sqlparser:
     path: ../sqlparser
-  analyzer: ^10.0.0
 
   jaspr_content_snippets:
     git:
