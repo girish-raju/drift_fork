@@ -1,3 +1,6 @@
+/// @docImport '../../engine/options.dart';
+library;
+
 import 'dart:math';
 
 import 'package:meta/meta.dart';
@@ -51,6 +54,12 @@ enum TokenType {
   check,
   collate,
   colon,
+
+  /// A `::` token.
+  ///
+  /// These are only scanned when [EngineOptions.supportPostgresCasts] is
+  /// enabled.
+  colonColon,
   column,
   colonVariable,
   comma,

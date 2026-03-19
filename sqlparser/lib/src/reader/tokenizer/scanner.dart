@@ -12,6 +12,7 @@ class Scanner {
 
   /// Whether to scan tokens that are only relevant for drift files.
   final bool scanDriftTokens;
+  final bool scanDoubleColonTokens;
   final SourceFile _file;
 
   bool isInTopLevelDriftFile = false;
@@ -37,7 +38,8 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(FileSpan span, {this.scanDriftTokens = false})
+  Scanner(FileSpan span,
+      {required this.scanDriftTokens, required this.scanDoubleColonTokens})
       : _file = span.file,
         _startOffset = span.start.offset,
         _currentOffset = span.start.offset,
@@ -148,6 +150,10 @@ class Scanner {
 
         return QuestionMarkVariableToken(_currentSpan, explicitIndex);
       case $colon:
+        if (scanDoubleColonTokens && _match($colon)) {
+          return _addToken(TokenType.colonColon);
+        }
+
         final name = _matchColumnName();
         if (name == null) {
           return _addToken(TokenType.colon);

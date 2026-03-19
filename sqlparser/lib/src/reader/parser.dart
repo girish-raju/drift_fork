@@ -2937,7 +2937,9 @@ final class _ExpressionParser extends ParserState {
     const matchedTokens = [
       TokenType.collate,
       TokenType.notNull,
-      TokenType.isNull
+      TokenType.isNull,
+      // `::` token for casts, this is only scanned with compatibility options.
+      TokenType.colonColon,
     ];
 
     while (_match(matchedTokens)) {
@@ -2953,13 +2955,16 @@ final class _ExpressionParser extends ParserState {
             operator: collateOp,
             collateFunction: collateFun,
           );
-          break;
         case TokenType.isNull:
           expression = IsNullExpression(expression);
-          break;
         case TokenType.notNull:
           expression = IsNullExpression(expression, true);
-          break;
+        case TokenType.colonColon:
+          final type = _typeName() ?? _error('Expected a type here');
+          final typeName = type.lexeme;
+
+          return CastExpression(expression, typeName)
+            ..setSpan(expression.first!, type.last);
         default:
           // we checked with _match, this may never happen
           throw AssertionError();

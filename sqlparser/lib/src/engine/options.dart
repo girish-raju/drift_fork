@@ -16,6 +16,11 @@ class EngineOptions {
   /// of other dialects.
   final bool supportSchemaInFunctionNames;
 
+  /// Whether to support PostgresSQL-style `foo::text` casts.
+  ///
+  /// These aren't supported by default since they're not supported by SQLite.
+  final bool supportPostgresCasts;
+
   /// The target sqlite version.
   ///
   /// This library will report analysis errors when using features there weren't
@@ -40,6 +45,7 @@ class EngineOptions {
   EngineOptions({
     this.driftOptions,
     this.supportSchemaInFunctionNames = false,
+    this.supportPostgresCasts = false,
     List<Extension> enabledExtensions = const [],
     this.version = SqliteVersion.minimum,
   }) : enabledExtensions = _allExtensions(enabledExtensions, version) {
@@ -107,6 +113,10 @@ class SqliteVersion implements Comparable<SqliteVersion> {
 
   /// Version `3.52.0` added the `json_array_insert` and `jsonb_array_insert`
   /// functions.
+  ///
+  /// Note that the `3.52.0` SQLite release has since been retracted, so using
+  /// this version is not recommended until a fixed version is released.
+  @experimental
   static const SqliteVersion v3_52 = SqliteVersion.v3(52);
 
   /// Version `3.51.0` added the `jsonb_each` and `jsonb_tree` functions.

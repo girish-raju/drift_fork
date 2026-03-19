@@ -294,4 +294,12 @@ void main() {
       ]),
     );
   });
+
+  test('postgres casts', () {
+    final engine = SqlEngine(EngineOptions(supportPostgresCasts: true));
+    final parsed =
+        engine.parse(ParserEntrypoint.expression, 'foo::text').rootNode;
+    enforceHasSpan(parsed);
+    enforceEqual(parsed, CastExpression(Reference(columnName: 'foo'), 'text'));
+  });
 }

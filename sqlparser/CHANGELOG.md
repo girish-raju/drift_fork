@@ -1,6 +1,7 @@
-## 0.44.3-wip
+## 0.44.3
 
-- Add support for features added in SQLite 3.52.0
+- Add support for features added in SQLite 3.52.0.
+- Add `supportPostgresCasts` field on `EngineOptions` to parse `::` casts.
 
 ## 0.44.2
 

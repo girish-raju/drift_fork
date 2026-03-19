@@ -1,3 +1,4 @@
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:test/test.dart';
@@ -67,8 +68,13 @@ void main() {
   });
 
   group("parse unterminated string literals", () {
+    Scanner defaultScanner(FileSpan span) {
+      return Scanner(span,
+          scanDriftTokens: false, scanDoubleColonTokens: false);
+    }
+
     test('issues error', () {
-      final scanner = Scanner(fakeSpan("'unterminated"));
+      final scanner = defaultScanner(fakeSpan("'unterminated"));
       final token = scanner.scanToken();
 
       expect(
@@ -86,7 +92,7 @@ void main() {
     });
 
     test('does not crash if the input ends with apostrophe', () {
-      final scanner = Scanner(fakeSpan("'"));
+      final scanner = defaultScanner(fakeSpan("'"));
       scanner.scanToken();
 
       expect(

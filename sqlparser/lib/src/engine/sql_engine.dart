@@ -114,8 +114,11 @@ final class SqlEngine {
   }
 
   TokenSource _prepareScanning(FileSpan source) {
-    final scanner =
-        Scanner(source, scanDriftTokens: options.useDriftExtensions);
+    final scanner = Scanner(
+      source,
+      scanDriftTokens: options.useDriftExtensions,
+      scanDoubleColonTokens: options.supportPostgresCasts,
+    );
     return TokenSource(scanner);
   }
 
