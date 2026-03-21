@@ -266,7 +266,7 @@ class ColumnParser {
           final first = args.first;
 
           final resolvedTableClass = switch (args.first) {
-            Identifier(element: final ClassElement element) => element,
+            Identifier(:final element?) => element,
             TypeLiteral(:final type) => type.element,
             _ => null,
           };
