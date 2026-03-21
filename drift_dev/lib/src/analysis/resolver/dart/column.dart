@@ -265,7 +265,13 @@ class ColumnParser {
           final args = remainingExpr.argumentList.arguments;
           final first = args.first;
 
-          if (first is! Identifier) {
+          final resolvedTableClass = switch (args.first) {
+            Identifier(element: final ClassElement element) => element,
+            TypeLiteral(:final type) => type.element,
+            _ => null,
+          };
+
+          if (resolvedTableClass == null) {
             _resolver.reportError(DriftAnalysisError.inDartAst(
               element,
               first,
@@ -273,13 +279,11 @@ class ColumnParser {
             ));
             break;
           }
-
-          final staticElement = first.element;
-          if (staticElement is! ClassElement) {
+          if (resolvedTableClass is! ClassElement) {
             _resolver.reportError(DriftAnalysisError.inDartAst(
               element,
               first,
-              '`${first.name}` is not a class!',
+              'Expected a class here.',
             ));
             break;
           }
@@ -343,8 +347,8 @@ class ColumnParser {
             }
           }
 
-          final referencedTable = await _resolver.resolver
-              .resolveDartReference(_resolver.discovered.ownId, staticElement);
+          final referencedTable = await _resolver.resolver.resolveDartReference(
+              _resolver.discovered.ownId, resolvedTableClass);
 
           if (referencedTable is ReferencesItself) {
             // "Foreign" key to a column in the same table.

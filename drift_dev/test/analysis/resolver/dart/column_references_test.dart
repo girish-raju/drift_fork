@@ -24,7 +24,7 @@ class Foo extends Table {
 
       final file = await state.analyze('package:a/main.dart');
       expect(file.allErrors,
-          [isDriftError('`dynamic` is not a class!').withSpan('dynamic')]);
+          [isDriftError('Expected a class here.').withSpan('dynamic')]);
     });
 
     test('when the column is not a symbol literal', () async {

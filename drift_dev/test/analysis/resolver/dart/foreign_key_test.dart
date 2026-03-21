@@ -24,7 +24,7 @@ class Foo extends Table {
       final result = file.analysis.values.single;
       expect(result.result, isA<DriftTable>());
       expect(result.errorsDuringAnalysis, [
-        isDriftError('`dynamic` is not a class!').withSpan('dynamic'),
+        isDriftError('Expected a class here.').withSpan('dynamic'),
       ]);
     });
 

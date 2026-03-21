@@ -2,6 +2,8 @@
 
 - For view columns referencing table columns as an alias, we now copy nullability
   and type converters from the source column ([#3765](https://github.com/simolus3/drift/issues/3765)).
+- Fix parsing `references()` with analyzer 10.2.0 and later.
+- Support analyzer versions `>=10.0.0 <13.0.0`.
 
 ## 2.32.0
 
