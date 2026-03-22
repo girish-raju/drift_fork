@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:async/async.dart';
 import 'package:drift3/drift.dart';
 import 'package:drift3/src/connection/streams/store.dart';
-import 'package:drift3/src/utils/cancellation_zone.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 

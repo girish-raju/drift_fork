@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift3/drift.dart';
@@ -137,6 +138,37 @@ void main() {
       ),
     );
   });
+
+  test('can cancel queries', () async {
+    final db = EmptyDb(
+      DriftConnection(
+        dialect: const SqliteDialect(),
+        openConnection: () async =>
+            sqliteConnectionPool(File(d.path('test.db')), amountOfReaders: 1),
+      ),
+    );
+
+    // Occupy the single read connection
+    final hasTransaction = Completer<void>();
+    final completeTransaction = Completer<void>();
+    db.transaction(() async {
+      hasTransaction.complete();
+    }, options: TransactionOptions(readOnly: true));
+    await hasTransaction.future;
+
+    // A query that reports an error if run. We don't handle the error so it
+    // would fail the test, but the query never runs since the connection is
+    // blocked until we cancel the query.
+    final subscription = db
+        .customSelect("SELECT json('invalid')")
+        .watch()
+        .listen(null);
+    await pumpEventQueue();
+    await subscription.cancel();
+
+    completeTransaction.complete();
+    await db.close();
+  });
 }
 
 Future<DriftSession> _openPool() async {
@@ -144,4 +176,14 @@ Future<DriftSession> _openPool() async {
   final pool = await sqliteConnectionPool(file);
   addTearDown(pool.close);
   return pool;
+}
+
+final class EmptyDb extends GeneratedDatabase {
+  EmptyDb(super.implementation);
+
+  @override
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+
+  @override
+  final int schemaVersion = 1;
 }

@@ -26,7 +26,8 @@ CancellationToken<T> runCancellable<T>(
 @internal
 class CancellationToken<T> {
   final Completer<T> _resultCompleter = Completer.sync();
-  final List<void Function()> _cancellationCallbacks = [];
+  final Completer<void> _cancellationCompleter = Completer.sync();
+
   bool _cancellationRequested = false;
 
   /// Loads the result for the cancellable operation.
@@ -41,10 +42,8 @@ class CancellationToken<T> {
   void cancel() {
     if (_cancellationRequested) return;
 
-    for (final callback in _cancellationCallbacks) {
-      callback();
-    }
     _cancellationRequested = true;
+    _cancellationCompleter.complete();
   }
 }
 
@@ -98,11 +97,16 @@ void checkIfCancelled() {
   }
 }
 
-/// Requests the [callback] to be invoked when the enclosing asynchronous
-/// operation is cancelled.
-void doOnCancellation(void Function() callback) {
-  final token = Zone.current[_key];
-  if (token is CancellationToken) {
-    token._cancellationCallbacks.add(callback);
-  }
+/// If this getter is called in a cancellation zone, returns a [Future] that
+/// completes once the operation is cancelled.
+///
+/// Note that the returned future might never complete (in case no cancellation
+/// is requested).
+/// Returns null if not running within a cancellation zone.
+Future<void>? get cancellationSignal {
+  return switch (Zone.current[_key]) {
+    CancellationToken(:final _cancellationCompleter) =>
+      _cancellationCompleter.future,
+    _ => null,
+  };
 }

@@ -366,6 +366,13 @@ final class TransactionOptions {
   /// instead of at each statement.
   final bool? deferForeignKeys;
 
+  /// A hint that the transaction will be read-only.
+  ///
+  /// Implementations based on connection pools can use this hint to acquire a
+  /// connection from a read-only connection. This allows not blocking the write
+  /// connection if it's known that a transaction will only issue reads.
+  final bool readOnly;
+
   /// @nodoc
-  const TransactionOptions({this.deferForeignKeys});
+  const TransactionOptions({this.deferForeignKeys, this.readOnly = false});
 }

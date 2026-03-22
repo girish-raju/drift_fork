@@ -40,8 +40,8 @@ final class SqlitePoolSession
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
     final connection = await (statement.isReadOnly
-        ? pool.reader()
-        : pool.writer());
+        ? pool.reader(abortSignal: cancellationSignal)
+        : pool.writer(abortSignal: cancellationSignal));
     try {
       return await _runStatementOnConnection(connection, statement);
     } finally {
@@ -79,7 +79,7 @@ final class SqlitePoolSession
   @override
   Future<DriftSession> begin(TransactionOptions options) async {
     // TODO: Read-only transactions?
-    final connection = await pool.writer();
+    final connection = await pool.writer(abortSignal: cancellationSignal);
 
     assert(await connection.autocommit);
     await connection.execute('BEGIN IMMEDIATE;');
@@ -89,7 +89,7 @@ final class SqlitePoolSession
 
   @override
   Future<DriftSession> exclusive() async {
-    final access = await pool.exclusiveAccess();
+    final access = await pool.exclusiveAccess(abortSignal: cancellationSignal);
     return _ExclusivePoolConnection(access);
   }
 

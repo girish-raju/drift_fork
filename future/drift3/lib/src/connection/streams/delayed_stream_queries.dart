@@ -20,7 +20,10 @@ final class DelayedStreamQueryStore extends StreamQueryStore {
     Future<StreamQueryStore> delegate,
     this._requestStreams,
   ) {
-    _delegate = delegate.then((value) => _resolved = value);
+    _delegate = delegate.then((value) {
+      closeStreamsSynchronously = value.closeStreamsSynchronously;
+      return _resolved = value;
+    });
   }
 
   @override

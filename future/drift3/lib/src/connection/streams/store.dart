@@ -16,18 +16,25 @@ abstract base class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey?> _keysPendingRemoval = HashSet<StreamKey?>();
 
-  final bool _closeStreamsSynchronously;
+  /// Whether resources associated with a query stream should be closed
+  /// synchronously after all listeners have cancelled their stream
+  /// subscription.
+  ///
+  /// By default, we keep streams alive for an additional event loop iteration
+  /// since the same query might be subscribed again and we want to re-use its
+  /// subscription.
+  /// For Flutter tests in particular, it's recommended to enable this option as
+  /// Flutter asserts no pending async work remains after a test has finished.
+  @protected
+  bool closeStreamsSynchronously;
   bool _isShuttingDown = false;
 
   // we track pending timers since Flutter throws an exception when timers
   // remain after a test run.
   final Set<Completer<void>> _pendingTimers = {};
 
-  /// [closeStreamsSynchronously] controls whether resources with a stream
-  /// should be closed synchronously after all listeners have cancelled their
-  /// stream subscriptions. By default,
-  StreamQueryStore({bool closeStreamsSynchronously = false})
-    : _closeStreamsSynchronously = closeStreamsSynchronously;
+  /// @nodoc
+  StreamQueryStore({this.closeStreamsSynchronously = false});
 
   /// Whether this query store is shutting down (that is, [close] has been
   /// called).
@@ -86,7 +93,7 @@ abstract base class StreamQueryStore {
     if (_isShuttingDown) return;
 
     final key = stream._fetcher.key;
-    if (_closeStreamsSynchronously) {
+    if (closeStreamsSynchronously) {
       whenRemoved();
       _activeKeyStreams.remove(key);
       return;
