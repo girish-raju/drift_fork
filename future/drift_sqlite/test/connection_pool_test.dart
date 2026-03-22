@@ -7,37 +7,10 @@ import 'package:drift_sqlite/src/dialect/dialect.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
+import 'connection_testcases.dart';
+
 void main() {
-  test('schema version', () async {
-    final session = await _openPool();
-    final version = session.persistentSchemaVersion!;
-    expect(await version.schemaVersion, 0);
-
-    for (var i = 1; i < 10; i++) {
-      await version.writeSchemaVersion(i);
-      expect(await version.schemaVersion, i);
-    }
-  });
-
-  test('queries', () async {
-    final session = await _openPool();
-    await session.execute(
-      StatementInfo('CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY)'),
-    );
-    await session.execute(StatementInfo('INSERT INTO users DEFAULT VALUES'));
-
-    final rs = await session.execute(
-      StatementInfo(
-        'SELECT * FROM users',
-        isReadOnly: true,
-        needsResultSet: true,
-      ),
-    );
-    expect(rs.resultSet!.columnNames, ['id']);
-    expect(rs.resultSet!, [
-      [1],
-    ]);
-  });
+  declareConnectionTests(_openPool);
 
   test('returns new columns after recompilation', () async {
     // https://github.com/simolus3/drift/issues/2454
@@ -113,32 +86,6 @@ void main() {
     skip: 'will be fixed in sqlite3_connection_pool 0.2.1',
   );
 
-  test('does not cache explain statements', () async {
-    final db = await _openPool();
-
-    await db.execute(
-      StatementInfo(
-        'create table test(id integer primary key, description text)',
-      ),
-    );
-    await db.execute(StatementInfo('create index i1 on test(description)'));
-    // The schema is locked while an explain is active, so caching this
-    // statement makes the test fail at the `drop index` statement.
-    await db.execute(
-      StatementInfo(
-        "explain query plan select * from test where description = ?",
-        variables: [MappedValue.raw(const SqliteDialect().textType, 't')],
-      ),
-    );
-    await db.execute(StatementInfo('drop index i1'));
-    await db.execute(
-      StatementInfo(
-        "explain query plan select * from test where description = ?",
-        variables: [MappedValue.raw(const SqliteDialect().textType, 't')],
-      ),
-    );
-  });
-
   test('can cancel queries', () async {
     final db = EmptyDb(
       DriftConnection(
@@ -176,14 +123,4 @@ Future<DriftSession> _openPool() async {
   final pool = await sqliteConnectionPool(file);
   addTearDown(pool.close);
   return pool;
-}
-
-final class EmptyDb extends GeneratedDatabase {
-  EmptyDb(super.implementation);
-
-  @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
-
-  @override
-  final int schemaVersion = 1;
 }

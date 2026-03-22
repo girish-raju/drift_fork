@@ -33,7 +33,7 @@ final class DriftCompatibilitySession
   /// For transactions or [exclusive] blocks not implemented by the [_inner]
   /// session, we use an exclusive lock to ensure that these blocks don't
   /// interleave with statements not supposed to run outside of them.
-  final SharedOrExclusiveLock _lock = SharedOrExclusiveLock();
+  final SharedOrExclusiveLock? _lock;
 
   final int _transactionDepth;
 
@@ -41,7 +41,7 @@ final class DriftCompatibilitySession
     this._inner,
     this._dialect,
     this._transactionDepth,
-  ) {
+  ) : _lock = _needsLock(_inner) ? SharedOrExclusiveLock() : null {
     _inner.closed.whenComplete(() {
       if (!_closed.isCompleted) {
         _isClosed = true;
@@ -81,6 +81,11 @@ without awaiting every statement in it.''');
 
       // Keep locked until the inner session completes
       await inner._closed.future;
+    }).onError((Object e, StackTrace trace) {
+      if (!opened.isCompleted) {
+        // Error before we got to opened.complete, e.g. in create().
+        opened.completeError(e, trace);
+      }
     });
 
     return opened.future;
@@ -91,12 +96,16 @@ without awaiting every statement in it.''');
     bool abortIfCancelled = true,
     bool shared = true,
   }) {
-    final lock = shared ? _lock.shared : _lock.exclusive;
+    if (_lock case final lock?) {
+      final block = shared ? lock.shared : lock.exclusive;
 
-    return lock(() async {
-      if (abortIfCancelled) checkIfCancelled();
-      return await action();
-    });
+      return block(() async {
+        if (abortIfCancelled) checkIfCancelled();
+        return await action();
+      });
+    } else {
+      return action();
+    }
   }
 
   @override
@@ -204,6 +213,13 @@ without awaiting every statement in it.''');
       return _inner.executeBatch(batch);
     });
   }
+
+  static bool _needsLock(DriftSession inner) {
+    // We need a custom lock if we'd implement transactions through manual BEGIN
+    // and COMMIT statements (we can't run statements that aren't part of the
+    // transaction while a transaction is active in that case).
+    return inner.locks == null || inner.transactionParent == null;
+  }
 }
 
 /// A [DriftCompatibilitySession] that is also acting as a
@@ -277,5 +293,6 @@ final class _DriftCompatibilityExclusive extends DriftCompatibilitySession {
   @override
   Future<void> _closeInner() async {
     // We just need to release the lock, the underlying session stays open.
+    _closed.complete();
   }
 }

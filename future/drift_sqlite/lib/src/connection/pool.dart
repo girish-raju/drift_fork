@@ -37,11 +37,16 @@ final class SqlitePoolSession
   @override
   bool get isClosed => _closed.isCompleted;
 
+  Future<ConnectionLease> _lease(bool writer) {
+    return (writer
+            ? pool.writer(abortSignal: cancellationSignal)
+            : pool.reader(abortSignal: cancellationSignal))
+        .poolAbortExceptionsToDrift();
+  }
+
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
-    final connection = await (statement.isReadOnly
-        ? pool.reader(abortSignal: cancellationSignal)
-        : pool.writer(abortSignal: cancellationSignal));
+    final connection = await _lease(!statement.isReadOnly);
     try {
       return await _runStatementOnConnection(connection, statement);
     } finally {
@@ -51,7 +56,7 @@ final class SqlitePoolSession
 
   @override
   Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
-    final writer = await pool.writer();
+    final writer = await _lease(true);
     try {
       return await _runBatchOnConnection(writer, batch);
     } finally {
@@ -78,8 +83,7 @@ final class SqlitePoolSession
 
   @override
   Future<DriftSession> begin(TransactionOptions options) async {
-    // TODO: Read-only transactions?
-    final connection = await pool.writer(abortSignal: cancellationSignal);
+    final connection = await _lease(!options.readOnly);
 
     assert(await connection.autocommit);
     await connection.execute('BEGIN IMMEDIATE;');
@@ -89,7 +93,9 @@ final class SqlitePoolSession
 
   @override
   Future<DriftSession> exclusive() async {
-    final access = await pool.exclusiveAccess(abortSignal: cancellationSignal);
+    final access = await pool
+        .exclusiveAccess(abortSignal: cancellationSignal)
+        .poolAbortExceptionsToDrift();
     return _ExclusivePoolConnection(access);
   }
 
@@ -261,5 +267,13 @@ final class _ExclusivePoolConnection extends _LeasedPoolConnection {
   @override
   void _returnConnection() {
     _access.close();
+  }
+}
+
+extension<T> on Future<T> {
+  Future<T> poolAbortExceptionsToDrift() {
+    return onError<PoolAbortException>(
+      (_, _) => throw const CancellationException(),
+    );
   }
 }
