@@ -7,6 +7,7 @@ lcov.info
 pubspec.lock
 */**/pubspec.lock
 .dart_tool/
+devtools_options.yaml
 
 benchmark_results.json
 .flutter-plugins

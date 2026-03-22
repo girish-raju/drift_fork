@@ -1,3 +1,7 @@
+## 2.32.1
+
+- DevTools extension: Make error messages selectable.
+
 ## 2.32.0
 
 - __Potentially breaking change__ Migrate to version 3.x of the `sqlite3` package.

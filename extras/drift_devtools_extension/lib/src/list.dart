@@ -114,7 +114,7 @@ class _DatabaseListState extends ConsumerState<DatabaseList> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Padding(
         padding: _tilePadding,
-        child: Text('Could not load databases: $err\n$stack'),
+        child: SelectableText('Could not load databases: $err\n$stack'),
       ),
       data: (databases) {
         return Scrollbar(
@@ -165,7 +165,7 @@ class _DatabaseEntry extends ConsumerWidget {
         child: ListTile(
           title: Text(database.typeName),
           subtitle: fileName != null && lineNumber != null
-              ? Text('$fileName:$lineNumber')
+              ? SelectableText('$fileName:$lineNumber')
               : null,
         ),
       ),

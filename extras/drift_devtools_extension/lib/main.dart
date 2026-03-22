@@ -89,7 +89,7 @@ class _InfoButton extends StatelessWidget {
           context: context,
           applicationName: 'Drift extensions for DevTools',
           children: [
-            Text.rich(
+            SelectableText.rich(
               TextSpan(
                 children: [
                   _text(

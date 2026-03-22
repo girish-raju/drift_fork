@@ -137,8 +137,8 @@ class DatabaseSchemaCheck extends ConsumerWidget {
             TextSpan(text: message),
           ],
         )),
-      AsyncError(:var error) =>
-        Text('The schema could not be validated due to an error: $error'),
+      AsyncError(:var error) => SelectableText(
+          'The schema could not be validated due to an error: $error'),
       _ => SelectableText.rich(TextSpan(
           text: 'By validating your schema, you can ensure that the current  '
               'state of the database in your app (after migrations ran) '
