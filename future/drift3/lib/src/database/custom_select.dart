@@ -133,6 +133,16 @@ final class CustomRow {
   /// The dart type [T] must be supported by the type system of the database
   /// used (mostly contains booleans, strings, numbers and dates).
   T read<T extends Object>(String name) {
+    final type = BuiltinDriftType.forType<T>();
+    if (type == null) {
+      throw ArgumentError(
+        'Tried to call read() with an unknown type ($T). For '
+        'builtin types (String, int, BigInt, double, Uint8List, bool, DateTime, '
+        'DatabaseJson), try adding a type argument. For other types, use '
+        'readWithType.',
+      );
+    }
+
     return readWithType(
       BuiltinDriftType.forType<T>()!.resolveIn(_db.dialect),
       name,

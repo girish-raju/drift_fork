@@ -897,9 +897,8 @@ class _ExpandedDeclarationWriter {
     }
 
     // we only need the index counter when the query contains an expanded
-    // element.
-    // add +1 because that's going to be the first index of this element.
-    final firstVal = highestIndexBeforeArray + 1;
+    // element. For drift 2, this indicates the next index (so + 1).
+    final firstVal = highestIndexBeforeArray + (options.drift3Preview ? 0 : 1);
     _buffer.write('var $highestAssignedIndexVar = $firstVal;');
     indexCounterWasDeclared = true;
   }

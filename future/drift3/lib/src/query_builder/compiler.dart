@@ -393,7 +393,7 @@ abstract base class StatementCompiler {
       if (stmt.ifNotExists) {
         statement.buffer.write('IF NOT EXISTS ');
       }
-      addReference(table.entityName);
+      addReference(table.aliasOrName);
       statement.buffer.write(' USING ${virtual.moduleAndArgs}');
       return;
     }
@@ -402,7 +402,7 @@ abstract base class StatementCompiler {
     if (stmt.ifNotExists) {
       statement.buffer.write('IF NOT EXISTS ');
     }
-    addReference(table.entityName);
+    addReference(table.aliasOrName);
     statement.buffer.write(' (');
 
     for (final (i, column) in table.columns.indexed) {
@@ -445,7 +445,7 @@ abstract base class StatementCompiler {
         statement.buffer.write('IF NOT EXISTS ');
       }
 
-      addReference(view.entityName);
+      addReference(view.aliasOrName);
       statement.buffer.write('(');
 
       for (final (i, column) in view.columns.indexed) {

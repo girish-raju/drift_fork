@@ -151,7 +151,9 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       await resolved.close();
     }
 
-    await _streamQueryStore?.close();
+    if (_streamQueryStore case final streams?) {
+      await streams.close();
+    }
 
     //devtools.handleClosed(this);
   }

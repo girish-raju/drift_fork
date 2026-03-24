@@ -56,36 +56,7 @@ final class InsertStatement<
   InsertStatement<Row, RS> values(Insertable<Row> row) {
     _checkNoSource();
 
-    final rawValues = row.toColumns(true);
-
-    // apply default values for columns that have one
-    LinkedHashMap<String, Expression> map = LinkedHashMap();
-    for (final column in table.columns) {
-      final columnName = column.name;
-
-      if (rawValues.containsKey(columnName)) {
-        final value = rawValues[columnName]!;
-        map[columnName] = value;
-      } else {
-        if (column.clientDefault case final clientDefault?) {
-          map[columnName] = Variable(clientDefault(), column.sqlType);
-        }
-      }
-
-      // column not set, and doesn't have a client default. So just don't
-      // include this column
-    }
-
-    // The rowid is not included in the list of columns since it doesn't show
-    // up in selects, but we should also add that value to the map for inserts.
-    if (rawValues.containsKey('rowid')) {
-      map['rowid'] = rawValues['rowid']!;
-    }
-
-    if (map.isNotEmpty) {
-      source = InsertFromValues._(map);
-    }
-
+    source = InsertFromValues.create(table, row);
     return this;
   }
 
@@ -340,6 +311,41 @@ final class InsertFromValues extends InsertSource {
   final LinkedHashMap<String, Expression> values;
 
   InsertFromValues._(this.values);
+
+  /// Creates an [InsertFromValues] capturing columns of inserting the pending
+  /// [row] into the given [table].
+  static InsertFromValues? create(GeneratedTable table, Insertable row) {
+    final rawValues = row.toColumns(true);
+
+    // apply default values for columns that have one
+    LinkedHashMap<String, Expression> map = LinkedHashMap();
+    for (final column in table.columns) {
+      final columnName = column.name;
+
+      if (rawValues.containsKey(columnName)) {
+        final value = rawValues[columnName]!;
+        map[columnName] = value;
+      } else {
+        if (column.clientDefault case final clientDefault?) {
+          map[columnName] = Variable(clientDefault(), column.sqlType);
+        }
+      }
+
+      // column not set, and doesn't have a client default. So just don't
+      // include this column
+    }
+
+    // The rowid is not included in the list of columns since it doesn't show
+    // up in selects, but we should also add that value to the map for inserts.
+    if (rawValues.containsKey('rowid')) {
+      map['rowid'] = rawValues['rowid']!;
+    }
+
+    if (map.isNotEmpty) {
+      return InsertFromValues._(map);
+    }
+    return null;
+  }
 
   @override
   void compileWith(StatementCompiler compiler) {

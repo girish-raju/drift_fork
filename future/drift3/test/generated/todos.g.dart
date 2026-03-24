@@ -2778,7 +2778,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   );
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
-    var $arrayStartIndex = 3;
+    var $arrayStartIndex = 2;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelectMapped<TodoEntry>(

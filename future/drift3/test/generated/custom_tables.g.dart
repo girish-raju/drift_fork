@@ -1746,7 +1746,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     List<String> var1, {
     ReadMultiple$clause? clause,
   }) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
     final generatedclause = $write(
@@ -1776,7 +1776,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final generatedpredicate = $write(
       predicate?.call(this.config) ??
           const Expression.customComponent(
@@ -1808,7 +1808,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     List<SyncType?> var2, {
     TypeConverterVar$pred? pred,
   }) {
-    var $arrayStartIndex = 2;
+    var $arrayStartIndex = 1;
     final generatedpred = $write(
       pred?.call(this.config) ??
           const Expression.customComponent(
@@ -1883,7 +1883,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final generatedpredicate = $write(
       predicate(
         alias(this.withDefaults, 'd'),
@@ -1944,7 +1944,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final generatedexpr = $write(
       expr(this.config),
       startIndex: $arrayStartIndex,
@@ -1979,7 +1979,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<MyViewData> readView({ReadView$where? where}) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final generatedwhere = $write(
       where?.call(this.myView) ??
           const Expression.customComponent(
@@ -2034,7 +2034,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {
-    var $arrayStartIndex = 1;
+    var $arrayStartIndex = 0;
     final generatedvalue = $writeInsertable(
       this.config,
       value,

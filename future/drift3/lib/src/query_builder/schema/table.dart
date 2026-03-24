@@ -103,6 +103,16 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   ) {
     return TableColumnWithTypeConverter._(base: this, converter: converter);
   }
+
+  @override
+  int get hashCode => Object.hash(owningResultSet, name);
+
+  @override
+  bool operator ==(Object other) {
+    return other is TableColumn &&
+        other.owningResultSet == owningResultSet &&
+        other.name == name;
+  }
 }
 
 /// A [TableColumn] that has a [TypeConverter] attached to it.

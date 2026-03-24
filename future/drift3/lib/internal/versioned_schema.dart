@@ -94,6 +94,14 @@ abstract base class VersionedSchema {
     required MigrationStepWithVersion steps,
   }) async {
     final database = migrator.database;
+    if (from > to) {
+      throw StateError(
+        "runMigrationSteps was asked to downgrade from versions $from to $to. "
+        'Migration steps can only upgrade. This might happen if users '
+        'downgrade app versions.',
+      );
+    }
+
     final session = await database.currentSession();
 
     for (var target = from; target < to;) {

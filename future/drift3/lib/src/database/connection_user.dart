@@ -660,7 +660,7 @@ abstract base class DatabaseConnectionUser {
     final compiler = dialect.createCompiler();
 
     for (var x = 0; x < amount; x++) {
-      compiler.addPositionalVariable(start + x);
+      compiler.addPositionalVariable(1 + start + x);
 
       if (x != amount - 1) {
         compiler.statement.comma();
@@ -696,16 +696,9 @@ abstract base class DatabaseConnectionUser {
     Insertable insertable, {
     int? startIndex,
   }) {
-    /*
-    final context = GenerationContext.fromDb(this)
-      ..explicitVariableIndex = startIndex;
-
-    table.validateIntegrity(insertable, isInserting: true);
-    InsertStatement(this, table)
-        .writeInsertable(context, insertable.toColumns(true));
-
-    return context;*/
-    throw 'todo';
+    final compiler = dialect.createCompiler();
+    compiler.addInsertFromValues(InsertFromValues.create(table, insertable)!);
+    return compiler.statement;
   }
 }
 
