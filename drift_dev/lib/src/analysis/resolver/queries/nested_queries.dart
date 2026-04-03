@@ -126,15 +126,15 @@ class _AnalyzerState {
   void _process() {
     // Add necessary columns to select variables read by inner nested queries.
     for (final variable in container.variablesCapturedByChildren) {
-      container.addedColumns.add(
-        ExpressionResultColumn(
-          expression: Reference(
-            entityName: variable.reference.entityName,
-            columnName: variable.reference.columnName,
-          ),
-          as: AliasClause(variable.helperColumn),
+      final column = ExpressionResultColumn(
+        expression: Reference(
+          entityName: variable.reference.entityName,
+          columnName: variable.reference.columnName,
         ),
+        as: AliasClause(variable.helperColumn),
       );
+      container.addedColumns.add(column);
+      variable.columnIndex = container.nextColumnIndex++;
     }
 
     // Re-index variables. This is necessary for two reasons:

@@ -268,6 +268,17 @@ FROM tbl AS parent WHERE parent.a = :a;
       );
     });
 
+    test('drift3 preview', () {
+      return runTest(
+        const DriftOptions.defaults(drift3Preview: true),
+        [
+          contains(
+            r"variables: [mapValue(BuiltinDriftType.text, a), MappedValue.raw(type$0,row[1]), mapValue(BuiltinDriftType.text, b)]",
+          ),
+        ],
+      );
+    });
+
     test('should generate correct data class', () {
       return runTest(
         const DriftOptions.defaults(),

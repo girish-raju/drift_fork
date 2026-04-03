@@ -332,6 +332,7 @@ class SqlSelectQuery extends SqlQuery {
 class NestedQueriesContainer {
   final SelectStatement select;
   final Map<NestedQueryColumn, NestedQuery> nestedQueries = {};
+  int nextColumnIndex = 0;
 
   /// The nested queries transformation may change the index of variables used
   /// in a query.
@@ -347,7 +348,22 @@ class NestedQueriesContainer {
   /// variables with different indexes are considered different variables.
   final Map<Variable, int> originalIndexForVariable = {};
 
-  NestedQueriesContainer(this.select);
+  NestedQueriesContainer(this.select) {
+    for (final column in select.columns) {
+      if (column case NestedStarResultColumn(:final resultSet?)) {
+        // Nested star columns aren't resolved by the sqlparser package, so we
+        // need to count columns here.
+        nextColumnIndex += resultSet.resolvedColumns
+                ?.where((c) => c.includedInResults)
+                .length ??
+            0;
+      } else if (column.resolvedColumns case final columns?) {
+        // All other result columns should have columns set on them if they
+        // appear in the final query.
+        nextColumnIndex += columns.length;
+      }
+    }
+  }
 
   /// Columns that should be added to the [select] statement to read variables
   /// captured by children.
@@ -390,8 +406,13 @@ class CapturedVariable {
   /// This variable is not mounted to the same syntax tree as [reference], it
   /// will be mounted into the tree returned by [addHelperNodes].
   final NamedVariable introducedVariable;
+  FoundVariable? resolvedVariable;
 
   String get helperColumn => '\$n_$queryGlobalId';
+
+  /// The index at which [helperColumn] has been inserted into the outer select
+  /// statement.
+  int? columnIndex;
 
   CapturedVariable(this.reference, this.queryGlobalId)
       : introducedVariable = NamedVariable.synthetic(':', 'r$queryGlobalId') {
@@ -1039,14 +1060,16 @@ class FoundVariable extends FoundElement implements HasType {
     required this.name,
     required this.sqlType,
     required Variable variable,
-    required this.forCaptured,
+    required CapturedVariable this.forCaptured,
   })  : originalIndex = index,
         typeConverter = null,
         nullable = false,
         isArray = false,
         isRequired = true,
         hidden = true,
-        syntacticOrigin = variable;
+        syntacticOrigin = variable {
+    forCaptured!.resolvedVariable = this;
+  }
 
   @override
   String get dartParameterName {

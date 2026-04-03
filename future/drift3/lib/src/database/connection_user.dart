@@ -539,6 +539,25 @@ abstract base class DatabaseConnectionUser {
     );
   }
 
+  /// Like [customSelectMapped], but allows [createMapper] to be asynchronous
+  /// and to fire off additional queries.
+  Selectable<T> customSelectMappedAsync<T>({
+    required String query,
+    required Future<T> Function(RawRow) Function(RawResultSet) createMapper,
+    List<MappedValue> variables = const [],
+    Set<ResultSet> readsFrom = const {},
+    bool isReadOnly = true,
+  }) {
+    return AsyncCustomSelectStatement(
+      query,
+      variables,
+      readsFrom,
+      createMapper,
+      this,
+      isReadOnly,
+    );
+  }
+
   /// Map a Dart [value] into a typed [MappedValue] understood by the database
   /// driver.
   MappedValue mapValue<T extends Object>(SqlType<T> type, T? value) {

@@ -34,5 +34,5 @@ void main() {
     final result = results.single;
     expect(result.defaults, defaults);
     expect(result.nestedQuery1, [constraints]);
-  }, skip: 'TODO');
+  });
 }

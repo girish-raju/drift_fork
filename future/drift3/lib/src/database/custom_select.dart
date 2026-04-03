@@ -13,7 +13,7 @@ import 'selectable.dart';
 /// A select statement that is constructed with a raw sql prepared statement
 /// instead of the high-level drift api.
 @internal
-final class CustomSelectStatement<T> with Selectable<T> {
+abstract base class BaseCustomSelectStatement<T> with Selectable<T> {
   /// Tables this select statement reads from. When turning this select query
   /// into an auto-updating stream, that stream will emit new items whenever
   /// any of these tables changes.
@@ -26,21 +26,41 @@ final class CustomSelectStatement<T> with Selectable<T> {
   /// [query]. Variables are denoted using a question mark in the query.
   final List<MappedValue> variables;
 
-  /// The function mapping raw rows into the result structure [T].
-  T Function(RawRow) Function(RawResultSet) mapper;
-
   final DatabaseConnectionUser _db;
   final bool isReadOnly;
+
+  BaseCustomSelectStatement(
+    this.query,
+    this.variables,
+    this.tables,
+    this._db,
+    this.isReadOnly,
+  );
+
+  StatementInfo get _statement {
+    return StatementInfo(
+      query,
+      variables: variables,
+      needsResultSet: true,
+      isReadOnly: isReadOnly,
+    );
+  }
+}
+
+@internal
+final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
+  /// The function mapping raw rows into the result structure [T].
+  T Function(RawRow) Function(RawResultSet) mapper;
 
   /// Constructs a new custom select statement for the query, the variables,
   /// the affected tables and the database.
   CustomSelectStatement(
-    this.query,
-    this.variables,
-    this.tables,
+    super.query,
+    super.variables,
+    super.tables,
     this.mapper,
-    this._db,
-    this.isReadOnly,
+    super._db,
+    super.isReadOnly,
   );
 
   static CustomSelectStatement<CustomRow> unmapped(
@@ -58,15 +78,6 @@ final class CustomSelectStatement<T> with Selectable<T> {
           (row) => CustomRow(rs, row, db),
       db,
       isReadOnly,
-    );
-  }
-
-  StatementInfo get _statement {
-    return StatementInfo(
-      query,
-      variables: variables,
-      needsResultSet: true,
-      isReadOnly: isReadOnly,
     );
   }
 
@@ -98,6 +109,53 @@ final class CustomSelectStatement<T> with Selectable<T> {
       ),
     );
     return raw.map(_mapResults);
+  }
+}
+
+@internal
+final class AsyncCustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
+  /// The function mapping raw rows into the result structure [T].
+  Future<T> Function(RawRow) Function(RawResultSet) mapper;
+
+  AsyncCustomSelectStatement(
+    super.query,
+    super.variables,
+    super.tables,
+    this.mapper,
+    super.db,
+    super.isReadOnly,
+  );
+
+  @override
+  Future<List<T>> get() async {
+    final session = await _db.currentSession();
+
+    final result = await session.execute(_statement);
+    final resultSet = result.resultSet!;
+    final map = mapper(resultSet);
+
+    return [for (final row in resultSet) await map(row)];
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    final streams = _db.currentStreamQueryStore();
+    return streams.registerStream(
+      QueryStreamFetcher(
+        readsFrom: TableUpdateQuery.onAllTables(tables),
+        // We want this stream to be unique since the mapper might run
+        // additional queries we don't know about yet.
+        key: null,
+        fetchData: () async {
+          // Spawn a read transaction since we might need multiple queries.
+          return await _db.transaction(
+            options: TransactionOptions(readOnly: isReadOnly),
+            get,
+          );
+        },
+        prepare: () async => await _db.currentSession(),
+      ),
+    );
   }
 }
 

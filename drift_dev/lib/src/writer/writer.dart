@@ -277,24 +277,20 @@ abstract class _NodeOrWriter {
     return AnnotatedDartCode.build((b) {
       final converter = column.typeConverter;
 
-      if (writer.options.drift3Preview) {
-        b.addText('mapValue(');
-        b.addCode(_drift3SqlType(column.sqlType));
-        b.addText(', ');
-        if (converter != null) {
-          // apply type converter before writing the variable
-          b
-            ..addCode(readConverter(converter, forNullable: column.nullable))
-            ..addText('.toSql(')
-            ..addCode(expression)
-            ..addText(')');
-        } else {
-          b.addCode(expression);
-        }
-        b.addText(')');
-
-        return;
+      b.addText('mapValue(');
+      b.addCode(_drift3SqlType(column.sqlType));
+      b.addText(', ');
+      if (converter != null) {
+        // apply type converter before writing the variable
+        b
+          ..addCode(readConverter(converter, forNullable: column.nullable))
+          ..addText('.toSql(')
+          ..addCode(expression)
+          ..addText(')');
+      } else {
+        b.addCode(expression);
       }
+      b.addText(')');
     });
   }
 
@@ -568,14 +564,16 @@ class Scope extends _Node {
 }
 
 class TextEmitter extends _Node {
-  final StringBuffer buffer = StringBuffer();
+  final StringBuffer buffer;
   final void Function(TaggedDartLexeme, StringBuffer)? writeTaggedDartCode;
 
   @override
   final Writer writer;
 
-  TextEmitter(Scope super.parent, {this.writeTaggedDartCode})
-      : writer = parent.writer;
+  TextEmitter(Scope super.parent,
+      {this.writeTaggedDartCode, StringBuffer? buffer})
+      : writer = parent.writer,
+        buffer = buffer ?? StringBuffer();
 
   @override
   void _writeTagged(StringBuffer buffer, TaggedDartLexeme lexeme) {

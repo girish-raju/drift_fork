@@ -28,6 +28,7 @@ typedef _ArgumentContext = ({
 /// should be included in a generated database or dao class.
 class QueryWriter {
   final Scope scope;
+  final Map<CapturedVariable, String> _outerVariables = {};
 
   late final ExplicitAliasTransformer _transformer;
   final TextEmitter _emitter;
@@ -39,6 +40,8 @@ class QueryWriter {
   bool get drift3 => options.drift3Preview;
 
   QueryWriter(this.scope) : _emitter = scope.leaf();
+
+  QueryWriter._existingEmitter(this.scope, this._emitter);
 
   void write(SqlQuery query) {
     // Note that writing queries can have a result set if they use a RETURNING
@@ -88,9 +91,10 @@ class QueryWriter {
 
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
-  void _writeMappingLambda(InferredResultSet resultSet, QueryRowType rowClass) {
+  void _writeMappingLambda(InferredResultSet resultSet,
+      NestedQueriesContainer? nestedQueries, QueryRowType rowClass) {
     if (drift3) {
-      return _Drift3MappingCodeWriter(this)
+      return _Drift3MappingCodeWriter(this, nestedQueries)
           .write(_emitter, resultSet, rowClass);
     }
 
@@ -317,17 +321,20 @@ class QueryWriter {
       [QueryRowType? resultType]) {
     final resultSet = select.resultSet;
     resultType ??= select.queryRowType(options);
+    final needsAsyncMapping = resultType.requiresAsynchronousContext(options);
 
     if (drift3) {
+      final methodName =
+          needsAsyncMapping ? 'customSelectMappedAsync' : 'customSelectMapped';
       _emitter
-        ..write(' customSelectMapped<')
+        ..write(' $methodName<')
         ..writeDart(resultType.rowType)
         ..write('>(query: ${_queryCode(select)},');
       _writeVariables(select);
       _emitter.write(', ');
       _writeReadsFrom(select);
       _emitter.write(', createMapper: ');
-      _writeMappingLambda(resultSet, resultType);
+      _writeMappingLambda(resultSet, select.nestedContainer, resultType);
       _emitter.write(')');
       return;
     }
@@ -337,13 +344,13 @@ class QueryWriter {
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (resultType.requiresAsynchronousContext(options)) {
+    if (needsAsyncMapping) {
       _buffer.write(').asyncMap(');
     } else {
       _buffer.write(').map(');
     }
 
-    _writeMappingLambda(resultSet, resultType);
+    _writeMappingLambda(resultSet, select.nestedContainer, resultType);
     _buffer.write(')');
   }
 
@@ -374,7 +381,7 @@ class QueryWriter {
     if (drift3) {
       _buffer.writeln(').then((rows) {');
 
-      final mappingWriter = _Drift3MappingCodeWriter(this)
+      final mappingWriter = _Drift3MappingCodeWriter(this, null)
         .._writeArgumentExpression(
             rowType, resultSet, (isNullable: false, sqlPrefix: null));
       _buffer
@@ -398,11 +405,11 @@ class QueryWriter {
 
       if (rowType.requiresAsynchronousContext(options)) {
         _buffer.write('Future.wait(rows.map(');
-        _writeMappingLambda(resultSet, rowType);
+        _writeMappingLambda(resultSet, null, rowType);
         _buffer.write('))');
       } else {
         _buffer.write('rows.map(');
-        _writeMappingLambda(resultSet, rowType);
+        _writeMappingLambda(resultSet, null, rowType);
         _buffer.write(').toList()');
       }
       _buffer.write(');\n}');
@@ -545,7 +552,7 @@ class QueryWriter {
   }
 
   void _writeVariables(SqlQuery query) {
-    _ExpandedVariableWriter(query, _emitter).writeVariables();
+    _ExpandedVariableWriter(query, this).writeVariables();
   }
 
   /// Returns a Dart string literal representing the query after variables have
@@ -640,6 +647,7 @@ String readConverter(TextEmitter emitter, AppliedTypeConverter converter) {
 /// query.
 class _Drift3MappingCodeWriter {
   final QueryWriter _writer;
+  final NestedQueriesContainer? nestedQueries;
 
   final StringBuffer _outerSetup = StringBuffer();
   final StringBuffer _innerMapper = StringBuffer();
@@ -649,7 +657,7 @@ class _Drift3MappingCodeWriter {
 
   TextEmitter get _emitter => _writer._emitter;
 
-  _Drift3MappingCodeWriter(this._writer);
+  _Drift3MappingCodeWriter(this._writer, this.nestedQueries);
 
   String referenceBuiltinType(DriftSqlType type) {
     return _obtainedTypes.putIfAbsent(type, () {
@@ -690,7 +698,10 @@ class _Drift3MappingCodeWriter {
       ..writeln(_outerSetup)
       ..write('return (')
       ..writeDriftRef('RawRow')
-      ..writeln(' row) => $_innerMapper;')
+      ..write(' row) ')
+      ..write(
+          rowClass.requiresAsynchronousContext(_writer.options) ? 'async' : '')
+      ..writeln('=> $_innerMapper;')
       ..writeln('}');
   }
 
@@ -715,12 +726,23 @@ class _Drift3MappingCodeWriter {
           resultSet,
           (sqlPrefix: prefix, isNullable: argument.nullable),
         );
-      case MappedNestedListQuery():
-        _innerMapper.write("throw 'todo'");
-//        _innerMapper.write('await ');
-//        final query = argument.column.query;
-//        _writeCustomSelectStatement(query, argument.nestedType);
-//        _innerMapper.write('.get()');
+      case MappedNestedListQuery(:final column):
+        final knownVariableTypes = <CapturedVariable, String>{};
+        if (nestedQueries?.nestedQueries[column.from] case final nested?) {
+          for (final variable in nested.capturedVariables.values) {
+            if (variable.resolvedVariable case final resolved?) {
+              knownVariableTypes[variable] = referenceType(resolved.sqlType);
+            }
+          }
+        }
+
+        _innerMapper.write('await ');
+        final query = argument.column.query;
+        final innerWriter = QueryWriter._existingEmitter(
+            _writer.scope, TextEmitter(_writer.scope, buffer: _innerMapper));
+        innerWriter._outerVariables.addAll(knownVariableTypes);
+        innerWriter._writeCustomSelectStatement(query, argument.nestedType);
+        _innerMapper.write('.get()');
       case QueryRowType():
         final singleValue = argument.singleValue;
         if (singleValue != null) {
@@ -1007,10 +1029,12 @@ class _ExpandedDeclarationWriter {
 class _ExpandedVariableWriter {
   final SqlQuery query;
   final TextEmitter _emitter;
+  final QueryWriter _queryWriter;
 
   StringBuffer get _buffer => _emitter.buffer;
 
-  _ExpandedVariableWriter(this.query, this._emitter);
+  _ExpandedVariableWriter(this.query, this._queryWriter)
+      : _emitter = _queryWriter._emitter;
 
   void writeVariables() {
     _buffer.write('variables: ');
@@ -1097,6 +1121,16 @@ class _ExpandedVariableWriter {
     String constructVar(String dartExpr) {
       final capture = element.forCaptured;
       if (capture != null) {
+        if (_emitter.writer.options.drift3Preview) {
+          return _emitter.dartCode(AnnotatedDartCode.build((b) {
+            b.addSymbol('MappedValue', AnnotatedDartCode.drift);
+            b.addText('.raw(');
+            b.addText('${_queryWriter._outerVariables[capture]},');
+            b.addText('row[${capture.columnIndex}]');
+            b.addText(')');
+          }));
+        }
+
         dartExpr = ('row.read(${asDartLiteral(capture.helperColumn)})');
       }
 

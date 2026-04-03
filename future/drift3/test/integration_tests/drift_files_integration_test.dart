@@ -177,7 +177,7 @@ void main() {
             .having((e) => e.nestedQuery1, 'nested', hasLength(1)),
       ),
     );
-  }, skip: 'TODO');
+  });
 
   test('insert with explicit rowid', () async {
     await db.withConstraints
@@ -238,5 +238,5 @@ void main() {
       isA<NoIdRow>().having((e) => e.payload, 'payload', hasLength(512)),
     );
     expect(row.nested, hasLength(1));
-  }, skip: 'TODO');
+  });
 }
