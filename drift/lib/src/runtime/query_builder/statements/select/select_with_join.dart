@@ -480,7 +480,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     final structure = _computeResultStructure();
     if (structure is _SyncResultStructure) {
       // We can map all rows synchronously.
-      return Future(() {
+      return Future.sync(() {
         return [for (final row in rows) structure.map(database, row)];
       });
     } else {

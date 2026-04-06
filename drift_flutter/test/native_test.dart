@@ -290,6 +290,13 @@ void main() {
         await db.close();
       });
     });
+
+    testWidgets('for joins', (tester) async {
+      // Regression test for https://github.com/simolus3/drift/issues/3779
+      await (db.select(db.simpleTable)).get();
+
+      await (db.selectOnly(db.simpleTable)..addColumns([Constant(1)])).get();
+    });
   });
 }
 
