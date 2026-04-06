@@ -13,7 +13,7 @@ import 'shared.dart';
 /// This is not a recommended implementation to use directly. Instead, use
 /// packages like `drift_flutter` or utilities provided in this package to setup
 /// a background pool of isolate to run queries.
-final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
+final class SqliteConnection implements DriftSession {
   /// The database used for the connection.
   final sqlite.CommonDatabase database;
 
@@ -49,7 +49,8 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
   Object? get tag => null;
 
   @override
-  PersistentSchemaVersion? get persistentSchemaVersion => this;
+  PersistentSchemaVersion? get persistentSchemaVersion =>
+      PragmaPersistedSchemaVersion(this);
 
   @override
   DriftTransactionSession? get transaction => null;
@@ -135,14 +136,6 @@ final class SqliteConnection implements DriftSession, PersistentSchemaVersion {
     if (flush != null && database.autocommit) {
       await flush!();
     }
-  }
-
-  @override
-  Future<int> get schemaVersion async => database.userVersion;
-
-  @override
-  Future<void> writeSchemaVersion(int version) async {
-    database.userVersion = version;
   }
 
   /// Returns a [DriftConnection] backed by a SQLite

@@ -192,7 +192,8 @@ abstract interface class DriftSession {
   /// Runs the given SQL [StatementInfo], returning results.
   Future<QueryResult> execute(StatementInfo statement);
 
-  /// Prepares all statements in the batch, then runs them at once.
+  /// A variant of [execute] that can prepare a statement once and then run it
+  /// multiple times with different parameter sets.
   ///
   /// This can be more efficient than calling [execute] multiple times since
   /// the costs of parsing SQL statements is amortized across the batch.

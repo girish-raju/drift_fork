@@ -12,7 +12,6 @@ import 'shared.dart';
 final class SqlitePoolSession
     implements
         DriftSession,
-        PersistentSchemaVersion,
         DriftTransactionParent,
         DriftSessionWithInternalLocks {
   final SqliteConnectionPool pool;
@@ -65,7 +64,8 @@ final class SqlitePoolSession
   DriftSessionWithInternalLocks? get locks => this;
 
   @override
-  PersistentSchemaVersion? get persistentSchemaVersion => this;
+  PersistentSchemaVersion? get persistentSchemaVersion =>
+      PragmaPersistedSchemaVersion(this);
 
   @override
   Object? get tag => null;
@@ -94,27 +94,6 @@ final class SqlitePoolSession
         .exclusiveAccess(abortSignal: cancellationSignal)
         .poolAbortExceptionsToDrift();
     return _ExclusivePoolConnection(access);
-  }
-
-  @override
-  Future<int> get schemaVersion async {
-    final writer = await pool.writer();
-    try {
-      final (rs, _) = await writer.select('PRAGMA user_version');
-      return rs.rows[0][0] as int;
-    } finally {
-      writer.returnLease();
-    }
-  }
-
-  @override
-  Future<void> writeSchemaVersion(int version) async {
-    final writer = await pool.writer();
-    try {
-      await writer.execute('PRAGMA user_version = $version;');
-    } finally {
-      writer.returnLease();
-    }
   }
 }
 

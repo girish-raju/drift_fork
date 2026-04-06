@@ -2,6 +2,28 @@ import 'package:drift3/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
+/// A [PersistentSchemaVersion] implementation based on `PRAGMA user_version`.
+@internal
+final class PragmaPersistedSchemaVersion implements PersistentSchemaVersion {
+  final DriftSession _inner;
+
+  PragmaPersistedSchemaVersion(this._inner);
+
+  @override
+  Future<int> get schemaVersion async {
+    final result = await _inner.execute(
+      StatementInfo('PRAGMA user_version', needsResultSet: true),
+    );
+
+    return result.resultSet![0][0] as int;
+  }
+
+  @override
+  Future<void> writeSchemaVersion(int version) async {
+    await _inner.execute(StatementInfo('PRAGMA user_version = $version;'));
+  }
+}
+
 @internal
 QueryResult executeWithStatement(
   sqlite.CommonDatabase database,

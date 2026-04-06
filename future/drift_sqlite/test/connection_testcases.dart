@@ -185,6 +185,7 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
     final db = openDrift();
     addTearDown(db.close);
 
+    await db.initialize();
     final token = CancellationToken<void>()..cancel();
 
     runCancellable(() async {
