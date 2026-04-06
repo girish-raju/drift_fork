@@ -9,6 +9,7 @@ export 'query_builder/clauses/where.dart';
 export 'query_builder/expressions/aggregate.dart';
 export 'query_builder/expressions/algebra.dart';
 export 'query_builder/expressions/bitwise.dart';
+export 'query_builder/expressions/blob.dart';
 export 'query_builder/expressions/boolean.dart';
 export 'query_builder/expressions/case_when.dart';
 export 'query_builder/expressions/comparable.dart';

@@ -30,6 +30,7 @@ import 'expressions/internal.dart';
 import 'helpers.dart';
 
 export 'components/table_valued_function.dart';
+export 'expressions/binary.dart';
 export 'expressions/bitwise.dart';
 export 'expressions/case_when.dart';
 export 'on_table.dart';

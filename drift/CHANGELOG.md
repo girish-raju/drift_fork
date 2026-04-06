@@ -1,3 +1,7 @@
+## 2.33.0-dev
+
+- Add `length` extension for blob expressions.
+
 ## 2.32.1
 
 - DevTools extension: Make error messages selectable.

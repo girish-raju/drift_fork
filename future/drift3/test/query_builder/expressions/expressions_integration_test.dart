@@ -236,6 +236,11 @@ void main() {
       });
     });
 
+    test('blob length', () async {
+      expect(await eval(Literal(Uint8List(0)).length), 0);
+      expect(await eval(Variable(Uint8List(12)).length), 12);
+    });
+
     test('coalesce', () async {
       final expr = coalesce<int>([const Literal(null), const Literal(3)]);
 
