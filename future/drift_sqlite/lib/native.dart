@@ -14,6 +14,8 @@ import 'src/connection/pool.dart';
 /// Opens a pool of SQLite connection for high-performance and concurrent
 /// queries.
 ///
+/// This method can be passed to a [DriftConnection] constructor.
+///
 /// This opens a single connnection for writes and additional [amountOfReaders]
 /// connections for reads.
 /// The [configureDatabase] callback can be used to run custom pragmas on the

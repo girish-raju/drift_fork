@@ -1,3 +1,6 @@
+@TestOn('dart-vm')
+library;
+
 import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift_sqlite/extensions/geopoly.dart';

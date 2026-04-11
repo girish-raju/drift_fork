@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift3/drift.dart';
 import 'package:drift3/src/utils/cancellation_zone.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
@@ -185,7 +187,15 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
     final db = openDrift();
     addTearDown(db.close);
 
-    await db.initialize();
+    final hasTransaction = Completer<void>();
+    final finishTransaction = Completer<void>();
+
+    db.transaction(() async {
+      hasTransaction.complete();
+      await finishTransaction.future;
+    });
+    await hasTransaction.future;
+
     final token = CancellationToken<void>()..cancel();
 
     runCancellable(() async {
@@ -197,6 +207,7 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
       );
     }, token: token);
 
+    finishTransaction.complete();
     await db.customSelect('SELECT 1').get();
   });
 }

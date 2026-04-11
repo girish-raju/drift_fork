@@ -146,9 +146,6 @@ jobs:
   drift_web_dart2wasm:
     needs: [drift]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: drift
     strategy:
       matrix:
         browser: [chrome] # Dart 3.7 unfortunately broke tests with dart2wasm on Firefox
@@ -160,9 +157,12 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           flutter_version: ${{ needs.setup.outputs.flutter_version }}
-      - run: melos bootstrap --scope drift
-        working-directory: .
+
       - run: dart test -p ${{ matrix.browser }} --compiler dart2wasm
+        working-directory: drift
+
+      - run: dart test -p ${{ matrix.browser }} --compiler dart2js,dart2wasm
+        working-directory: future/drift_sqlite
 
   drift_dev:
     runs-on: ubuntu-latest

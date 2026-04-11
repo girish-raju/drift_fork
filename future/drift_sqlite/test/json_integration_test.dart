@@ -1,3 +1,4 @@
+@TestOn('dart-vm')
 library;
 
 import 'package:drift3/drift.dart';
