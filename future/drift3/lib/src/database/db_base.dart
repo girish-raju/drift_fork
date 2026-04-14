@@ -7,6 +7,7 @@ import '../connection/connection_compat.dart';
 import '../connection/streams/delayed_stream_queries.dart';
 import '../connection/streams/store.dart';
 import '../connection/streams/update_rules.dart';
+import '../devtools/devtools.dart' as devtools;
 import '../query_builder/schema/entities.dart';
 import 'connection_user.dart';
 import 'migrations.dart';
@@ -31,7 +32,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
   /// Opens a drift database backed by a given [implementation].
   GeneratedDatabase(this.implementation) {
-    //  devtools.handleCreated(this);
+    devtools.handleCreated(this);
   }
 
   /// Specify the schema version of your database. Whenever you change or add
@@ -175,10 +176,12 @@ extension InternalGeneratedDatabase on GeneratedDatabase {
     }
   }
 
-  Future<void> runMigrations() async {
-    final root = await rootConnection();
-    if (root.persistentSchemaVersion case final version?) {
-      await _runMigrations(version);
+  Future<void> runMigrations([PersistentSchemaVersion? session]) async {
+    if (session == null) {
+      final root = await rootConnection();
+      session = root.persistentSchemaVersion;
     }
+
+    if (session != null) await _runMigrations(session);
   }
 }
