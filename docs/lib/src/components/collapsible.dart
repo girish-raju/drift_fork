@@ -22,7 +22,7 @@ final class Collapsible extends StatelessComponent {
       pattern: 'Collapsible',
       builder: (tag, attrs, children) {
         final title = attrs['title'] ?? '';
-        return Collapsible([if (children != null) children], title: title);
+        return Collapsible([?children], title: title);
       },
     );
   }

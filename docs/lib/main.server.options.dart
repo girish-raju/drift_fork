@@ -58,6 +58,7 @@ ServerOptions get defaultServerOptions => ServerOptions(
       params: __tabsInternalTabHeaders,
     ),
   },
+  styles: () => [],
 );
 
 Map<String, Object?> __sidebar_toggleMobileSidebarToggle(
