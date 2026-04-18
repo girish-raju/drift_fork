@@ -11,9 +11,7 @@ void main() {
   test('drift does not import legacy JS interop files', () {
     // The old web APIs can't be used in dart2wasm, so we shouldn't use them in
     // web-specific drift code.
-    const allowedLegacyCode = [
-      'lib/src/web/channel_legacy.dart',
-    ];
+    const allowedLegacyCode = ['lib/src/web/channel_legacy.dart'];
 
     final failures = <(String, String)>[];
 
@@ -48,7 +46,10 @@ void main() {
     final root = Directory('lib/');
     check(root);
 
-    expect(failures, isEmpty,
-        reason: 'Drift should not import legacy JS code.');
+    expect(
+      failures,
+      isEmpty,
+      reason: 'Drift should not import legacy JS code.',
+    );
   });
 }

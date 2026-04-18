@@ -39,13 +39,16 @@ class ExportSchemaCommand extends Command {
     final rest = argResults!.rest;
     if (rest.length != 1) {
       usageException(
-          'Expected input path to Dart source declaring database file.');
+        'Expected input path to Dart source declaring database file.',
+      );
     }
-    final dialect =
-        SqlDialect.values.byName(argResults!.option('dialect') ?? 'sqlite');
+    final dialect = SqlDialect.values.byName(
+      argResults!.option('dialect') ?? 'sqlite',
+    );
 
-    var (:elements, schemaVersion: _, db: _) =
-        await cli.readElementsFromSource(File(rest.single).absolute);
+    var (:elements, schemaVersion: _, db: _) = await cli.readElementsFromSource(
+      File(rest.single).absolute,
+    );
 
     final options = (
       options: cli.project.options,

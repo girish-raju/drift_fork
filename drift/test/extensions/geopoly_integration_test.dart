@@ -16,10 +16,11 @@ void main() {
       final database = _GeopolyTestDatabase(NativeDatabase.memory());
       expect(database.geopolyTest.shape.type, isA<GeopolyPolygonType>());
 
-      final id =
-          await database.geopolyTest.insertOne(GeopolyTestCompanion.insert(
-        shape: Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]')),
-      ));
+      final id = await database.geopolyTest.insertOne(
+        GeopolyTestCompanion.insert(
+          shape: Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]')),
+        ),
+      );
 
       final area = await database.area(id).getSingle();
       expect(area, 0.5);
@@ -32,8 +33,9 @@ void main() {
 
 bool _canUseGeopoly() {
   final db = sqlite3.openInMemory();
-  final result = db
-      .select('SELECT sqlite_compileoption_used(?)', ['ENABLE_GEOPOLY']).single;
+  final result = db.select('SELECT sqlite_compileoption_used(?)', [
+    'ENABLE_GEOPOLY',
+  ]).single;
   db.close();
   return result.values[0] == 1;
 }

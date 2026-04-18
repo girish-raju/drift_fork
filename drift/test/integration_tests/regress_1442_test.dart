@@ -31,8 +31,13 @@ void main() {
             await _selectOne(db);
           }
         },
-        throwsA(isA<StateError>().having((e) => e.message, 'message',
-            contains("Can't re-open a database after closing it."))),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains("Can't re-open a database after closing it."),
+          ),
+        ),
       );
     });
   }

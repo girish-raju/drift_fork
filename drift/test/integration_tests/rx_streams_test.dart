@@ -19,7 +19,7 @@ void main() {
       final sql = i.positionalArguments.first as String;
 
       return [
-        if (sql.contains("'a'")) {'a': 'a'} else {'b': 'b'}
+        if (sql.contains("'a'")) {'a': 'a'} else {'b': 'b'},
       ];
     });
 

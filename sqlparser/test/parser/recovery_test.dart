@@ -12,7 +12,9 @@ CREATE TABLE foo (name TEXT);
     ''');
 
     expect(
-        file.childNodes, contains(const TypeMatcher<CreateTableStatement>()));
+      file.childNodes,
+      contains(const TypeMatcher<CreateTableStatement>()),
+    );
   });
 
   test('recovers from parsing errors in column definition', () {
@@ -41,8 +43,9 @@ CREATE TABLE foo (
   });
 
   test('parses trailing comma with error', () {
-    final engine =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
+    final engine = SqlEngine(
+      EngineOptions(driftOptions: const DriftSqlOptions()),
+    );
 
     final result = engine.parse(ParserEntrypoint.driftFile, '''
 CREATE TABLE foo (
@@ -103,10 +106,7 @@ CREATE TABLE IF NOT EXISTS "projects" (
           tableName: 'employees',
           ifNotExists: true,
           columns: [
-            ColumnDefinition(
-              columnName: 'employee_id',
-              typeName: 'INTEGER',
-            ),
+            ColumnDefinition(columnName: 'employee_id', typeName: 'INTEGER'),
             ColumnDefinition(
               columnName: 'department_id',
               typeName: 'INTEGER',
@@ -146,10 +146,14 @@ CREATE TABLE IF NOT EXISTS "projects" (
             ),
           ],
           tableConstraints: [
-            KeyClause(null, isPrimaryKey: true, columns: [
-              IndexedColumn(Reference(columnName: 'project_id')),
-              IndexedColumn(Reference(columnName: 'employee_id')),
-            ])
+            KeyClause(
+              null,
+              isPrimaryKey: true,
+              columns: [
+                IndexedColumn(Reference(columnName: 'project_id')),
+                IndexedColumn(Reference(columnName: 'employee_id')),
+              ],
+            ),
           ],
         ),
       ]),

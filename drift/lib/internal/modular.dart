@@ -34,8 +34,9 @@ class ModularAccessor extends DatabaseAccessor<GeneratedDatabase> {
 /// This extension is meant to be used by drift-generated code.
 extension ReadDatabaseContainer on GeneratedDatabase {
   _DatabaseElementCache get _cache {
-    return _databaseElementCache[attachedDatabase] ??=
-        _DatabaseElementCache(attachedDatabase);
+    return _databaseElementCache[attachedDatabase] ??= _DatabaseElementCache(
+      attachedDatabase,
+    );
   }
 
   /// Find a result set by its [name] in the database. The result is cached.
@@ -57,8 +58,8 @@ class _DatabaseElementCache {
   final Map<Type, DatabaseAccessor> knownAccessors = {};
 
   _DatabaseElementCache(GeneratedDatabase database)
-      : knownEntities = {
-          for (final entity in database.allSchemaEntities)
-            entity.entityName: entity
-        };
+    : knownEntities = {
+        for (final entity in database.allSchemaEntities)
+          entity.entityName: entity,
+      };
 }

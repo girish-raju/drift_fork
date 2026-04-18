@@ -9,18 +9,21 @@ final TableColumn id = TableColumn(
     constraints: [PrimaryKeyColumn(null)],
   ),
 );
-final TableColumn content =
-    TableColumn('content', const ResolvedType(type: BasicType.text));
-
-final Table demoTable = Table(
-  name: 'demo',
-  resolvedColumns: [id, content],
+final TableColumn content = TableColumn(
+  'content',
+  const ResolvedType(type: BasicType.text),
 );
 
-final TableColumn anotherId =
-    TableColumn('id', const ResolvedType(type: BasicType.int));
+final Table demoTable = Table(name: 'demo', resolvedColumns: [id, content]);
+
+final TableColumn anotherId = TableColumn(
+  'id',
+  const ResolvedType(type: BasicType.int),
+);
 final TableColumn dateTime = TableColumn(
-    'date', const ResolvedType(type: BasicType.int, hints: [IsDateTime()]));
+  'date',
+  const ResolvedType(type: BasicType.int, hints: [IsDateTime()]),
+);
 
 final Table anotherTable = Table(
   name: 'tbl',
@@ -38,6 +41,7 @@ extension RegisterTableExtension on SqlEngine {
   void registerViewFromSql(String createView) {
     final context = analyze(createView);
     registerView(
-        schemaReader.readView(context, context.root as CreateViewStatement));
+      schemaReader.readView(context, context.root as CreateViewStatement),
+    );
   }
 }

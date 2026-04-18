@@ -115,8 +115,9 @@ class DriftTable extends DriftElementWithResultSet {
   /// The primary key for this table, computed by looking at the primary key
   /// defined as a table constraint or as a column constraint.
   Set<DriftColumn> get fullPrimaryKey {
-    final fromTable =
-        tableConstraints.whereType<PrimaryKeyColumns>().firstOrNull;
+    final fromTable = tableConstraints
+        .whereType<PrimaryKeyColumns>()
+        .firstOrNull;
 
     if (fromTable != null) {
       return fromTable.primaryKey;
@@ -260,6 +261,8 @@ class DriftFts5Table extends RecognizedVirtualTableModule {
   final DriftColumn? externalContentRowId;
 
   DriftFts5Table(this.externalContentTable, this.externalContentRowId)
-      : assert(externalContentRowId == null ||
-            externalContentRowId.owner == externalContentTable);
+    : assert(
+        externalContentRowId == null ||
+            externalContentRowId.owner == externalContentTable,
+      );
 }

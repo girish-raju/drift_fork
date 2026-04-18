@@ -15,9 +15,7 @@ const String _shapeKeyword = '_shape';
 const ResolvedType _typePolygon = ResolvedType(
   type: BasicType.blob,
   nullable: true,
-  hints: [
-    IsGeopolyPolygon(),
-  ],
+  hints: [IsGeopolyPolygon()],
 );
 
 final class _GeopolyModule extends Module {
@@ -29,10 +27,7 @@ final class _GeopolyModule extends Module {
   Table parseTable(CreateVirtualTableStatement stmt) {
     final resolvedColumns = <TableColumn>[
       RowId(),
-      TableColumn(
-        _shapeKeyword,
-        _typePolygon,
-      ),
+      TableColumn(_shapeKeyword, _typePolygon),
     ];
 
     for (final column in stmt.argumentContent) {
@@ -74,12 +69,7 @@ final class _GeopolyModule extends Module {
           throw ArgumentError('Can\'t be parsed', column);
       }
 
-      resolvedColumns.add(
-        TableColumn(
-          resolvedName,
-          resolvedType,
-        ),
-      );
+      resolvedColumns.add(TableColumn(resolvedName, resolvedType));
     }
 
     return Table(
@@ -94,8 +84,8 @@ final class _GeopolyModule extends Module {
 final class _GeopolyFunctionHandler extends FunctionHandler {
   @override
   Set<String> get functionNames => {
-        for (final value in _GeopolyFunctions.values) value.sqlName,
-      };
+    for (final value in _GeopolyFunctions.values) value.sqlName,
+  };
 
   @override
   ResolveResult inferArgumentType(
@@ -106,8 +96,7 @@ final class _GeopolyFunctionHandler extends FunctionHandler {
     // TODO(nikitadol): Copy from `_Fts5Functions`. Must be removed when argument index appears
     int? argumentIndex;
     if (call.parameters is ExprFunctionParameters) {
-      argumentIndex = (call.parameters as ExprFunctionParameters)
-          .parameters
+      argumentIndex = (call.parameters as ExprFunctionParameters).parameters
           .indexOf(argument);
     }
     if (argumentIndex == null || argumentIndex < 0) {
@@ -141,9 +130,7 @@ final class _GeopolyFunctionHandler extends FunctionHandler {
         func.otherArgs != null) {
       // ok
     } else {
-      final buffer = StringBuffer(
-        'The function `${func.sqlName}` takes ',
-      );
+      final buffer = StringBuffer('The function `${func.sqlName}` takes ');
 
       buffer.write('${func.args.length} ');
 
@@ -171,102 +158,48 @@ final class _GeopolyFunctionHandler extends FunctionHandler {
       throw ArgumentError(buffer);
     }
 
-    return ResolveResult(
-      func.returnType,
-    );
+    return ResolveResult(func.returnType);
   }
 }
 
-const _typeInt = ResolvedType(
-  type: BasicType.int,
-  nullable: true,
-);
+const _typeInt = ResolvedType(type: BasicType.int, nullable: true);
 
-const _typeReal = ResolvedType(
-  type: BasicType.real,
-  nullable: true,
-);
+const _typeReal = ResolvedType(type: BasicType.real, nullable: true);
 
-const _typeBlob = ResolvedType(
-  type: BasicType.blob,
-  nullable: true,
-);
+const _typeBlob = ResolvedType(type: BasicType.blob, nullable: true);
 
-const _typeText = ResolvedType(
-  type: BasicType.text,
-  nullable: true,
-);
+const _typeText = ResolvedType(type: BasicType.text, nullable: true);
 
 enum _GeopolyFunctions {
-  overlap(
-    'geopoly_overlap',
+  overlap('geopoly_overlap', _typeInt, [_typePolygon, _typePolygon]),
+  within('geopoly_within', _typeInt, [_typePolygon, _typePolygon]),
+  area('geopoly_area', _typeReal, [_typePolygon]),
+  blob('geopoly_blob', _typeBlob, [_typePolygon]),
+  json('geopoly_json', _typeText, [_typePolygon]),
+  svg('geopoly_svg', _typeText, [_typePolygon], _typeText),
+  bbox('geopoly_bbox', _typeBlob, [_typePolygon]),
+  groupBbox('geopoly_group_bbox', _typeBlob, [_typePolygon]),
+  containsPoint('geopoly_contains_point', _typeInt, [
+    _typePolygon,
     _typeInt,
-    [_typePolygon, _typePolygon],
-  ),
-  within(
-    'geopoly_within',
     _typeInt,
-    [_typePolygon, _typePolygon],
-  ),
-  area(
-    'geopoly_area',
+  ]),
+  xform('geopoly_xform', _typeBlob, [
+    _typePolygon,
     _typeReal,
-    [_typePolygon],
-  ),
-  blob(
-    'geopoly_blob',
-    _typeBlob,
-    [_typePolygon],
-  ),
-  json(
-    'geopoly_json',
-    _typeText,
-    [_typePolygon],
-  ),
-  svg(
-    'geopoly_svg',
-    _typeText,
-    [_typePolygon],
-    _typeText,
-  ),
-  bbox(
-    'geopoly_bbox',
-    _typeBlob,
-    [_typePolygon],
-  ),
-  groupBbox(
-    'geopoly_group_bbox',
-    _typeBlob,
-    [_typePolygon],
-  ),
-  containsPoint(
-    'geopoly_contains_point',
+    _typeReal,
+    _typeReal,
+    _typeReal,
+    _typeReal,
+    _typeReal,
+  ]),
+  regular('geopoly_regular', _typeBlob, [
+    _typeReal,
+    _typeReal,
+    _typeReal,
     _typeInt,
-    [_typePolygon, _typeInt, _typeInt],
-  ),
-  xform(
-    'geopoly_xform',
-    _typeBlob,
-    [
-      _typePolygon,
-      _typeReal,
-      _typeReal,
-      _typeReal,
-      _typeReal,
-      _typeReal,
-      _typeReal
-    ],
-  ),
-  regular(
-    'geopoly_regular',
-    _typeBlob,
-    [_typeReal, _typeReal, _typeReal, _typeInt],
-  ),
-  ccw(
-    'geopoly_ccw',
-    _typeBlob,
-    [_typePolygon],
-  );
+  ]),
+  ccw('geopoly_ccw', _typeBlob, [_typePolygon]);
 
   final String sqlName;
   final ResolvedType returnType;
@@ -282,7 +215,8 @@ enum _GeopolyFunctions {
 
   factory _GeopolyFunctions.bySqlName(String sqlName) {
     return _GeopolyFunctions.values.firstWhere(
-        (element) => element.sqlName == sqlName,
-        orElse: () => throw ArgumentError('$sqlName not exists'));
+      (element) => element.sqlName == sqlName,
+      orElse: () => throw ArgumentError('$sqlName not exists'),
+    );
   }
 }

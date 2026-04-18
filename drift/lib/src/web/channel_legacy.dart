@@ -38,14 +38,17 @@ extension PortToChannel on MessagePort {
       }
     });
 
-    controller.local.stream.listen(postMessage, onDone: () {
-      // Closed locally, inform the other end.
-      if (explicitClose) {
-        postMessage(_disconnectMessage);
-      }
+    controller.local.stream.listen(
+      postMessage,
+      onDone: () {
+        // Closed locally, inform the other end.
+        if (explicitClose) {
+          postMessage(_disconnectMessage);
+        }
 
-      close();
-    });
+        close();
+      },
+    );
 
     return controller.foreign;
   }

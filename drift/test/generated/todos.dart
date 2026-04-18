@@ -16,9 +16,9 @@ extension type RowId._(int id) {
 }
 
 mixin AutoIncrement on Table {
-  late final id = integer()
-      .autoIncrement()
-      .map(TypeConverter.extensionType<RowId, int>())();
+  late final id = integer().autoIncrement().map(
+    TypeConverter.extensionType<RowId, int>(),
+  )();
 }
 
 @DataClassName('TodoEntry')
@@ -40,9 +40,9 @@ class TodosTable extends Table with AutoIncrement {
 
   @override
   List<Set<Column>>? get uniqueKeys => [
-        {title, category},
-        {title, targetDate},
-      ];
+    {title, category},
+    {title, targetDate},
+  ];
 }
 
 enum TodoStatus { open, workInProgress, done }
@@ -67,10 +67,12 @@ class Users extends Table with AutoIncrement {
   },
 )
 class Categories extends Table with AutoIncrement {
-  late final description =
-      text().named('desc').customConstraint('NOT NULL UNIQUE')();
-  late final priority =
-      intEnum<CategoryPriority>().withDefault(const Constant(0))();
+  late final description = text()
+      .named('desc')
+      .customConstraint('NOT NULL UNIQUE')();
+  late final priority = intEnum<CategoryPriority>().withDefault(
+    const Constant(0),
+  )();
 
   late final descriptionInUpperCase = text().generatedAs(description.upper())();
 }
@@ -86,9 +88,9 @@ class SharedTodos extends Table {
 
   @override
   List<String> get customConstraints => [
-        'FOREIGN KEY (todo) REFERENCES todos(id)',
-        'FOREIGN KEY (user) REFERENCES users(id)'
-      ];
+    'FOREIGN KEY (todo) REFERENCES todos(id)',
+    'FOREIGN KEY (user) REFERENCES users(id)',
+  ];
 }
 
 const _uuid = Uuid();
@@ -155,13 +157,28 @@ class CustomRowClass {
 
   double get someFloat => anotherName;
 
-  CustomRowClass._(this.notReallyAnId, this.anotherName, this.webSafeInt,
-      this.custom, this.notFromDb);
+  CustomRowClass._(
+    this.notReallyAnId,
+    this.anotherName,
+    this.webSafeInt,
+    this.custom,
+    this.notFromDb,
+  );
 
-  factory CustomRowClass.map(int notReallyAnId, double someFloat,
-      {required MyCustomObject custom, BigInt? webSafeInt, String? notFromDb}) {
+  factory CustomRowClass.map(
+    int notReallyAnId,
+    double someFloat, {
+    required MyCustomObject custom,
+    BigInt? webSafeInt,
+    String? notFromDb,
+  }) {
     return CustomRowClass._(
-        notReallyAnId, someFloat, webSafeInt, custom, notFromDb);
+      notReallyAnId,
+      someFloat,
+      webSafeInt,
+      custom,
+      notFromDb,
+    );
   }
 }
 
@@ -228,10 +245,10 @@ abstract class CategoryTodoCountView extends View {
   Expression<int> get itemCount => todos.id.count();
 
   @override
-  Query as() => select([categoryId, description, itemCount])
-      .from(categories)
-      .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
-    ..groupBy([categories.id]);
+  Query as() =>
+      select([categoryId, description, itemCount]).from(categories).join([
+        innerJoin(todos, todos.category.equalsExp(categories.id)),
+      ])..groupBy([categories.id]);
 }
 
 abstract class TodoWithCategoryView extends View {
@@ -239,9 +256,9 @@ abstract class TodoWithCategoryView extends View {
   Categories get categories;
 
   @override
-  Query as() => select([todos.title, categories.description])
-      .from(todos)
-      .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+  Query as() => select([todos.title, categories.description]).from(todos).join([
+    innerJoin(categories, categories.id.equalsExp(todos.category)),
+  ]);
 }
 
 class WithCustomType extends Table {
@@ -312,13 +329,11 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
     Listing,
     Store,
   ],
-  views: [
-    CategoryTodoCountView,
-    TodoWithCategoryView,
-  ],
+  views: [CategoryTodoCountView, TodoWithCategoryView],
   daos: [SomeDao],
   queries: {
-    'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
+    'allTodosWithCategory':
+        'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',
     'deleteTodoById': 'DELETE FROM todos WHERE id = ?',
     'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
@@ -346,10 +361,11 @@ class TodoDb extends _$TodoDb {
   tables: [Users, SharedTodos, TodosTable],
   views: [TodoWithCategoryView],
   queries: {
-    'todosForUser': 'SELECT t.* FROM todos t '
+    'todosForUser':
+        'SELECT t.* FROM todos t '
         'INNER JOIN shared_todos st ON st.todo = t.id '
         'INNER JOIN users u ON u.id = st.user '
-        'WHERE u.id = :user'
+        'WHERE u.id = :user',
   },
 )
 class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {

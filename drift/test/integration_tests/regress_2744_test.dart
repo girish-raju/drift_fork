@@ -12,20 +12,24 @@ void main() {
     final categories = StreamQueue(db.categories.all().watch());
 
     await expectLater(categories, emits(isEmpty));
-    await db.categories
-        .insertOne(CategoriesCompanion.insert(description: 'desc1'));
+    await db.categories.insertOne(
+      CategoriesCompanion.insert(description: 'desc1'),
+    );
     await expectLater(categories, emits(hasLength(1)));
 
     await db.categories.deleteAll();
     await db.batch((batch) {
       batch.insert(
-          db.categories, CategoriesCompanion.insert(description: 'desc2'));
+        db.categories,
+        CategoriesCompanion.insert(description: 'desc2'),
+      );
     });
 
     await expectLater(
-        categories,
-        emits([
-          isA<Category>().having((e) => e.description, 'description', 'desc2')
-        ]));
+      categories,
+      emits([
+        isA<Category>().having((e) => e.description, 'description', 'desc2'),
+      ]),
+    );
   });
 }

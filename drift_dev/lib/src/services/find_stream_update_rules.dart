@@ -25,7 +25,10 @@ class FindStreamUpdateRules {
 
   void _writeRulesForTable(DriftTable table, List<UpdateRule> rules) {
     void writeRule(
-        DriftElement referenced, UpdateKind listen, ReferenceAction? action) {
+      DriftElement referenced,
+      UpdateKind listen,
+      ReferenceAction? action,
+    ) {
       TableUpdate? effect;
       switch (action) {
         case ReferenceAction.setNull:
@@ -56,10 +59,16 @@ class FindStreamUpdateRules {
     for (final column in table.columns) {
       for (final constraint in column.constraints) {
         if (constraint is ForeignKeyReference) {
-          writeRule(constraint.otherColumn.owner, UpdateKind.delete,
-              constraint.onDelete);
-          writeRule(constraint.otherColumn.owner, UpdateKind.update,
-              constraint.onUpdate);
+          writeRule(
+            constraint.otherColumn.owner,
+            UpdateKind.delete,
+            constraint.onDelete,
+          );
+          writeRule(
+            constraint.otherColumn.owner,
+            UpdateKind.update,
+            constraint.onUpdate,
+          );
         }
       }
     }
@@ -68,9 +77,15 @@ class FindStreamUpdateRules {
     for (final constraint in table.tableConstraints) {
       if (constraint is ForeignKeyTable) {
         writeRule(
-            constraint.otherTable, UpdateKind.delete, constraint.onDelete);
+          constraint.otherTable,
+          UpdateKind.delete,
+          constraint.onDelete,
+        );
         writeRule(
-            constraint.otherTable, UpdateKind.update, constraint.onUpdate);
+          constraint.otherTable,
+          UpdateKind.update,
+          constraint.onUpdate,
+        );
       }
     }
   }
@@ -86,7 +101,7 @@ class FindStreamUpdateRules {
           ),
           result: [
             for (final update in trigger.writes)
-              TableUpdate(update.table.id.name, kind: update.kind)
+              TableUpdate(update.table.id.name, kind: update.kind),
           ],
         ),
       );

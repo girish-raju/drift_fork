@@ -22,23 +22,26 @@ class DriftPostgresDatabase extends _$DriftPostgresDatabase {
 }
 
 void main() async {
-  final database = DriftPostgresDatabase(PgDatabase(
-    endpoint: pg.Endpoint(
-      host: 'localhost',
-      database: 'postgres',
-      username: 'postgres',
-      password: 'postgres',
+  final database = DriftPostgresDatabase(
+    PgDatabase(
+      endpoint: pg.Endpoint(
+        host: 'localhost',
+        database: 'postgres',
+        username: 'postgres',
+        password: 'postgres',
+      ),
+      settings: pg.ConnectionSettings(
+        // If you expect to talk to a Postgres database over a public connection,
+        // please use SslMode.verifyFull instead.
+        sslMode: pg.SslMode.disable,
+      ),
+      logStatements: true,
     ),
-    settings: pg.ConnectionSettings(
-      // If you expect to talk to a Postgres database over a public connection,
-      // please use SslMode.verifyFull instead.
-      sslMode: pg.SslMode.disable,
-    ),
-    logStatements: true,
-  ));
+  );
 
   final user = await database.users.insertReturning(
-      UsersCompanion.insert(name: 'Simon', id: Value(Uuid().v4obj())));
+    UsersCompanion.insert(name: 'Simon', id: Value(Uuid().v4obj())),
+  );
   print(user);
 
   await database.users.deleteOne(user);

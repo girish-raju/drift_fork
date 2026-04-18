@@ -27,10 +27,10 @@ class Reference extends Expression with ReferenceOwner {
   Column? get resolvedColumn => resolved as Column?;
 
   Reference({this.entityName, this.schemaName, required this.columnName})
-      : assert(
-          entityName != null || schemaName == null,
-          'When setting a schemaName, entityName must not be null either.',
-        );
+    : assert(
+        entityName != null || schemaName == null,
+        'When setting a schemaName, entityName must not be null either.',
+      );
 
   factory Reference.fromTokens({
     IdentifierToken? schemaName,
@@ -38,10 +38,10 @@ class Reference extends Expression with ReferenceOwner {
     required IdentifierToken columnName,
   }) {
     return Reference(
-      schemaName: schemaName?.identifier,
-      entityName: entityName?.identifier,
-      columnName: columnName.identifier,
-    )
+        schemaName: schemaName?.identifier,
+        entityName: entityName?.identifier,
+        columnName: columnName.identifier,
+      )
       ..schemaNameToken = schemaName
       ..entityNameToken = entityName
       ..columnNameToken = columnName

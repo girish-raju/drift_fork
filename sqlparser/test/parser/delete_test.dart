@@ -12,9 +12,7 @@ void main() {
         where: BinaryExpression(
           Reference(columnName: 'id'),
           token(TokenType.equal),
-          NumericLiteral(
-            5,
-          ),
+          NumericLiteral(5),
         ),
       ),
     );

@@ -4,8 +4,9 @@ import 'package:test/test.dart';
 void main() {
   test('parses drift specific tokens', () {
     const part = 'c INTEGER MAPPED BY `const Mapper()` NOT NULL **';
-    final tokens = SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()))
-        .tokenizeString(part);
+    final tokens = SqlEngine(
+      EngineOptions(driftOptions: DriftSqlOptions()),
+    ).tokenizeString(part);
 
     expect(tokens.map((t) => t.type), [
       TokenType.identifier, // c
@@ -20,6 +21,8 @@ void main() {
     ]);
 
     expect(
-        tokens.whereType<InlineDartToken>().single.dartCode, 'const Mapper()');
+      tokens.whereType<InlineDartToken>().single.dartCode,
+      'const Mapper()',
+    );
   });
 }

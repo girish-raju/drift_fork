@@ -50,9 +50,10 @@ class Join<T extends HasResultSet, D> extends Component {
   Join._(this._type, this.table, this.on, {this.includeInResult}) {
     if (table is! ResultSetImplementation<T, D>) {
       throw ArgumentError(
-          'Invalid table parameter. You must provide the table reference from '
-              'generated database object.',
-          'table');
+        'Invalid table parameter. You must provide the table reference from '
+            'generated database object.',
+        'table',
+      );
     }
   }
 
@@ -94,8 +95,11 @@ Join innerJoin(HasResultSet other, Expression<bool> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin(HasResultSet other, Expression<bool> on,
-    {bool? useColumns}) {
+Join leftOuterJoin(
+  HasResultSet other,
+  Expression<bool> on, {
+  bool? useColumns,
+}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 
@@ -103,8 +107,11 @@ Join leftOuterJoin(HasResultSet other, Expression<bool> on,
 /// [SimpleSelectStatement.join].
 ///
 /// {@macro drift_join_include_results}
-Join rightOuterJoin(HasResultSet other, Expression<bool> on,
-    {bool? useColumns}) {
+Join rightOuterJoin(
+  HasResultSet other,
+  Expression<bool> on, {
+  bool? useColumns,
+}) {
   return Join._(_JoinType.rightOuter, other, on, includeInResult: useColumns);
 }
 
@@ -112,8 +119,11 @@ Join rightOuterJoin(HasResultSet other, Expression<bool> on,
 /// [SimpleSelectStatement.join].
 ///
 /// {@macro drift_join_include_results}
-Join fullOuterJoin(HasResultSet other, Expression<bool> on,
-    {bool? useColumns}) {
+Join fullOuterJoin(
+  HasResultSet other,
+  Expression<bool> on, {
+  bool? useColumns,
+}) {
   return Join._(_JoinType.fullOuter, other, on, includeInResult: useColumns);
 }
 

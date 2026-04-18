@@ -14,8 +14,17 @@ void main() {
   }) {
     final engine = SqlEngine();
     final context = engine.analyze(sql);
-    final query = SqlSelectQuery('name', context, context.root, [], [], [],
-        InferredResultSet(null, []), null, null);
+    final query = SqlSelectQuery(
+      'name',
+      context,
+      context.root,
+      [],
+      [],
+      [],
+      InferredResultSet(null, []),
+      null,
+      null,
+    );
 
     final result = SqlWriter(options, dialect: dialect, query: query).write();
 
@@ -36,7 +45,10 @@ void main() {
 
   test('escapes postgres keywords', () {
     check('SELECT * FROM user', "'SELECT * FROM user'");
-    check('SELECT * FROM user', "'SELECT * FROM \"user\"'",
-        dialect: SqlDialect.postgres);
+    check(
+      'SELECT * FROM user',
+      "'SELECT * FROM \"user\"'",
+      dialect: SqlDialect.postgres,
+    );
   });
 }

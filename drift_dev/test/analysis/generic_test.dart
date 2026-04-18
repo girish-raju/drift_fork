@@ -30,30 +30,35 @@ CREATE TABLE bars (
 ''',
     });
 
-    final file =
-        await state.driver.fullyAnalyze(Uri.parse('package:a/entry.dart'));
+    final file = await state.driver.fullyAnalyze(
+      Uri.parse('package:a/entry.dart'),
+    );
 
     expect(file.discovery, isA<DiscoveredDartLibrary>());
     expect(file.allErrors, isEmpty);
 
     final database = file.fileAnalysis!.resolvedDatabases.values.single;
-    expect(database.availableElements.map((t) => t.id.name),
-        containsAll(['foos', 'bars']));
+    expect(
+      database.availableElements.map((t) => t.id.name),
+      containsAll(['foos', 'bars']),
+    );
   });
 
   group("reports error when an import can't be found", () {
     for (final extension in const ['drift', 'moor']) {
       test('in $extension files', () async {
         final backend = await TestBackend.inTest({
-          'a|lib/a.$extension': '''
+          'a|lib/a.$extension':
+              '''
 import 'b.$extension';
 ''',
         });
 
         final result = await backend.analyze('package:a/a.$extension');
 
-        expect(
-            result.allErrors, [isDriftError(contains("can't be imported."))]);
+        expect(result.allErrors, [
+          isDriftError(contains("can't be imported.")),
+        ]);
       });
     }
 
@@ -70,8 +75,9 @@ class Database {
       });
 
       final result = await backend.analyze('package:a/a.dart');
-      expect(
-          result.allErrors, [isDriftError(contains('could not be imported'))]);
+      expect(result.allErrors, [
+        isDriftError(contains('could not be imported')),
+      ]);
     });
   });
 
@@ -141,16 +147,19 @@ class ProgrammingLanguages extends Table {
       containsAll(['used_languages', 'libraries', 'programming_languages']),
     );
 
-    final tableWithReferences =
-        availableTables.singleWhere((e) => e.schemaName == 'reference_test');
+    final tableWithReferences = availableTables.singleWhere(
+      (e) => e.schemaName == 'reference_test',
+    );
     expect(tableWithReferences.references, [
-      isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'libraries')
+      isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'libraries'),
     ]);
 
     final importQuery = database.definedQueries.values.single;
     expect(importQuery.name, 'transitiveImportTest');
-    expect(importQuery.resultSet?.matchingTable?.table.nameOfRowClass,
-        'ProgrammingLanguage');
+    expect(
+      importQuery.resultSet?.matchingTable?.table.nameOfRowClass,
+      'ProgrammingLanguage',
+    );
     expect(importQuery.declaredInDriftFile, isFalse);
     expect(
       importQuery.placeholders,
@@ -162,9 +171,10 @@ class ProgrammingLanguages extends Table {
             [
               AvailableDriftResultSet(
                 'programming_languages',
-                availableTables
-                    .firstWhere((e) => e.schemaName == 'programming_languages'),
-              )
+                availableTables.firstWhere(
+                  (e) => e.schemaName == 'programming_languages',
+                ),
+              ),
             ],
           ),
         ),
@@ -172,10 +182,15 @@ class ProgrammingLanguages extends Table {
     );
 
     final tablesFile = await backend.analyze('package:a/tables.drift');
-    final librariesQuery = tablesFile.fileAnalysis!.resolvedQueries.values
-        .singleWhere((e) => e.name == 'findLibraries') as SqlSelectQuery;
+    final librariesQuery =
+        tablesFile.fileAnalysis!.resolvedQueries.values.singleWhere(
+              (e) => e.name == 'findLibraries',
+            )
+            as SqlSelectQuery;
     expect(
-        librariesQuery.variables.single.sqlType.builtin, DriftSqlType.string);
+      librariesQuery.variables.single.sqlType.builtin,
+      DriftSqlType.string,
+    );
     expect(librariesQuery.declaredInDriftFile, isTrue);
   });
 
@@ -228,8 +243,9 @@ class ThisTable extends Table {
 
     final thisTable =
         file.analysis[file.id('this_table')]?.result as DriftTable;
-    expect(
-        thisTable.references, [file.analysis[file.id('other_table')]?.result]);
+    expect(thisTable.references, [
+      file.analysis[file.id('other_table')]?.result,
+    ]);
   });
 
   test('supports references across files', () async {
@@ -289,7 +305,8 @@ getCompanyCustomersCount:
     expect(errors, [
       isDriftError(contains('`customers` could not be found in any import')),
       isDriftError(
-          contains('`customer_companies` could not be found in any import')),
+        contains('`customer_companies` could not be found in any import'),
+      ),
     ]);
   });
 }

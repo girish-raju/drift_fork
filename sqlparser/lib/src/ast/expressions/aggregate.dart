@@ -48,7 +48,7 @@ class AggregateFunctionInvocation extends Expression
 
   @override
   Iterable<AstNode> get childNodes {
-    return [parameters, if (filter != null) filter!];
+    return [parameters, ?filter];
   }
 }
 
@@ -81,8 +81,8 @@ class WindowFunctionInvocation extends AggregateFunctionInvocation {
     this.windowName,
     super.schemaName,
   })
-  // one of window definition or name must be null
-  : assert((windowDefinition == null) || (windowName == null));
+    // one of window definition or name must be null
+    : assert((windowDefinition == null) || (windowName == null));
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -93,17 +93,16 @@ class WindowFunctionInvocation extends AggregateFunctionInvocation {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     parameters = transformer.transformChild(parameters, this, arg);
     filter = transformer.transformNullableChild(filter, this, arg);
-    windowDefinition =
-        transformer.transformNullableChild(windowDefinition, this, arg);
+    windowDefinition = transformer.transformNullableChild(
+      windowDefinition,
+      this,
+      arg,
+    );
   }
 
   @override
   Iterable<AstNode> get childNodes {
-    return [
-      parameters,
-      if (filter != null) filter!,
-      if (windowDefinition != null) windowDefinition!,
-    ];
+    return [parameters, ?filter, ?windowDefinition];
   }
 }
 
@@ -136,11 +135,12 @@ class WindowDefinition extends AstNode {
   OrderByBase? orderBy;
   FrameSpec frameSpec;
 
-  WindowDefinition(
-      {this.baseWindowName,
-      this.partitionBy = const [],
-      this.orderBy,
-      required this.frameSpec});
+  WindowDefinition({
+    this.baseWindowName,
+    this.partitionBy = const [],
+    this.orderBy,
+    required this.frameSpec,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -155,8 +155,7 @@ class WindowDefinition extends AstNode {
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [...partitionBy, if (orderBy != null) orderBy!, frameSpec];
+  Iterable<AstNode> get childNodes => [...partitionBy, ?orderBy, frameSpec];
 }
 
 class FrameSpec extends AstNode {
@@ -170,8 +169,8 @@ class FrameSpec extends AstNode {
     FrameBoundary? start,
     FrameBoundary? end,
     this.excludeMode = ExcludeMode.noOthers,
-  })  : start = start ?? FrameBoundary.unboundedPreceding(),
-        end = end ?? FrameBoundary.currentRow();
+  }) : start = start ?? FrameBoundary.unboundedPreceding(),
+       end = end ?? FrameBoundary.currentRow();
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -190,9 +189,9 @@ class FrameSpec extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (start.isExpressionOffset) start.offset!,
-        if (end.isExpressionOffset) end.offset!,
-      ];
+    if (start.isExpressionOffset) start.offset!,
+    if (end.isExpressionOffset) end.offset!,
+  ];
 }
 
 /// Defines how a [FrameBoundary] count rows or groups. See
@@ -215,11 +214,7 @@ enum ExcludeMode {
   ties,
 }
 
-enum _BoundaryType {
-  currentRow,
-  exprOffset,
-  unboundedOffset,
-}
+enum _BoundaryType { currentRow, exprOffset, unboundedOffset }
 
 /// Defines how many rows before or after a current row should be included in
 /// a window.
@@ -247,16 +242,16 @@ class FrameBoundary {
   FrameBoundary._(this._type, this.preceding, {this.offset});
 
   FrameBoundary.unboundedPreceding()
-      : this._(_BoundaryType.unboundedOffset, true);
+    : this._(_BoundaryType.unboundedOffset, true);
   FrameBoundary.unboundedFollowing()
-      : this._(_BoundaryType.unboundedOffset, false);
+    : this._(_BoundaryType.unboundedOffset, false);
 
   FrameBoundary.currentRow() : this._(_BoundaryType.currentRow, false);
 
   FrameBoundary.preceding(Expression amount)
-      : this._(_BoundaryType.exprOffset, true, offset: amount);
+    : this._(_BoundaryType.exprOffset, true, offset: amount);
   FrameBoundary.following(Expression amount)
-      : this._(_BoundaryType.exprOffset, false, offset: amount);
+    : this._(_BoundaryType.exprOffset, false, offset: amount);
 
   @override
   int get hashCode {

@@ -13,16 +13,23 @@ class GeopolyTest extends Table
   GeopolyTest(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _shapeMeta = const VerificationMeta('shape');
   late final GeneratedColumn<GeopolyPolygon> shape =
-      GeneratedColumn<GeopolyPolygon>('_shape', aliasedName, true,
-          type: const GeopolyPolygonType(),
-          requiredDuringInsert: false,
-          $customConstraints: '');
+      GeneratedColumn<GeopolyPolygon>(
+        '_shape',
+        aliasedName,
+        true,
+        type: const GeopolyPolygonType(),
+        requiredDuringInsert: false,
+        $customConstraints: '',
+      );
   static const VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<DriftAny> a = GeneratedColumn<DriftAny>(
-      'a', aliasedName, true,
-      type: DriftSqlType.any,
-      requiredDuringInsert: false,
-      $customConstraints: '');
+    'a',
+    aliasedName,
+    true,
+    type: DriftSqlType.any,
+    requiredDuringInsert: false,
+    $customConstraints: '',
+  );
   @override
   List<GeneratedColumn> get $columns => [shape, a];
   @override
@@ -31,13 +38,17 @@ class GeopolyTest extends Table
   String get actualTableName => $name;
   static const String $name = 'geopoly_test';
   @override
-  VerificationContext validateIntegrity(Insertable<GeopolyTestData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<GeopolyTestData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('_shape')) {
       context.handle(
-          _shapeMeta, shape.isAcceptableOrUnknown(data['_shape']!, _shapeMeta));
+        _shapeMeta,
+        shape.isAcceptableOrUnknown(data['_shape']!, _shapeMeta),
+      );
     }
     if (data.containsKey('a')) {
       context.handle(_aMeta, a.isAcceptableOrUnknown(data['a']!, _aMeta));
@@ -51,10 +62,14 @@ class GeopolyTest extends Table
   GeopolyTestData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GeopolyTestData(
-      shape: attachedDatabase.typeMapping
-          .read(const GeopolyPolygonType(), data['${effectivePrefix}_shape']),
-      a: attachedDatabase.typeMapping
-          .read(DriftSqlType.any, data['${effectivePrefix}a']),
+      shape: attachedDatabase.typeMapping.read(
+        const GeopolyPolygonType(),
+        data['${effectivePrefix}_shape'],
+      ),
+      a: attachedDatabase.typeMapping.read(
+        DriftSqlType.any,
+        data['${effectivePrefix}a'],
+      ),
     );
   }
 
@@ -77,8 +92,10 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || shape != null) {
-      map['_shape'] =
-          Variable<GeopolyPolygon>(shape, const GeopolyPolygonType());
+      map['_shape'] = Variable<GeopolyPolygon>(
+        shape,
+        const GeopolyPolygonType(),
+      );
     }
     if (!nullToAbsent || a != null) {
       map['a'] = Variable<DriftAny>(a);
@@ -88,25 +105,30 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
 
   GeopolyTestCompanion toCompanion(bool nullToAbsent) {
     return GeopolyTestCompanion(
-      shape:
-          shape == null && nullToAbsent ? const Value.absent() : Value(shape),
+      shape: shape == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shape),
       a: a == null && nullToAbsent ? const Value.absent() : Value(a),
     );
   }
 
-  factory GeopolyTestData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GeopolyTestData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GeopolyTestData(
       shape: serializer.fromJson<GeopolyPolygon?>(json['_shape']),
       a: serializer.fromJson<DriftAny?>(json['a']),
     );
   }
-  factory GeopolyTestData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      GeopolyTestData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory GeopolyTestData.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => GeopolyTestData.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -116,13 +138,13 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
     };
   }
 
-  GeopolyTestData copyWith(
-          {Value<GeopolyPolygon?> shape = const Value.absent(),
-          Value<DriftAny?> a = const Value.absent()}) =>
-      GeopolyTestData(
-        shape: shape.present ? shape.value : this.shape,
-        a: a.present ? a.value : this.a,
-      );
+  GeopolyTestData copyWith({
+    Value<GeopolyPolygon?> shape = const Value.absent(),
+    Value<DriftAny?> a = const Value.absent(),
+  }) => GeopolyTestData(
+    shape: shape.present ? shape.value : this.shape,
+    a: a.present ? a.value : this.a,
+  );
   GeopolyTestData copyWithCompanion(GeopolyTestCompanion data) {
     return GeopolyTestData(
       shape: data.shape.present ? data.shape.value : this.shape,
@@ -175,8 +197,11 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
     });
   }
 
-  GeopolyTestCompanion copyWith(
-      {Value<GeopolyPolygon?>? shape, Value<DriftAny?>? a, Value<int>? rowid}) {
+  GeopolyTestCompanion copyWith({
+    Value<GeopolyPolygon?>? shape,
+    Value<DriftAny?>? a,
+    Value<int>? rowid,
+  }) {
     return GeopolyTestCompanion(
       shape: shape ?? this.shape,
       a: a ?? this.a,
@@ -188,8 +213,10 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (shape.present) {
-      map['_shape'] =
-          Variable<GeopolyPolygon>(shape.value, const GeopolyPolygonType());
+      map['_shape'] = Variable<GeopolyPolygon>(
+        shape.value,
+        const GeopolyPolygonType(),
+      );
     }
     if (a.present) {
       map['a'] = Variable<DriftAny>(a.value);
@@ -218,19 +245,15 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   late final GeopolyTest geopolyTest = GeopolyTest(this);
   Selectable<double?> area(int var1) {
     return customSelect(
-        switch (executor.dialect) {
-          SqlDialect.sqlite =>
-            'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
-          SqlDialect.postgres ||
-          _ =>
-            'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = \$1',
-        },
-        variables: [
-          Variable<int>(var1)
-        ],
-        readsFrom: {
-          geopolyTest,
-        }).map((QueryRow row) => row.readNullable<double>('_c0'));
+      switch (executor.dialect) {
+        SqlDialect.sqlite =>
+          'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
+        SqlDialect.postgres || _ =>
+          'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = \$1',
+      },
+      variables: [Variable<int>(var1)],
+      readsFrom: {geopolyTest},
+    ).map((QueryRow row) => row.readNullable<double>('_c0'));
   }
 
   @override
@@ -240,16 +263,18 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [geopolyTest];
 }
 
-typedef $GeopolyTestCreateCompanionBuilder = GeopolyTestCompanion Function({
-  Value<GeopolyPolygon?> shape,
-  Value<DriftAny?> a,
-  Value<int> rowid,
-});
-typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
-  Value<GeopolyPolygon?> shape,
-  Value<DriftAny?> a,
-  Value<int> rowid,
-});
+typedef $GeopolyTestCreateCompanionBuilder =
+    GeopolyTestCompanion Function({
+      Value<GeopolyPolygon?> shape,
+      Value<DriftAny?> a,
+      Value<int> rowid,
+    });
+typedef $GeopolyTestUpdateCompanionBuilder =
+    GeopolyTestCompanion Function({
+      Value<GeopolyPolygon?> shape,
+      Value<DriftAny?> a,
+      Value<int> rowid,
+    });
 
 class $GeopolyTestFilterComposer
     extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
@@ -261,10 +286,14 @@ class $GeopolyTestFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<GeopolyPolygon> get shape => $composableBuilder(
-      column: $table.shape, builder: (column) => ColumnFilters(column));
+    column: $table.shape,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<DriftAny> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnFilters(column));
+    column: $table.a,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $GeopolyTestOrderingComposer
@@ -277,10 +306,14 @@ class $GeopolyTestOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<GeopolyPolygon> get shape => $composableBuilder(
-      column: $table.shape, builder: (column) => ColumnOrderings(column));
+    column: $table.shape,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<DriftAny> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnOrderings(column));
+    column: $table.a,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $GeopolyTestAnnotationComposer
@@ -299,23 +332,31 @@ class $GeopolyTestAnnotationComposer
       $composableBuilder(column: $table.a, builder: (column) => column);
 }
 
-class $GeopolyTestTableManager extends RootTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestAnnotationComposer,
-    $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder,
-    (
-      GeopolyTestData,
-      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
-    ),
-    GeopolyTestData,
-    PrefetchHooks Function()> {
+class $GeopolyTestTableManager
+    extends
+        RootTableManager<
+          _$_GeopolyTestDatabase,
+          GeopolyTest,
+          GeopolyTestData,
+          $GeopolyTestFilterComposer,
+          $GeopolyTestOrderingComposer,
+          $GeopolyTestAnnotationComposer,
+          $GeopolyTestCreateCompanionBuilder,
+          $GeopolyTestUpdateCompanionBuilder,
+          (
+            GeopolyTestData,
+            BaseReferences<
+              _$_GeopolyTestDatabase,
+              GeopolyTest,
+              GeopolyTestData
+            >,
+          ),
+          GeopolyTestData,
+          PrefetchHooks Function()
+        > {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -324,48 +365,44 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $GeopolyTestAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<GeopolyPolygon?> shape = const Value.absent(),
-            Value<DriftAny?> a = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GeopolyTestCompanion(
-            shape: shape,
-            a: a,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            Value<GeopolyPolygon?> shape = const Value.absent(),
-            Value<DriftAny?> a = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GeopolyTestCompanion.insert(
-            shape: shape,
-            a: a,
-            rowid: rowid,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<GeopolyPolygon?> shape = const Value.absent(),
+                Value<DriftAny?> a = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GeopolyTestCompanion(shape: shape, a: a, rowid: rowid),
+          createCompanionCallback:
+              ({
+                Value<GeopolyPolygon?> shape = const Value.absent(),
+                Value<DriftAny?> a = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) =>
+                  GeopolyTestCompanion.insert(shape: shape, a: a, rowid: rowid),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestAnnotationComposer,
-    $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder,
-    (
+typedef $GeopolyTestProcessedTableManager =
+    ProcessedTableManager<
+      _$_GeopolyTestDatabase,
+      GeopolyTest,
       GeopolyTestData,
-      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
-    ),
-    GeopolyTestData,
-    PrefetchHooks Function()>;
+      $GeopolyTestFilterComposer,
+      $GeopolyTestOrderingComposer,
+      $GeopolyTestAnnotationComposer,
+      $GeopolyTestCreateCompanionBuilder,
+      $GeopolyTestUpdateCompanionBuilder,
+      (
+        GeopolyTestData,
+        BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>,
+      ),
+      GeopolyTestData,
+      PrefetchHooks Function()
+    >;
 
 class $_GeopolyTestDatabaseManager {
   final _$_GeopolyTestDatabase _db;

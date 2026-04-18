@@ -15,15 +15,17 @@ class PgExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection(PgDatabase(
-      endpoint: pg.Endpoint(
-        host: 'localhost',
-        database: 'postgres',
-        username: 'postgres',
-        password: 'postgres',
+    return DatabaseConnection(
+      PgDatabase(
+        endpoint: pg.Endpoint(
+          host: 'localhost',
+          database: 'postgres',
+          username: 'postgres',
+          password: 'postgres',
+        ),
+        settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
       ),
-      settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
-    ));
+    );
   }
 
   @override

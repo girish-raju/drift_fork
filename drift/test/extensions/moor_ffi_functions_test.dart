@@ -47,14 +47,18 @@ void main() {
     );
 
     expect(
-      evaluate(const Variable('Dart is cool')
-          .containsCase('dart', caseSensitive: false)),
+      evaluate(
+        const Variable(
+          'Dart is cool',
+        ).containsCase('dart', caseSensitive: false),
+      ),
       completion(isTrue),
     );
 
     expect(
-      evaluate(const Variable<String>(null)
-          .containsCase('dart', caseSensitive: false)),
+      evaluate(
+        const Variable<String>(null).containsCase('dart', caseSensitive: false),
+      ),
       completion(isNull),
     );
   });
@@ -71,8 +75,9 @@ void main() {
     tearDown(() => db.close());
 
     Future<bool?> evaluate(Expression<bool> expr) async {
-      final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
-          .getSingle();
+      final result = await (db.selectOnly(
+        db.pureDefaults,
+      )..addColumns([expr])).getSingle();
 
       return result.read<bool>(expr)!;
     }
@@ -80,10 +85,7 @@ void main() {
     test('multiLine', () {
       expect(
         evaluate(
-          Variable.withString('foo\nbar').regexp(
-            '^bar',
-            multiLine: true,
-          ),
+          Variable.withString('foo\nbar').regexp('^bar', multiLine: true),
         ),
         completion(isTrue),
       );
@@ -102,10 +104,7 @@ void main() {
     test('caseSensitive', () {
       expect(
         evaluate(
-          Variable.withString('FOO').regexp(
-            'foo',
-            caseSensitive: false,
-          ),
+          Variable.withString('FOO').regexp('foo', caseSensitive: false),
         ),
         completion(isTrue),
       );
@@ -127,12 +126,7 @@ void main() {
       const input = 'a𝌆b';
 
       expect(
-        evaluate(
-          Variable.withString(input).regexp(
-            'a.b',
-            unicode: true,
-          ),
-        ),
+        evaluate(Variable.withString(input).regexp('a.b', unicode: true)),
         completion(isTrue),
       );
 
@@ -149,22 +143,12 @@ void main() {
 
     test('dotAll', () {
       expect(
-        evaluate(
-          Variable.withString('fo\n').regexp(
-            'fo.',
-            dotAll: true,
-          ),
-        ),
+        evaluate(Variable.withString('fo\n').regexp('fo.', dotAll: true)),
         completion(isTrue),
       );
 
       expect(
-        evaluate(
-          Variable.withString('fo\n').regexp(
-            'fo.',
-            dotAll: false,
-          ),
-        ),
+        evaluate(Variable.withString('fo\n').regexp('fo.', dotAll: false)),
         completion(isFalse),
       );
     });

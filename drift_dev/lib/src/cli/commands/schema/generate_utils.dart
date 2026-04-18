@@ -69,21 +69,27 @@ class GenerateUtilsCommand extends Command {
       final entities = versionAndEntities.value;
 
       final file = File(
-          p.join(outputDir.path, GenerateUtils._filenameForVersion(version)));
-      await file.writeAsString(await GenerateUtils.generateSchemaCode(
+        p.join(outputDir.path, GenerateUtils._filenameForVersion(version)),
+      );
+      await file.writeAsString(
+        await GenerateUtils.generateSchemaCode(
           cli,
           version,
           entities,
           argResults?['data-classes'] as bool,
-          argResults?['companions'] as bool));
+          argResults?['companions'] as bool,
+        ),
+      );
     }
 
     final versions = schema.keys.toList()..sort();
     final libraryFile = File(p.join(outputDir.path, 'schema.dart'));
-    await libraryFile
-        .writeAsString(await GenerateUtils.generateLibraryCode(cli, versions));
+    await libraryFile.writeAsString(
+      await GenerateUtils.generateLibraryCode(cli, versions),
+    );
     print(
-        'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
+      'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}',
+    );
   }
 }
 
@@ -141,14 +147,24 @@ class GenerateUtils {
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
     final definedQueries = {
       for (final query in schema.schema.whereType<DefinedSqlQuery>())
-        query:
-            SqlQuery.astOnly(engine: engine, name: query.name, sql: query.sql),
+        query: SqlQuery.astOnly(
+          engine: engine,
+          name: query.name,
+          sql: query.sql,
+        ),
     };
 
-    final resolved =
-        ResolvedDatabaseAccessor(const {}, const [], schema.schema);
-    final input =
-        DatabaseGenerationInput(database, resolved, definedQueries, null);
+    final resolved = ResolvedDatabaseAccessor(
+      const {},
+      const [],
+      schema.schema,
+    );
+    final input = DatabaseGenerationInput(
+      database,
+      resolved,
+      definedQueries,
+      null,
+    );
 
     DatabaseWriter(input, writer.child()).write();
 
@@ -158,7 +174,9 @@ class GenerateUtils {
   /// Generates the Dart code for a library file that instantiates the schema
   /// for each version.
   static Future<String> generateLibraryCode(
-      DriftDevCli cli, Iterable<int> versions) async {
+    DriftDevCli cli,
+    Iterable<int> versions,
+  ) async {
     final buffer = StringBuffer()
       ..writeln(generatedHeader)
       ..writeln("import 'package:drift/drift.dart';")
@@ -171,8 +189,10 @@ class GenerateUtils {
     buffer
       ..writeln('class GeneratedHelper implements SchemaInstantiationHelper {')
       ..writeln('@override')
-      ..writeln('GeneratedDatabase databaseForVersion(QueryExecutor db, '
-          'int version) {')
+      ..writeln(
+        'GeneratedDatabase databaseForVersion(QueryExecutor db, '
+        'int version) {',
+      )
       ..writeln('switch (version) {');
 
     for (final version in versions) {

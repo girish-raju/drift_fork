@@ -38,11 +38,13 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     query = transformer.transformChild(query, this, arg);
-    driftTableName =
-        transformer.transformNullableChild(driftTableName, this, arg);
+    driftTableName = transformer.transformNullableChild(
+      driftTableName,
+      this,
+      arg,
+    );
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [query, if (driftTableName != null) driftTableName!];
+  Iterable<AstNode> get childNodes => [query, ?driftTableName];
 }

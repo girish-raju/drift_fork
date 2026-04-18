@@ -8,7 +8,7 @@ enum InsertMode {
   insertOrRollback,
   insertOrAbort,
   insertOrFail,
-  insertOrIgnore
+  insertOrIgnore,
 }
 
 class InsertStatement extends CrudStatement
@@ -62,13 +62,13 @@ class InsertStatement extends CrudStatement
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (withClause != null) withClause!,
-        table,
-        ...targetColumns,
-        source,
-        if (upsert != null) upsert!,
-        if (returning != null) returning!,
-      ];
+    ?withClause,
+    table,
+    ...targetColumns,
+    source,
+    ?upsert,
+    ?returning,
+  ];
 }
 
 /// Marker interface for AST nodes that can be used as data sources in insert

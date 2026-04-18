@@ -29,9 +29,11 @@ CREATE TABLE a (
 
       final file = await backend.analyze('package:a/a.drift');
       expect(file.allErrors, [
-        isDriftError(contains(
-                '`Fruit`. However, that enum declares no member with this name'))
-            .withSpan("'raspberry'"),
+        isDriftError(
+          contains(
+            '`Fruit`. However, that enum declares no member with this name',
+          ),
+        ).withSpan("'raspberry'"),
         isDriftError(contains('the constant index is too large')).withSpan('7'),
         isDriftError(contains("it can't be negative")).withSpan('-1'),
       ]);
@@ -53,8 +55,9 @@ b: INSERT INTO a VALUES ('not a fruit');
 
       final file = await backend.analyze('package:a/a.drift');
       expect(file.allErrors, [
-        isDriftError(contains('declares no member with this name'))
-            .withSpan("'not a fruit'")
+        isDriftError(
+          contains('declares no member with this name'),
+        ).withSpan("'not a fruit'"),
       ]);
     });
   });

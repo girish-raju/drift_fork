@@ -19,9 +19,9 @@ class TypeDescription {
   factory TypeDescription.fromDrift(GenerationContext ctx, BaseSqlType type) {
     return switch (type) {
       DriftSqlType() => TypeDescription(type: type),
-      CustomSqlType() ||
-      DialectAwareSqlType() =>
-        TypeDescription(customTypeName: type.sqlTypeName(ctx)),
+      CustomSqlType() || DialectAwareSqlType() => TypeDescription(
+        customTypeName: type.sqlTypeName(ctx),
+      ),
     };
   }
 
@@ -35,10 +35,7 @@ class TypeDescription {
   }
 
   JsonObject toJson() {
-    return {
-      'type': type?.name,
-      'customTypeName': customTypeName,
-    };
+    return {'type': type?.name, 'customTypeName': customTypeName};
   }
 }
 
@@ -47,11 +44,16 @@ class ColumnDescription {
   final TypeDescription type;
   final bool isNullable;
 
-  ColumnDescription(
-      {required this.name, required this.type, required this.isNullable});
+  ColumnDescription({
+    required this.name,
+    required this.type,
+    required this.isNullable,
+  });
 
   factory ColumnDescription.fromDrift(
-      GenerationContext ctx, GeneratedColumn column) {
+    GenerationContext ctx,
+    GeneratedColumn column,
+  ) {
     return ColumnDescription(
       name: column.name,
       type: TypeDescription.fromDrift(ctx, column.type),
@@ -68,11 +70,7 @@ class ColumnDescription {
   }
 
   JsonObject toJson() {
-    return {
-      'name': name,
-      'type': type.toJson(),
-      'isNullable': isNullable,
-    };
+    return {'name': name, 'type': type.toJson(), 'isNullable': isNullable};
   }
 }
 
@@ -86,11 +84,16 @@ class EntityDescription {
       column.name: column,
   };
 
-  EntityDescription(
-      {required this.name, required this.type, required this.columns});
+  EntityDescription({
+    required this.name,
+    required this.type,
+    required this.columns,
+  });
 
   factory EntityDescription.fromDrift(
-      GenerationContext ctx, DatabaseSchemaEntity entity) {
+    GenerationContext ctx,
+    DatabaseSchemaEntity entity,
+  ) {
     return EntityDescription(
       name: entity.entityName,
       type: switch (entity) {
@@ -103,9 +106,9 @@ class EntityDescription {
       },
       columns: switch (entity) {
         ResultSetImplementation() => [
-            for (final column in entity.$columns)
-              ColumnDescription.fromDrift(ctx, column),
-          ],
+          for (final column in entity.$columns)
+            ColumnDescription.fromDrift(ctx, column),
+        ],
         _ => null,
       },
     );
@@ -127,7 +130,7 @@ class EntityDescription {
       'type': type,
       'columns': [
         if (columns != null)
-          for (final column in columns!) column.toJson()
+          for (final column in columns!) column.toJson(),
       ],
     };
   }

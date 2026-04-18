@@ -35,16 +35,10 @@ void main() {
   });
 
   test('can convert a companion to a row class', () async {
-    const companion = SharedTodosCompanion(
-      todo: Value(3),
-      user: Value(4),
-    );
+    const companion = SharedTodosCompanion(todo: Value(3), user: Value(4));
 
     final user = await db.sharedTodos.mapFromCompanion(companion, db);
-    expect(
-      user,
-      const SharedTodo(todo: 3, user: 4),
-    );
+    expect(user, const SharedTodo(todo: 3, user: 4));
   });
 
   test('can map from row without table prefix', () async {

@@ -24,7 +24,8 @@ class MakeMigrationCommand extends DriftCommand {
   }
 
   @override
-  String get description => """
+  String get description =>
+      """
 Generates migrations utilities for drift databases
 
 ${styleBold.wrap("Usage")}:
@@ -94,7 +95,8 @@ targets:
   Future<void> run() async {
     if (p.isAbsolute(cli.project.options.schemaDir)) {
       cli.exit(
-          '`schema_dir` must be a relative path. Remove the leading slash');
+        '`schema_dir` must be a relative path. Remove the leading slash',
+      );
     }
     if (p.isAbsolute(cli.project.options.testDir)) {
       cli.exit('`test_dir` must be a relative path. Remove the leading slash');
@@ -106,23 +108,23 @@ targets:
     /// The root directory where test files for all databases are stored
     /// e.g /test/drift/
     final rootSchemaDir = Directory(
-        p.join(cli.project.directory.path, cli.project.options.schemaDir))
-      ..createSync(recursive: true);
+      p.join(cli.project.directory.path, cli.project.options.schemaDir),
+    )..createSync(recursive: true);
 
     /// The root directory where schema files for all databases are stored
     /// e.g /drift_schemas/
     final rootTestDir = Directory(
-        p.join(cli.project.directory.path, cli.project.options.testDir))
-      ..createSync(recursive: true);
+      p.join(cli.project.directory.path, cli.project.options.testDir),
+    )..createSync(recursive: true);
 
     if (cli.project.options.databases.isEmpty) {
       cli.exit(
-          'No databases found in the build.yaml file. Run `drift_dev make-migrations --help` or check the documentation for more information: https://drift.simonbinder.eu/Migrations/');
+        'No databases found in the build.yaml file. Run `drift_dev make-migrations --help` or check the documentation for more information: https://drift.simonbinder.eu/Migrations/',
+      );
     }
 
-    final databaseMigrationsWriters =
-        await Future.wait(cli.project.options.databases.entries.map(
-      (entry) async {
+    final databaseMigrationsWriters = await Future.wait(
+      cli.project.options.databases.entries.map((entry) async {
         final writer = await _MigrationTestEmitter.create(
           cli: cli,
           rootSchemaDir: rootSchemaDir,
@@ -132,8 +134,8 @@ targets:
           dumpGeneratedSchemaCode: dumpGeneratedSchemaCode,
         );
         return writer;
-      },
-    ));
+      }),
+    );
 
     for (var writer in databaseMigrationsWriters) {
       // Dump the schema files for all databases
@@ -156,8 +158,9 @@ targets:
       // have a custom test file using them), we generate these for every
       // version.
       if (generateTests ||
-          writer.schemas.keys
-              .any((v) => writer.testUtilityFile(v).existsSync())) {
+          writer.schemas.keys.any(
+            (v) => writer.testUtilityFile(v).existsSync(),
+          )) {
         await writer.writeTestDatabases();
       }
 
@@ -223,21 +226,22 @@ class _MigrationTestEmitter {
   /// Migration writer for each migration
   List<_MigrationTestWriter> migrations = const [];
 
-  _MigrationTestEmitter(
-      {required this.cli,
-      required this.rootSchemaDir,
-      required this.rootTestDir,
-      required this.dbName,
-      required this.dbClassFile,
-      required this.schemaDir,
-      required this.testDir,
-      required this.testDatabasesDir,
-      required this.schemaVersion,
-      required this.dbClassName,
-      required this.db,
-      required this.driftElements,
-      required this.dumpGeneratedSchemaCode,
-      required this.shouldUseFlutterTest});
+  _MigrationTestEmitter({
+    required this.cli,
+    required this.rootSchemaDir,
+    required this.rootTestDir,
+    required this.dbName,
+    required this.dbClassFile,
+    required this.schemaDir,
+    required this.testDir,
+    required this.testDatabasesDir,
+    required this.schemaVersion,
+    required this.dbClassName,
+    required this.db,
+    required this.driftElements,
+    required this.dumpGeneratedSchemaCode,
+    required this.shouldUseFlutterTest,
+  });
 
   static Future<_MigrationTestEmitter> create({
     required DriftDevCli cli,
@@ -249,27 +253,31 @@ class _MigrationTestEmitter {
   }) async {
     if (p.isAbsolute(relativeDbClassPath)) {
       cli.exit(
-          'The path for the "$dbName" database must be a relative path. Remove the leading slash');
+        'The path for the "$dbName" database must be a relative path. Remove the leading slash',
+      );
     }
     if (!relativeDbClassPath.endsWith(".dart")) {
       if (dbName == "schema_dir" || dbName == "test_dir") {
         cli.exit(
-            "The path for the $dbName must be a dart file. It seems you have $dbName under the `options` section in the build.yaml file instead of under the `databases` section");
+          "The path for the $dbName must be a dart file. It seems you have $dbName under the `options` section in the build.yaml file instead of under the `databases` section",
+        );
       } else {
         cli.exit('The path for the "$dbName" database must be a dart file');
       }
     }
 
-    final dbClassFile =
-        File(p.join(cli.project.directory.path, relativeDbClassPath));
+    final dbClassFile = File(
+      p.join(cli.project.directory.path, relativeDbClassPath),
+    );
     final schemaDir = Directory(p.join(rootSchemaDir.path, dbName))
       ..createSync(recursive: true);
     final testDir = Directory(p.join(rootTestDir.path, dbName))
       ..createSync(recursive: true);
     final testDatabasesDir = Directory(p.join(testDir.path, 'generated'))
       ..createSync(recursive: true);
-    final (:db, :elements, :schemaVersion) =
-        await cli.readElementsFromSource(dbClassFile.absolute);
+    final (:db, :elements, :schemaVersion) = await cli.readElementsFromSource(
+      dbClassFile.absolute,
+    );
     if (schemaVersion == null) {
       cli.exit('Could not read schema version from the "$dbName" database.');
     }
@@ -284,8 +292,10 @@ class _MigrationTestEmitter {
         config?.packages.any((e) => e.name == 'flutter_test') == true;
 
     if (!hasTest && !hasFlutterTest) {
-      cli.logger.warning('No test package found for project, please add a'
-          'dependency on flutter_test or test.');
+      cli.logger.warning(
+        'No test package found for project, please add a'
+        'dependency on flutter_test or test.',
+      );
     }
 
     final emitter = _MigrationTestEmitter(
@@ -312,8 +322,9 @@ class _MigrationTestEmitter {
 
   Future<void> _readSchemas() async {
     schemas = await parseSchema(schemaDir);
-    migrations = _MigrationTestWriter.fromSchema(schemas)
-        .sorted((a, b) => a.from.compareTo(b.from));
+    migrations = _MigrationTestWriter.fromSchema(
+      schemas,
+    ).sorted((a, b) => a.from.compareTo(b.from));
   }
 
   /// Create a .json dump of the current schema
@@ -323,24 +334,28 @@ class _MigrationTestEmitter {
     // then something is wrong
     if (schemas.keys.any((v) => v > schemaVersion)) {
       cli.exit(
-          'The version of your $dbName database ($schemaVersion) is lower than the latest schema version. '
-          'The schema version in the database should never be decreased. ');
+        'The version of your $dbName database ($schemaVersion) is lower than the latest schema version. '
+        'The schema version in the database should never be decreased. ',
+      );
     }
 
     final writer = SchemaWriter(driftElements, options: cli.project.options);
     final schemaFile = driftSchemaFile(schemaVersion);
-    final content = SchemaWriter.json.convert(await writer.createSchemaJson(
-        dumpStartupCode: dumpGeneratedSchemaCode));
+    final content = SchemaWriter.json.convert(
+      await writer.createSchemaJson(dumpStartupCode: dumpGeneratedSchemaCode),
+    );
     if (!schemaFile.existsSync()) {
-      cli.logger
-          .info('$dbName: Creating schema file for version $schemaVersion');
+      cli.logger.info(
+        '$dbName: Creating schema file for version $schemaVersion',
+      );
       schemaFile.writeAsStringSync(content);
       // Re-parse the schema to include the newly created schema file
       await _readSchemas();
     } else if (schemaFile.readAsStringSync() != content) {
       cli.exit(
-          "A schema for version $schemaVersion of the $dbName database already exists and differs from the current schema."
-          " Either delete the existing schema file (${schemaFile.path}) or update the schema version in the database file.");
+        "A schema for version $schemaVersion of the $dbName database already exists and differs from the current schema."
+        " Either delete the existing schema file (${schemaFile.path}) or update the schema version in the database file.",
+      );
     }
   }
 
@@ -348,7 +363,7 @@ class _MigrationTestEmitter {
   Future<void> writeStepsFile() async {
     if (!stepsFile.existsSync()) {
       cli.logger.info(
-          """$dbName: Generated step by step migration helper in ${blue.wrap(p.relative(stepsFile.path))}
+        """$dbName: Generated step by step migration helper in ${blue.wrap(p.relative(stepsFile.path))}
 Use this generated `${yellow.wrap("stepByStep")}` to write your migrations.
 Example:
 
@@ -367,10 +382,12 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
         ${magenta.wrap("}")}${yellow.wrap(")")},
     ${blue.wrap(")")};
   ${yellow.wrap("}")}
-""");
+""",
+      );
     } else {
       cli.logger.fine(
-          "$dbName: Updating step by step migration helper in ${blue.wrap(p.relative(stepsFile.path))}");
+        "$dbName: Updating step by step migration helper in ${blue.wrap(p.relative(stepsFile.path))}",
+      );
     }
     writeTasks[stepsFile] =
         await StepsGenerationUtil.generateStepByStepMigration(cli, schemas);
@@ -382,13 +399,22 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
     for (final versionAndEntities in schemas.entries) {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
-      writeTasks[testUtilityFile(version)] =
-          await GenerateUtils.generateSchemaCode(
-              cli, version, entities, true, true);
+      writeTasks[testUtilityFile(
+        version,
+      )] = await GenerateUtils.generateSchemaCode(
+        cli,
+        version,
+        entities,
+        true,
+        true,
+      );
     }
-    writeTasks[File(p.join(testDatabasesDir.path, 'schema.dart'))] =
-        await GenerateUtils.generateLibraryCode(
-            cli, schemas.keys.sorted((a, b) => a.compareTo(b)));
+    writeTasks[File(
+      p.join(testDatabasesDir.path, 'schema.dart'),
+    )] = await GenerateUtils.generateLibraryCode(
+      cli,
+      schemas.keys.sorted((a, b) => a.compareTo(b)),
+    );
   }
 
   Future<void> writeTest() async {
@@ -403,11 +429,14 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
     final firstMigration = migrations.first;
 
     final packageName = cli.project.buildConfig.packageName;
-    final relativeDbPath = p.posix.relative(dbClassFile.path,
-        from: p.join(cli.project.directory.path, 'lib'));
+    final relativeDbPath = p.posix.relative(
+      dbClassFile.path,
+      from: p.join(cli.project.directory.path, 'lib'),
+    );
     final testPackageName = shouldUseFlutterTest ? 'flutter_test' : 'test';
 
-    final code = """
+    final code =
+        """
 // ignore_for_file: unused_local_variable, unused_import
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations_native.dart';
@@ -459,8 +488,9 @@ void main() {
 
     final testCommand = shouldUseFlutterTest ? 'flutter' : 'dart';
     cli.logger.info(
-        '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
-        'Run this test to validate that your migrations are written correctly. ${yellow.wrap("$testCommand test ${p.relative(testFile.path)}")}');
+      '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
+      'Run this test to validate that your migrations are written correctly. ${yellow.wrap("$testCommand test ${p.relative(testFile.path)}")}',
+    );
 
     if (!db.hasConstructorArgumentForConnection) {
       cli.logger.info(
@@ -502,8 +532,9 @@ void main() {
     final reasons = <String>[];
 
     for (final elementAfter in schemaAfter.schema) {
-      final elementBefore = schemaBefore.schema
-          .firstWhereOrNull((e) => e.id.name == elementAfter.id.name);
+      final elementBefore = schemaBefore.schema.firstWhereOrNull(
+        (e) => e.id.name == elementAfter.id.name,
+      );
 
       if (elementBefore == null) {
         continue;
@@ -517,7 +548,8 @@ void main() {
           if (columnBefore == null &&
               elementAfter.isColumnRequiredForInsert(columnAfter)) {
             reasons.add(
-                'Added column "${columnAfter.nameInSql}" in "${elementAfter.schemaName}" without a default.');
+              'Added column "${columnAfter.nameInSql}" in "${elementAfter.schemaName}" without a default.',
+            );
           }
         }
       }
@@ -534,7 +566,8 @@ void main() {
       }
 
       cli.logger.info(
-          'For more information on writing these tests, see ${yellow.wrap('https://drift.simonbinder.eu/migrations/tests/#verifying-data-integrity')}');
+        'For more information on writing these tests, see ${yellow.wrap('https://drift.simonbinder.eu/migrations/tests/#verifying-data-integrity')}',
+      );
     }
   }
 }
@@ -552,7 +585,8 @@ class _MigrationTestWriter {
   /// A migration writer is created for each pair of schema versions
   /// e.g (1,2), (2,3), (3,4) etc
   static List<_MigrationTestWriter> fromSchema(
-      Map<int, ExportedSchema> schemas) {
+    Map<int, ExportedSchema> schemas,
+  ) {
     final result = <_MigrationTestWriter>[];
     if (schemas.length < 2) {
       return result;
@@ -564,9 +598,11 @@ class _MigrationTestWriter {
       final fromTables = fromSchema.schema.whereType<DriftTable>();
       final toTables = toSchema.schema.whereType<DriftTable>();
       final commonTables = fromTables.where(
-          (table) => toTables.any((t) => t.schemaName == table.schemaName));
-      result
-          .add(_MigrationTestWriter(commonTables.toList(), from: from, to: to));
+        (table) => toTables.any((t) => t.schemaName == table.schemaName),
+      );
+      result.add(
+        _MigrationTestWriter(commonTables.toList(), from: from, to: to),
+      );
     }
     return result;
   }
@@ -574,7 +610,7 @@ class _MigrationTestWriter {
   List<String> schemaImports() {
     return [
       "import 'generated/schema_v$from.dart' as v$from;",
-      "import 'generated/schema_v$to.dart' as v$to;"
+      "import 'generated/schema_v$to.dart' as v$to;",
     ];
   }
 
@@ -602,18 +638,14 @@ final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowC
       createNew: v$to.DatabaseAtV$to.new,
       openTestedDatabase: $dbClassName.new,
       createItems: (batch, oldDb) {
-        ${tables.map(
-      (table) {
-        return "batch.insertAll(oldDb.${table.dbGetterName}, old${table.dbGetterName.pascalCase}Data);";
-      },
-    ).join('\n')}
+        ${tables.map((table) {
+      return "batch.insertAll(oldDb.${table.dbGetterName}, old${table.dbGetterName.pascalCase}Data);";
+    }).join('\n')}
       },
       validateItems: (newDb) async {
-        ${tables.map(
-      (table) {
-        return "expect(expectedNew${table.dbGetterName.pascalCase}Data, await newDb.select(newDb.${table.dbGetterName}).get());";
-      },
-    ).join('\n')}
+        ${tables.map((table) {
+      return "expect(expectedNew${table.dbGetterName.pascalCase}Data, await newDb.select(newDb.${table.dbGetterName}).get());";
+    }).join('\n')}
       },
     );
   });

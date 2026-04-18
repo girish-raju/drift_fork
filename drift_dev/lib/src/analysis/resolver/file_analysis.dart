@@ -26,8 +26,9 @@ class FileAnalyzer {
     for (final file in driver.cache.crawl(state).toList()) {
       await driver.resolveElements(file.ownUri);
 
-      result.allAvailableElements
-          .addAll(file.analysis.values.map((e) => e.result).whereType());
+      result.allAvailableElements.addAll(
+        file.analysis.values.map((e) => e.result).whereType(),
+      );
     }
 
     if (state.extension == '.dart') {
@@ -45,9 +46,11 @@ class FileAnalyzer {
           if (element is DriftDatabase) {
             final implicitlyAdded = availableElements
                 .whereType<DriftElementWithResultSet>()
-                .where((element) =>
-                    element.declaration.isDartDeclaration &&
-                    !availableByDefault.contains(element));
+                .where(
+                  (element) =>
+                      element.declaration.isDartDeclaration &&
+                      !availableByDefault.contains(element),
+                );
 
             if (implicitlyAdded.isNotEmpty) {
               final names = implicitlyAdded
@@ -62,9 +65,9 @@ class FileAnalyzer {
             }
 
             for (final dao in element.accessors) {
-              final schema = (await _resolveElementsAndImports(dao))
-                  .availableElements
-                  .whereType<DriftSchemaElement>();
+              final schema = (await _resolveElementsAndImports(
+                dao,
+              )).availableElements.whereType<DriftSchemaElement>();
 
               final onlyReferencedFromDao = schema
                   .where((e) => !availableElements.contains(e))
@@ -86,10 +89,14 @@ class FileAnalyzer {
             final engine = typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
-            final analyzer = QueryAnalyzer(context, state, driver,
-                knownTypes: knownTypes,
-                typeMapping: typeMapping,
-                references: availableElements);
+            final analyzer = QueryAnalyzer(
+              context,
+              state,
+              driver,
+              knownTypes: knownTypes,
+              typeMapping: typeMapping,
+              references: availableElements,
+            );
             queries[query.name] = await analyzer.analyze(query);
 
             for (final error in analyzer.lints) {
@@ -97,13 +104,18 @@ class FileAnalyzer {
             }
           }
 
-          result.resolvedDatabases[element.id] =
-              ResolvedDatabaseAccessor(queries, imports, availableElements);
+          result.resolvedDatabases[element.id] = ResolvedDatabaseAccessor(
+            queries,
+            imports,
+            availableElements,
+          );
         } else if (element is DriftIndex) {
           if (element.createStmt != null) {
             final engine = driver.newSqlEngine();
-            final parsed =
-                engine.parse(ParserEntrypoint.statement, element.createStmt!);
+            final parsed = engine.parse(
+              ParserEntrypoint.statement,
+              element.createStmt!,
+            );
 
             if (parsed.rootNode case CreateIndexStatement stmt) {
               element.parsedStatement = stmt;
@@ -120,8 +132,10 @@ class FileAnalyzer {
       // We need to map defined query elements to proper analysis results.
       final genericEngineForParsing = driver.newSqlEngine();
       final source = await driver.backend.readAsString(state.ownUri);
-      final sourceSpan =
-          SourceFile.fromString(source, url: state.ownUri).span(0);
+      final sourceSpan = SourceFile.fromString(
+        source,
+        url: state.ownUri,
+      ).span(0);
       final parsedFile = genericEngineForParsing
           .parseSpan(ParserEntrypoint.driftFile, sourceSpan)
           .rootNode;
@@ -133,23 +147,36 @@ class FileAnalyzer {
           final stmt = parsedFile.statements
               .whereType<DeclaredStatement>()
               .firstWhere(
-                  (e) => e.statement.firstPosition == element.sqlOffset);
+                (e) => e.statement.firstPosition == element.sqlOffset,
+              );
           // Necessary to create options when type hints for indexed variables
           // are given.
           AstPreparingVisitor.resolveIndexOfVariables(
-              stmt.allDescendants.whereType<Variable>().toList());
+            stmt.allDescendants.whereType<Variable>().toList(),
+          );
 
-          final options =
-              _createOptionsAndVars(engine, stmt, element, knownTypes);
+          final options = _createOptionsAndVars(
+            engine,
+            stmt,
+            element,
+            knownTypes,
+          );
 
-          final analysisResult = engine.analyzeNode(stmt.statement, sourceSpan,
-              stmtOptions: options.options);
+          final analysisResult = engine.analyzeNode(
+            stmt.statement,
+            sourceSpan,
+            stmtOptions: options.options,
+          );
 
-          final analyzer = QueryAnalyzer(analysisResult, state, driver,
-              knownTypes: knownTypes,
-              references: element.references,
-              typeMapping: typeMapping,
-              requiredVariables: options.variables);
+          final analyzer = QueryAnalyzer(
+            analysisResult,
+            state,
+            driver,
+            knownTypes: knownTypes,
+            references: element.references,
+            typeMapping: typeMapping,
+            requiredVariables: options.variables,
+          );
 
           final analyzed = result.resolvedQueries[element.id] =
               await analyzer.analyze(element, sourceForCustomName: stmt.as)
@@ -162,15 +189,18 @@ class FileAnalyzer {
         } else if (element is DriftView) {
           final source = element.source;
           if (source is SqlViewSource) {
-            source.parsedStatement =
-                parsedFile.findStatement(element.declaration);
+            source.parsedStatement = parsedFile.findStatement(
+              element.declaration,
+            );
           }
         } else if (element is DriftTrigger) {
-          element.parsedStatement =
-              parsedFile.findStatement(element.declaration);
+          element.parsedStatement = parsedFile.findStatement(
+            element.declaration,
+          );
         } else if (element is DriftIndex) {
-          element.parsedStatement =
-              parsedFile.findStatement(element.declaration);
+          element.parsedStatement = parsedFile.findStatement(
+            element.declaration,
+          );
         }
       }
     }
@@ -179,16 +209,22 @@ class FileAnalyzer {
   }
 
   Future<
-      ({
-        List<DriftElement> availableElements,
-        Set<DriftElement> availableByDefault,
-        List<FileState> imports
-      })> _resolveElementsAndImports(BaseDriftAccessor element) async {
+    ({
+      List<DriftElement> availableElements,
+      Set<DriftElement> availableByDefault,
+      List<FileState> imports,
+    })
+  >
+  _resolveElementsAndImports(BaseDriftAccessor element) async {
     final imports = <FileState>[];
 
     for (final include in element.declaredIncludes) {
-      final imported = await driver.resolveElements(driver.backend
-          .resolveUri(element.declaration.sourceUri, include.toString()));
+      final imported = await driver.resolveElements(
+        driver.backend.resolveUri(
+          element.declaration.sourceUri,
+          include.toString(),
+        ),
+      );
 
       imports.add(imported);
     }
@@ -209,8 +245,10 @@ class FileAnalyzer {
       final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
 
       for (final attachedIndex in table.attachedIndices) {
-        final index =
-            await driver.resolveElement(fileState, fileState.id(attachedIndex));
+        final index = await driver.resolveElement(
+          fileState,
+          fileState.id(attachedIndex),
+        );
 
         if (index is DriftIndex) {
           availableByDefault.add(index);
@@ -247,7 +285,7 @@ class FileAnalyzer {
     return (
       availableElements: availableElements,
       availableByDefault: availableByDefault,
-      imports: imports
+      imports: imports,
     );
   }
 
@@ -313,8 +351,8 @@ class _OptionsAndRequiredVariables {
 
 extension on DriftFile {
   Node findStatement<Node extends AstNode>(DriftDeclaration declaration) {
-    return statements
-        .whereType<Node>()
-        .firstWhere((e) => e.firstPosition == declaration.offset);
+    return statements.whereType<Node>().firstWhere(
+      (e) => e.firstPosition == declaration.offset,
+    );
   }
 }

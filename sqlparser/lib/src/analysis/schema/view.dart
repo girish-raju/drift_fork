@@ -16,11 +16,7 @@ class View extends NamedResultSet with HasMetaMixin implements HumanReadable {
   bool get visibleToChildren => true;
 
   /// Constructs a view from the known [name] and [resolvedColumns].
-  View({
-    required this.name,
-    required this.resolvedColumns,
-    this.definition,
-  }) {
+  View({required this.name, required this.resolvedColumns, this.definition}) {
     for (final column in resolvedColumns) {
       if (column is ViewColumn) column.view = this;
     }

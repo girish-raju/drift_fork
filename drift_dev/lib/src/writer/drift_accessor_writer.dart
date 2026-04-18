@@ -27,8 +27,9 @@ class AccessorWriter {
       ..writeDart(input.accessor.databaseClass)
       ..writeln('> {');
 
-    for (final entity in input.resolvedAccessor.availableElements
-        .whereType<DriftElementWithResultSet>()) {
+    for (final entity
+        in input.resolvedAccessor.availableElements
+            .whereType<DriftElementWithResultSet>()) {
       final infoType = scope.entityInfoType(entity);
       final getterName = entity.dbGetterName;
 
@@ -51,14 +52,20 @@ class AccessorWriter {
 
     if (isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        classScope.writeGetterForIncludedDriftFile(import, input.driver!,
-            isAccessor: true);
+        classScope.writeGetterForIncludedDriftFile(
+          import,
+          input.driver!,
+          isAccessor: true,
+        );
       }
     }
 
     if (scope.options.generateManager) {
-      final managerWriter = DatabaseManagerWriter(scope.child(), daoName,
-          accessorMixin: mixinName);
+      final managerWriter = DatabaseManagerWriter(
+        scope.child(),
+        daoName,
+        accessorMixin: mixinName,
+      );
       for (var table in elements.whereType<DriftTable>()) {
         managerWriter.addTable(table);
       }

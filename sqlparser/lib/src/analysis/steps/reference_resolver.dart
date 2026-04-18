@@ -23,13 +23,17 @@ class ReferenceResolver
   @override
   void visitGroupBy(GroupBy e, ReferenceResolvingContext arg) {
     return super.visitGroupBy(
-        e, const ReferenceResolvingContext(canReferToColumnAlias: true));
+      e,
+      const ReferenceResolvingContext(canReferToColumnAlias: true),
+    );
   }
 
   @override
   void visitOrderBy(OrderBy e, ReferenceResolvingContext arg) {
     return super.visitOrderBy(
-        e, ReferenceResolvingContext(canReferToColumnAlias: true));
+      e,
+      ReferenceResolvingContext(canReferToColumnAlias: true),
+    );
   }
 
   @override
@@ -47,11 +51,13 @@ class ReferenceResolver
       final resultSet = entityResolver?.resultSet.resultSet;
 
       if (resultSet == null) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.referencedUnknownTable,
-          message: 'Unknown table or view: ${e.entityName}',
-          relevantNode: e,
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.referencedUnknownTable,
+            message: 'Unknown table or view: ${e.entityName}',
+            relevantNode: e,
+          ),
+        );
       } else {
         _resolveReferenceInTable(e, resultSet, source: entityResolver);
       }
@@ -76,14 +82,17 @@ class ReferenceResolver
         _reportUnknownColumnError(e);
       } else {
         if (found.length > 1) {
-          final description =
-              found.map((c) => c.humanReadableDescription()).join(', ');
+          final description = found
+              .map((c) => c.humanReadableDescription())
+              .join(', ');
 
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.ambiguousReference,
-            relevantNode: e,
-            message: 'Could refer to any of: $description',
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.ambiguousReference,
+              relevantNode: e,
+              message: 'Could refer to any of: $description',
+            ),
+          );
         }
 
         e.resolved = found.first;
@@ -110,10 +119,13 @@ class ReferenceResolver
 
   @override
   void visitWindowFunctionInvocation(
-      WindowFunctionInvocation e, ReferenceResolvingContext arg) {
+    WindowFunctionInvocation e,
+    ReferenceResolvingContext arg,
+  ) {
     if (e.windowName != null && e.resolved == null) {
-      e.resolved =
-          StatementScope.cast(e.scope).windowDeclarations[e.windowName!];
+      e.resolved = StatementScope.cast(
+        e.scope,
+      ).windowDeclarations[e.windowName!];
     }
 
     visitChildren(e, arg);
@@ -123,23 +135,31 @@ class ReferenceResolver
     final msg = StringBuffer('Unknown column.');
 
     if (e.isSingleDoubleQuotedToken) {
-      msg.write(' Note: Double-quotes define an identifier in SQL. '
-          'If you meant to write a string literal, use single quotes instead.');
+      msg.write(
+        ' Note: Double-quotes define an identifier in SQL. '
+        'If you meant to write a string literal, use single quotes instead.',
+      );
     } else if (columns != null) {
-      final columnNames =
-          columns.map((c) => c.humanReadableDescription()).join(', ');
+      final columnNames = columns
+          .map((c) => c.humanReadableDescription())
+          .join(', ');
       msg.write(' These columns are available: $columnNames');
     }
 
-    context.reportError(AnalysisError(
-      type: AnalysisErrorType.referencedUnknownColumn,
-      relevantNode: e,
-      message: msg.toString(),
-    ));
+    context.reportError(
+      AnalysisError(
+        type: AnalysisErrorType.referencedUnknownColumn,
+        relevantNode: e,
+        message: msg.toString(),
+      ),
+    );
   }
 
-  void _resolveReferenceInTable(Reference ref, ResultSet resultSet,
-      {ResultSetAvailableInStatement? source}) {
+  void _resolveReferenceInTable(
+    Reference ref,
+    ResultSet resultSet, {
+    ResultSetAvailableInStatement? source,
+  }) {
     var column = resultSet.findColumn(ref.columnName);
     if (column == null) {
       _reportUnknownColumnError(ref, columns: resultSet.resolvedColumns);
@@ -179,7 +199,5 @@ class ReferenceResolvingContext {
   /// This is only the case for `ORDER BY`, `GROUP BY` and `HAVING` clauses.
   final bool canReferToColumnAlias;
 
-  const ReferenceResolvingContext({
-    this.canReferToColumnAlias = false,
-  });
+  const ReferenceResolvingContext({this.canReferToColumnAlias = false});
 }

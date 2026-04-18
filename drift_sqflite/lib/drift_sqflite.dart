@@ -27,8 +27,12 @@ class _SqfliteDelegate extends DatabaseDelegate {
   bool singleInstance;
   final DatabaseCreator? creator;
 
-  _SqfliteDelegate(this.inDbFolder, this.path,
-      {this.singleInstance = true, this.creator});
+  _SqfliteDelegate(
+    this.inDbFolder,
+    this.path, {
+    this.singleInstance = true,
+    this.creator,
+  });
 
   @override
   late final DbVersionDelegate versionDelegate = _SqfliteVersionDelegate(db);
@@ -54,10 +58,7 @@ class _SqfliteDelegate extends DatabaseDelegate {
     }
 
     // default value when no migration happened
-    db = await s.openDatabase(
-      resolvedPath,
-      singleInstance: singleInstance,
-    );
+    db = await s.openDatabase(resolvedPath, singleInstance: singleInstance);
     _isOpen = true;
   }
 
@@ -128,15 +129,20 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
   /// drift.
-  SqfliteQueryExecutor(
-      {required String path,
-      bool? logStatements,
-      bool singleInstance = true,
-      DatabaseCreator? creator})
-      : super(
-            _SqfliteDelegate(false, path,
-                singleInstance: singleInstance, creator: creator),
-            logStatements: logStatements);
+  SqfliteQueryExecutor({
+    required String path,
+    bool? logStatements,
+    bool singleInstance = true,
+    DatabaseCreator? creator,
+  }) : super(
+         _SqfliteDelegate(
+           false,
+           path,
+           singleInstance: singleInstance,
+           creator: creator,
+         ),
+         logStatements: logStatements,
+       );
 
   /// A query executor that will store the database in the file declared by
   /// [path], which will be resolved relative to [s.getDatabasesPath()].
@@ -149,15 +155,20 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
   /// drift.
-  SqfliteQueryExecutor.inDatabaseFolder(
-      {required String path,
-      bool? logStatements,
-      bool singleInstance = true,
-      DatabaseCreator? creator})
-      : super(
-            _SqfliteDelegate(true, path,
-                singleInstance: singleInstance, creator: creator),
-            logStatements: logStatements);
+  SqfliteQueryExecutor.inDatabaseFolder({
+    required String path,
+    bool? logStatements,
+    bool singleInstance = true,
+    DatabaseCreator? creator,
+  }) : super(
+         _SqfliteDelegate(
+           true,
+           path,
+           singleInstance: singleInstance,
+           creator: creator,
+         ),
+         logStatements: logStatements,
+       );
 
   /// The underlying sqflite [s.Database] object used by drift to send queries.
   ///

@@ -11,34 +11,37 @@ import '../test_utils.dart';
 void main() {
   late TestBackend tester;
 
-  setUpAll(() async => tester = await TestBackend.init({
-        'a|lib/definitions.dart': '''
+  setUpAll(
+    () async => tester = await TestBackend.init({
+      'a|lib/definitions.dart': '''
 extension MyStringUtils on String {
   String reverse() => throw 'todo';
 }
 ''',
-      }));
+    }),
+  );
   tearDownAll(() => tester.dispose());
 
   group('from AST', () {
     int testCount = 0;
 
-    Future<void> checkTransformation(String sourceExpression,
-        String expectedResult, Map<String, String> expectedImports) async {
+    Future<void> checkTransformation(
+      String sourceExpression,
+      String expectedResult,
+      Map<String, String> expectedImports,
+    ) async {
       final testUri = Uri.parse('package:a/test_${testCount++}.dart');
-      final expression =
-          await tester.resolveExpression(testUri, sourceExpression, const [
-        'package:a/definitions.dart',
-        'package:drift/drift.dart',
-      ]);
+      final expression = await tester.resolveExpression(
+        testUri,
+        sourceExpression,
+        const ['package:a/definitions.dart', 'package:drift/drift.dart'],
+      );
       final annotated = AnnotatedDartCode.ast(expression);
 
       final imports = TestImportManager();
       final writer = Writer(
         const DriftOptions.defaults(),
-        generationOptions: GenerationOptions(
-          imports: imports,
-        ),
+        generationOptions: GenerationOptions(imports: imports),
       );
 
       final code = writer.dartCode(annotated);
@@ -50,20 +53,25 @@ extension MyStringUtils on String {
     }
 
     test('constructor invocation', () async {
-      await checkTransformation('const Duration(seconds: 12)',
-          'const i0.Duration(seconds: 12)', {'i0': 'dart:core'});
+      await checkTransformation(
+        'const Duration(seconds: 12)',
+        'const i0.Duration(seconds: 12)',
+        {'i0': 'dart:core'},
+      );
     });
 
     test('static invocation', () async {
-      await checkTransformation(
-          'Uri.parse("")', 'i0.Uri.parse("")', {'i0': 'dart:core'});
+      await checkTransformation('Uri.parse("")', 'i0.Uri.parse("")', {
+        'i0': 'dart:core',
+      });
     });
 
     test('explicit extension invocation', () async {
       await checkTransformation(
-          'IterableExtensions<String>([]).firstOrNull',
-          'i0.IterableExtensions<i1.String>([]).firstOrNull',
-          {'i0': 'dart:collection', 'i1': 'dart:core'});
+        'IterableExtensions<String>([]).firstOrNull',
+        'i0.IterableExtensions<i1.String>([]).firstOrNull',
+        {'i0': 'dart:collection', 'i1': 'dart:core'},
+      );
     });
 
     test('extension method invocations', () async {
@@ -93,11 +101,13 @@ extension MyStringUtils on String {
 
     test('includes commas for function definitions', () {
       // Regression test for https://github.com/simolus3/drift/issues/3608
-      final file = parseString(content: '''
+      final file = parseString(
+        content: '''
 final x = (json) => (json! as Map<String, dynamic>).map(
             (k, v) => MapEntry(k, v as List<int>),
           );
-''');
+''',
+      );
 
       final variable =
           file.unit.childEntities.single as TopLevelVariableDeclaration;
@@ -110,8 +120,10 @@ final x = (json) => (json! as Map<String, dynamic>).map(
       );
 
       final code = writer.dartCode(ast);
-      expect(code,
-          '(json) => (json! as Map<String,dynamic>).map((k, v) => MapEntry(k,v as List<int>))');
+      expect(
+        code,
+        '(json) => (json! as Map<String,dynamic>).map((k, v) => MapEntry(k,v as List<int>))',
+      );
     });
   });
 }

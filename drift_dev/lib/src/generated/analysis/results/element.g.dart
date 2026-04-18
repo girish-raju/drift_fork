@@ -7,9 +7,9 @@ part of '../../../analysis/results/element.dart';
 // **************************************************************************
 
 DriftElementId _$DriftElementIdFromJson(Map json) => DriftElementId(
-      Uri.parse(json['library_uri'] as String),
-      json['name'] as String,
-    );
+  Uri.parse(json['library_uri'] as String),
+  json['name'] as String,
+);
 
 Map<String, dynamic> _$DriftElementIdToJson(DriftElementId instance) =>
     <String, dynamic>{
@@ -18,10 +18,10 @@ Map<String, dynamic> _$DriftElementIdToJson(DriftElementId instance) =>
     };
 
 DriftDeclaration _$DriftDeclarationFromJson(Map json) => DriftDeclaration(
-      Uri.parse(json['source_uri'] as String),
-      (json['offset'] as num).toInt(),
-      json['name'] as String?,
-    );
+  Uri.parse(json['source_uri'] as String),
+  (json['offset'] as num).toInt(),
+  json['name'] as String?,
+);
 
 Map<String, dynamic> _$DriftDeclarationToJson(DriftDeclaration instance) =>
     <String, dynamic>{

@@ -75,8 +75,11 @@ class TypeGraph {
     // some of them.
     queue = List.of(_candidateForLaxMultiPropagation);
     while (queue.isNotEmpty) {
-      _propagateTypeInfo(queue, queue.removeLast(),
-          laxMultiSourcePropagation: true);
+      _propagateTypeInfo(
+        queue,
+        queue.removeLast(),
+        laxMultiSourcePropagation: true,
+      );
     }
 
     // apply default types
@@ -95,8 +98,11 @@ class TypeGraph {
     }
   }
 
-  void _propagateTypeInfo(List<Typeable> resolved, Typeable t,
-      {bool laxMultiSourcePropagation = false}) {
+  void _propagateTypeInfo(
+    List<Typeable> resolved,
+    Typeable t, {
+    bool laxMultiSourcePropagation = false,
+  }) {
     if (!_edges.containsKey(t)) return;
 
     // propagate changes
@@ -160,8 +166,12 @@ class TypeGraph {
     }
   }
 
-  void _copyType(List<Typeable> resolved, Typeable from, Typeable to,
-      [ResolvedType? type]) {
+  void _copyType(
+    List<Typeable> resolved,
+    Typeable from,
+    Typeable to, [
+    ResolvedType? type,
+  ]) {
     // if the target hasn't been resolved yet, copy the current type and
     // visit the target later
     if (!knowsType(to)) {
@@ -171,7 +181,9 @@ class TypeGraph {
   }
 
   ResolvedType? _encapsulate(
-      Iterable<ResolvedType?> targets, EncapsulatingNullability nullability) {
+    Iterable<ResolvedType?> targets,
+    EncapsulatingNullability nullability,
+  ) {
     return targets.fold<ResolvedType?>(null, (previous, element) {
       if (previous == null) return element;
 

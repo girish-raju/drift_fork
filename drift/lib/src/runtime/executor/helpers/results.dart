@@ -12,10 +12,9 @@ class QueryResult {
   /// Constructs a [QueryResult] by specifying the order of column names in
   /// [columnNames] and the associated data in [rows].
   QueryResult(this.columnNames, this.rows)
-      : _columnIndexes = {
-          for (var column in columnNames)
-            column: columnNames.lastIndexOf(column)
-        };
+    : _columnIndexes = {
+        for (var column in columnNames) column: columnNames.lastIndexOf(column),
+      };
 
   /// Converts the [rows] into [columnNames] and raw data [QueryResult.rows].
   /// We assume that each map in [rows] has the same keys.
@@ -26,7 +25,7 @@ class QueryResult {
 
     final keys = rows.first.keys.toList();
     final mappedRows = [
-      for (var row in rows) [for (var key in keys) row[key]]
+      for (var row in rows) [for (var key in keys) row[key]],
     ];
 
     return QueryResult(keys, mappedRows);

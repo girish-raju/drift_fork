@@ -17,14 +17,17 @@ void main() {
     expect(events, ['select']);
 
     await database.batch((batch) {
-      batch.insert(database.categories,
-          CategoriesCompanion.insert(description: 'from batch'));
+      batch.insert(
+        database.categories,
+        CategoriesCompanion.insert(description: 'from batch'),
+      );
     });
     expect(events, ['select', 'begin', 'batched', 'commit']);
     events.clear();
 
     await database.users.insertOne(
-        UsersCompanion.insert(name: 'Simon B', profilePicture: Uint8List(0)));
+      UsersCompanion.insert(name: 'Simon B', profilePicture: Uint8List(0)),
+    );
     await database.users.update().write(UsersCompanion(isAwesome: Value(true)));
     await database.users.delete().go();
     expect(events, ['insert', 'update', 'delete']);
@@ -40,8 +43,10 @@ void main() {
 
     await database.runWithInterceptor(
       () => database.batch((batch) {
-        batch.insert(database.categories,
-            CategoriesCompanion.insert(description: 'from batch'));
+        batch.insert(
+          database.categories,
+          CategoriesCompanion.insert(description: 'from batch'),
+        );
       }),
       interceptor: interceptor,
     );
@@ -49,7 +54,8 @@ void main() {
     events.clear();
 
     await database.users.insertOne(
-        UsersCompanion.insert(name: 'Simon B', profilePicture: Uint8List(0)));
+      UsersCompanion.insert(name: 'Simon B', profilePicture: Uint8List(0)),
+    );
     await database.runWithInterceptor(
       () =>
           database.users.update().write(UsersCompanion(isAwesome: Value(true))),
@@ -83,42 +89,59 @@ class EmittingInterceptor extends QueryInterceptor {
 
   @override
   Future<void> runBatched(
-      QueryExecutor executor, BatchedStatements statements) {
+    QueryExecutor executor,
+    BatchedStatements statements,
+  ) {
     events.add('batched');
     return super.runBatched(executor, statements);
   }
 
   @override
   Future<void> runCustom(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     events.add('custom');
     return super.runCustom(executor, statement, args);
   }
 
   @override
   Future<int> runInsert(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     events.add('insert');
     return super.runInsert(executor, statement, args);
   }
 
   @override
   Future<int> runDelete(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     events.add('delete');
     return super.runDelete(executor, statement, args);
   }
 
   @override
   Future<int> runUpdate(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     events.add('update');
     return super.runUpdate(executor, statement, args);
   }
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     events.add('select');
     return super.runSelect(executor, statement, args);
   }

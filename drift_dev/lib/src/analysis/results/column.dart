@@ -119,7 +119,8 @@ class DriftColumn implements HasType {
   String getJsonKey([DriftOptions options = const DriftOptions.defaults()]) {
     if (overriddenJsonName != null) return overriddenJsonName!;
 
-    final useColumnName = options.useSqlColumnNameAsJsonKey ||
+    final useColumnName =
+        options.useSqlColumnNameAsJsonKey ||
         (options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
             declaredInDriftFile);
     return useColumnName ? nameInSql : nameInDart;
@@ -134,12 +135,14 @@ class DriftColumn implements HasType {
   }
 
   static AnnotatedDartCode defaultFromParser(Default constraint) {
-    return AnnotatedDartCode.build((b) => b
-      ..addText('const ')
-      ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
-      ..addText('(')
-      ..addText(asDartLiteral(constraint.expression.toSql()))
-      ..addText(')'));
+    return AnnotatedDartCode.build(
+      (b) => b
+        ..addText('const ')
+        ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
+        ..addText('(')
+        ..addText(asDartLiteral(constraint.expression.toSql()))
+        ..addText(')'),
+    );
   }
 }
 
@@ -262,10 +265,17 @@ final class ForeignKeyReference extends DriftColumnConstraint {
   final bool initiallyDeferred;
 
   ForeignKeyReference(
-      this.otherColumn, this.onUpdate, this.onDelete, this.initiallyDeferred);
+    this.otherColumn,
+    this.onUpdate,
+    this.onDelete,
+    this.initiallyDeferred,
+  );
 
   ForeignKeyReference.unresolved(
-      this.onUpdate, this.onDelete, this.initiallyDeferred);
+    this.onUpdate,
+    this.onDelete,
+    this.initiallyDeferred,
+  );
 
   @override
   String toString() {
@@ -286,13 +296,16 @@ final class ColumnGeneratedAs extends DriftColumnConstraint {
 
   factory ColumnGeneratedAs.fromParser(GeneratedAs constraint) {
     return ColumnGeneratedAs(
-        AnnotatedDartCode.build((b) => b
+      AnnotatedDartCode.build(
+        (b) => b
           ..addText('const ')
           ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
           ..addText('(')
           ..addText(asDartLiteral(constraint.expression.toSql()))
-          ..addText(')')),
-        constraint.stored);
+          ..addText(')'),
+      ),
+      constraint.stored,
+    );
   }
 
   Map<String, Object?> toJson() => _$ColumnGeneratedAsToJson(this);

@@ -21,9 +21,7 @@ class NestedStarResultColumn extends ResultColumn
   NestedStarResultColumn({required this.tableName, this.as});
 
   @override
-  Iterable<AstNode> get childNodes => [
-        if (as case final alias?) alias,
-      ];
+  Iterable<AstNode> get childNodes => [?as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

@@ -82,7 +82,10 @@ Future<void> main() async {
     } catch (e) {
       expect(e, expectedException);
     } finally {
-      await database.customSelect('select 1').getSingle().timeout(
+      await database
+          .customSelect('select 1')
+          .getSingle()
+          .timeout(
             const Duration(milliseconds: 500),
             onTimeout: () => fail('deadlock?'),
           );
@@ -96,8 +99,10 @@ Future<void> main() async {
 
     await database.customStatement('PRAGMA foreign_keys = ON;');
     await database.customStatement('CREATE TABLE x (foo INTEGER PRIMARY KEY);');
-    await database.customStatement('CREATE TABLE y (foo INTEGER PRIMARY KEY '
-        'REFERENCES x (foo) DEFERRABLE INITIALLY DEFERRED);');
+    await database.customStatement(
+      'CREATE TABLE y (foo INTEGER PRIMARY KEY '
+      'REFERENCES x (foo) DEFERRABLE INITIALLY DEFERRED);',
+    );
 
     // On Android, the failing commit of the transaction rolls it back implicitly,
     // causing the drift's rollback recovery to fail. This is expected and not

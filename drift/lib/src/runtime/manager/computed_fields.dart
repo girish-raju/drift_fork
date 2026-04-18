@@ -58,8 +58,9 @@ class ComputedField<SqlType extends Object, $Table extends Table>
       return refs.$_typedResult.read(_expression);
     } on ArgumentError {
       throw ArgumentError(
-          'This computed field has not been added to the query. '
-          'Use the .withComputedFields(...) method to add it to the query. ');
+        'This computed field has not been added to the query. '
+        'Use the .withComputedFields(...) method to add it to the query. ',
+      );
     }
   }
 
@@ -81,8 +82,12 @@ class ComputedField<SqlType extends Object, $Table extends Table>
 /// An computed field for a table which has a converter
 ///
 /// See [BaseComputedField] for more information on computed fields and how to use them.
-class ComputedFieldWithConverter<DartType, SqlType extends Object,
-    $Table extends Table> extends BaseComputedField<SqlType, $Table> {
+class ComputedFieldWithConverter<
+  DartType,
+  SqlType extends Object,
+  $Table extends Table
+>
+    extends BaseComputedField<SqlType, $Table> {
   @override
   final GeneratedColumnWithTypeConverter<DartType, SqlType> _expression;
 

@@ -7,12 +7,13 @@ import '../test_utils/test_utils.dart';
 // Regression test for https://github.com/simolus3/drift/issues/1991
 
 Future<int?> _getCategoryIdByDescription(
-    TodoDb appDatabase, String description) async {
+  TodoDb appDatabase,
+  String description,
+) async {
   const q = "SELECT id FROM categories WHERE desc = ?";
-  final row = await appDatabase.customSelect(
-    q,
-    variables: [Variable<String>(description)],
-  ).getSingleOrNull();
+  final row = await appDatabase
+      .customSelect(q, variables: [Variable<String>(description)])
+      .getSingleOrNull();
   return row?.read("id");
 }
 
@@ -25,10 +26,13 @@ void main() {
     expect(await _getCategoryIdByDescription(db, categoryDescription), isNull);
 
     await db.categories.insertOne(
-        CategoriesCompanion.insert(description: categoryDescription));
+      CategoriesCompanion.insert(description: categoryDescription),
+    );
 
     // Search the category we just inserted
     expect(
-        await _getCategoryIdByDescription(db, categoryDescription), isNotNull);
+      await _getCategoryIdByDescription(db, categoryDescription),
+      isNotNull,
+    );
   });
 }

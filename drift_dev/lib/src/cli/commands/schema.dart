@@ -31,7 +31,7 @@ class SchemaCommand extends Command {
 typedef AnalyzedDatabase = ({
   List<DriftElement> elements,
   int? schemaVersion,
-  DriftDatabase? db
+  DriftDatabase? db,
 });
 
 extension ExportSchema on DriftDevCli {
@@ -39,15 +39,17 @@ extension ExportSchema on DriftDevCli {
   /// drift database class.
   Future<AnalyzedDatabase> readElementsFromSource(File dart) async {
     final driver = await createAnalysisDriver();
-    final input =
-        await driver.driver.fullyAnalyze(driver.uriFromPath(dart.path));
+    final input = await driver.driver.fullyAnalyze(
+      driver.uriFromPath(dart.path),
+    );
 
     if (!input.isFullyAnalyzed) {
       this.exit('Unexpected error: The input file could not be analyzed');
     }
 
-    final databases =
-        input.analysis.values.map((e) => e.result).whereType<DriftDatabase>();
+    final databases = input.analysis.values
+        .map((e) => e.result)
+        .whereType<DriftDatabase>();
 
     if (databases.length != 1) {
       this.exit('Expected the input file to contain exactly one database.');
@@ -57,8 +59,9 @@ extension ExportSchema on DriftDevCli {
     final databaseElement = databases.single;
     final db = result.resolvedDatabases[databaseElement.id]!;
 
-    final otherSources =
-        db.availableElements.map((e) => e.id.libraryUri).toSet();
+    final otherSources = db.availableElements
+        .map((e) => e.id.libraryUri)
+        .toSet();
     for (final other in otherSources) {
       await driver.driver.fullyAnalyze(other);
     }

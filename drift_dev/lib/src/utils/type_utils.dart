@@ -4,8 +4,9 @@ import 'package:path/path.dart' as p;
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final firstComponent =
-      p.split(type.element.library.firstFragment.source.fullName).firstOrNull;
+  final firstComponent = p
+      .split(type.element.library.firstFragment.source.fullName)
+      .firstOrNull;
   if (firstComponent == null) return false;
 
   return firstComponent.contains('drift') || firstComponent.contains('moor');

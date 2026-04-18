@@ -52,6 +52,10 @@ class BaseInfixOperator<D extends Object> extends InfixOperator<D> {
 
   /// Create an infix operator with the child expressions, the operator and the
   /// assumed precedence.
-  BaseInfixOperator(this.left, this.operator, this.right,
-      {this.precedence = Precedence.unknown});
+  BaseInfixOperator(
+    this.left,
+    this.operator,
+    this.right, {
+    this.precedence = Precedence.unknown,
+  });
 }

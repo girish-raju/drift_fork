@@ -7,11 +7,13 @@ import '../utils.dart';
 
 void main() {
   test('generates classes with required parameters', () async {
-    const options =
-        BuilderOptions({'row_class_constructor_all_required': true});
+    const options = BuilderOptions({
+      'row_class_constructor_all_required': true,
+    });
 
-    final writer = await emulateDriftBuild(inputs: {
-      'a|lib/main.dart': r'''
+    final writer = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
 part 'main.drift.dart';
@@ -29,14 +31,19 @@ class Users extends Table {
 )
 class Database extends _$Database {}
 ''',
-    }, options: options);
+      },
+      options: options,
+    );
 
     checkOutputs(
       {
-        'a|lib/main.drift.dart':
-            IsValidDartFile(const _DefaultConstructorAllRequired(
-          {'User', 'UsersCompanion', 'SomeQueryResult'},
-        )),
+        'a|lib/main.drift.dart': IsValidDartFile(
+          const _DefaultConstructorAllRequired({
+            'User',
+            'UsersCompanion',
+            'SomeQueryResult',
+          }),
+        ),
       },
       writer.dartOutputs,
       writer.writer,
@@ -51,8 +58,10 @@ class _DefaultConstructorAllRequired extends Matcher {
 
   @override
   Description describe(Description description) {
-    return description.add('generates classes $classesToCheck without '
-        'non-required parameters in default constructor.');
+    return description.add(
+      'generates classes $classesToCheck without '
+      'non-required parameters in default constructor.',
+    );
   }
 
   @override
@@ -75,7 +84,8 @@ class _DefaultConstructorAllRequired extends Matcher {
           if (member is ConstructorDeclaration && member.name == null) {
             for (final parameter in member.parameters.parameters) {
               if (!parameter.isRequired) {
-                matchState['desc'] = 'Parameter ${parameter.name?.lexeme} in '
+                matchState['desc'] =
+                    'Parameter ${parameter.name?.lexeme} in '
                     '$definedClassName() is not required.';
               }
             }
@@ -96,9 +106,14 @@ class _DefaultConstructorAllRequired extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
-    return mismatchDescription
-        .add((matchState['desc'] as String?) ?? 'Had syntax errors');
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    return mismatchDescription.add(
+      (matchState['desc'] as String?) ?? 'Had syntax errors',
+    );
   }
 }

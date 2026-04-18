@@ -37,8 +37,10 @@ class MockExecutor extends Mock implements QueryExecutor {
     when(ensureOpen(any)).thenAnswer((i) async {
       if (!opened && openingDetails != null) {
         opened = true;
-        await (i.positionalArguments.single as QueryExecutorUser)
-            .beforeOpen(this, openingDetails!);
+        await (i.positionalArguments.single as QueryExecutorUser).beforeOpen(
+          this,
+          openingDetails!,
+        );
       }
 
       opened = true;
@@ -61,9 +63,12 @@ class MockExecutor extends Mock implements QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-          String? statement, List<Object?>? args) =>
-      _nsm(Invocation.method(#runSelect, [statement, args]),
-          Future.value(<Map<String, Object?>>[]));
+    String? statement,
+    List<Object?>? args,
+  ) => _nsm(
+    Invocation.method(#runSelect, [statement, args]),
+    Future.value(<Map<String, Object?>>[]),
+  );
 
   @override
   Future<int> runInsert(String? statement, List<Object?>? args) =>
@@ -79,7 +84,9 @@ class MockExecutor extends Mock implements QueryExecutor {
 
   @override
   Future<void> runCustom(String? statement, [List<Object?>? args]) => _nsm(
-      Invocation.method(#runCustom, [statement, args]), Future.value(null));
+    Invocation.method(#runCustom, [statement, args]),
+    Future.value(null),
+  );
 
   @override
   Future<void> runBatched(BatchedStatements? statements) =>

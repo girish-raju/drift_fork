@@ -37,7 +37,8 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   }
 
   Stream<T> _delegateStream<T>(
-      Stream<T> Function(StreamQueryStore store) createStream) {
+    Stream<T> Function(StreamQueryStore store) createStream,
+  ) {
     if (_resolved != null) {
       return createStream(_resolved!);
     } else {
@@ -45,21 +46,20 @@ class DelayedStreamQueryStore implements StreamQueryStore {
       // single-subscription stream.
       // `.asBroadcastStream()` doesn't work either because the internal caching
       // breaks query streams which need to know about live subscribers.
-      return Stream.multi(
-        (listener) async {
-          final store = await _delegate;
-          if (!listener.isClosed) {
-            await listener.addStream(createStream(store));
-          }
-        },
-        isBroadcast: true,
-      );
+      return Stream.multi((listener) async {
+        final store = await _delegate;
+        if (!listener.isClosed) {
+          await listener.addStream(createStream(store));
+        }
+      }, isBroadcast: true);
     }
   }
 
   @override
   Stream<T> registerStream<T extends Object>(
-      QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
+    QueryStreamFetcher<T> fetcher,
+    DatabaseConnectionUser database,
+  ) {
     return _delegateStream((store) => store.registerStream(fetcher, database));
   }
 

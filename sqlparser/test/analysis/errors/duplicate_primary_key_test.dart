@@ -5,8 +5,11 @@ void main() {
   void check(String sql, List<String> problems) {
     final engine = SqlEngine();
     final parseResult = engine.parse(ParserEntrypoint.statement, sql);
-    engine.registerTable(const SchemaFromCreateTable()
-        .read(parseResult.rootNode as CreateTableStatement));
+    engine.registerTable(
+      const SchemaFromCreateTable().read(
+        parseResult.rootNode as CreateTableStatement,
+      ),
+    );
 
     final context = engine.analyzeParsed(parseResult);
     expect(
@@ -20,15 +23,12 @@ void main() {
   }
 
   test('not reported on a correct table', () {
-    check(
-      '''
+    check('''
         CREATE TABLE tbl (
           foo INTEGER PRIMARY KEY,
           bar TEXT
         );
-      ''',
-      [],
-    );
+      ''', []);
   });
 
   test('multiple column constraints', () {

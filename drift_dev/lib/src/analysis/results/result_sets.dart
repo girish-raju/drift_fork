@@ -12,10 +12,7 @@ class CustomParentClass {
   final AnnotatedDartCode parentClass;
   final bool isConst;
 
-  CustomParentClass({
-    required this.parentClass,
-    required this.isConst,
-  });
+  CustomParentClass({required this.parentClass, required this.isConst});
 }
 
 abstract class DriftElementWithResultSet extends DriftSchemaElement {
@@ -131,7 +128,7 @@ class ExistingRowClass {
     required this.namedColumns,
     required this.columnGetters,
     this.generateInsertable = false,
-  })  : targetClass = null,
-        constructor = '',
-        isAsyncFactory = false;
+  }) : targetClass = null,
+       constructor = '',
+       isAsyncFactory = false;
 }

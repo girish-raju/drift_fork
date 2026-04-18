@@ -83,8 +83,9 @@ class FileState {
 
   bool get isFullyAnalyzed {
     return discovery != null &&
-        discovery!.locallyDefinedElements
-            .every((e) => elementIsAnalyzed(e.ownId));
+        discovery!.locallyDefinedElements.every(
+          (e) => elementIsAnalyzed(e.ownId),
+        );
   }
 
   DriftElementId id(String name) => DriftElementId(ownUri, name);
@@ -94,8 +95,9 @@ class FileState {
   }
 
   bool get _definesQuery {
-    return analyzedElements
-            .any((e) => e is DefinedSqlQuery && e.mode == QueryMode.regular) ||
+    return analyzedElements.any(
+          (e) => e is DefinedSqlQuery && e.mode == QueryMode.regular,
+        ) ||
         // Also check discovery, we might not have analyzed all elements in this
         // file if it's just an import.
         definedElements.any((e) => e.kind == DriftElementKind.definedQuery);
@@ -148,12 +150,14 @@ class DiscoveredDriftFile extends DiscoveredFileState {
   FileSpan get originalSourceSpan => originalSource.span(0);
 
   @override
-  Iterable<DriftImport> get importDependencies => imports.map((e) => (
-        uri: e.importedUri,
-        // Imports in drift files are always transitive (visible to files
-        // importing this drift file).
-        transitive: true,
-      ));
+  Iterable<DriftImport> get importDependencies => imports.map(
+    (e) => (
+      uri: e.importedUri,
+      // Imports in drift files are always transitive (visible to files
+      // importing this drift file).
+      transitive: true,
+    ),
+  );
 
   DiscoveredDriftFile({
     required this.originalSource,

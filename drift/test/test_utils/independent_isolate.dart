@@ -16,7 +16,7 @@ void spawnIsolate(SendPort sendConnectPortTo) async {
       when(executor.runSelect(any, any)).thenAnswer((i) async {
         final args = i.positionalArguments[1];
         return [
-          {'a': args[0]}
+          {'a': args[0]},
         ];
       });
       return executor;

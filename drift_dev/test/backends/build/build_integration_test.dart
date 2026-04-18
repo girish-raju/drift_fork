@@ -8,28 +8,37 @@ import '../../utils.dart';
 void main() {
   test('writes entities from imports', () async {
     // Regression test for https://github.com/simolus3/drift/issues/2175
-    final result = await emulateDriftBuild(inputs: {
-      'a|lib/main.dart': '''
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 @DriftDatabase(include: {'a.drift'})
 class MyDatabase {}
 ''',
-      'a|lib/a.drift': '''
+        'a|lib/a.drift': '''
 import 'b.drift';
 
 CREATE INDEX b_idx /* comment should be stripped */ ON b (foo, upper(foo));
 ''',
-      'a|lib/b.drift': 'CREATE TABLE b (foo TEXT);',
-    });
+        'a|lib/b.drift': 'CREATE TABLE b (foo TEXT);',
+      },
+    );
 
-    checkOutputs({
-      'a|lib/main.drift.dart':
-          decodedMatches(contains('late final Index bIdx = Index(\n'
-              "    'b_idx',\n"
-              "    'CREATE INDEX b_idx ON b (foo, upper(foo))',\n"
-              "  );")),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          contains(
+            'late final Index bIdx = Index(\n'
+            "    'b_idx',\n"
+            "    'CREATE INDEX b_idx ON b (foo, upper(foo))',\n"
+            "  );",
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('keep import aliases', () async {
@@ -54,20 +63,24 @@ class Files extends Table {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(
-        allOf(
-          contains(
-            r'class $FilesTable extends tables.Files with '
-            r'drift.TableInfo<$FilesTable, File>',
-          ),
-          contains(
-            'class File extends drift.DataClass implements '
-            'drift.Insertable<File>',
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          allOf(
+            contains(
+              r'class $FilesTable extends tables.Files with '
+              r'drift.TableInfo<$FilesTable, File>',
+            ),
+            contains(
+              'class File extends drift.DataClass implements '
+              'drift.Insertable<File>',
+            ),
           ),
         ),
-      ),
-    }, result.dartOutputs, result.writer);
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('warns about errors in imports', () async {
@@ -98,16 +111,17 @@ CREATE INDEX semantic_error ON a (c);
       logger: logger,
     );
 
-    expect(
-      await logs,
-      [
-        allOf(contains('Expected opening parenthesis'),
-            contains('syntax_error;')),
-        allOf(contains('Unknown column.'), contains('(c);')),
-        allOf(contains('Cannot use an array variable with an explicit index'),
-            contains('?2;')),
-      ],
-    );
+    expect(await logs, [
+      allOf(
+        contains('Expected opening parenthesis'),
+        contains('syntax_error;'),
+      ),
+      allOf(contains('Unknown column.'), contains('(c);')),
+      allOf(
+        contains('Cannot use an array variable with an explicit index'),
+        contains('?2;'),
+      ),
+    ]);
   });
 
   test('Dart-defined tables are visible in drift files', () async {
@@ -142,9 +156,11 @@ selectAll: SELECT * FROM foo;
       logger: logger,
     );
 
-    checkOutputs({
-      'a|lib/database.drift.dart': decodedMatches(contains('selectAll')),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {'a|lib/database.drift.dart': decodedMatches(contains('selectAll'))},
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('can work with existing part files', () async {
@@ -185,8 +201,11 @@ class Users extends Table {
     expect(
       logger.onRecord,
       emits(
-        isA<LogRecord>().having((e) => e.message, 'message',
-            contains('Could not resolve Dart library package:a/main.dart')),
+        isA<LogRecord>().having(
+          (e) => e.message,
+          'message',
+          contains('Could not resolve Dart library package:a/main.dart'),
+        ),
       ),
     );
 
@@ -225,18 +244,25 @@ secondQuery AS MyResultClass: SELECT 'bar' AS r1, 2 AS r2;
       logger: logger,
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(predicate((String generated) {
-        return 'class MyResultClass'.allMatches(generated).length == 1;
-      })),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          predicate((String generated) {
+            return 'class MyResultClass'.allMatches(generated).length == 1;
+          }),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
-  test('generates imports for query variables with modular generation',
-      () async {
-    final result = await emulateDriftBuild(
-      inputs: {
-        'a|lib/main.drift': '''
+  test(
+    'generates imports for query variables with modular generation',
+    () async {
+      final result = await emulateDriftBuild(
+        inputs: {
+          'a|lib/main.drift': '''
 CREATE TABLE my_table (
   a INTEGER PRIMARY KEY,
   b TEXT,
@@ -246,39 +272,44 @@ CREATE TABLE my_table (
 
 q: INSERT INTO my_table (b, c, d) VALUES (?, ?, ?);
 ''',
-      },
-      modularBuild: true,
-      logger: loggerThat(neverEmits(anything)),
-    );
+        },
+        modularBuild: true,
+        logger: loggerThat(neverEmits(anything)),
+      );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(
-        allOf(
-          contains(
-            'import \'package:drift/drift.dart\' as i0;\n'
-            'import \'package:a/main.drift.dart\' as i1;\n'
-            'import \'dart:typed_data\' as i2;\n'
-            'import \'package:drift/internal/modular.dart\' as i3;\n',
+      checkOutputs(
+        {
+          'a|lib/main.drift.dart': decodedMatches(
+            allOf(
+              contains(
+                'import \'package:drift/drift.dart\' as i0;\n'
+                'import \'package:a/main.drift.dart\' as i1;\n'
+                'import \'dart:typed_data\' as i2;\n'
+                'import \'package:drift/internal/modular.dart\' as i3;\n',
+              ),
+              contains(
+                'class MyTableData extends i0.DataClass\n'
+                '    implements i0.Insertable<i1.MyTableData> {\n'
+                '  final int a;\n'
+                '  final String? b;\n'
+                '  final i2.Uint8List? c;\n'
+                '  final i0.DriftAny? d;\n',
+              ),
+              contains(
+                '      variables: [\n'
+                '        i0.Variable<String>(var1),\n'
+                '        i0.Variable<i2.Uint8List>(var2),\n'
+                '        i0.Variable<i0.DriftAny>(var3)\n'
+                '      ],\n',
+              ),
+            ),
           ),
-          contains(
-            'class MyTableData extends i0.DataClass\n'
-            '    implements i0.Insertable<i1.MyTableData> {\n'
-            '  final int a;\n'
-            '  final String? b;\n'
-            '  final i2.Uint8List? c;\n'
-            '  final i0.DriftAny? d;\n',
-          ),
-          contains(
-            '      variables: [\n'
-            '        i0.Variable<String>(var1),\n'
-            '        i0.Variable<i2.Uint8List>(var2),\n'
-            '        i0.Variable<i0.DriftAny>(var3)\n'
-            '      ],\n',
-          ),
-        ),
-      ),
-    }, result.dartOutputs, result.writer);
-  });
+        },
+        result.dartOutputs,
+        result.writer,
+      );
+    },
+  );
 
   test('can disable manager code for modular builds', () async {
     final result = await emulateDriftBuild(
@@ -297,9 +328,11 @@ CREATE TABLE my_table (
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(isNot(contains('Manager'))),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {'a|lib/main.drift.dart': decodedMatches(isNot(contains('Manager')))},
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('supports `MAPPED BY` for columns', () async {
@@ -319,8 +352,10 @@ TypeConverter<Object, int> myConverter() => throw 'stub';
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains('''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains('''
 class ADrift extends i1.ModularAccessor {
   ADrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<Object?> a() {
@@ -330,8 +365,12 @@ class ADrift extends i1.ModularAccessor {
             i2.myConverter(), row.readNullable<int>('col')));
   }
 }
-''')),
-    }, results.dartOutputs, results.writer);
+'''),
+        ),
+      },
+      results.dartOutputs,
+      results.writer,
+    );
   });
 
   test('generates type converters for views', () async {
@@ -366,7 +405,8 @@ TypeConverter<Object, int> myConverter() => throw UnimplementedError();
         'a|lib/a.drift.dart': decodedMatches(
           allOf(
             contains(
-                ''''CREATE VIEW my_view AS SELECT CAST(1 AS INT) AS c1, CAST(\\'bar\\' AS TEXT) AS c2, 1 AS c3, NULLIF(1, 2) AS c4','''),
+              ''''CREATE VIEW my_view AS SELECT CAST(1 AS INT) AS c1, CAST(\\'bar\\' AS TEXT) AS c2, 1 AS c3, NULLIF(1, 2) AS c4',''',
+            ),
             contains(r'$converterc1 ='),
             contains(r'$converterc2 ='),
             contains(r'$converterc3 ='),
@@ -408,9 +448,12 @@ TypeConverter<Object, BigInt> myConverter() => throw UnimplementedError();
 
     checkOutputs(
       {
-        'a|lib/a.drift.dart': decodedMatches(contains(
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(
             'foo: i2.\$MyTableTable.\$converterfoo.fromSql(attachedDatabase.typeMapping\n'
-            '          .read(i0.DriftSqlType.bigInt')),
+            '          .read(i0.DriftSqlType.bigInt',
+          ),
+        ),
         'a|lib/table.drift.dart': decodedMatches(anything),
       },
       result.dartOutputs,
@@ -439,11 +482,16 @@ class Database extends $Database {}
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart':
-          decodedMatches(contains(r'OnCreateQuery get $drift0 => ')),
-      'a|lib/db.drift.dart': decodedMatches(contains(r'.$drift0];'))
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'OnCreateQuery get $drift0 => '),
+        ),
+        'a|lib/db.drift.dart': decodedMatches(contains(r'.$drift0];')),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('writes query from transitive import', () async {
@@ -472,11 +520,15 @@ q: SELECT 1;
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(
-        contains(r'Selectable<int> q()'),
-      )
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          contains(r'Selectable<int> q()'),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('warns when Dart tables are included', () async {
@@ -496,10 +548,17 @@ class MyTable extends Table {
 }
 ''',
       },
-      logger: loggerThat(emits(emitsThrough(isA<LogRecord>().having(
-          (e) => e.message,
-          'message',
-          contains('will be included in this database: MyTable'))))),
+      logger: loggerThat(
+        emits(
+          emitsThrough(
+            isA<LogRecord>().having(
+              (e) => e.message,
+              'message',
+              contains('will be included in this database: MyTable'),
+            ),
+          ),
+        ),
+      ),
     );
   });
 
@@ -515,16 +574,18 @@ part 'main.drift.dart';
 class MyDatabase {}
 ''',
       },
-      options: BuilderOptions({
-        'preamble': '// generated by drift',
-      }),
+      options: BuilderOptions({'preamble': '// generated by drift'}),
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(
-        startsWith('// generated by drift\n'),
-      ),
-    }, outputs.dartOutputs, outputs.writer);
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          startsWith('// generated by drift\n'),
+        ),
+      },
+      outputs.dartOutputs,
+      outputs.writer,
+    );
   });
 
   test('crawl imports through export', () async {
@@ -558,10 +619,14 @@ class AppDatabase extends $AppDatabase {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/table.drift.dart': anything,
-      'a|lib/database.drift.dart': decodedMatches(contains('myTable')),
-    }, outputs.dartOutputs, outputs.writer);
+    checkOutputs(
+      {
+        'a|lib/table.drift.dart': anything,
+        'a|lib/database.drift.dart': decodedMatches(contains('myTable')),
+      },
+      outputs.dartOutputs,
+      outputs.writer,
+    );
   });
 
   test('generates views from drift tables', () async {
@@ -569,8 +634,8 @@ class AppDatabase extends $AppDatabase {
     debugLogger.onRecord.listen((e) => print(e.message));
 
     final result = await emulateDriftBuild(
-        inputs: {
-          'a|lib/drift/datastore_db.dart': '''
+      inputs: {
+        'a|lib/drift/datastore_db.dart': '''
 import 'package:drift/drift.dart';
 part 'datastore_db.g.dart';
 mixin AutoIncrement on Table {
@@ -665,7 +730,7 @@ class DatastoreDb extends _\$DatastoreDb {
   int get schemaVersion => 1;
 }
         ''',
-          'a|lib/drift/combo_group.drift': '''
+        'a|lib/drift/combo_group.drift': '''
         CREATE TABLE [COMBO_GROUP](
 	[ComboGroupID] [int] NOT NULL PRIMARY KEY,
 	[HierStrucID] [bigint] NULL,
@@ -675,7 +740,7 @@ class DatastoreDb extends _\$DatastoreDb {
 	[SluIndex] [int] NULL,
 	[HhtSluIndex] [int] NULL);
 	''',
-          'a|lib/drift/string_table.drift': '''
+        'a|lib/drift/string_table.drift': '''
 CREATE TABLE [STRING_TABLE](
 	[StringID] [bigint] NOT NULL PRIMARY KEY,
 	[StringNumberID] [bigint] NULL,
@@ -687,17 +752,20 @@ CREATE TABLE [STRING_TABLE](
 	[StringText] [nvarchar](128) NULL
 );
 	''',
-        },
-        options: BuilderOptions({'assume_correct_reference': true}),
-        logger: debugLogger);
+      },
+      options: BuilderOptions({'assume_correct_reference': true}),
+      logger: debugLogger,
+    );
 
     checkOutputs(
       {
         'a|lib/drift/datastore_db.drift.dart': decodedMatches(
           allOf(
-            contains('      (attachedDatabase.selectOnly(\n'
-                '        attachedDatabase.comboGroup,\n'
-                '      )'),
+            contains(
+              '      (attachedDatabase.selectOnly(\n'
+              '        attachedDatabase.comboGroup,\n'
+              '      )',
+            ),
           ),
         ),
       },
@@ -728,24 +796,26 @@ class MyDatabase extends _$MyDatabase {}
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/001_main.drift.dart': decodedMatches(
-        contains('class MainDrift extends i2.ModularAccessor'),
-      ),
-      'a|lib/database.drift.dart': decodedMatches(
-        contains('i1.MainDrift get mainDrift'),
-      ),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/001_main.drift.dart': decodedMatches(
+          contains('class MainDrift extends i2.ModularAccessor'),
+        ),
+        'a|lib/database.drift.dart': decodedMatches(
+          contains('i1.MainDrift get mainDrift'),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   group('generates view triggers', timeout: Timeout.none, () {
-    const options = BuilderOptions(
-      {
-        'sql': {
-          'options': {'version': '3.35'}
-        }
+    const options = BuilderOptions({
+      'sql': {
+        'options': {'version': '3.35'},
       },
-    );
+    });
 
     test('for create', () async {
       final result = await emulateDriftBuild(
@@ -826,16 +896,18 @@ class MyDatabase extends \$MyDatabase {}
 
       checkOutputs(
         {
-          'a|lib/database.drift.dart': decodedMatches(contains(
-            'i1.FooView fooView = i1.FooView(this)',
-          )),
-          'a|lib/a.drift.dart': decodedMatches(allOf([
-            contains('i0.Trigger get fooCreate'),
-            stringContainsInOrder([
-              'Future<List<i1.FooViewData>> createFoo()',
-              'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+          'a|lib/database.drift.dart': decodedMatches(
+            contains('i1.FooView fooView = i1.FooView(this)'),
+          ),
+          'a|lib/a.drift.dart': decodedMatches(
+            allOf([
+              contains('i0.Trigger get fooCreate'),
+              stringContainsInOrder([
+                'Future<List<i1.FooViewData>> createFoo()',
+                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+              ]),
             ]),
-          ])),
+          ),
         },
         result.dartOutputs,
         result.writer,
@@ -921,16 +993,18 @@ class MyDatabase extends \$MyDatabase {}
 
       checkOutputs(
         {
-          'a|lib/database.drift.dart': decodedMatches(contains(
-            'i1.FooView fooView = i1.FooView(this)',
-          )),
-          'a|lib/a.drift.dart': decodedMatches(allOf([
-            contains('i0.Trigger get fooUpdate'),
-            stringContainsInOrder([
-              'Future<List<i1.FooViewData>> updateFoo(int id)',
-              'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+          'a|lib/database.drift.dart': decodedMatches(
+            contains('i1.FooView fooView = i1.FooView(this)'),
+          ),
+          'a|lib/a.drift.dart': decodedMatches(
+            allOf([
+              contains('i0.Trigger get fooUpdate'),
+              stringContainsInOrder([
+                'Future<List<i1.FooViewData>> updateFoo(int id)',
+                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+              ]),
             ]),
-          ])),
+          ),
         },
         result.dartOutputs,
         result.writer,
@@ -1013,13 +1087,15 @@ class MyDatabase extends \$MyDatabase {}
 
       checkOutputs(
         {
-          'a|lib/database.drift.dart': decodedMatches(contains(
-            'i1.FooView fooView = i1.FooView(this)',
-          )),
-          'a|lib/a.drift.dart': decodedMatches(allOf([
-            contains('i0.Trigger get fooDelete'),
-            contains('Future<int> deleteFoo(int id)'),
-          ])),
+          'a|lib/database.drift.dart': decodedMatches(
+            contains('i1.FooView fooView = i1.FooView(this)'),
+          ),
+          'a|lib/a.drift.dart': decodedMatches(
+            allOf([
+              contains('i0.Trigger get fooDelete'),
+              contains('Future<int> deleteFoo(int id)'),
+            ]),
+          ),
         },
         result.dartOutputs,
         result.writer,
@@ -1030,10 +1106,9 @@ class MyDatabase extends \$MyDatabase {}
   group('reports issues', () {
     for (final fatalWarnings in [false, true]) {
       group('fatalWarnings: $fatalWarnings', () {
-        final options = BuilderOptions(
-          {'fatal_warnings': fatalWarnings},
-          isRoot: true,
-        );
+        final options = BuilderOptions({
+          'fatal_warnings': fatalWarnings,
+        }, isRoot: true);
 
         Future<void> runTest(String source, expectedMessage) async {
           final build = emulateDriftBuild(
@@ -1052,7 +1127,9 @@ class MyDatabase extends \$MyDatabase {}
 
         test('syntax', () async {
           await runTest(
-              'foo: SELECT;', contains('Expected a result column here.'));
+            'foo: SELECT;',
+            contains('Expected a result column here.'),
+          );
         });
 
         test('semantic in analysis', () async {
@@ -1066,18 +1143,23 @@ class MyDatabase extends \$MyDatabase {}
 
         test('file analysis', () async {
           await runTest(
-              r'a($x = 2): SELECT 1, 2, 3 ORDER BY $x;',
-              contains('This placeholder has a default value, which is only '
-                  'supported for expressions.'));
+            r'a($x = 2): SELECT 1, 2, 3 ORDER BY $x;',
+            contains(
+              'This placeholder has a default value, which is only '
+              'supported for expressions.',
+            ),
+          );
         });
       });
     }
   });
 
-  test('warns about missing imports', () async {
-    await emulateDriftBuild(
-      inputs: {
-        'a|lib/main.drift': '''
+  test(
+    'warns about missing imports',
+    () async {
+      await emulateDriftBuild(
+        inputs: {
+          'a|lib/main.drift': '''
 import 'package:b/b.drift';
 import 'package:a/missing.drift';
 
@@ -1085,30 +1167,33 @@ CREATE TABLE users (
   another INTEGER REFERENCES b(foo)
 );
 ''',
-        'b|lib/b.drift': '''
+          'b|lib/b.drift': '''
 CREATE TABLE b (foo INTEGER);
 ''',
-      },
-      logger: loggerThat(
-        emitsInAnyOrder(
-          [
+        },
+        logger: loggerThat(
+          emitsInAnyOrder([
             record(
               allOf(
                 contains(
-                    "The imported file, `package:b/b.drift`, does not exist or can't be imported"),
+                  "The imported file, `package:b/b.drift`, does not exist or can't be imported",
+                ),
                 contains('Note: When importing drift files across packages'),
               ),
             ),
-            record(allOf(
-              contains('package:a/missing.drift'),
-              isNot(contains('Note: When')),
-            )),
+            record(
+              allOf(
+                contains('package:a/missing.drift'),
+                isNot(contains('Note: When')),
+              ),
+            ),
             record(contains('`b` could not be found in any import.')),
-          ],
+          ]),
         ),
-      ),
-    );
-  }, skip: 'Detailed logs not available through testBuilders');
+      );
+    },
+    skip: 'Detailed logs not available through testBuilders',
+  );
 
   test('generates generic type converters correctly', () async {
     // Regression test for https://github.com/simolus3/drift/issues/3300
@@ -1147,41 +1232,49 @@ class Database {}
 
     checkOutputs(
       {
-        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+        'a|lib/main.drift.dart': decodedMatches(
+          contains(r'''
   static TypeConverter<Map<String, Object?>, String> $converterextraData =
       MapConverter<Object?>();
-'''))
+'''),
+        ),
       },
       build.dartOutputs,
       build.writer,
     );
   });
 
-  test('generates modular accessor for drift file that only has imports',
-      () async {
-    final build = await emulateDriftBuild(
-      inputs: {
-        'a|lib/a.drift': '''
+  test(
+    'generates modular accessor for drift file that only has imports',
+    () async {
+      final build = await emulateDriftBuild(
+        inputs: {
+          'a|lib/a.drift': '''
 import 'src/first.drift';
 import 'src/second.drift';
 ''',
-        'a|lib/src/first.drift': '''
+          'a|lib/src/first.drift': '''
 first: SELECT 1;
 ''',
-        'a|lib/src/second.drift': '''
+          'a|lib/src/second.drift': '''
 second: SELECT 2;
 ''',
-      },
-      modularBuild: true,
-      logger: loggerThat(neverEmits(anything)),
-    );
+        },
+        modularBuild: true,
+        logger: loggerThat(neverEmits(anything)),
+      );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains('ModularAccessor')),
-      'a|lib/src/first.drift.dart': anything,
-      'a|lib/src/second.drift.dart': anything,
-    }, build.dartOutputs, build.writer);
-  });
+      checkOutputs(
+        {
+          'a|lib/a.drift.dart': decodedMatches(contains('ModularAccessor')),
+          'a|lib/src/first.drift.dart': anything,
+          'a|lib/src/second.drift.dart': anything,
+        },
+        build.dartOutputs,
+        build.writer,
+      );
+    },
+  );
 
   test('generates manager references for tables in different files', () async {
     final build = await emulateDriftBuild(
@@ -1215,20 +1308,22 @@ class Groups extends Table {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/users.drift.dart': decodedMatches(
-        allOf(contains('ownedGroups'), contains('administeredGroups')),
-      ),
-      'a|lib/groups.drift.dart': anything,
-    }, build.dartOutputs, build.writer);
+    checkOutputs(
+      {
+        'a|lib/users.drift.dart': decodedMatches(
+          allOf(contains('ownedGroups'), contains('administeredGroups')),
+        ),
+        'a|lib/groups.drift.dart': anything,
+      },
+      build.dartOutputs,
+      build.writer,
+    );
   });
 
-  test(
-    'warns when dao references table not added to main database',
-    () async {
-      await emulateDriftBuild(
-        inputs: {
-          'a|lib/database.dart': '''
+  test('warns when dao references table not added to main database', () async {
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/database.dart': '''
 import 'package:drift/drift.dart';
 
 import 'dao.dart';
@@ -1241,7 +1336,7 @@ class Users extends Table {
 @DriftDatabase(daos: [TestAccessor])
 class AppDatabase {}
 ''',
-          'a|lib/dao.dart': '''
+        'a|lib/dao.dart': '''
 import 'package:drift/drift.dart';
 
 import 'database.dart';
@@ -1250,25 +1345,24 @@ import 'database.dart';
 class TestAccessor extends DatabaseAccessor<AppDatabase> {
 }
 ''',
-        },
-        modularBuild: true,
-        logger: loggerThat(
+      },
+      modularBuild: true,
+      logger: loggerThat(
+        emits(
           emits(
-            emits(
-              isA<LogRecord>().having(
-                (e) => e.message,
-                'message',
-                contains(
-                  "TestAccessor references tables that aren't available on the "
-                  'main database: [users]',
-                ),
+            isA<LogRecord>().having(
+              (e) => e.message,
+              'message',
+              contains(
+                "TestAccessor references tables that aren't available on the "
+                'main database: [users]',
               ),
             ),
           ),
         ),
-      );
-    },
-  );
+      ),
+    );
+  });
 
   test('not added false positive', () async {
     // Regression test for https://github.com/simolus3/drift/issues/3656
@@ -1345,20 +1439,26 @@ LEFT JOIN
     actions a
 ON
     o.id = a.order_id;
-'''
+''',
       },
       modularBuild: true,
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/view.drift.dart': decodedMatches(
-        allOf(
+    checkOutputs(
+      {
+        'a|lib/view.drift.dart': decodedMatches(
+          allOf(
             contains('actionCode: i0.JsonTypeConverter2.asNullable('),
             contains(
-                "'action_code': serializer.toJson<int?>(i0.JsonTypeConverter2.asNullable(")),
-      ),
-      'a|lib/table.drift.dart': anything,
-    }, results.dartOutputs, results.writer);
+              "'action_code': serializer.toJson<int?>(i0.JsonTypeConverter2.asNullable(",
+            ),
+          ),
+        ),
+        'a|lib/table.drift.dart': anything,
+      },
+      results.dartOutputs,
+      results.writer,
+    );
   });
 }

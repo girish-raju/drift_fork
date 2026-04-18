@@ -11,10 +11,10 @@ class MariaDBDatabase extends DelegatedDatabase {
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
-          _MariaDelegate(() => pool, true, enableMigrations),
-          isSequential: isSequential,
-          logStatements: logStatements,
-        );
+         _MariaDelegate(() => pool, true, enableMigrations),
+         isSequential: isSequential,
+         logStatements: logStatements,
+       );
 
   /// Creates a drift database implementation from a mariadb database
   /// [connection].
@@ -23,10 +23,10 @@ class MariaDBDatabase extends DelegatedDatabase {
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
-          _MariaDelegate(() => connection, false, enableMigrations),
-          isSequential: true,
-          logStatements: logStatements,
-        );
+         _MariaDelegate(() => connection, false, enableMigrations),
+         isSequential: true,
+         logStatements: logStatements,
+       );
 
   @override
   SqlDialect get dialect => SqlDialect.mariadb;
@@ -47,13 +47,13 @@ class _MariaDelegate extends DatabaseDelegate {
 
   @override
   TransactionDelegate get transactionDelegate => NoTransactionDelegate(
-        start: 'START TRANSACTION',
-        commit: 'COMMIT',
-        rollback: 'ROLLBACK',
-        savepoint: (int depth) => 'SAVEPOINT s$depth',
-        release: (int depth) => 'RELEASE SAVEPOINT s$depth',
-        rollbackToSavepoint: (int depth) => 'ROLLBACK TO SAVEPOINT s$depth',
-      );
+    start: 'START TRANSACTION',
+    commit: 'COMMIT',
+    rollback: 'ROLLBACK',
+    savepoint: (int depth) => 'SAVEPOINT s$depth',
+    release: (int depth) => 'RELEASE SAVEPOINT s$depth',
+    rollbackToSavepoint: (int depth) => 'ROLLBACK TO SAVEPOINT s$depth',
+  );
 
   @override
   late DbVersionDelegate versionDelegate;
@@ -159,10 +159,9 @@ class _MariaDelegate extends DatabaseDelegate {
       (index) => rowsList[index].typedAssoc().values.toList(),
     );
 
-    return QueryResult(
-      [for (final mariaColumn in result.cols) mariaColumn.name],
-      rowsParsed,
-    );
+    return QueryResult([
+      for (final mariaColumn in result.cols) mariaColumn.name,
+    ], rowsParsed);
   }
 
   @override
@@ -219,8 +218,10 @@ class _MariaVersionDelegate extends DynamicVersionDelegate {
   }
 
   Future init() async {
-    await database.execute('CREATE TABLE IF NOT EXISTS __schema (version '
-        'integer NOT NULL DEFAULT 0)');
+    await database.execute(
+      'CREATE TABLE IF NOT EXISTS __schema (version '
+      'integer NOT NULL DEFAULT 0)',
+    );
 
     final count = await database.execute('SELECT COUNT(*) FROM __schema');
     if (count.rows.first.typedAssoc()['COUNT(*)'] as int == 0) {

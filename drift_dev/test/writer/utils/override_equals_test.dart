@@ -9,10 +9,14 @@ void main() {
 
   setUp(() {
     final imports = LibraryImportManager(Uri.parse('drift:test'));
-    final generationOptions =
-        GenerationOptions(imports: imports, isModular: true);
-    writer = Writer(const DriftOptions.defaults(),
-        generationOptions: generationOptions);
+    final generationOptions = GenerationOptions(
+      imports: imports,
+      isModular: true,
+    );
+    writer = Writer(
+      const DriftOptions.defaults(),
+      generationOptions: generationOptions,
+    );
     imports.linkToWriter(writer);
   });
 
@@ -20,17 +24,22 @@ void main() {
     overrideEquals([], 'Foo', writer.leaf());
 
     expect(
-        writer.writeGenerated(),
-        '@override\nbool operator ==(Object other) => '
-        'identical(this, other) || (other is Foo);\n');
+      writer.writeGenerated(),
+      '@override\nbool operator ==(Object other) => '
+      'identical(this, other) || (other is Foo);\n',
+    );
   });
 
   test('overrides equals on class with fields', () {
-    overrideEquals([
-      EqualityField('a'),
-      EqualityField('b', isList: true),
-      EqualityField('c'),
-    ], 'Foo', writer.leaf());
+    overrideEquals(
+      [
+        EqualityField('a'),
+        EqualityField('b', isList: true),
+        EqualityField('c'),
+      ],
+      'Foo',
+      writer.leaf(),
+    );
 
     expect(
       writer.writeGenerated(),

@@ -79,7 +79,9 @@ class DriftBuilder extends Builder {
   DriftBuilder._(this.options, this.generationMode);
 
   factory DriftBuilder(
-      DriftGenerationMode generationMode, BuilderOptions options) {
+    DriftGenerationMode generationMode,
+    BuilderOptions options,
+  ) {
     final parsedOptions = DriftOptions.fromJson(options.config);
     return DriftBuilder._(parsedOptions, generationMode);
   }
@@ -89,11 +91,11 @@ class DriftBuilder extends Builder {
     switch (generationMode) {
       case DriftGenerationMode.monolithicSharedPart:
         return {
-          '.dart': ['.drift.g.part']
+          '.dart': ['.drift.g.part'],
         };
       case DriftGenerationMode.monolithicPart:
         return {
-          '.dart': ['.drift.dart']
+          '.dart': ['.drift.dart'],
         };
       case DriftGenerationMode.modular:
         return {
@@ -152,7 +154,8 @@ class _DriftBuildRun {
       buildStep,
       DriftAnalysisDriver(
           DriftBuildBackend(buildStep, forDrift3Preview: options.drift3Preview),
-          options)
+          options,
+        )
         ..cacheReader = BuildCacheReader(
           buildStep,
           // The discovery and analyzer builders will have emitted IR for
@@ -172,8 +175,10 @@ class _DriftBuildRun {
 
     await _checkForLanguageVersions();
 
-    final fileResult =
-        await _analyze(buildStep.inputId.uri, isEntrypoint: true);
+    final fileResult = await _analyze(
+      buildStep.inputId.uri,
+      isEntrypoint: true,
+    );
 
     // For the monolithic build modes, we only generate code for databases and
     // crawl the tables from there.
@@ -263,8 +268,9 @@ class _DriftBuildRun {
     } else {
       // An analysis step should have already run for this asset. If we can't
       // pick up results from that, there is no code for drift to generate.
-      final fromCache =
-          await driver.readStoredAnalysisResult(buildStep.inputId.uri);
+      final fromCache = await driver.readStoredAnalysisResult(
+        buildStep.inputId.uri,
+      );
 
       if (fromCache == null) {
         // Don't do anything! There are no analysis results for this file, so
@@ -283,8 +289,8 @@ class _DriftBuildRun {
       final library = await buildStep.inputLibrary;
       overriddenLanguageVersion = library.languageVersion.override;
 
-      final effectiveVersion =
-          sourceLanguageVersion = library.languageVersion.effective;
+      final effectiveVersion = sourceLanguageVersion =
+          library.languageVersion.effective;
       if (effectiveVersion < _minimalDartLanguageVersion) {
         final effective = effectiveVersion.majorMinor;
         final minimum = _minimalDartLanguageVersion.majorMinor;
@@ -354,19 +360,30 @@ class _DriftBuildRun {
       } else if (result is DriftDatabase) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
-        final input =
-            DatabaseGenerationInput(result, resolved, const {}, driver);
+        final input = DatabaseGenerationInput(
+          result,
+          resolved,
+          const {},
+          driver,
+        );
         DatabaseWriter(input, writer.child()).write();
 
         // Also write stubs for known custom functions so that the user can
         // easily register them on the database.
-        FunctionStubsWriter(driver, await driver.typeMapping, writer.leaf())
-            .write();
+        FunctionStubsWriter(
+          driver,
+          await driver.typeMapping,
+          writer.leaf(),
+        ).write();
       } else if (result is DatabaseAccessor) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
-        final input =
-            AccessorGenerationInput(result, resolved, const {}, driver);
+        final input = AccessorGenerationInput(
+          result,
+          resolved,
+          const {},
+          driver,
+        );
         AccessorWriter(input, writer.child()).write();
       } else if (result is DefinedSqlQuery) {
         switch (result.mode) {
@@ -382,8 +399,13 @@ class _DriftBuildRun {
               writer.leaf()
                 ..writeDriftRef('OnCreateQuery')
                 ..write(' get ${result.dbGetterName} => ')
-                ..write(DatabaseWriter.createOnCreate(
-                    writer.child(), result, resolved))
+                ..write(
+                  DatabaseWriter.createOnCreate(
+                    writer.child(),
+                    result,
+                    resolved,
+                  ),
+                )
                 ..writeln(';');
             }
 
@@ -395,7 +417,8 @@ class _DriftBuildRun {
     ModularAccessorWriter(writer.child(), entrypointState, driver).write();
 
     if (options.generateManager) {
-      final all = entrypointState.fileAnalysis?.allAvailableElements
+      final all =
+          entrypointState.fileAnalysis?.allAvailableElements
               .whereType<DriftTable>() ??
           const Iterable.empty();
 
@@ -448,18 +471,28 @@ class _DriftBuildRun {
           resolved.definedQueries.values.followedBy(importedQueries.values),
           (message) => log.warning('For accessor ${result.id.name}: $message'),
         );
-        importedQueries =
-            importedQueries.map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
-        resolved.definedQueries = resolved.definedQueries
-            .map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
+        importedQueries = importedQueries.map(
+          (k, v) => MapEntry(k, mappedQueries[v] ?? v),
+        );
+        resolved.definedQueries = resolved.definedQueries.map(
+          (k, v) => MapEntry(k, mappedQueries[v] ?? v),
+        );
 
         if (result is DriftDatabase) {
           final input = DatabaseGenerationInput(
-              result, resolved, importedQueries, driver);
+            result,
+            resolved,
+            importedQueries,
+            driver,
+          );
           DatabaseWriter(input, writer.child()).write();
         } else if (result is DatabaseAccessor) {
           final input = AccessorGenerationInput(
-              result, resolved, importedQueries, driver);
+            result,
+            resolved,
+            importedQueries,
+            driver,
+          );
           AccessorWriter(input, writer.child()).write();
         }
       }
@@ -492,8 +525,9 @@ class _DriftBuildRun {
 
       if (overriddenLanguageVersion != null) {
         // Part files need to have the same version as the main library.
-        writer.header
-            .writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
+        writer.header.writeln(
+          '// @dart=${overriddenLanguageVersion!.majorMinor}',
+        );
       }
 
       writer.header.writeln('part of ${asDartLiteral(originalFile)};');
@@ -506,12 +540,15 @@ class _DriftBuildRun {
         code,
         sourceLanguageVersion ?? DartFormatter.latestLanguageVersion,
         // source_gen will include the linewidth comment for us.
-        includeWidthComment: !mode.appliesCombiningBuilderFromSourceGen &&
+        includeWidthComment:
+            !mode.appliesCombiningBuilderFromSourceGen &&
             options.preamble == null,
       );
     } on FormatterException {
-      log.warning('Could not format generated source. The generated code is '
-          'probably invalid, and this is most likely a bug in drift_dev.');
+      log.warning(
+        'Could not format generated source. The generated code is '
+        'probably invalid, and this is most likely a bug in drift_dev.',
+      );
     }
 
     return buildStep.writeAsString(buildStep.allowedOutputs.single, code);

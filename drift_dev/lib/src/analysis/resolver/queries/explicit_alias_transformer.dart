@@ -23,7 +23,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
   AstNode? _root;
 
   ExplicitAliasTransformer({bool drift3Mode = false})
-      : _drift3Mode = drift3Mode;
+    : _drift3Mode = drift3Mode;
 
   /// Rewrites an SQL [node] to use explicit aliases for columns.
   AstNode rewrite(AstNode node) {
@@ -101,7 +101,8 @@ class ExplicitAliasTransformer extends Transformer<bool> {
 
           for (final column in expanded) {
             if (column is AvailableColumn) {
-              final alias = column.source.alias ??
+              final alias =
+                  column.source.alias ??
                   _renamedResultSets.putIfAbsent(column.source, () {
                     return '_s:${_renamedResultSets.length}';
                   });
@@ -118,7 +119,8 @@ class ExplicitAliasTransformer extends Transformer<bool> {
               added += 1;
             } else {
               throw ArgumentError(
-                  'Internal error: Unhandled column type $column');
+                'Internal error: Unhandled column type $column',
+              );
             }
           }
 
@@ -132,8 +134,11 @@ class ExplicitAliasTransformer extends Transformer<bool> {
     // want to introduce explicit aliases in select statements appearing in the
     // FROM clause to ensure the references we've just introduced to expand star
     // columns are valid.
-    e.from =
-        transformNullableChild(e.from, e, arg || (_drift3Mode && e == _root));
+    e.from = transformNullableChild(
+      e.from,
+      e,
+      arg || (_drift3Mode && e == _root),
+    );
     e.where = transformNullableChild(e.where, e, arg);
     e.groupBy = transformNullableChild(e.groupBy, e, arg);
     e.limit = transformNullableChild(e.limit, e, arg);

@@ -33,109 +33,109 @@ DatabaseConnection driftDatabase({
     if (native?.databasePath case final lookupPath?) {
       return File(await lookupPath());
     } else {
-      final resolvedDirectory = await (native?.databaseDirectory ??
-          getApplicationDocumentsDirectory)();
+      final resolvedDirectory =
+          await (native?.databaseDirectory ??
+              getApplicationDocumentsDirectory)();
 
-      return File(p.join(
-        switch (resolvedDirectory) {
+      return File(
+        p.join(switch (resolvedDirectory) {
           Directory(:final path) => path,
           final String path => path,
           final other => throw ArgumentError.value(
-              other,
-              'other',
-              'databaseDirectory on DriftNativeOptions must resolve to a '
-                  'directory or a path as string.',
-            )
-        },
-        '$name.sqlite',
-      ));
+            other,
+            'other',
+            'databaseDirectory on DriftNativeOptions must resolve to a '
+                'directory or a path as string.',
+          ),
+        }, '$name.sqlite'),
+      );
     }
   }
 
-  return DatabaseConnection.delayed(Future(() async {
-    if (!hasConfiguredSqlite) {
-      // Make sqlite3 pick a more suitable location for temporary files - the
-      // one from the system may be inaccessible due to sandboxing.
-      final cachebase = await (native?.tempDirectoryPath?.call() ??
-          getTemporaryDirectory().then((d) => d.path));
+  return DatabaseConnection.delayed(
+    Future(() async {
+      if (!hasConfiguredSqlite) {
+        // Make sqlite3 pick a more suitable location for temporary files - the
+        // one from the system may be inaccessible due to sandboxing.
+        final cachebase =
+            await (native?.tempDirectoryPath?.call() ??
+                getTemporaryDirectory().then((d) => d.path));
 
-      if (cachebase != null) {
-        // We can't access /tmp on Android, which sqlite3 would try by default.
-        // Explicitly tell it about the correct temporary directory.
-        sqlite3.tempDirectory = cachebase;
+        if (cachebase != null) {
+          // We can't access /tmp on Android, which sqlite3 would try by default.
+          // Explicitly tell it about the correct temporary directory.
+          sqlite3.tempDirectory = cachebase;
+        }
+
+        hasConfiguredSqlite = true;
       }
 
-      hasConfiguredSqlite = true;
-    }
+      if (native != null && native.shareAcrossIsolates) {
+        const connectTimeout = Duration(seconds: 1);
 
-    if (native != null && native.shareAcrossIsolates) {
-      const connectTimeout = Duration(seconds: 1);
-
-      while (true) {
-        if (IsolateNameServer.lookupPortByName(portName(name))
-            case final port?) {
-          final isolate = DriftIsolate.fromConnectPort(port);
-          try {
-            return await isolate.connect(
-              connectTimeout: connectTimeout,
-              isolateDebugLog: native.isolateDebugLog,
-            );
-          } on TimeoutException {
-            // Isolate has stopped shortly after the register call. It should
-            // also remove the port mapping, so we can just try again in another
-            // iteration.
-            // However, it's possible for the isolate to become unreachable
-            // without unregistering itself (either due to a fatal error or when
-            // doing a hot restart). Check if the isolate is still reachable,
-            // and remove the mapping if it's not.
-            final controlPort = IsolateNameServer.lookupPortByName(
-                isolateControlPortName(name));
-            if (controlPort == null) {
-              continue;
+        while (true) {
+          if (IsolateNameServer.lookupPortByName(portName(name))
+              case final port?) {
+            final isolate = DriftIsolate.fromConnectPort(port);
+            try {
+              return await isolate.connect(
+                connectTimeout: connectTimeout,
+                isolateDebugLog: native.isolateDebugLog,
+              );
+            } on TimeoutException {
+              // Isolate has stopped shortly after the register call. It should
+              // also remove the port mapping, so we can just try again in another
+              // iteration.
+              // However, it's possible for the isolate to become unreachable
+              // without unregistering itself (either due to a fatal error or when
+              // doing a hot restart). Check if the isolate is still reachable,
+              // and remove the mapping if it's not.
+              final controlPort = IsolateNameServer.lookupPortByName(
+                isolateControlPortName(name),
+              );
+              if (controlPort == null) {
+                continue;
+              }
+              final supposedIsolate = Isolate(controlPort);
+              if (!await supposedIsolate.pingWithTimeout()) {
+                // Yup, gone!
+                IsolateNameServer.removePortNameMapping(portName(name));
+              }
+              // Otherwise, the isolate is probably paused. Keep trying...
             }
-            final supposedIsolate = Isolate(controlPort);
-            if (!await supposedIsolate.pingWithTimeout()) {
-              // Yup, gone!
-              IsolateNameServer.removePortNameMapping(portName(name));
-            }
-            // Otherwise, the isolate is probably paused. Keep trying...
-          }
-        } else {
-          // No port has been registered yet! Spawn an isolate that will try to
-          // register itself as the database server.
-          final receiveFromPending = ReceivePort();
-          final firstMessage = receiveFromPending.first;
-          await Isolate.spawn(
-            _isolateEntrypoint,
-            (
+          } else {
+            // No port has been registered yet! Spawn an isolate that will try to
+            // register itself as the database server.
+            final receiveFromPending = ReceivePort();
+            final firstMessage = receiveFromPending.first;
+            await Isolate.spawn(_isolateEntrypoint, (
               name: name,
               options: native,
               sendResponses: receiveFromPending.sendPort,
               path: (await databaseFile()).path,
-            ),
-            onExit: receiveFromPending.sendPort,
-          );
+            ), onExit: receiveFromPending.sendPort);
 
-          // The isolate will either succeed in registering its connect port to
-          // the name server (in which case it sends us the port), or it fails
-          // due to a race condition (in which case it exits).
-          final first = await firstMessage;
-          if (first case SendPort port) {
-            return await DriftIsolate.fromConnectPort(port).connect(
-              isolateDebugLog: native.isolateDebugLog,
-            );
+            // The isolate will either succeed in registering its connect port to
+            // the name server (in which case it sends us the port), or it fails
+            // due to a race condition (in which case it exits).
+            final first = await firstMessage;
+            if (first case SendPort port) {
+              return await DriftIsolate.fromConnectPort(
+                port,
+              ).connect(isolateDebugLog: native.isolateDebugLog);
+            }
           }
         }
       }
-    }
 
-    return NativeDatabase.createBackgroundConnection(
-      await databaseFile(),
-      setup: native?.setup,
-      isolateDebugLog: native?.isolateDebugLog ?? false,
-      isolateSetup: native?.isolateSetup,
-    );
-  }));
+      return NativeDatabase.createBackgroundConnection(
+        await databaseFile(),
+        setup: native?.setup,
+        isolateDebugLog: native?.isolateDebugLog ?? false,
+        isolateSetup: native?.isolateSetup,
+      );
+    }),
+  );
 }
 
 typedef _EntrypointMessage = ({
@@ -148,7 +148,9 @@ typedef _EntrypointMessage = ({
 void _isolateEntrypoint(_EntrypointMessage message) {
   final connections = ReceivePort();
   if (IsolateNameServer.registerPortWithName(
-      connections.sendPort, portName(message.name))) {
+    connections.sendPort,
+    portName(message.name),
+  )) {
     final controlPortName = isolateControlPortName(message.name);
     message.options.isolateSetup?.call();
 
@@ -167,7 +169,9 @@ void _isolateEntrypoint(_EntrypointMessage message) {
 
     IsolateNameServer.removePortNameMapping(controlPortName);
     IsolateNameServer.registerPortWithName(
-        Isolate.current.controlPort, controlPortName);
+      Isolate.current.controlPort,
+      controlPortName,
+    );
   } else {
     // Another isolate is responsible for hosting this database, abort.
     connections.close();
@@ -176,8 +180,9 @@ void _isolateEntrypoint(_EntrypointMessage message) {
 }
 
 extension PingWithTimeout on Isolate {
-  Future<bool> pingWithTimeout(
-      [Duration timeout = const Duration(milliseconds: 500)]) {
+  Future<bool> pingWithTimeout([
+    Duration timeout = const Duration(milliseconds: 500),
+  ]) {
     final completer = Completer<bool>();
     final receive = ReceivePort();
     late StreamSubscription subscription;

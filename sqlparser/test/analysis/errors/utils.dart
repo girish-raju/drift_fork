@@ -3,10 +3,9 @@ import 'package:test/test.dart';
 
 extension ExpectErrors on AnalysisContext {
   void expectError(String lexeme, {AnalysisErrorType? type, message}) {
-    expect(
-      errors,
-      [analysisErrorWith(lexeme: lexeme, type: type, message: message)],
-    );
+    expect(errors, [
+      analysisErrorWith(lexeme: lexeme, type: type, message: message),
+    ]);
   }
 
   void expectNoError() {

@@ -77,7 +77,8 @@ class ModularAccessorWriter {
           ..writeDart(infoType)
           ..write(' get ${reference.dbGetterName} => ')
           ..writeDart(
-              restOfClass.referenceElement(reference, 'attachedDatabase'))
+            restOfClass.referenceElement(reference, 'attachedDatabase'),
+          )
           ..write(';');
       }
     }
@@ -109,8 +110,10 @@ class ModularAccessorWriter {
 
 extension WriteImplicitDaoGetter on Scope {
   void writeGetterForIncludedDriftFile(
-      FileState import, DriftAnalysisDriver driver,
-      {required bool isAccessor}) {
+    FileState import,
+    DriftAnalysisDriver driver, {
+    required bool isAccessor,
+  }) {
     assert(generationOptions.isModular);
 
     if (import.needsModularAccessor(driver)) {

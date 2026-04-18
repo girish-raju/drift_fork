@@ -47,7 +47,7 @@ void main() {
           'dateTime': unix,
           'blob': Uint8List.fromList([1, 2, 3]),
           'null': null,
-        }
+        },
       ]);
     });
 
@@ -84,8 +84,11 @@ void main() {
   });
 
   test('custom update informs stream queries', () async {
-    await db.customUpdate('UPDATE tbl SET a = ?',
-        variables: [Variable.withString('hi')], updates: {db.users});
+    await db.customUpdate(
+      'UPDATE tbl SET a = ?',
+      variables: [Variable.withString('hi')],
+      updates: {db.users},
+    );
 
     verify(executor.runUpdate('UPDATE tbl SET a = ?', ['hi']));
     verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
@@ -94,19 +97,27 @@ void main() {
   test('custom insert', () async {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(32));
 
-    final id =
-        await db.customInsert('fake insert', variables: [Variable.withInt(3)]);
+    final id = await db.customInsert(
+      'fake insert',
+      variables: [Variable.withInt(3)],
+    );
     expect(id, 32);
 
     // shouldn't call stream queries - we didn't set the updates parameter
     verifyNever(streamQueries.handleTableUpdates(any));
   });
 
-  test('custom statement', () async {
-    // regression test for https://github.com/simolus3/drift/issues/199 - the
-    // mock will throw when used before opening
-    expect(db.customStatement('UPDATE tbl SET a = b'), completes);
-  }, onPlatform: const {
-    'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
-  });
+  test(
+    'custom statement',
+    () async {
+      // regression test for https://github.com/simolus3/drift/issues/199 - the
+      // mock will throw when used before opening
+      expect(db.customStatement('UPDATE tbl SET a = b'), completes);
+    },
+    onPlatform: const {
+      'js': [
+        Skip('Blocked by https://github.com/dart-lang/mockito/issues/198'),
+      ],
+    },
+  );
 }

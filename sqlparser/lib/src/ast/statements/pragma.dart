@@ -15,7 +15,7 @@ final class PragmaCommand extends Statement {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [if (value case final value?) value];
+  Iterable<AstNode> get childNodes => [?value];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

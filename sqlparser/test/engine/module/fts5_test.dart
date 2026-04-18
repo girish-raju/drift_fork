@@ -5,9 +5,7 @@ import '../../analysis/data.dart';
 
 final _fts5Options = EngineOptions(
   version: SqliteVersion.current,
-  enabledExtensions: const [
-    Fts5Extension(),
-  ],
+  enabledExtensions: const [Fts5Extension()],
 );
 
 void main() {
@@ -15,11 +13,14 @@ void main() {
     final engine = SqlEngine(_fts5Options);
 
     test('can create fts5 tables', () {
-      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          "fts5(bar , tokenize = 'porter ascii')");
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        "fts5(bar , tokenize = 'porter ascii')",
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(table.name, 'foo');
       final columns = table.resultColumns;
@@ -35,15 +36,19 @@ void main() {
     });
 
     test('can create fts5 tables with content table', () {
-      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          "fts5(bar , tokenize = 'porter ascii',content=tbl, content_rowid=d)");
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        "fts5(bar , tokenize = 'porter ascii',content=tbl, content_rowid=d)",
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(table.name, 'foo');
-      expect(table.resultColumns,
-          [isA<Column>().having((c) => c.name, 'name', 'bar')]);
+      expect(table.resultColumns, [
+        isA<Column>().having((c) => c.name, 'name', 'bar'),
+      ]);
       expect(table.findColumn('oid'), isA<RowId>());
 
       expect(
@@ -55,11 +60,14 @@ void main() {
     });
 
     test('does clean option values', () {
-      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          "fts5(bar , tokenize = 'porter ascii', content='tbl', content_rowid='d')");
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        "fts5(bar , tokenize = 'porter ascii', content='tbl', content_rowid='d')",
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(
         table,
@@ -70,11 +78,14 @@ void main() {
     });
 
     test('detects empty content table', () {
-      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          "fts5(bar , tokenize = 'porter ascii',content='', content_rowid='d')");
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        "fts5(bar , tokenize = 'porter ascii',content='', content_rowid='d')",
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(
         table,
@@ -85,11 +96,14 @@ void main() {
     });
 
     test('content table undefined rowid falls back', () {
-      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          "fts5(bar , tokenize = 'porter ascii',content='tbl')");
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        "fts5(bar , tokenize = 'porter ascii',content='tbl')",
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(
         table,
@@ -103,11 +117,14 @@ void main() {
       final engine = SqlEngine(_fts5Options);
 
       test('can create fts5vocab instance table', () {
-        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-            'fts5vocab(bar, instance)');
+        final result = engine.analyze(
+          'CREATE VIRTUAL TABLE foo USING '
+          'fts5vocab(bar, instance)',
+        );
 
-        final table = const SchemaFromCreateTable()
-            .read(result.root as TableInducingStatement);
+        final table = const SchemaFromCreateTable().read(
+          result.root as TableInducingStatement,
+        );
 
         expect(table.name, 'foo');
         final columns = table.resultColumns;
@@ -116,11 +133,14 @@ void main() {
       });
 
       test('can create fts5vocab row table', () {
-        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-            'fts5vocab(bar, row)');
+        final result = engine.analyze(
+          'CREATE VIRTUAL TABLE foo USING '
+          'fts5vocab(bar, row)',
+        );
 
-        final table = const SchemaFromCreateTable()
-            .read(result.root as TableInducingStatement);
+        final table = const SchemaFromCreateTable().read(
+          result.root as TableInducingStatement,
+        );
 
         expect(table.name, 'foo');
         final columns = table.resultColumns;
@@ -128,11 +148,14 @@ void main() {
       });
 
       test('can create fts5vocab col table', () {
-        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-            'fts5vocab(bar, col)');
+        final result = engine.analyze(
+          'CREATE VIRTUAL TABLE foo USING '
+          'fts5vocab(bar, col)',
+        );
 
-        final table = const SchemaFromCreateTable()
-            .read(result.root as TableInducingStatement);
+        final table = const SchemaFromCreateTable().read(
+          result.root as TableInducingStatement,
+        );
 
         expect(table.name, 'foo');
         final columns = table.resultColumns;
@@ -142,11 +165,13 @@ void main() {
     });
 
     test('handles the UNINDEXED column option', () {
-      final result = engine
-          .analyze('CREATE VIRTUAL TABLE foo USING fts5(bar, baz UNINDEXED)');
+      final result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING fts5(bar, baz UNINDEXED)',
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(table.name, 'foo');
       expect(table.resultColumns.map((c) => c.name), ['bar', 'baz']);
@@ -158,51 +183,63 @@ void main() {
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
-      final fts5Result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          'fts5(bar, baz);');
-      engine.registerTable(const SchemaFromCreateTable()
-          .read(fts5Result.root as TableInducingStatement));
+      final fts5Result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        'fts5(bar, baz);',
+      );
+      engine.registerTable(
+        const SchemaFromCreateTable().read(
+          fts5Result.root as TableInducingStatement,
+        ),
+      );
     });
 
     test('return type of bm25()', () {
-      final result = engine
-          .analyze('SELECT *, bm25(foo) AS b FROM foo WHERE foo MATCH \'\'');
+      final result = engine.analyze(
+        'SELECT *, bm25(foo) AS b FROM foo WHERE foo MATCH \'\'',
+      );
       expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
-      expect(result.typeOf(column),
-          const ResolveResult(ResolvedType(type: BasicType.real)));
-      expect(result.typeOf((column as ExpressionColumn).expression),
-          const ResolveResult(ResolvedType(type: BasicType.real)));
+      expect(
+        result.typeOf(column),
+        const ResolveResult(ResolvedType(type: BasicType.real)),
+      );
+      expect(
+        result.typeOf((column as ExpressionColumn).expression),
+        const ResolveResult(ResolvedType(type: BasicType.real)),
+      );
     });
 
     test('return type of highlight()', () {
-      final result =
-          engine.analyze("SELECT *, highlight(foo, 0, '<b>', '</b>') AS b "
-              "FROM foo WHERE foo MATCH ''");
+      final result = engine.analyze(
+        "SELECT *, highlight(foo, 0, '<b>', '</b>') AS b "
+        "FROM foo WHERE foo MATCH ''",
+      );
       expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(
-          result.typeOf(column),
-          const ResolveResult(
-              ResolvedType(type: BasicType.text, nullable: true)));
+        result.typeOf(column),
+        const ResolveResult(ResolvedType(type: BasicType.text, nullable: true)),
+      );
     });
 
     test('return type of snippet()', () {
-      final result = engine
-          .analyze("SELECT *, snippet(foo, 0, '<b>', '</b>', '...', 20) AS b "
-              "FROM foo WHERE foo MATCH ''");
+      final result = engine.analyze(
+        "SELECT *, snippet(foo, 0, '<b>', '</b>', '...', 20) AS b "
+        "FROM foo WHERE foo MATCH ''",
+      );
       expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(
-          result.typeOf(column),
-          const ResolveResult(
-              ResolvedType(type: BasicType.text, nullable: true)));
+        result.typeOf(column),
+        const ResolveResult(ResolvedType(type: BasicType.text, nullable: true)),
+      );
     });
   });
 
@@ -211,10 +248,15 @@ void main() {
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
-      final fts5Result = engine.analyze('CREATE VIRTUAL TABLE fts USING '
-          'fts5(bar, baz);');
-      engine.registerTable(const SchemaFromCreateTable()
-          .read(fts5Result.root as TableInducingStatement));
+      final fts5Result = engine.analyze(
+        'CREATE VIRTUAL TABLE fts USING '
+        'fts5(bar, baz);',
+      );
+      engine.registerTable(
+        const SchemaFromCreateTable().read(
+          fts5Result.root as TableInducingStatement,
+        ),
+      );
     });
 
     void checkVarTypes(String sql, List<BasicType> expected) {
@@ -230,37 +272,28 @@ void main() {
     }
 
     test('for highlight()', () {
-      checkVarTypes(
-        'SELECT highlight(fts, ?, ?, ?) FROM fts;',
-        [
-          BasicType.int, // column index
-          BasicType.text, // text before phrase match
-          BasicType.text, // text after phrase match
-        ],
-      );
+      checkVarTypes('SELECT highlight(fts, ?, ?, ?) FROM fts;', [
+        BasicType.int, // column index
+        BasicType.text, // text before phrase match
+        BasicType.text, // text after phrase match
+      ]);
     });
 
     test('for snippet()', () {
-      checkVarTypes(
-        'SELECT snippet(fts, ?, ?, ?, ?, ?) FROM fts;',
-        [
-          BasicType.int, // column index
-          BasicType.text, // text before match
-          BasicType.text, // text after match
-          BasicType.text, // text to add match isn't at start
-          BasicType.int, // maximum number of tokens
-        ],
-      );
+      checkVarTypes('SELECT snippet(fts, ?, ?, ?, ?, ?) FROM fts;', [
+        BasicType.int, // column index
+        BasicType.text, // text before match
+        BasicType.text, // text after match
+        BasicType.text, // text to add match isn't at start
+        BasicType.int, // maximum number of tokens
+      ]);
     });
 
     test('for bm25', () {
-      checkVarTypes(
-        'SELECT bm25(fts, ?, ?) FROM fts;',
-        [
-          BasicType.real,
-          BasicType.real,
-        ],
-      );
+      checkVarTypes('SELECT bm25(fts, ?, ?) FROM fts;', [
+        BasicType.real,
+        BasicType.real,
+      ]);
     });
   });
 
@@ -269,19 +302,30 @@ void main() {
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
-      final fts5Result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-          'fts5(bar, baz);');
-      engine.registerTable(const SchemaFromCreateTable()
-          .read(fts5Result.root as TableInducingStatement));
+      final fts5Result = engine.analyze(
+        'CREATE VIRTUAL TABLE foo USING '
+        'fts5(bar, baz);',
+      );
+      engine.registerTable(
+        const SchemaFromCreateTable().read(
+          fts5Result.root as TableInducingStatement,
+        ),
+      );
 
       final normalResult = engine.analyze('CREATE TABLE other (bar TEXT);');
-      engine.registerTable(const SchemaFromCreateTable()
-          .read(normalResult.root as TableInducingStatement));
+      engine.registerTable(
+        const SchemaFromCreateTable().read(
+          normalResult.root as TableInducingStatement,
+        ),
+      );
     });
 
     Matcher hasMessage(Object msgMatcher) {
-      return const TypeMatcher<AnalysisError>()
-          .having((e) => e.message, 'message', msgMatcher);
+      return const TypeMatcher<AnalysisError>().having(
+        (e) => e.message,
+        'message',
+        msgMatcher,
+      );
     }
 
     test('when using star function parameters', () {
@@ -296,34 +340,35 @@ void main() {
 
     test('when using the wrong number or arguments', () {
       final result = engine.analyze('SELECT highlight(foo, 3) FROM foo');
-      expect(
-        result.errors,
-        [
-          hasMessage(stringContainsInOrder(['highlight', '4', '2']))
-        ],
-      );
+      expect(result.errors, [
+        hasMessage(stringContainsInOrder(['highlight', '4', '2'])),
+      ]);
     });
 
     test('with too many weights in bm25', () {
-      final result =
-          engine.analyze('SELECT bm25(foo, 0.5, 0.6, 0.1) FROM foo;');
-
-      expect(
-        result.errors,
-        [
-          hasMessage(
-              'Superfluous weight columns (there are only 2 columns on the table).')
-        ],
+      final result = engine.analyze(
+        'SELECT bm25(foo, 0.5, 0.6, 0.1) FROM foo;',
       );
+
+      expect(result.errors, [
+        hasMessage(
+          'Superfluous weight columns (there are only 2 columns on the table).',
+        ),
+      ]);
     });
   });
 
   test('does not include rank and table columns in result', () {
     final engine = SqlEngine(_fts5Options);
-    final fts5Result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
-        'fts5(bar, baz);');
-    engine.registerTable(const SchemaFromCreateTable()
-        .read(fts5Result.root as TableInducingStatement));
+    final fts5Result = engine.analyze(
+      'CREATE VIRTUAL TABLE foo USING '
+      'fts5(bar, baz);',
+    );
+    engine.registerTable(
+      const SchemaFromCreateTable().read(
+        fts5Result.root as TableInducingStatement,
+      ),
+    );
 
     final selectResult = engine.analyze('SELECT * FROM foo;');
     final columns = (selectResult.root as SelectStatement).resolvedColumns;
@@ -333,7 +378,8 @@ void main() {
   });
 
   test('can select via table-valued function syntax', () {
-    final engine = SqlEngine(_fts5Options)..registerTableFromSql('''
+    final engine = SqlEngine(_fts5Options)
+      ..registerTableFromSql('''
       CREATE VIRTUAL TABLE email USING fts5 (sender, title, body);
     ''');
 

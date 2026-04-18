@@ -31,8 +31,10 @@ extension type _SerializedRequest._(JSObject inner) implements JSObject {
 @JS()
 @anonymous
 extension type _SerializedSelectResult._(JSObject inner) implements JSObject {
-  external factory _SerializedSelectResult(
-      {required JSArray<JSString> c, required JSArray<JSArray<JSAny?>> r});
+  external factory _SerializedSelectResult({
+    required JSArray<JSString> c,
+    required JSArray<JSArray<JSAny?>> r,
+  });
 
   external JSArray<JSString> get c;
   external JSArray<JSArray<JSAny?>> get r;
@@ -80,17 +82,17 @@ final class WebProtocol {
   JSArray serialize(Message message) {
     final (tag, payload) = switch (message) {
       Request(:final id, :final payload) => (
-          _tag_Request,
-          _SerializedRequest(i: id, p: _serializeRequest(payload))
-        ),
+        _tag_Request,
+        _SerializedRequest(i: id, p: _serializeRequest(payload)),
+      ),
       SuccessResponse(:final requestId, :final response) => (
-          _tag_SuccessResponse,
-          _SerializedRequest(i: requestId, p: _serializeResponse(response))
-        ),
+        _tag_SuccessResponse,
+        _SerializedRequest(i: requestId, p: _serializeResponse(response)),
+      ),
       ErrorResponse(
         :final requestId,
         error: final SqliteException e,
-        :final stackTrace
+        :final stackTrace,
       )
           when canSerializeSqliteExceptions =>
         (
@@ -106,20 +108,23 @@ final class WebProtocol {
             switch (e.parametersToStatement) {
               null => null,
               final params => <JSAny?>[
-                  for (final parameter in params) _encodeDbValue(parameter),
-                ].toJS,
+                for (final parameter in params) _encodeDbValue(parameter),
+              ].toJS,
             },
-          ].toJS
+          ].toJS,
         ),
       ErrorResponse(:final requestId, :final error, :final stackTrace) => (
-          _tag_ErrorResponse,
-          [requestId.toJS, error.toString().toJS, stackTrace?.toString().toJS]
-              .toJS
-        ),
+        _tag_ErrorResponse,
+        [
+          requestId.toJS,
+          error.toString().toJS,
+          stackTrace?.toString().toJS,
+        ].toJS,
+      ),
       CancelledResponse(:final requestId) => (
-          _tag_CancelledResponse,
-          requestId.toJS
-        ),
+        _tag_CancelledResponse,
+        requestId.toJS,
+      ),
     };
 
     return [tag.toJS, payload].toJS;
@@ -143,8 +148,9 @@ final class WebProtocol {
       _tag_Request => decodeRequest(),
       _tag_SuccessResponse => decodeSuccess(),
       _tag_ErrorResponse => _decodeErrorResponse(payload as JSArray),
-      _tag_ErrorResponseSqliteException =>
-        _decodeSqliteErrorResponse(payload as JSArray),
+      _tag_ErrorResponseSqliteException => _decodeSqliteErrorResponse(
+        payload as JSArray,
+      ),
       _tag_CancelledResponse => CancelledResponse(_int(payload)),
       _ => throw ArgumentError('Unknown message tag $tag'),
     };
@@ -154,54 +160,48 @@ final class WebProtocol {
     return switch (payload) {
       null => null,
       ExecuteQuery() => [
-          _tag_ExecuteQuery.toJS,
-          payload.method.index.toJS,
-          payload.sql.toJS,
-          [for (final arg in payload.args) _encodeDbValue(arg)].toJS,
-          payload.executorId?.toJS,
-        ].toJS,
+        _tag_ExecuteQuery.toJS,
+        payload.method.index.toJS,
+        payload.sql.toJS,
+        [for (final arg in payload.args) _encodeDbValue(arg)].toJS,
+        payload.executorId?.toJS,
+      ].toJS,
       RequestCancellation(:final originalRequestId) => [
-          _tag_RequestCancellation.toJS,
-          originalRequestId.toJS,
-        ].toJS,
+        _tag_RequestCancellation.toJS,
+        originalRequestId.toJS,
+      ].toJS,
       ExecuteBatchedStatement() => [
-          _tag_ExecuteBatchedStatement.toJS,
-          payload.stmts.statements.map((e) => e.toJS).toList().toJS,
-          for (final arg in payload.stmts.arguments)
-            [
-              arg.statementIndex.toJS,
-              for (final value in arg.arguments) _encodeDbValue(value),
-            ].toJS,
-          payload.executorId?.toJS,
-        ].toJS,
+        _tag_ExecuteBatchedStatement.toJS,
+        payload.stmts.statements.map((e) => e.toJS).toList().toJS,
+        for (final arg in payload.stmts.arguments)
+          [
+            arg.statementIndex.toJS,
+            for (final value in arg.arguments) _encodeDbValue(value),
+          ].toJS,
+        payload.executorId?.toJS,
+      ].toJS,
       RunNestedExecutorControl() => [
-          _tag_RunTransactionAction.toJS,
-          payload.control.index.toJS,
-          payload.executorId?.toJS,
-        ].toJS,
+        _tag_RunTransactionAction.toJS,
+        payload.control.index.toJS,
+        payload.executorId?.toJS,
+      ].toJS,
       EnsureOpen() => [
-          _tag_EnsureOpen.toJS,
-          payload.schemaVersion.toJS,
-          payload.executorId?.toJS
-        ].toJS,
-      ServerInfo() => [
-          _tag_ServerInfo.toJS,
-          payload.dialect.name.toJS,
-        ].toJS,
+        _tag_EnsureOpen.toJS,
+        payload.schemaVersion.toJS,
+        payload.executorId?.toJS,
+      ].toJS,
+      ServerInfo() => [_tag_ServerInfo.toJS, payload.dialect.name.toJS].toJS,
       RunBeforeOpen() => [
-          _tag_RunBeforeOpen.toJS,
-          payload.details.versionBefore?.toJS,
-          payload.details.versionNow.toJS,
-          payload.createdExecutor.toJS,
-        ].toJS,
+        _tag_RunBeforeOpen.toJS,
+        payload.details.versionBefore?.toJS,
+        payload.details.versionNow.toJS,
+        payload.createdExecutor.toJS,
+      ].toJS,
       NotifyTablesUpdated() => <JSAny?>[
-          _tag_NotifyTablesUpdated.toJS,
-          for (final update in payload.updates)
-            [
-              update.table.toJS,
-              update.kind?.index.toJS,
-            ].toJS
-        ].toJS,
+        _tag_NotifyTablesUpdated.toJS,
+        for (final update in payload.updates)
+          [update.table.toJS, update.kind?.index.toJS].toJS,
+      ].toJS,
       NoArgsRequest.terminateAll => _tag_NoArgsRequest_terminateAll.toJS,
     };
   }
@@ -221,17 +221,17 @@ final class WebProtocol {
     final tag = _int(dartList[0]);
 
     ExecuteBatchedStatement readBatched() {
-      final sqlStatements = (dartList[1] as JSArray<JSString>)
-          .toDart
+      final sqlStatements = (dartList[1] as JSArray<JSString>).toDart
           .map((e) => e.toDart)
           .toList();
       final arguments = dartList.length - 3;
       final args = [
-        for (final instantiation in dartList
-            .skip(2)
-            .take(arguments)
-            .cast<JSArray>()
-            .map((e) => e.toDart))
+        for (final instantiation
+            in dartList
+                .skip(2)
+                .take(arguments)
+                .cast<JSArray>()
+                .map((e) => e.toDart))
           ArgumentsForBatchedStatement(
             _int(instantiation[0]),
             instantiation.skip(1).map(_decodeDbValue).toList(),
@@ -246,37 +246,43 @@ final class WebProtocol {
 
     return switch (tag) {
       _tag_ExecuteQuery => ExecuteQuery(
-          StatementMethod.values[_int(dartList[1])],
-          (dartList[2] as JSString).toDart,
-          [
-            for (final entry in (dartList[3] as JSArray).toDart)
-              _decodeDbValue(entry),
-          ],
-          _nullableInt(dartList[4])),
+        StatementMethod.values[_int(dartList[1])],
+        (dartList[2] as JSString).toDart,
+        [
+          for (final entry in (dartList[3] as JSArray).toDart)
+            _decodeDbValue(entry),
+        ],
+        _nullableInt(dartList[4]),
+      ),
       _tag_RequestCancellation => RequestCancellation(_int(dartList[1])),
       _tag_ExecuteBatchedStatement => readBatched(),
       _tag_RunTransactionAction => RunNestedExecutorControl(
-          NestedExecutorControl.values[_int(dartList[1])],
-          _nullableInt(dartList[2]),
-        ),
+        NestedExecutorControl.values[_int(dartList[1])],
+        _nullableInt(dartList[2]),
+      ),
       _tag_EnsureOpen => EnsureOpen(
-          _int(dartList[1]),
-          _nullableInt(dartList[2]),
-        ),
-      _tag_ServerInfo =>
-        ServerInfo(SqlDialect.values.byName((dartList[1] as JSString).toDart)),
+        _int(dartList[1]),
+        _nullableInt(dartList[2]),
+      ),
+      _tag_ServerInfo => ServerInfo(
+        SqlDialect.values.byName((dartList[1] as JSString).toDart),
+      ),
       _tag_RunBeforeOpen => RunBeforeOpen(
-          OpeningDetails(_nullableInt(dartList[1]), _int(dartList[2])),
-          _int(dartList[3]),
-        ),
-      _tag_NotifyTablesUpdated => NotifyTablesUpdated(dartList.skip(1).map((e) {
+        OpeningDetails(_nullableInt(dartList[1]), _int(dartList[2])),
+        _int(dartList[3]),
+      ),
+      _tag_NotifyTablesUpdated => NotifyTablesUpdated(
+        dartList.skip(1).map((e) {
           final [table, kindOrNull] = (e as JSArray).toDart;
 
-          return TableUpdate((table as JSString).toDart,
-              kind: kindOrNull.isUndefinedOrNull
-                  ? null
-                  : UpdateKind.values[_int(kindOrNull)]);
-        }).toList()),
+          return TableUpdate(
+            (table as JSString).toDart,
+            kind: kindOrNull.isUndefinedOrNull
+                ? null
+                : UpdateKind.values[_int(kindOrNull)],
+          );
+        }).toList(),
+      ),
       _ => throw ArgumentError('Unknown request tag $tag'),
     };
   }

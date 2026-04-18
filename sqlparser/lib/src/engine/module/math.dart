@@ -10,8 +10,10 @@ class BuiltInMathExtension implements Extension {
   @override
   void register(SqlEngine engine) {
     if (engine.options.version < SqliteVersion.v3_35) {
-      throw StateError('The math extension is only available with '
-          'sqlite3 version 35 or later');
+      throw StateError(
+        'The math extension is only available with '
+        'sqlite3 version 35 or later',
+      );
     }
 
     engine.registerFunctionHandler(const _MathFunctions());
@@ -21,9 +23,7 @@ class BuiltInMathExtension implements Extension {
 class _MathFunctions extends FunctionHandler {
   const _MathFunctions();
 
-  static const _constants = {
-    'pi',
-  };
+  static const _constants = {'pi'};
 
   static const _unary = {
     'acos',
@@ -48,33 +48,33 @@ class _MathFunctions extends FunctionHandler {
     'tanh',
   };
 
-  static const _unaryToInt = {
-    'ceil',
-    'ceiling',
-    'floor',
-    'trunc',
-  };
+  static const _unaryToInt = {'ceil', 'ceiling', 'floor', 'trunc'};
 
-  static const _binary = {
-    'atan2',
-    'pow',
-    'power',
-    'mod',
-  };
+  static const _binary = {'atan2', 'pow', 'power', 'mod'};
 
   @override
-  Set<String> get functionNames =>
-      const {..._constants, ..._unary, ..._unaryToInt, ..._binary};
+  Set<String> get functionNames => const {
+    ..._constants,
+    ..._unary,
+    ..._unaryToInt,
+    ..._binary,
+  };
 
   @override
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument) {
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  ) {
     return const ResolveResult(ResolvedType(type: BasicType.real));
   }
 
   @override
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  ) {
     if (_unaryToInt.contains(call.name.toLowerCase())) {
       return const ResolveResult(ResolvedType(type: BasicType.int));
     }
@@ -90,11 +90,13 @@ class _MathFunctions extends FunctionHandler {
     // log can be called with one or two arguments
     if (name == 'log') {
       if (argumentCount != 1 && argumentCount != 2) {
-        context.reportError(AnalysisError(
-          relevantNode: call,
-          message: 'log requires one or two arguments, got $argumentCount',
-          type: AnalysisErrorType.other,
-        ));
+        context.reportError(
+          AnalysisError(
+            relevantNode: call,
+            message: 'log requires one or two arguments, got $argumentCount',
+            type: AnalysisErrorType.other,
+          ),
+        );
       }
 
       return;
@@ -112,11 +114,13 @@ class _MathFunctions extends FunctionHandler {
     }
 
     if (expectedArgs != argumentCount) {
-      context.reportError(AnalysisError(
-        relevantNode: call,
-        message: '$name requires $expectedArgs arguments, got $argumentCount',
-        type: AnalysisErrorType.other,
-      ));
+      context.reportError(
+        AnalysisError(
+          relevantNode: call,
+          message: '$name requires $expectedArgs arguments, got $argumentCount',
+          type: AnalysisErrorType.other,
+        ),
+      );
     }
   }
 }

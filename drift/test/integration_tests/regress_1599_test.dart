@@ -15,8 +15,14 @@ void main() {
     addTearDown(query.cancel);
     await expectLater(query, emits(isEmpty));
 
-    await db.into(db.config).insert(ConfigCompanion.insert(
-        configKey: 'another', syncState: const Value(SyncType.synchronized)));
+    await db
+        .into(db.config)
+        .insert(
+          ConfigCompanion.insert(
+            configKey: 'another',
+            syncState: const Value(SyncType.synchronized),
+          ),
+        );
 
     expect(
       query,

@@ -6,10 +6,14 @@ import '../utils.dart';
 
 void main() {
   test('parses nested query statements', () {
-    final stmt = SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-        .parse(ParserEntrypoint.statement,
-            'SELECT LIST(SELECT * FROM test) FROM test')
-        .rootNode as SelectStatement;
+    final stmt =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+                .parse(
+                  ParserEntrypoint.statement,
+                  'SELECT LIST(SELECT * FROM test) FROM test',
+                )
+                .rootNode
+            as SelectStatement;
 
     enforceHasSpan(stmt);
     return enforceEqual(
@@ -24,10 +28,14 @@ void main() {
   });
 
   test('parses nested query statements with as', () {
-    final stmt = SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-        .parse(ParserEntrypoint.statement,
-            'SELECT LIST(SELECT * FROM test) AS newname FROM test')
-        .rootNode as SelectStatement;
+    final stmt =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+                .parse(
+                  ParserEntrypoint.statement,
+                  'SELECT LIST(SELECT * FROM test) AS newname FROM test',
+                )
+                .rootNode
+            as SelectStatement;
 
     enforceHasSpan(stmt);
     return enforceEqual(

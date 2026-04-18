@@ -30,10 +30,7 @@ final Map<String, Expression> _testCases = {
       NumericLiteral(5),
     ),
     token(TokenType.doubleEqual),
-    FunctionExpression(
-      name: 'COUNT',
-      parameters: StarFunctionParameter(),
-    ),
+    FunctionExpression(name: 'COUNT', parameters: StarFunctionParameter()),
   ),
   '? * ?3 + ?2 == :test': BinaryExpression(
     BinaryExpression(
@@ -109,11 +106,7 @@ final Map<String, Expression> _testCases = {
   ),
   '(SELECT x)': SubQuery(
     select: SelectStatement(
-      columns: [
-        ExpressionResultColumn(
-          expression: Reference(columnName: 'x'),
-        ),
-      ],
+      columns: [ExpressionResultColumn(expression: Reference(columnName: 'x'))],
     ),
   ),
   "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
@@ -134,9 +127,7 @@ final Map<String, Expression> _testCases = {
     inside: SubQuery(
       select: SelectStatement(
         columns: [
-          ExpressionResultColumn(
-            expression: Reference(columnName: 'col'),
-          )
+          ExpressionResultColumn(expression: Reference(columnName: 'col')),
         ],
         from: TableReference('tbl'),
       ),
@@ -149,11 +140,9 @@ final Map<String, Expression> _testCases = {
         NumericLiteral(1.0),
         NumericLiteral(2.0),
         SubQuery(
-          select: SelectStatement(columns: [
-            ExpressionResultColumn(
-              expression: NumericLiteral(3.0),
-            ),
-          ]),
+          select: SelectStatement(
+            columns: [ExpressionResultColumn(expression: NumericLiteral(3.0))],
+          ),
         ),
       ],
     ),
@@ -162,11 +151,7 @@ final Map<String, Expression> _testCases = {
     left: Reference(columnName: 'x'),
     inside: TableValuedFunction(
       'json_each',
-      ExprFunctionParameters(
-        parameters: [
-          Reference(columnName: 'bar'),
-        ],
-      ),
+      ExprFunctionParameters(parameters: [Reference(columnName: 'bar')]),
     ),
   ),
   'x NOT IN "table"': InExpression(
@@ -188,19 +173,21 @@ final Map<String, Expression> _testCases = {
   'CURRENT_TIMESTAMP': TimeConstantLiteral(TimeConstantKind.currentTimestamp),
   'CURRENT_DATE': TimeConstantLiteral(TimeConstantKind.currentDate),
   '(1, 2, 3) > (?, ?, ?)': BinaryExpression(
-    Tuple(expressions: [
-      for (var i = 1; i <= 3; i++) NumericLiteral(i),
-    ]),
+    Tuple(expressions: [for (var i = 1; i <= 3; i++) NumericLiteral(i)]),
     token(TokenType.more),
-    Tuple(expressions: [
-      NumberedVariable(null),
-      NumberedVariable(null),
-      NumberedVariable(null),
-    ]),
+    Tuple(
+      expressions: [
+        NumberedVariable(null),
+        NumberedVariable(null),
+        NumberedVariable(null),
+      ],
+    ),
   ),
   'RAISE(IGNORE)': RaiseExpression(RaiseKind.ignore),
-  "RAISE(ROLLBACK, 'Not allowed')":
-      RaiseExpression(RaiseKind.rollback, 'Not allowed'),
+  "RAISE(ROLLBACK, 'Not allowed')": RaiseExpression(
+    RaiseKind.rollback,
+    'Not allowed',
+  ),
   'foo': Reference(columnName: 'foo'),
   'foo.bar': Reference(entityName: 'foo', columnName: 'bar'),
   'foo.bar.baz': Reference(
@@ -239,11 +226,15 @@ void main() {
   group('named variables', () {
     test('support all kinds when not in drift mode', () {
       for (final prefix in [':', '@', r'$']) {
-        final result = SqlEngine()
-            .parse(ParserEntrypoint.statement, 'SELECT ${prefix}name;');
-        final value = ((result.rootNode as SelectStatement).columns.single
-                as ExpressionResultColumn)
-            .expression as NamedVariable;
+        final result = SqlEngine().parse(
+          ParserEntrypoint.statement,
+          'SELECT ${prefix}name;',
+        );
+        final value =
+            ((result.rootNode as SelectStatement).columns.single
+                        as ExpressionResultColumn)
+                    .expression
+                as NamedVariable;
 
         expect(value.name, 'name');
         expect(value.fullName, '${prefix}name');
@@ -252,13 +243,16 @@ void main() {
 
     test('does not parse at and dollar signs as variables in drift mode', () {
       final engine = SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()));
-      expect(engine.parse(ParserEntrypoint.statement, 'SELECT @name').rootNode,
-          isA<InvalidStatement>());
+      expect(
+        engine.parse(ParserEntrypoint.statement, 'SELECT @name').rootNode,
+        isA<InvalidStatement>(),
+      );
 
       final result = engine.parse(ParserEntrypoint.statement, r'SELECT $name;');
-      final value = ((result.rootNode as SelectStatement).columns.single
-              as ExpressionResultColumn)
-          .expression;
+      final value =
+          ((result.rootNode as SelectStatement).columns.single
+                  as ExpressionResultColumn)
+              .expression;
       expect(value, isA<DartExpressionPlaceholder>());
     });
   });
@@ -266,39 +260,47 @@ void main() {
   test('schema in function names', () {
     final engine = SqlEngine();
     expect(
-        engine.parse(ParserEntrypoint.statement, 'SELECT foo.bar(1)').errors, [
-      isParsingError(
-        message: 'Invalid schema name for function call',
-        span: 'foo',
-      ),
-    ]);
+      engine.parse(ParserEntrypoint.statement, 'SELECT foo.bar(1)').errors,
+      [
+        isParsingError(
+          message: 'Invalid schema name for function call',
+          span: 'foo',
+        ),
+      ],
+    );
 
-    final optInEngine =
-        SqlEngine(EngineOptions(supportSchemaInFunctionNames: true));
+    final optInEngine = SqlEngine(
+      EngineOptions(supportSchemaInFunctionNames: true),
+    );
 
-    final parsed =
-        optInEngine.parse(ParserEntrypoint.statement, 'SELECT foo.bar(1)');
+    final parsed = optInEngine.parse(
+      ParserEntrypoint.statement,
+      'SELECT foo.bar(1)',
+    );
     enforceHasSpan(parsed.rootNode);
     enforceEqual(
       parsed.rootNode,
-      SelectStatement(columns: [
-        ExpressionResultColumn(
-          expression: FunctionExpression(
-            name: 'bar',
-            schemaName: 'foo',
-            parameters: ExprFunctionParameters(
-              parameters: [NumericLiteral(1)],
+      SelectStatement(
+        columns: [
+          ExpressionResultColumn(
+            expression: FunctionExpression(
+              name: 'bar',
+              schemaName: 'foo',
+              parameters: ExprFunctionParameters(
+                parameters: [NumericLiteral(1)],
+              ),
             ),
           ),
-        )
-      ]),
+        ],
+      ),
     );
   });
 
   test('postgres casts', () {
     final engine = SqlEngine(EngineOptions(supportPostgresCasts: true));
-    final parsed =
-        engine.parse(ParserEntrypoint.expression, 'foo::text').rootNode;
+    final parsed = engine
+        .parse(ParserEntrypoint.expression, 'foo::text')
+        .rootNode;
     enforceHasSpan(parsed);
     enforceEqual(parsed, CastExpression(Reference(columnName: 'foo'), 'text'));
   });

@@ -148,7 +148,7 @@ final class DriftNativeOptions {
     this.isolateSetup,
     this.setup,
   }) : assert(
-          databasePath == null || databaseDirectory == null,
-          'databasePath and databaseDirectory must not both be set.',
-        );
+         databasePath == null || databaseDirectory == null,
+         'databasePath and databaseDirectory must not both be set.',
+       );
 }

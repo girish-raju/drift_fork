@@ -32,23 +32,29 @@ class DriftDevCli {
   bool verbose = false;
 
   DriftDevCli() {
-    _runner = CommandRunner(
-      'dart run drift_dev',
-      'CLI utilities for the drift package, currently in an experimental state.',
-      usageLineLength: 80,
-    )
-      ..addCommand(AnalyzeCommand(this))
-      ..addCommand(IdentifyDatabases(this))
-      ..addCommand(SchemaCommand(this))
-      ..addCommand(MigrateCommand(this))
-      ..addCommand(MakeMigrationCommand(this));
+    _runner =
+        CommandRunner(
+            'dart run drift_dev',
+            'CLI utilities for the drift package, currently in an experimental state.',
+            usageLineLength: 80,
+          )
+          ..addCommand(AnalyzeCommand(this))
+          ..addCommand(IdentifyDatabases(this))
+          ..addCommand(SchemaCommand(this))
+          ..addCommand(MigrateCommand(this))
+          ..addCommand(MakeMigrationCommand(this));
 
-    _runner.argParser
-        .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);
+    _runner.argParser.addFlag(
+      'verbose',
+      abbr: 'v',
+      defaultsTo: false,
+      negatable: false,
+    );
     _runner.argParser.addFlag(
       'ansi',
       abbr: 'a',
-      help: 'Whether to output colorful logs. Attempts to check whether this '
+      help:
+          'Whether to output colorful logs. Attempts to check whether this '
           'is supported by the terminal by default.',
     );
   }

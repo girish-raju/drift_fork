@@ -33,9 +33,12 @@ END;
 
         expect(
           context.errors,
-          contains(analysisErrorWith(
+          contains(
+            analysisErrorWith(
               type: AnalysisErrorType.referencedUnknownTable,
-              lexeme: 'new.id')),
+              lexeme: 'new.id',
+            ),
+          ),
         );
       });
     });
@@ -60,9 +63,12 @@ END;
 
         expect(
           context.errors,
-          contains(analysisErrorWith(
+          contains(
+            analysisErrorWith(
               type: AnalysisErrorType.referencedUnknownTable,
-              lexeme: 'old.id')),
+              lexeme: 'old.id',
+            ),
+          ),
         );
       });
     });
@@ -96,7 +102,9 @@ END;
 
       expect(context.errors, [
         analysisErrorWith(
-            lexeme: 'id', type: AnalysisErrorType.referencedUnknownColumn)
+          lexeme: 'id',
+          type: AnalysisErrorType.referencedUnknownColumn,
+        ),
       ]);
     });
 
@@ -109,7 +117,9 @@ END;
 
       expect(context.errors, [
         analysisErrorWith(
-            lexeme: 'old', type: AnalysisErrorType.referencedUnknownTable)
+          lexeme: 'old',
+          type: AnalysisErrorType.referencedUnknownTable,
+        ),
       ]);
     });
   });
@@ -118,12 +128,12 @@ END;
     final context = engine.analyze('CREATE INDEX foo ON demo (content)');
     context.expectNoError();
 
-    final tableReference =
-        context.root.allDescendants.whereType<TableReference>().first;
-    final columnReference = context.root.allDescendants
-        .whereType<IndexedColumn>()
-        .first
-        .expression as Reference;
+    final tableReference = context.root.allDescendants
+        .whereType<TableReference>()
+        .first;
+    final columnReference =
+        context.root.allDescendants.whereType<IndexedColumn>().first.expression
+            as Reference;
 
     expect(tableReference.resolved, demoTable);
     expect(columnReference.resolvedColumn, isA<AvailableColumn>());
@@ -152,8 +162,10 @@ INSERT INTO demo VALUES (?, ?)
     final columns = (context.root as ResultSet).resolvedColumns!;
 
     expect(columns.map((e) => e.name), ['Column1', 'Column2']);
-    expect(columns.map((e) => context.typeOf(e).type?.type),
-        [BasicType.text, BasicType.int]);
+    expect(columns.map((e) => context.typeOf(e).type?.type), [
+      BasicType.text,
+      BasicType.int,
+    ]);
   });
 
   test('columns from nested VALUES', () {
@@ -179,9 +191,13 @@ INSERT INTO demo VALUES (?, ?)
 
     expect(context.errors, [
       analysisErrorWith(
-          lexeme: 'a b', type: AnalysisErrorType.referencedUnknownTable),
+        lexeme: 'a b',
+        type: AnalysisErrorType.referencedUnknownTable,
+      ),
       analysisErrorWith(
-          lexeme: 'b.id', type: AnalysisErrorType.referencedUnknownTable),
+        lexeme: 'b.id',
+        type: AnalysisErrorType.referencedUnknownTable,
+      ),
     ]);
   });
 
@@ -196,8 +212,10 @@ INSERT INTO demo VALUES (?, ?)
     final columns = (context.root as ResultSet).resolvedColumns!;
 
     expect(columns.map((e) => e.name), ['Column1', 'Column2']);
-    expect(columns.map((e) => context.typeOf(e).type?.type),
-        [BasicType.text, BasicType.int]);
+    expect(columns.map((e) => context.typeOf(e).type?.type), [
+      BasicType.text,
+      BasicType.int,
+    ]);
   });
 
   test('handles update statement with from clause', () {
@@ -229,8 +247,9 @@ INSERT INTO demo VALUES (?, ?)
 
   group('resolves RETURNING clause', () {
     test('for simple inserts', () {
-      final result = engine
-          .analyze("INSERT INTO demo (content) VALUES ('hi') RETURNING *;");
+      final result = engine.analyze(
+        "INSERT INTO demo (content) VALUES ('hi') RETURNING *;",
+      );
       final returning = (result.root as InsertStatement).returnedResultSet;
 
       expect(returning, isNotNull);
@@ -238,8 +257,10 @@ INSERT INTO demo VALUES (?, ?)
     });
 
     test('for custom expressions', () {
-      final result = engine.analyze("INSERT INTO demo (content) VALUES ('hi') "
-          'RETURNING content || content AS x;');
+      final result = engine.analyze(
+        "INSERT INTO demo (content) VALUES ('hi') "
+        'RETURNING content || content AS x;',
+      );
       final returning = (result.root as InsertStatement).returnedResultSet!;
 
       expect(returning.resolvedColumns!.map((e) => e.name), ['x']);
@@ -274,15 +295,19 @@ INSERT INTO demo VALUES (?, ?)
       result.errors.single,
       isA<AnalysisError>()
           .having(
-              (e) => e.type, 'type', AnalysisErrorType.starColumnWithoutTable)
+            (e) => e.type,
+            'type',
+            AnalysisErrorType.starColumnWithoutTable,
+          )
           .having((e) => e.source?.span?.text, 'source.span?.text', '*'),
     );
   });
 
   group('resolves target columns of INSERT', () {
     test('for regular tables', () {
-      final root = engine.analyze('INSERT INTO demo VALUES (?, ?)').root
-          as InsertStatement;
+      final root =
+          engine.analyze('INSERT INTO demo VALUES (?, ?)').root
+              as InsertStatement;
 
       expect(root.resolvedTargetColumns, hasLength(2));
     });
@@ -304,14 +329,17 @@ INSERT INTO demo VALUES (?, ?)
 
   test('does not allow a subquery in from to read outer values', () {
     final result = engine.analyze(
-        'SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;');
+      'SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;',
+    );
 
     result.expectError('d1.id', type: AnalysisErrorType.referencedUnknownTable);
   });
 
   test('allows subquery expressions to read outer values', () {
-    final result = engine.analyze('SELECT * FROM demo d1 WHERE '
-        'EXISTS (SELECT * FROM demo i WHERE i.id = d1.id);');
+    final result = engine.analyze(
+      'SELECT * FROM demo d1 WHERE '
+      'EXISTS (SELECT * FROM demo i WHERE i.id = d1.id);',
+    );
 
     result.expectNoError();
   });
@@ -322,14 +350,16 @@ INSERT INTO demo VALUES (?, ?)
     expect(outer.resolvedColumns?.map((e) => e.name), ['id']);
 
     // These aliases somehow aren't renamed in nested queries
-    final subquery = engine
-        .analyze('SELECT * FROM (SELECT RoWiD FROM demo)')
-        .root as SelectStatement;
+    final subquery =
+        engine.analyze('SELECT * FROM (SELECT RoWiD FROM demo)').root
+            as SelectStatement;
     expect(subquery.resolvedColumns?.map((e) => e.name), ['RoWiD']);
 
-    final cte = engine
-        .analyze('WITH x AS (SELECT RoWiD FROM demo) SELECT * FROM x')
-        .root as SelectStatement;
+    final cte =
+        engine
+                .analyze('WITH x AS (SELECT RoWiD FROM demo) SELECT * FROM x')
+                .root
+            as SelectStatement;
     expect(cte.resolvedColumns?.map((e) => e.name), ['RoWiD']);
   });
 
@@ -366,7 +396,9 @@ SELECT * FROM cars
 
   test('error for nonexisting table in IN expression', () {
     final query = engine.analyze('SELECT 1 IN no_such_table');
-    query.expectError('no_such_table',
-        type: AnalysisErrorType.referencedUnknownTable);
+    query.expectError(
+      'no_such_table',
+      type: AnalysisErrorType.referencedUnknownTable,
+    );
   });
 }

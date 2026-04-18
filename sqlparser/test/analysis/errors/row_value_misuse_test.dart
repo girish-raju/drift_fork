@@ -66,30 +66,43 @@ void main() {
 
   group('in expressions', () {
     test('when tuple is expected', () {
-      engine.analyze('SELECT (1, 2) IN ((4, 5), 6)').expectError('6',
-          type: AnalysisErrorType.other,
-          message: contains('Expected 2 columns in this entry, got 1'));
+      engine
+          .analyze('SELECT (1, 2) IN ((4, 5), 6)')
+          .expectError(
+            '6',
+            type: AnalysisErrorType.other,
+            message: contains('Expected 2 columns in this entry, got 1'),
+          );
     });
 
     test('when tuple is not expected', () {
-      engine.analyze('SELECT 1 IN ((4, 5), 6)').expectError('(4, 5)',
-          type: AnalysisErrorType.other,
-          message: contains('Expected 1 columns in this entry, got 2'));
+      engine
+          .analyze('SELECT 1 IN ((4, 5), 6)')
+          .expectError(
+            '(4, 5)',
+            type: AnalysisErrorType.other,
+            message: contains('Expected 1 columns in this entry, got 2'),
+          );
     });
 
     test('for table reference', () {
       engine
           .analyze('WITH names AS (VALUES(1, 2, 3)) SELECT (1, 2) IN names')
-          .expectError('names',
-              type: AnalysisErrorType.other,
-              message: contains('must have 2 columns (it has 3)'));
+          .expectError(
+            'names',
+            type: AnalysisErrorType.other,
+            message: contains('must have 2 columns (it has 3)'),
+          );
     });
 
     test('for table-valued function', () {
-      engine.analyze("SELECT (1, 2) IN json_each('{}')").expectError(
-          "json_each('{}')",
-          type: AnalysisErrorType.other,
-          message: contains('this table must have 2 columns (it has 8)'));
+      engine
+          .analyze("SELECT (1, 2) IN json_each('{}')")
+          .expectError(
+            "json_each('{}')",
+            type: AnalysisErrorType.other,
+            message: contains('this table must have 2 columns (it has 8)'),
+          );
     });
   });
 }

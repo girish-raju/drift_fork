@@ -45,7 +45,7 @@ class DriftIndex extends DriftSchemaElement {
   String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
 
   @override
-  Iterable<DriftElement> get references => [if (table != null) table!];
+  Iterable<DriftElement> get references => [?table];
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///
@@ -72,7 +72,7 @@ class DriftIndex extends DriftSchemaElement {
           IndexedColumn(
             Reference(columnName: column.column.nameInSql),
             column.orderBy,
-          )
+          ),
       ],
     );
   }

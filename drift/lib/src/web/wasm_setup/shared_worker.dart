@@ -19,7 +19,7 @@ class SharedDriftWorker {
   final DriftServerController _servers;
 
   SharedDriftWorker(this.self, WasmDatabaseSetup? setup)
-      : _servers = DriftServerController(setup);
+    : _servers = DriftServerController(setup);
 
   void start() {
     const event = EventStreamProviders.connectEvent;
@@ -43,8 +43,8 @@ class SharedDriftWorker {
           final result = await _startFeatureDetection(dbName);
           result.sendToPort(client);
         case ServeDriftDatabase(
-            storage: WasmStorageImplementation.sharedIndexedDb
-          ):
+          storage: WasmStorageImplementation.sharedIndexedDb,
+        ):
           // The shared indexed db implementation can be hosted directly in this
           // worker.
           _servers.serve(message);
@@ -63,7 +63,8 @@ class SharedDriftWorker {
   }
 
   Future<SharedWorkerCompatibilityResult> _startFeatureDetection(
-      String databaseName) async {
+    String databaseName,
+  ) async {
     // First, let's see if this shared worker can spawn dedicated workers.
     final hasWorker = supportsWorkers;
     final canUseIndexedDb = await checkIndexedDbSupport();
@@ -71,7 +72,7 @@ class SharedDriftWorker {
     if (!hasWorker) {
       final indexedDbExists =
           _servers.servers[databaseName]?.storage.isIndexedDbBased ??
-              await checkIndexedDbExists(databaseName);
+          await checkIndexedDbExists(databaseName);
 
       return SharedWorkerCompatibilityResult(
         canSpawnDedicatedWorkers: false,
@@ -98,40 +99,45 @@ class SharedDriftWorker {
         List<ExistingDatabase> databases,
       ) {
         if (!completer.isCompleted) {
-          completer.complete(SharedWorkerCompatibilityResult(
-            canSpawnDedicatedWorkers: true,
-            dedicatedWorkersCanUseOpfs: opfsAvailable,
-            canUseIndexedDb: canUseIndexedDb,
-            indexedDbExists: indexedDbExists,
-            opfsExists: opfsExists,
-            existingDatabases: databases,
-            version: ProtocolVersion.current,
-          ));
+          completer.complete(
+            SharedWorkerCompatibilityResult(
+              canSpawnDedicatedWorkers: true,
+              dedicatedWorkersCanUseOpfs: opfsAvailable,
+              canUseIndexedDb: canUseIndexedDb,
+              indexedDbExists: indexedDbExists,
+              opfsExists: opfsExists,
+              existingDatabases: databases,
+              version: ProtocolVersion.current,
+            ),
+          );
 
           messageSubscription?.cancel();
           errorSubscription?.cancel();
         }
       }
 
-      messageSubscription =
-          EventStreamProviders.messageEvent.forTarget(worker).listen((event) {
-        final data = WasmInitializationMessage.read(event);
-        final compatibilityResult = data as DedicatedWorkerCompatibilityResult;
+      messageSubscription = EventStreamProviders.messageEvent
+          .forTarget(worker)
+          .listen((event) {
+            final data = WasmInitializationMessage.read(event);
+            final compatibilityResult =
+                data as DedicatedWorkerCompatibilityResult;
 
-        result(
-          compatibilityResult.canAccessOpfs,
-          compatibilityResult.opfsExists,
-          compatibilityResult.indexedDbExists,
-          compatibilityResult.existingDatabases,
-        );
-      });
+            result(
+              compatibilityResult.canAccessOpfs,
+              compatibilityResult.opfsExists,
+              compatibilityResult.indexedDbExists,
+              compatibilityResult.existingDatabases,
+            );
+          });
 
-      errorSubscription =
-          EventStreamProviders.errorEvent.forTarget(worker).listen((event) {
-        result(false, false, false, const []);
-        worker.terminate();
-        _dedicatedWorker = null;
-      });
+      errorSubscription = EventStreamProviders.errorEvent
+          .forTarget(worker)
+          .listen((event) {
+            result(false, false, false, const []);
+            worker.terminate();
+            _dedicatedWorker = null;
+          });
 
       return completer.future;
     }

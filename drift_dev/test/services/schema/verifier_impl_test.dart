@@ -15,17 +15,21 @@ void main() {
     verifier = SchemaVerifier(
       _TestHelper((db, version) => openReference(db, version)),
       setup: (rawDb) => rawDb.createFunction(
-          functionName: 'test_function', function: (args) => 1),
+        functionName: 'test_function',
+        function: (args) => 1,
+      ),
     );
   });
 
   group('startAt', () {
     test('starts at the requested version', () async {
       final db = (await verifier.startAt(17)).executor;
-      await db.ensureOpen(_DelegatedUser(17, (_, details) async {
-        expect(details.wasCreated, isFalse, reason: 'was opened before');
-        expect(details.hadUpgrade, isFalse, reason: 'no upgrade expected');
-      }));
+      await db.ensureOpen(
+        _DelegatedUser(17, (_, details) async {
+          expect(details.wasCreated, isFalse, reason: 'was opened before');
+          expect(details.hadUpgrade, isFalse, reason: 'no upgrade expected');
+        }),
+      );
     });
 
     test('registers custom functions', () async {
@@ -37,8 +41,10 @@ void main() {
     test('disables double-quoted string literals', () async {
       final db = (await verifier.startAt(17)).executor;
       await db.ensureOpen(_DelegatedUser(17, (_, details) async {}));
-      await expectLater(db.runSelect('select "why_would_this_be_a_string"', []),
-          throwsA(isA<SqliteException>()));
+      await expectLater(
+        db.runSelect('select "why_would_this_be_a_string"', []),
+        throwsA(isA<SqliteException>()),
+      );
     });
   });
 
@@ -48,9 +54,11 @@ void main() {
 
       final connection = await verifier.startAt(3);
       final db = _TestDatabase(connection.executor, 7)
-        ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {
-          capturedDetails = OpeningDetails(from, to);
-        });
+        ..migration = MigrationStrategy(
+          onUpgrade: (m, from, to) async {
+            capturedDetails = OpeningDetails(from, to);
+          },
+        );
 
       await verifier.migrateAndValidate(db, 4);
       expect(capturedDetails!.versionBefore, 3);
@@ -61,14 +69,17 @@ void main() {
       openReference = (db, version) {
         final ref = _TestDatabase(db, version);
 
-        ref.migration = MigrationStrategy(onCreate: (m) async {
-          if (version == 1) {
-            await ref
-                .customStatement('CREATE TABLE users (name TEXT NOT NULL);');
-          } else {
-            await ref.customStatement('CREATE TABLE users (name TEXT);');
-          }
-        });
+        ref.migration = MigrationStrategy(
+          onCreate: (m) async {
+            if (version == 1) {
+              await ref.customStatement(
+                'CREATE TABLE users (name TEXT NOT NULL);',
+              );
+            } else {
+              await ref.customStatement('CREATE TABLE users (name TEXT);');
+            }
+          },
+        );
 
         return ref;
       };
@@ -76,20 +87,21 @@ void main() {
       // Should throw with an empty migration due to constraint mismatch
       var connection = await verifier.startAt(1);
       var db = _TestDatabase(connection.executor, 2)
-        ..migration = MigrationStrategy(
-          onUpgrade: (m, from, to) async {},
-        );
-      await expectLater(() => verifier.migrateAndValidate(db, 2),
-          throwsA(isA<SchemaMismatch>()));
+        ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {});
+      await expectLater(
+        () => verifier.migrateAndValidate(db, 2),
+        throwsA(isA<SchemaMismatch>()),
+      );
 
       // Which can be disabled with an option.
       connection = await verifier.startAt(1);
       db = _TestDatabase(connection.executor, 2)
-        ..migration = MigrationStrategy(
-          onUpgrade: (m, from, to) async {},
-        );
-      await verifier.migrateAndValidate(db, 2,
-          options: ValidationOptions(validateColumnConstraints: false));
+        ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {});
+      await verifier.migrateAndValidate(
+        db,
+        2,
+        options: ValidationOptions(validateColumnConstraints: false),
+      );
 
       // that is also respected in testWithDataIntegrity
       await verifier.testWithDataIntegrity(
@@ -98,9 +110,7 @@ void main() {
         newVersion: 2,
         createNew: (ex) => openReference(ex, 2),
         openTestedDatabase: (e) => _TestDatabase(e, 2)
-          ..migration = MigrationStrategy(
-            onUpgrade: (m, from, to) async {},
-          ),
+          ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {}),
         createItems: (batch, old) async {},
         validateItems: (_) async {},
         options: ValidationOptions(validateColumnConstraints: false),
@@ -116,13 +126,16 @@ void main() {
       await db.customStatement('CREATE TABLE x1 (bar UNIQUE);');
       await db.customStatement('CREATE VIEW x2 AS SELECT * FROM x1;');
       await db.customStatement('CREATE INDEX x3 ON x1 (bar);');
-      await db.customStatement('CREATE TRIGGER x4 AFTER INSERT ON x1 BEGIN '
-          'DELETE FROM x1;'
-          'END;');
-      await db
-          .customStatement('CREATE TRIGGER x5 INSTEAD OF INSERT ON x2 BEGIN '
-              'DELETE FROM x1;'
-              'END;');
+      await db.customStatement(
+        'CREATE TRIGGER x4 AFTER INSERT ON x1 BEGIN '
+        'DELETE FROM x1;'
+        'END;',
+      );
+      await db.customStatement(
+        'CREATE TRIGGER x5 INSTEAD OF INSERT ON x2 BEGIN '
+        'DELETE FROM x1;'
+        'END;',
+      );
 
       final inputs = await db.collectSchemaInput(const []);
       expect(inputs.map((e) => e.name), ['x1', 'x2', 'x3', 'x4', 'x5']);
@@ -133,8 +146,10 @@ void main() {
       addTearDown(db.close);
 
       await db.customStatement('CREATE VIRTUAL TABLE x USING fts5(foo, bar);');
-      await db
-          .customStatement('INSERT INTO x VALUES (?, ?)', ['test', 'another']);
+      await db.customStatement('INSERT INTO x VALUES (?, ?)', [
+        'test',
+        'another',
+      ]);
 
       final inputs = await db.collectSchemaInput(const ['x']);
       expect(inputs.map((e) => e.name), ['x']);

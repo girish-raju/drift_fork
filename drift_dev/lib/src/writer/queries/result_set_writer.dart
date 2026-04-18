@@ -10,11 +10,14 @@ class ResultSetWriter {
   final Scope scope;
 
   ResultSetWriter(SqlQuery query, this.scope)
-      : resultSet = query.resultSet!,
-        resultClassName = query.resultClassName;
+    : resultSet = query.resultSet!,
+      resultClassName = query.resultClassName;
 
   ResultSetWriter.fromResultSetAndClassName(
-      this.resultSet, this.resultClassName, this.scope);
+    this.resultSet,
+    this.resultClassName,
+    this.scope,
+  );
 
   void write() {
     final fields = <EqualityField>[];
@@ -48,14 +51,17 @@ class ResultSetWriter {
       } else if (column is NestedResultTable) {
         if (column.innerResultSet.needsOwnClass) {
           ResultSetWriter.fromResultSetAndClassName(
-                  column.innerResultSet, column.nameForGeneratedRowClass, scope)
-              .write();
+            column.innerResultSet,
+            column.nameForGeneratedRowClass,
+            scope,
+          ).write();
         }
 
         into
           ..write('$modifier ')
           ..writeDart(
-              AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)))
+            AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)),
+          )
           ..write(column.isNullable ? '? ' : ' ')
           ..writeln('$fieldName;');
 
@@ -69,7 +75,8 @@ class ResultSetWriter {
         into
           ..write('$modifier ')
           ..writeDart(
-              AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)))
+            AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)),
+          )
           ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));
@@ -108,7 +115,10 @@ class ResultSetWriter {
 
       overrideEquals(fields, resultClassName, into);
       overrideToString(
-          resultClassName, fields.map((f) => f.lexeme).toList(), into.buffer);
+        resultClassName,
+        fields.map((f) => f.lexeme).toList(),
+        into.buffer,
+      );
     }
 
     into.write('}\n');

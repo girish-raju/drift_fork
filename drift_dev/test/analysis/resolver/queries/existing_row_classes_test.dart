@@ -64,10 +64,7 @@ class MyRow {
         type: 'MyRow',
         constructorName: 'foo',
         named: isEmpty,
-        positional: [
-          scalarColumn('a'),
-          scalarColumn('b'),
-        ],
+        positional: [scalarColumn('a'), scalarColumn('b')],
       ),
     );
   });
@@ -83,8 +80,9 @@ foo WITH MyRow: SELECT 'hello world', 2;
 
     final file = await state.analyze('package:a/a.drift');
     expect(file.allErrors, [
-      isDriftError(contains('are you missing an import?'))
-          .withSpan('WITH MyRow')
+      isDriftError(
+        contains('are you missing an import?'),
+      ).withSpan('WITH MyRow'),
     ]);
   });
 
@@ -111,10 +109,11 @@ class MyRow {
     final query = file.fileAnalysis!.resolvedQueries.values.single;
     expect(
       query.resultSet?.existingRowType,
-      isExistingRowType(type: 'MyRow', named: isEmpty, positional: [
-        scalarColumn('a'),
-        scalarColumn('b'),
-      ]),
+      isExistingRowType(
+        type: 'MyRow',
+        named: isEmpty,
+        positional: [scalarColumn('a'), scalarColumn('b')],
+      ),
     );
   });
 
@@ -251,9 +250,7 @@ class MyQueryRow {
             positional: [
               scalarColumn('a'),
               structedFromNested(
-                isExistingRowType(
-                  singleValue: scalarColumn('b'),
-                ),
+                isExistingRowType(singleValue: scalarColumn('b')),
               ),
             ],
           ),
@@ -331,11 +328,7 @@ class JsonStructure {
             type: 'MyQueryRow',
             positional: [
               scalarColumn('id'),
-              structedFromNested(
-                isExistingRowType(
-                  type: 'JsonStructure',
-                ),
-              ),
+              structedFromNested(isExistingRowType(type: 'JsonStructure')),
             ],
           ),
         );
@@ -448,10 +441,7 @@ class MyQueryRow {
               scalarColumn('a'),
               nestedListQuery(
                 'c',
-                isExistingRowType(
-                  type: 'int',
-                  singleValue: scalarColumn('b'),
-                ),
+                isExistingRowType(type: 'int', singleValue: scalarColumn('b')),
               ),
             ],
           ),
@@ -581,46 +571,42 @@ typedef MyRow = (int, List<TblData>);
       );
     });
 
-    test(
-      'default record',
-      () async {
-        final state = await TestBackend.inTest(
-          {
-            'a|lib/a.drift': '''
+    test('default record', () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/a.drift': '''
 import 'a.dart';
 
 CREATE TABLE tbl (foo TEXT, bar INT);
 
 foo WITH Record: SELECT 1 AS a, LIST(SELECT * FROM tbl) AS b FROM tbl;
 ''',
-          },
-          analyzerExperiments: ['records'],
-        );
+        },
+        analyzerExperiments: ['records'],
+      );
 
-        final file = await state.analyze('package:a/a.drift');
-        state.expectNoErrors();
+      final file = await state.analyze('package:a/a.drift');
+      state.expectNoErrors();
 
-        final query = file.fileAnalysis!.resolvedQueries.values.single;
-        expect(
-          query.resultSet?.existingRowType,
-          isExistingRowType(
-            type: '({int a, List<TblData> b})',
-            positional: isEmpty,
-            named: {
-              'a': scalarColumn('a'),
-              'b': nestedListQuery(
-                'b',
-                isExistingRowType(
-                  type: 'TblData',
-                  singleValue: isA<MatchingDriftTable>(),
-                ),
+      final query = file.fileAnalysis!.resolvedQueries.values.single;
+      expect(
+        query.resultSet?.existingRowType,
+        isExistingRowType(
+          type: '({int a, List<TblData> b})',
+          positional: isEmpty,
+          named: {
+            'a': scalarColumn('a'),
+            'b': nestedListQuery(
+              'b',
+              isExistingRowType(
+                type: 'TblData',
+                singleValue: isA<MatchingDriftTable>(),
               ),
-            },
-          ),
-        );
-      },
-      skip: requireDart('3.0.0-dev'),
-    );
+            ),
+          },
+        ),
+      );
+    }, skip: requireDart('3.0.0-dev'));
 
     test('mix', () async {
       final state = await TestBackend.inTest({
@@ -660,23 +646,22 @@ class MyRow {
       final query = file.fileAnalysis!.resolvedQueries.values.single;
       expect(
         query.resultSet?.existingRowType,
-        isExistingRowType(type: 'MyRow', positional: [
-          scalarColumn('name'),
-        ], named: {
-          'otherUser': structedFromNested(
-            isExistingRowType(
-              type: 'MyUser',
-              singleValue: isA<MatchingDriftTable>(),
+        isExistingRowType(
+          type: 'MyRow',
+          positional: [scalarColumn('name')],
+          named: {
+            'otherUser': structedFromNested(
+              isExistingRowType(
+                type: 'MyUser',
+                singleValue: isA<MatchingDriftTable>(),
+              ),
             ),
-          ),
-          'nested': nestedListQuery(
-            'nested',
-            isExistingRowType(
-              type: 'int',
-              singleValue: scalarColumn('id'),
+            'nested': nestedListQuery(
+              'nested',
+              isExistingRowType(type: 'int', singleValue: scalarColumn('id')),
             ),
-          ),
-        }),
+          },
+        ),
       );
     });
   });
@@ -717,9 +702,7 @@ class MyRow {
       });
 
       final file = await state.analyze('package:a/a.drift');
-      expect(file.allErrors, [
-        isDriftError(contains('`bar`')),
-      ]);
+      expect(file.allErrors, [isDriftError(contains('`bar`'))]);
     });
 
     test('when there is a parameter with no matching column', () async {
@@ -760,7 +743,8 @@ typedef MyRow = (int, String, DateTime);
       final file = await state.analyze('package:a/a.drift');
       expect(file.allErrors, [
         isDriftError(
-            contains('has 3 positional fields, but there are only 1 columns.')),
+          contains('has 3 positional fields, but there are only 1 columns.'),
+        ),
       ]);
     });
 
@@ -822,36 +806,32 @@ class MyRow {
       });
 
       final file = await state.analyze('package:a/a.drift');
-      expect(file.allErrors, [
-        isDriftError(contains('a must be a List')),
-      ]);
+      expect(file.allErrors, [isDriftError(contains('a must be a List'))]);
     });
 
-    test(
-      'when there is a type mismatch on a nested scalar column',
-      () async {
-        final state = await TestBackend.inTest({
-          'a|lib/a.drift': '''
+    test('when there is a type mismatch on a nested scalar column', () async {
+      final state = await TestBackend.inTest({
+        'a|lib/a.drift': '''
 import 'a.dart';
 
 CREATE TABLE tbl (bar INT, baz TEXT);
 
 foo WITH MyRow: SELECT LIST(SELECT bar FROM tbl) AS a;
 ''',
-          'a|lib/a.dart': '''
+        'a|lib/a.dart': '''
 class MyRow {
   MyRow(List<String> a);
 }
 ''',
-        });
+      });
 
-        final file = await state.analyze('package:a/a.drift');
-        expect(file.allErrors, [
-          isDriftError(
-              'For Parameter a: The class to use as an existing row type must '
-              'have an unnamed constructor.'),
-        ]);
-      },
-    );
+      final file = await state.analyze('package:a/a.drift');
+      expect(file.allErrors, [
+        isDriftError(
+          'For Parameter a: The class to use as an existing row type must '
+          'have an unnamed constructor.',
+        ),
+      ]);
+    });
   });
 }

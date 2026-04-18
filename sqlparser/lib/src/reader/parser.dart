@@ -45,16 +45,16 @@ final class ParserState {
   final List<ErrorRecoveryScope> _errorRecovery;
 
   ParserState(this.tokens, {EngineOptions? options, this.autoComplete})
-      : options = options ?? EngineOptions(),
-        errors = [],
-        _errorRecovery = [];
+    : options = options ?? EngineOptions(),
+      errors = [],
+      _errorRecovery = [];
 
   ParserState.fromParent(ParserState parent)
-      : tokens = parent.tokens,
-        errors = parent.errors,
-        autoComplete = parent.autoComplete,
-        options = parent.options,
-        _errorRecovery = parent._errorRecovery;
+    : tokens = parent.tokens,
+      errors = parent.errors,
+      autoComplete = parent.autoComplete,
+      options = parent.options,
+      _errorRecovery = parent._errorRecovery;
 }
 
 extension Parser on ParserState {
@@ -185,7 +185,7 @@ extension Parser on ParserState {
   Statement safeStatement() {
     final first = _peek;
     return _parseAsStatement(statement, requireSemicolon: false) ??
-        InvalidStatement()
+          InvalidStatement()
       ..setSpan(first, _previous);
   }
 
@@ -199,8 +199,9 @@ extension Parser on ParserState {
       if (statement != null) {
         statements.add(statement);
       } else {
-        statements
-            .add(InvalidStatement()..setSpan(firstForStatement, _previous));
+        statements.add(
+          InvalidStatement()..setSpan(firstForStatement, _previous),
+        );
       }
     }
 
@@ -347,16 +348,21 @@ extension Parser on ParserState {
       return found;
     }
 
-    _error('Expected `IMPORT`, `CREATE`, or an identifier starting a compiled '
-        'query.');
+    _error(
+      'Expected `IMPORT`, `CREATE`, or an identifier starting a compiled '
+      'query.',
+    );
   }
 
   ImportStatement? _import() {
     if (_matchOne(TokenType.import)) {
       final importToken = _previous;
-      final import = _consume(TokenType.stringLiteral,
-              'Expected import file as a string literal (single quoted)')
-          as StringLiteralToken;
+      final import =
+          _consume(
+                TokenType.stringLiteral,
+                'Expected import file as a string literal (single quoted)',
+              )
+              as StringLiteralToken;
 
       return ImportStatement(import.value)
         ..importToken = importToken
@@ -369,8 +375,10 @@ extension Parser on ParserState {
     DeclaredStatementIdentifier identifier;
 
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
-      final name = _consumeIdentifier('Expected a name for a declared query',
-          lenient: true);
+      final name = _consumeIdentifier(
+        'Expected a name for a declared query',
+        lenient: true,
+      );
 
       identifier = SimpleName(name.identifier)..identifier = name;
     } else if (_matchOne(TokenType.atSignVariable)) {
@@ -394,9 +402,10 @@ extension Parser on ParserState {
     final as = _driftTableName();
 
     final colon = _consume(
-        TokenType.colon,
-        'Expected a colon (:) followed by a query. Imports and CREATE '
-        'statements must appear before the first query.');
+      TokenType.colon,
+      'Expected a colon (:) followed by a query. Imports and CREATE '
+      'statements must appear before the first query.',
+    );
 
     AstNode? stmt;
     if (_check(TokenType.begin)) {
@@ -407,15 +416,12 @@ extension Parser on ParserState {
 
     if (stmt == null) {
       _error(
-          'Expected a sql statement here (SELECT, UPDATE, INSERT or DELETE)');
+        'Expected a sql statement here (SELECT, UPDATE, INSERT or DELETE)',
+      );
     }
 
-    return DeclaredStatement(
-      identifier,
-      stmt,
-      parameters: parameters,
-      as: as,
-    )..colon = colon;
+    return DeclaredStatement(identifier, stmt, parameters: parameters, as: as)
+      ..colon = colon;
   }
 
   StatementParameter _statementParameter() {
@@ -440,8 +446,12 @@ extension Parser on ParserState {
         orNull = true;
       }
 
-      return VariableTypeHint(variable, typeName,
-          orNull: orNull, isRequired: isRequired)
+      return VariableTypeHint(
+          variable,
+          typeName,
+          orNull: orNull,
+          isRequired: isRequired,
+        )
         ..as = as
         ..setSpan(first, _previous);
     } else if (_matchOne(TokenType.dollarSignVariable)) {
@@ -465,8 +475,9 @@ extension Parser on ParserState {
     } on ParsingError {
       while (!_isAtEnd) {
         final next = _peek;
-        final leftScope =
-            _errorRecovery.lastWhereOrNull((scope) => scope.indicatesEnd(next));
+        final leftScope = _errorRecovery.lastWhereOrNull(
+          (scope) => scope.indicatesEnd(next),
+        );
         if (leftScope == null) {
           _advance();
           continue;
@@ -486,8 +497,10 @@ extension Parser on ParserState {
 
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
-  T? _parseAsStatement<T extends Statement>(T? Function() parser,
-      {bool requireSemicolon = true}) {
+  T? _parseAsStatement<T extends Statement>(
+    T? Function() parser, {
+    bool requireSemicolon = true,
+  }) {
     final first = _peek;
     T? result;
 
@@ -500,8 +513,10 @@ extension Parser on ParserState {
       result?.setSpan(first, _previous);
     } else if (result != null && requireSemicolon) {
       try {
-        result!.semicolon = _consume(TokenType.semicolon,
-            'Expected a semicolon after the statement ended');
+        result!.semicolon = _consume(
+          TokenType.semicolon,
+          'Expected a semicolon after the statement ended',
+        );
       } on ParsingError {
         // Ignore
       }
@@ -542,7 +557,8 @@ extension Parser on ParserState {
     final first = _peek;
     final begin = _beginStatement();
     final stmts = _crudStatements(
-        () => _checkAny(const [TokenType.commit, TokenType.end]));
+      () => _checkAny(const [TokenType.commit, TokenType.end]),
+    );
     final end = _commit();
 
     return TransactionBlock(begin: begin, innerStatements: stmts, commit: end)
@@ -596,8 +612,9 @@ extension Parser on ParserState {
   }
 
   NumericLiteral _numericLiteral() {
-    final number = _consume(TokenType.numberLiteral, 'Expected a number here')
-        as NumericToken;
+    final number =
+        _consume(TokenType.numberLiteral, 'Expected a number here')
+            as NumericToken;
     return NumericLiteral(number.parsedNumber)
       ..token = number
       ..setSpan(number, number);
@@ -615,8 +632,10 @@ extension Parser on ParserState {
     } else if (!enableDriftExtensions) {
       // These have special meanings in drift files, but are general variables
       // otherwise.
-      if (_match(
-          const [TokenType.atSignVariable, TokenType.dollarSignVariable])) {
+      if (_match(const [
+        TokenType.atSignVariable,
+        TokenType.dollarSignVariable,
+      ])) {
         return NamedVariable(_previous as NamedVariableToken)
           ..setSpan(_previous, _previous);
       }
@@ -648,7 +667,9 @@ extension Parser on ParserState {
     } while (_matchOne(TokenType.comma));
 
     return ExprFunctionParameters(
-        distinct: distinct != null, parameters: parameters)
+        distinct: distinct != null,
+        parameters: parameters,
+      )
       ..distinctKeyword = distinct
       ..setSpan(first, _previous);
   }
@@ -656,10 +677,14 @@ extension Parser on ParserState {
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well. If parsing a [Tuple], [usedAsRowValue] is
   /// passed into the [Tuple] constructor.
-  Expression _consumeTuple(
-      {bool orSubQuery = false, bool usedAsRowValue = false}) {
-    final firstToken =
-        _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
+  Expression _consumeTuple({
+    bool orSubQuery = false,
+    bool usedAsRowValue = false,
+  }) {
+    final firstToken = _consume(
+      TokenType.leftParen,
+      'Expected opening parenthesis for tuple',
+    );
     final expressions = <Expression>[];
 
     // if desired, attempt to parse select statement
@@ -674,12 +699,16 @@ extension Parser on ParserState {
       }
 
       _consume(
-          TokenType.rightParen, 'Expected right parenthesis to close tuple');
+        TokenType.rightParen,
+        'Expected right parenthesis to close tuple',
+      );
       return Tuple(expressions: expressions, usedAsRowValue: usedAsRowValue)
         ..setSpan(firstToken, _previous);
     } else {
-      _consume(TokenType.rightParen,
-          'Expected right parenthesis to finish subquery');
+      _consume(
+        TokenType.rightParen,
+        'Expected right parenthesis to finish subquery',
+      );
       return SubQuery(select: subQuery)..setSpan(firstToken, _previous);
     }
   }
@@ -689,8 +718,11 @@ extension Parser on ParserState {
     Token? modeToken;
     var mode = TransactionMode.none;
 
-    if (_match(
-        const [TokenType.deferred, TokenType.immediate, TokenType.exclusive])) {
+    if (_match(const [
+      TokenType.deferred,
+      TokenType.immediate,
+      TokenType.exclusive,
+    ])) {
       modeToken = _previous;
 
       switch (modeToken.type) {
@@ -755,8 +787,10 @@ extension Parser on ParserState {
     // A WITH clause without a following select, insert, delete or update
     // is invalid!
     if (withClause != null) {
-      _error('Expected a SELECT, INSERT, UPDATE or DELETE statement to '
-          'follow this WITH clause.');
+      _error(
+        'Expected a SELECT, INSERT, UPDATE or DELETE statement to '
+        'follow this WITH clause.',
+      );
     }
 
     return null;
@@ -782,8 +816,10 @@ extension Parser on ParserState {
           columnNames.add(identifier.identifier);
         } while (_matchOne(TokenType.comma));
 
-        _consume(TokenType.rightParen,
-            'Expected closing bracket after column names');
+        _consume(
+          TokenType.rightParen,
+          'Expected closing bracket after column names',
+        );
       }
 
       final asToken = _consume(TokenType.as, 'Expected AS');
@@ -804,23 +840,22 @@ extension Parser on ParserState {
       final selectStmt = select() ?? _error(msg);
       _consume(TokenType.rightParen, msg);
 
-      ctes.add(CommonTableExpression(
-        cteTableName: name.identifier,
-        materializationHint: hint,
-        columnNames: columnNames,
-        as: selectStmt,
-      )
-        ..setSpan(name, _previous)
-        ..asToken = asToken
-        ..tableNameToken = name
-        ..not = not
-        ..materialized = materialized);
+      ctes.add(
+        CommonTableExpression(
+            cteTableName: name.identifier,
+            materializationHint: hint,
+            columnNames: columnNames,
+            as: selectStmt,
+          )
+          ..setSpan(name, _previous)
+          ..asToken = asToken
+          ..tableNameToken = name
+          ..not = not
+          ..materialized = materialized,
+      );
     } while (_matchOne(TokenType.comma));
 
-    return WithClause(
-      recursive: recursive,
-      ctes: ctes,
-    )
+    return WithClause(recursive: recursive, ctes: ctes)
       ..setSpan(withToken, _previous)
       ..recursiveToken = recursiveToken
       ..withToken = withToken;
@@ -939,8 +974,11 @@ extension Parser on ParserState {
   }
 
   CompoundSelectPart? _compoundSelectPart() {
-    if (_match(
-        const [TokenType.union, TokenType.intersect, TokenType.except])) {
+    if (_match(const [
+      TokenType.union,
+      TokenType.intersect,
+      TokenType.except,
+    ])) {
       final firstModeToken = _previous;
       var mode = const {
         TokenType.union: CompoundSelectMode.union,
@@ -959,10 +997,7 @@ extension Parser on ParserState {
         _error('Expected a select statement here!');
       }
 
-      return CompoundSelectPart(
-        mode: mode!,
-        select: select,
-      )
+      return CompoundSelectPart(mode: mode!, select: select)
         ..firstModeToken = firstModeToken
         ..allToken = allToken
         ..setSpan(firstModeToken, _previous);
@@ -1014,17 +1049,22 @@ extension Parser on ParserState {
         _consume(TokenType.rightParen, 'Expected closing parenthesis');
         final alias = allowAlias ? _as() : null;
 
-        return TableValuedFunction(tableRef.tableName, params,
-            as: alias, schemaName: tableRef.schemaName)
-          ..setSpan(tableRef.first!, _previous);
+        return TableValuedFunction(
+          tableRef.tableName,
+          params,
+          as: alias,
+          schemaName: tableRef.schemaName,
+        )..setSpan(tableRef.first!, _previous);
       }
 
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;
       final innerStmt = _fullSelect()!;
-      _consume(TokenType.rightParen,
-          'Expected a right bracket to terminate the inner select');
+      _consume(
+        TokenType.rightParen,
+        'Expected a right bracket to terminate the inner select',
+      );
 
       final alias = allowAlias ? _as() : null;
       return SelectStatementAsSource(statement: innerStmt, as: alias)
@@ -1056,11 +1096,10 @@ extension Parser on ParserState {
       final subquery = _tableOrSubquery();
       final constraint = _joinConstraint();
 
-      joins.add(Join(
-        operator: operator,
-        query: subquery,
-        constraint: constraint,
-      )..setSpan(first, _previous));
+      joins.add(
+        Join(operator: operator, query: subquery, constraint: constraint)
+          ..setSpan(first, _previous),
+      );
 
       // parse the next operator, if there is more than one join
       operator = _optionalJoinOperator();
@@ -1073,10 +1112,11 @@ extension Parser on ParserState {
   /// Parses https://www.sqlite.org/syntax/join-operator.html
   JoinOperator? _optionalJoinOperator() {
     if (_matchOne(TokenType.comma) || _matchOne(TokenType.join)) {
-      return JoinOperator(_previous.type == TokenType.comma
-          ? JoinOperatorKind.comma
-          : JoinOperatorKind.none)
-        ..setSpan(_previous, _previous);
+      return JoinOperator(
+        _previous.type == TokenType.comma
+            ? JoinOperatorKind.comma
+            : JoinOperatorKind.none,
+      )..setSpan(_previous, _previous);
     }
 
     const canAppearAfterNatural = {
@@ -1122,8 +1162,10 @@ extension Parser on ParserState {
 
       final columnNames = <String>[];
       do {
-        final identifier =
-            _consume(TokenType.identifier, 'Expected a column name');
+        final identifier = _consume(
+          TokenType.identifier,
+          'Expected a column name',
+        );
         columnNames.add((identifier as IdentifierToken).identifier);
       } while (_matchOne(TokenType.comma));
 
@@ -1169,12 +1211,16 @@ extension Parser on ParserState {
     if (_matchOne(TokenType.window)) {
       do {
         final name = _consumeIdentifier('Expected a name for the window');
-        _consume(TokenType.as,
-            'Expected AS between the window name and its definition');
+        _consume(
+          TokenType.as,
+          'Expected AS between the window name and its definition',
+        );
         final window = _windowDefinition();
 
-        declarations.add(NamedWindowDeclaration(name.identifier, window)
-          ..setSpan(name, _previous));
+        declarations.add(
+          NamedWindowDeclaration(name.identifier, window)
+            ..setSpan(name, _previous),
+        );
       } while (_matchOne(TokenType.comma));
     }
     return declarations;
@@ -1334,7 +1380,9 @@ extension Parser on ParserState {
 
   MultiColumnSetComponent _multiColumnSetComponent() {
     final first = _consume(
-        TokenType.leftParen, 'Expected opening parenthesis before column list');
+      TokenType.leftParen,
+      'Expected opening parenthesis before column list',
+    );
 
     final targetColumns = <Reference>[];
     do {
@@ -1343,14 +1391,19 @@ extension Parser on ParserState {
     } while (_matchOne(TokenType.comma));
 
     _consume(
-        TokenType.rightParen, 'Expected closing parenthesis after column list');
+      TokenType.rightParen,
+      'Expected closing parenthesis after column list',
+    );
     _consume(TokenType.equal, 'Expected = after the column name list');
-    final tupleOrSubQuery =
-        _consumeTuple(orSubQuery: true, usedAsRowValue: true);
+    final tupleOrSubQuery = _consumeTuple(
+      orSubQuery: true,
+      usedAsRowValue: true,
+    );
 
     return MultiColumnSetComponent(
-        columns: targetColumns, rowValue: tupleOrSubQuery)
-      ..setSpan(first, _previous);
+      columns: targetColumns,
+      rowValue: tupleOrSubQuery,
+    )..setSpan(first, _previous);
   }
 
   List<SetComponent> _setComponents() {
@@ -1379,14 +1432,16 @@ extension Parser on ParserState {
           TokenType.rollback: InsertMode.insertOrRollback,
           TokenType.abort: InsertMode.insertOrAbort,
           TokenType.fail: InsertMode.insertOrFail,
-          TokenType.ignore: InsertMode.insertOrIgnore
+          TokenType.ignore: InsertMode.insertOrIgnore,
         };
 
         if (_match(tokensToModes.keys)) {
           insertMode = tokensToModes[_previous.type];
         } else {
-          _error('After the INSERT OR, expected an insert mode '
-              '(REPLACE, ROLLBACK, etc.)');
+          _error(
+            'After the INSERT OR, expected an insert mode '
+            '(REPLACE, ROLLBACK, etc.)',
+          );
         }
       } else {
         insertMode = InsertMode.insert;
@@ -1407,8 +1462,10 @@ extension Parser on ParserState {
         targetColumns.add(Reference.fromTokens(columnName: columnRef));
       } while (_matchOne(TokenType.comma));
 
-      _consume(TokenType.rightParen,
-          'Expected closing parenthesis after column list');
+      _consume(
+        TokenType.rightParen,
+        'Expected closing parenthesis after column list',
+      );
     }
     final source = _insertSource();
     final upsert = <UpsertClauseEntry>[];
@@ -1426,7 +1483,7 @@ extension Parser on ParserState {
       upsert: upsert.isEmpty
           ? null
           : (UpsertClause(upsert)
-            ..setSpan(upsert.first.first!, upsert.last.last!)),
+              ..setSpan(upsert.first.first!, upsert.last.last!)),
       returning: returning,
     )..setSpan(withClause?.first ?? firstToken, _previous);
   }
@@ -1474,8 +1531,10 @@ extension Parser on ParserState {
       }
     }
 
-    _consume(TokenType.$do,
-        'Expected DO, followed by the action (NOTHING or UPDATE SET)');
+    _consume(
+      TokenType.$do,
+      'Expected DO, followed by the action (NOTHING or UPDATE SET)',
+    );
 
     late UpsertAction action;
     if (_matchOne(TokenType.nothing)) {
@@ -1551,7 +1610,7 @@ extension Parser on ParserState {
     final frameType = const {
       TokenType.range: FrameType.range,
       TokenType.rows: FrameType.rows,
-      TokenType.groups: FrameType.groups
+      TokenType.groups: FrameType.groups,
     }[typeToken.type];
 
     FrameBoundary start, end;
@@ -1591,8 +1650,10 @@ extension Parser on ParserState {
     )..setSpan(typeToken, _previous);
   }
 
-  FrameBoundary _frameBoundary(
-      {bool isStartBounds = true, bool parseExprFollowing = true}) {
+  FrameBoundary _frameBoundary({
+    bool isStartBounds = true,
+    bool parseExprFollowing = true,
+  }) {
     // the CURRENT ROW boundary is supported for all modes
     if (_matchOne(TokenType.current)) {
       _consume(TokenType.row, 'Expected ROW to finish CURRENT ROW boundary');
@@ -1660,10 +1721,7 @@ extension Parser on ParserState {
     if (enableDriftExtensions && _matchOne(TokenType.list)) {
       final list = _previous;
 
-      _consume(
-        TokenType.leftParen,
-        'Expected opening parenthesis after LIST',
-      );
+      _consume(TokenType.leftParen, 'Expected opening parenthesis after LIST');
 
       final statement = _fullSelect();
       if (statement == null || statement is! SelectStatement) {
@@ -1684,8 +1742,11 @@ extension Parser on ParserState {
     Expression expr;
 
     {
-      final parser =
-          _ExpressionParser(this, allowResultColumn: true, optional: optional);
+      final parser = _ExpressionParser(
+        this,
+        allowResultColumn: true,
+        optional: optional,
+      );
       try {
         expr = parser._or();
       } on _ParsedResultColumn catch (e) {
@@ -1701,17 +1762,16 @@ extension Parser on ParserState {
       _consume(TokenType.by, 'Expected `BY` to follow `MAPPED` here');
 
       final dart = _consume(
-          TokenType.inlineDart, 'Expected Dart converter in backticks');
+        TokenType.inlineDart,
+        'Expected Dart converter in backticks',
+      );
       mappedBy = MappedBy(null, dart as InlineDartToken)..setSpan(mapped, dart);
     }
 
     final as = _as();
 
-    return ExpressionResultColumn(
-      expression: expr,
-      mappedBy: mappedBy,
-      as: as,
-    )..setSpan(tokenBefore, _previous);
+    return ExpressionResultColumn(expression: expr, mappedBy: mappedBy, as: as)
+      ..setSpan(tokenBefore, _previous);
   }
 
   SchemaStatement? _create() {
@@ -1728,7 +1788,8 @@ extension Parser on ParserState {
     }
 
     _error(
-        'Expected a TABLE, TRIGGER, INDEX or VIEW to be defined after the CREATE keyword.');
+      'Expected a TABLE, TRIGGER, INDEX or VIEW to be defined after the CREATE keyword.',
+    );
   }
 
   /// Parses a `CREATE TABLE` statement, assuming that the `CREATE` token has
@@ -1751,7 +1812,9 @@ extension Parser on ParserState {
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     final leftParen = _consume(
-        TokenType.leftParen, 'Expected opening parenthesis to list columns');
+      TokenType.leftParen,
+      'Expected opening parenthesis to list columns',
+    );
 
     final columns = <ColumnDefinition>[];
     final tableConstraints = <TableConstraint>[];
@@ -1775,15 +1838,19 @@ extension Parser on ParserState {
           }
 
           if (!_checkAny([TokenType.comma, TokenType.rightParen])) {
-            _error('Unrecognized table or column constraint, expected comma or '
-                'closing parenthesis here.');
+            _error(
+              'Unrecognized table or column constraint, expected comma or '
+              'closing parenthesis here.',
+            );
           }
         });
       } while (_matchOne(TokenType.comma));
     });
 
-    final rightParen =
-        _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    final rightParen = _consume(
+      TokenType.rightParen,
+      'Expected closing parenthesis',
+    );
 
     var withoutRowId = false;
     var isStrict = false;
@@ -1797,8 +1864,10 @@ extension Parser on ParserState {
         strict = _previous;
         return true;
       } else if (_matchOne(TokenType.without)) {
-        _consume(TokenType.rowid,
-            'Expected ROWID to complete the WITHOUT ROWID part');
+        _consume(
+          TokenType.rowid,
+          'Expected ROWID to complete the WITHOUT ROWID part',
+        );
         withoutRowId = true;
         return true;
       }
@@ -1818,14 +1887,14 @@ extension Parser on ParserState {
     final overriddenName = _driftTableName();
 
     return CreateTableStatement(
-      ifNotExists: ifNotExists,
-      tableName: tableIdentifier.identifier,
-      withoutRowId: withoutRowId,
-      columns: columns,
-      tableConstraints: tableConstraints,
-      isStrict: isStrict,
-      driftTableName: overriddenName,
-    )
+        ifNotExists: ifNotExists,
+        tableName: tableIdentifier.identifier,
+        withoutRowId: withoutRowId,
+        columns: columns,
+        tableConstraints: tableConstraints,
+        isStrict: isStrict,
+        driftTableName: overriddenName,
+      )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
       ..tableNameToken = tableIdentifier
@@ -1836,7 +1905,10 @@ extension Parser on ParserState {
   /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE <name>`
   /// tokens have already been read.
   CreateVirtualTableStatement _virtualTable(
-      Token first, bool ifNotExists, IdentifierToken nameToken) {
+    Token first,
+    bool ifNotExists,
+    IdentifierToken nameToken,
+  ) {
     _consume(TokenType.using, 'Expected USING for virtual table declaration');
     final moduleName = _consumeIdentifier('Expected a module name');
     final args = <SourceSpanWithContext>[];
@@ -1892,20 +1964,21 @@ extension Parser on ParserState {
 
     final driftTableName = _driftTableName();
     return CreateVirtualTableStatement(
-      ifNotExists: ifNotExists,
-      tableName: nameToken.identifier,
-      moduleName: moduleName.identifier,
-      arguments: args,
-      driftTableName: driftTableName,
-    )
+        ifNotExists: ifNotExists,
+        tableName: nameToken.identifier,
+        moduleName: moduleName.identifier,
+        arguments: args,
+        driftTableName: driftTableName,
+      )
       ..setSpan(first, _previous)
       ..tableNameToken = nameToken
       ..moduleNameToken = moduleName;
   }
 
   DriftTableName? _driftTableName({bool supportAs = true}) {
-    final types =
-        supportAs ? const [TokenType.as, TokenType.$with] : [TokenType.$with];
+    final types = supportAs
+        ? const [TokenType.as, TokenType.$with]
+        : [TokenType.$with];
 
     if (enableDriftExtensions && (_match(types))) {
       return _startedDriftTableName(_previous);
@@ -1915,14 +1988,15 @@ extension Parser on ParserState {
 
   DriftTableName _startedDriftTableName(Token first) {
     final useExisting = _previous.type == TokenType.$with;
-    final name =
-        _consumeIdentifier('Expected the name for the data class').identifier;
+    final name = _consumeIdentifier(
+      'Expected the name for the data class',
+    ).identifier;
     String? constructorName;
 
     if (_matchOne(TokenType.dot)) {
       constructorName = _consumeIdentifier(
-              'Expected name of the constructor to use after the dot')
-          .identifier;
+        'Expected name of the constructor to use after the dot',
+      ).identifier;
     }
 
     return DriftTableName(
@@ -1966,7 +2040,9 @@ extension Parser on ParserState {
         ..setSpan(_previous, _previous);
     } else {
       final updateToken = _consume(
-          TokenType.update, 'Expected DELETE, INSERT or UPDATE as a trigger');
+        TokenType.update,
+        'Expected DELETE, INSERT or UPDATE as a trigger',
+      );
       final names = <Reference>[];
 
       if (_matchOne(TokenType.of)) {
@@ -1999,14 +2075,14 @@ extension Parser on ParserState {
     final block = _consumeBlock();
 
     return CreateTriggerStatement(
-      ifNotExists: ifNotExists,
-      triggerName: trigger.identifier,
-      mode: mode,
-      target: target,
-      onTable: tableRef,
-      when: when,
-      action: block,
-    )
+        ifNotExists: ifNotExists,
+        triggerName: trigger.identifier,
+        mode: mode,
+        target: target,
+        onTable: tableRef,
+        when: when,
+        action: block,
+      )
       ..setSpan(create, _previous)
       ..triggerNameToken = trigger;
   }
@@ -2056,12 +2132,12 @@ extension Parser on ParserState {
     }
 
     return CreateViewStatement(
-      ifNotExists: ifNotExists,
-      viewName: name.identifier,
-      columns: columnNames,
-      query: query,
-      driftTableName: driftTableName,
-    )
+        ifNotExists: ifNotExists,
+        viewName: name.identifier,
+        columns: columnNames,
+        query: query,
+        driftTableName: driftTableName,
+      )
       ..viewNameToken = name
       ..setSpan(create, _previous);
   }
@@ -2092,13 +2168,13 @@ extension Parser on ParserState {
     }
 
     return CreateIndexStatement(
-      indexName: name.identifier,
-      unique: unique,
-      ifNotExists: ifNotExists,
-      on: tableRef,
-      columns: indexes,
-      where: where,
-    )
+        indexName: name.identifier,
+        unique: unique,
+        ifNotExists: ifNotExists,
+        on: tableRef,
+        columns: indexes,
+        where: where,
+      )
       ..nameToken = name
       ..setSpan(create, _previous);
   }
@@ -2133,7 +2209,7 @@ extension Parser on ParserState {
       TokenType.$index,
       TokenType.table,
       TokenType.trigger,
-      TokenType.view
+      TokenType.view,
     ])) {
       _error('Expected INDEX, TABLE, TRIGGER or VIEW here');
     }
@@ -2152,22 +2228,25 @@ extension Parser on ParserState {
       _consume(TokenType.exists);
     }
 
-    final TableReference(:schemaName, :tableName) =
-        _tableReference(allowAlias: false);
+    final TableReference(:schemaName, :tableName) = _tableReference(
+      allowAlias: false,
+    );
 
     return DropStatement(
         type: type,
         schemaName: schemaName,
         elementName: tableName,
-        ifExists: ifExists)
+        ifExists: ifExists,
+      )
       ..setSpan(first, _previous)
       ..typeToken = typeToken;
   }
 
   ReindexStatement _reindex() {
     final first = _consume(TokenType.reindex);
-    final TableReference(:schemaName, :tableName) =
-        _tableReference(allowAlias: false);
+    final TableReference(:schemaName, :tableName) = _tableReference(
+      allowAlias: false,
+    );
 
     return ReindexStatement(elementName: tableName, schemaName: schemaName)
       ..setSpan(first, _previous);
@@ -2205,8 +2284,9 @@ extension Parser on ParserState {
     final tableRef = _tableReferenceOrNull(allowAlias: false);
 
     return AnalyzeStatement(
-        schemaName: tableRef?.schemaName, elementName: tableRef?.tableName)
-      ..setSpan(first, _previous);
+      schemaName: tableRef?.schemaName,
+      elementName: tableRef?.tableName,
+    )..setSpan(first, _previous);
   }
 
   PragmaCommand _pragma() {
@@ -2231,8 +2311,10 @@ extension Parser on ParserState {
     }
 
     return PragmaCommand(
-        schemaName: name.schemaName, pragmaName: name.tableName, value: value)
-      ..setSpan(first, _previous);
+      schemaName: name.schemaName,
+      pragmaName: name.tableName,
+      value: value,
+    )..setSpan(first, _previous);
   }
 
   SavepointStatement _savepoint() {
@@ -2287,7 +2369,9 @@ extension Parser on ParserState {
         _consume(TokenType.to);
         final newName = _consumeIdentifier('Expected new name');
         return RenameColumnTo(
-            Reference.fromTokens(columnName: oldName), newName.identifier)
+            Reference.fromTokens(columnName: oldName),
+            newName.identifier,
+          )
           ..setSpan(first, _previous)
           ..newNameToken = newName;
       }
@@ -2337,10 +2421,10 @@ extension Parser on ParserState {
     }
 
     return ColumnDefinition(
-      columnName: name.identifier,
-      typeName: typeName,
-      constraints: constraints,
-    )
+        columnName: name.identifier,
+        typeName: typeName,
+        constraints: constraints,
+      )
       ..setSpan(name, _previous)
       ..typeNames = typeTokens
       ..nameToken = name;
@@ -2364,14 +2448,16 @@ extension Parser on ParserState {
       const inBrackets = [
         TokenType.identifier,
         TokenType.comma,
-        TokenType.numberLiteral
+        TokenType.numberLiteral,
       ];
       while (_match(inBrackets)) {
         typeNames.add(_previous);
       }
 
-      _consume(TokenType.rightParen,
-          'Expected closing parenthesis to finish type name');
+      _consume(
+        TokenType.rightParen,
+        'Expected closing parenthesis to finish type name',
+      );
       typeNames.add(_previous);
     }
 
@@ -2393,9 +2479,12 @@ extension Parser on ParserState {
       _suggestHint(HintDescription.token(TokenType.autoincrement));
       final hasAutoInc = _matchOne(TokenType.autoincrement);
 
-      return PrimaryKeyColumn(resolvedName,
-          autoIncrement: hasAutoInc, mode: mode, onConflict: conflict)
-        ..setSpan(first, _previous);
+      return PrimaryKeyColumn(
+        resolvedName,
+        autoIncrement: hasAutoInc,
+        mode: mode,
+        onConflict: conflict,
+      )..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.$null)) {
       final nullToken = _previous;
@@ -2406,8 +2495,10 @@ extension Parser on ParserState {
       _suggestHint(HintDescription.token(TokenType.$null));
 
       final notToken = _previous;
-      final nullToken =
-          _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
+      final nullToken = _consume(
+        TokenType.$null,
+        'Expected NULL to complete NOT NULL',
+      );
 
       return NotNull(resolvedName, onConflict: _conflictClauseOrNull())
         ..setSpan(first, _previous)
@@ -2473,15 +2564,19 @@ extension Parser on ParserState {
       _consume(TokenType.by, 'Expected a MAPPED BY constraint');
 
       final dartExpr = _consume(
-          TokenType.inlineDart, 'Expected Dart expression in backticks');
+        TokenType.inlineDart,
+        'Expected Dart expression in backticks',
+      );
 
       return MappedBy(resolvedName, dartExpr as InlineDartToken)
         ..setSpan(first, _previous);
     }
     if (enableDriftExtensions && _matchOne(TokenType.json)) {
       final jsonToken = _previous;
-      final keyToken =
-          _consume(TokenType.key, 'Expected a JSON KEY constraint');
+      final keyToken = _consume(
+        TokenType.key,
+        'Expected a JSON KEY constraint',
+      );
       final name = _consumeIdentifier('Expected a name for for the json key');
 
       return JsonKey(resolvedName, name)
@@ -2520,17 +2615,23 @@ extension Parser on ParserState {
         _consume(TokenType.key, 'Expected KEY to start PRIMARY KEY clause');
       }
 
-      _consume(TokenType.leftParen,
-          'Expected a left parenthesis to start key columns');
+      _consume(
+        TokenType.leftParen,
+        'Expected a left parenthesis to start key columns',
+      );
       final columns = _indexedColumns();
       _consume(
-          TokenType.rightParen, 'Expected a closing parenthesis after columns');
+        TokenType.rightParen,
+        'Expected a closing parenthesis after columns',
+      );
       final conflictClause = _conflictClauseOrNull();
 
-      result = KeyClause(name,
-          isPrimaryKey: isPrimaryKey,
-          columns: columns,
-          onConflict: conflictClause);
+      result = KeyClause(
+        name,
+        isPrimaryKey: isPrimaryKey,
+        columns: columns,
+        onConflict: conflictClause,
+      );
     } else if (_matchOne(TokenType.check)) {
       final expr = _expressionInParentheses();
       result = CheckTable(name, expr);
@@ -2539,8 +2640,11 @@ extension Parser on ParserState {
       final columns = _listColumnsInParentheses(allowEmpty: false);
       final clause = _foreignKeyClause();
 
-      result =
-          ForeignKeyTableConstraint(name, columns: columns, clause: clause);
+      result = ForeignKeyTableConstraint(
+        name,
+        columns: columns,
+        clause: clause,
+      );
     }
 
     if (result != null) {
@@ -2576,8 +2680,10 @@ extension Parser on ParserState {
   ConflictClause? _conflictClauseOrNull() {
     _suggestHint(HintDescription.token(TokenType.on));
     if (_matchOne(TokenType.on)) {
-      _consume(TokenType.conflict,
-          'Expected CONFLICT to complete ON CONFLICT clause');
+      _consume(
+        TokenType.conflict,
+        'Expected CONFLICT to complete ON CONFLICT clause',
+      );
 
       const modes = {
         TokenType.rollback: ConflictClause.rollback,
@@ -2615,10 +2721,10 @@ extension Parser on ParserState {
     }
 
     return TableReference(
-      tableName.identifier,
-      as: as,
-      schemaName: schemaName?.identifier,
-    )
+        tableName.identifier,
+        as: as,
+        schemaName: schemaName?.identifier,
+      )
       ..setSpan(schemaName ?? tableName, _previous)
       ..schemaNameToken = schemaName
       ..tableNameToken = tableName;
@@ -2637,7 +2743,8 @@ extension Parser on ParserState {
     _suggestHint(HintDescription.token(TokenType.on));
     while (_matchOne(TokenType.on)) {
       _suggestHint(
-          const HintDescription.tokens([TokenType.delete, TokenType.update]));
+        const HintDescription.tokens([TokenType.delete, TokenType.update]),
+      );
       if (_matchOne(TokenType.delete)) {
         onDelete = _referenceAction();
       } else if (_matchOne(TokenType.update)) {
@@ -2706,8 +2813,10 @@ extension Parser on ParserState {
         columnNames.add(reference);
       } while (_matchOne(TokenType.comma));
 
-      _consume(TokenType.rightParen,
-          'Expected closing paranthesis after column names');
+      _consume(
+        TokenType.rightParen,
+        'Expected closing paranthesis after column names',
+      );
     } else {
       if (!allowEmpty) {
         _error('Expected a list of columns in parantheses');
@@ -2737,15 +2846,19 @@ final class _ExpressionParser extends ParserState {
   /// emitting a syntax error.
   final bool optional;
 
-  _ExpressionParser(super.state,
-      {this.allowResultColumn = false, this.optional = false})
-      : super.fromParent();
+  _ExpressionParser(
+    super.state, {
+    this.allowResultColumn = false,
+    this.optional = false,
+  }) : super.fromParent();
 
   /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
   /// both a and b are expressions with a higher precedence parsed from
   /// [higherPrecedence].
   Expression _parseSimpleBinary(
-      List<TokenType> types, Expression Function() higherPrecedence) {
+    List<TokenType> types,
+    Expression Function() higherPrecedence,
+  ) {
     var expression = higherPrecedence();
 
     while (_match(types)) {
@@ -2819,8 +2932,11 @@ final class _ExpressionParser extends ParserState {
         final upper = _comparison();
 
         expression = BetweenExpression(
-            not: not, check: expression, lower: lower, upper: upper)
-          ..setSpan(first!, _previous);
+          not: not,
+          check: expression,
+          lower: lower,
+          upper: upper,
+        )..setSpan(first!, _previous);
       } else if (_match(ops)) {
         final operator = _previous;
         if (operator.type == TokenType.$is) {
@@ -2836,12 +2952,17 @@ final class _ExpressionParser extends ParserState {
             distinctFrom = true;
           }
 
-          expression = IsExpression(not, expression, _comparison(),
-              distinctFromSyntax: distinctFrom)
-            ..setSpan(first!, _previous)
-            ..$is = isToken
-            ..distinct = distinct
-            ..from = from;
+          expression =
+              IsExpression(
+                  not,
+                  expression,
+                  _comparison(),
+                  distinctFromSyntax: distinctFrom,
+                )
+                ..setSpan(first!, _previous)
+                ..$is = isToken
+                ..distinct = distinct
+                ..from = from;
         } else {
           expression = BinaryExpression(expression, operator, _comparison())
             ..setSpan(first!, _previous);
@@ -2858,12 +2979,12 @@ final class _ExpressionParser extends ParserState {
         }
 
         expression = StringComparisonExpression(
-            not: not,
-            left: expression,
-            operator: operator,
-            right: right,
-            escape: escape)
-          ..setSpan(first!, _previous);
+          not: not,
+          left: expression,
+          operator: operator,
+          right: right,
+          escape: escape,
+        )..setSpan(first!, _previous);
       } else {
         break; // no matching operator with this precedence was found
       }
@@ -2899,7 +3020,7 @@ final class _ExpressionParser extends ParserState {
     return _parseSimpleBinary(const [
       TokenType.doublePipe,
       TokenType.dashRangle,
-      TokenType.dashRangleRangle
+      TokenType.dashRangleRangle,
     ], _unary);
   }
 
@@ -2917,10 +3038,14 @@ final class _ExpressionParser extends ParserState {
     } else if (_matchOne(TokenType.exists)) {
       final existsToken = _previous;
       _consume(
-          TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
+        TokenType.leftParen,
+        'Expected opening parenthesis after EXISTS',
+      );
       final selectStmt = _fullSelect() ?? _error('Expected a select statement');
-      _consume(TokenType.rightParen,
-          'Expected closing paranthesis to finish EXISTS expression');
+      _consume(
+        TokenType.rightParen,
+        'Expected closing paranthesis to finish EXISTS expression',
+      );
       return ExistsExpression(select: selectStmt)
         ..setSpan(existsToken, _previous);
     }
@@ -2989,8 +3114,10 @@ final class _ExpressionParser extends ParserState {
         final whenExpr = _or();
         _consume(TokenType.then, 'Expected THEN');
         final then = expression();
-        whens.add(WhenComponent(when: whenExpr, then: then)
-          ..setSpan(whenToken, _previous));
+        whens.add(
+          WhenComponent(when: whenExpr, then: then)
+            ..setSpan(whenToken, _previous),
+        );
       }
 
       if (_matchOne(TokenType.$else)) {
@@ -3028,7 +3155,9 @@ final class _ExpressionParser extends ParserState {
       }
 
       final end = _consume(
-          TokenType.rightParen, 'Expected a right parenthesis to finish RAISE');
+        TokenType.rightParen,
+        'Expected a right parenthesis to finish RAISE',
+      );
       return RaiseExpression(kind, message)..setSpan(raiseToken, end);
     }
 
@@ -3119,7 +3248,8 @@ final class _ExpressionParser extends ParserState {
 
   Expression _referenceOrFunctionCall() {
     final first = _consumeIdentifier(
-        'This error message should never be displayed. Please report.');
+      'This error message should never be displayed. Please report.',
+    );
 
     // An expression starting with an identifier could be three things:
     //  - a simple reference: "foo"
@@ -3138,15 +3268,19 @@ final class _ExpressionParser extends ParserState {
         // Aggregate functions can use `ORDER BY` in their argument list.
         final orderBy = _orderBy();
 
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
+        final rightParen = _consume(
+          TokenType.rightParen,
+          'Expected closing bracket after argument list',
+        );
 
         final nameToken = second ?? first;
         final schemaNameToken = second != null ? first : null;
 
         if (schemaNameToken != null && !options.supportSchemaInFunctionNames) {
           final error = ParsingError(
-              schemaNameToken, 'Invalid schema name for function call');
+            schemaNameToken,
+            'Invalid schema name for function call',
+          );
           errors.add(error);
         }
 
@@ -3159,7 +3293,8 @@ final class _ExpressionParser extends ParserState {
         return FunctionExpression(
             schemaName: schemaNameToken?.identifier,
             name: nameToken.identifier,
-            parameters: parameters)
+            parameters: parameters,
+          )
           ..nameToken = nameToken
           ..schemaNameToken = schemaNameToken
           ..setSpan(first, rightParen);
@@ -3167,10 +3302,7 @@ final class _ExpressionParser extends ParserState {
         // Ok, so it's a reference.
         return second == null
             ? (Reference.fromTokens(columnName: first))
-            : (Reference.fromTokens(
-                entityName: first,
-                columnName: second,
-              ));
+            : (Reference.fromTokens(entityName: first, columnName: second));
       }
     }
 
@@ -3193,13 +3325,17 @@ final class _ExpressionParser extends ParserState {
       }
 
       // Ok, we're down to two here. it's either a table or a schema ref
-      final second = _consumeIdentifier('Expected a column or table name here',
-          lenient: true);
+      final second = _consumeIdentifier(
+        'Expected a column or table name here',
+        lenient: true,
+      );
 
       if (_matchOne(TokenType.dot)) {
         // Three identifiers, that's a schema reference
-        final third =
-            _consumeIdentifier('Expected a column name here', lenient: true);
+        final third = _consumeIdentifier(
+          'Expected a column name here',
+          lenient: true,
+        );
         return Reference.fromTokens(
           schemaName: first,
           entityName: second,
@@ -3223,8 +3359,10 @@ final class _ExpressionParser extends ParserState {
 
     // https://www.sqlite.org/syntax/filter.html (it's optional)
     if (_matchOne(TokenType.filter)) {
-      _consume(TokenType.leftParen,
-          'Expected opening parenthesis after filter statement');
+      _consume(
+        TokenType.leftParen,
+        'Expected opening parenthesis after filter statement',
+      );
       _consume(TokenType.where, 'Expected WHERE clause');
       filter = expression();
       _consume(TokenType.rightParen, 'Expecteded closing parenthes');
@@ -3241,24 +3379,24 @@ final class _ExpressionParser extends ParserState {
       }
 
       return WindowFunctionInvocation(
-        function: name,
-        parameters: params,
-        orderBy: orderBy,
-        filter: filter,
-        windowDefinition: window,
-        windowName: windowName,
-        schemaName: schemaName?.lexeme,
-      )
+          function: name,
+          parameters: params,
+          orderBy: orderBy,
+          filter: filter,
+          windowDefinition: window,
+          windowName: windowName,
+          schemaName: schemaName?.lexeme,
+        )
         ..setSpan(name, _previous)
         ..schemaNameToken = schemaName;
     } else {
       return AggregateFunctionInvocation(
-        schemaName: schemaName?.lexeme,
-        function: name,
-        parameters: params,
-        orderBy: orderBy,
-        filter: filter,
-      )
+          schemaName: schemaName?.lexeme,
+          function: name,
+          parameters: params,
+          orderBy: orderBy,
+          filter: filter,
+        )
         ..setSpan(name, _previous)
         ..schemaNameToken = schemaName;
     }

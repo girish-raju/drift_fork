@@ -103,10 +103,7 @@ class RequestedQueryResultType {
   RequestedQueryResultType(this.type, this.constructorName);
 }
 
-enum QueryMode {
-  regular,
-  atCreate,
-}
+enum QueryMode { regular, atCreate }
 
 ///A reference to a [FoundElement] occuring in the SQL query.
 class SyntacticElementReference {
@@ -156,16 +153,18 @@ abstract class SqlQuery {
   ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
   ///    AND c IN ?1`. In other words, we can expand an array without worrying
   ///    about the variables that appear after that array.
-  late final List<FoundVariable> variables =
-      elements.whereType<FoundVariable>().toList();
+  late final List<FoundVariable> variables = elements
+      .whereType<FoundVariable>()
+      .toList();
 
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
   /// [ExpressionDartPlaceholderType] and [DriftSqlType.bool]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
-  late final List<FoundDartPlaceholder> placeholders =
-      elements.whereType<FoundDartPlaceholder>().toList();
+  late final List<FoundDartPlaceholder> placeholders = elements
+      .whereType<FoundDartPlaceholder>()
+      .toList();
 
   /// Union of [variables] and [placeholders], but in the order in which they
   /// appear inside the query.
@@ -185,8 +184,11 @@ abstract class SqlQuery {
 
   /// Generates a [SqlQuery] without any [elements] that just contains a parsed
   /// AST node.
-  factory SqlQuery.astOnly(
-      {required SqlEngine engine, required String name, required String sql}) {
+  factory SqlQuery.astOnly({
+    required SqlEngine engine,
+    required String name,
+    required String sql,
+  }) {
     final result = engine.parse(ParserEntrypoint.statement, sql);
 
     return UpdatingQuery(
@@ -225,9 +227,11 @@ abstract class SqlQuery {
     }
 
     if (!_useResultClassName) {
-      throw UnsupportedError('This result set does not introduce a class, '
-          'either because it has a matching table or because it only returns '
-          'one column.');
+      throw UnsupportedError(
+        'This result set does not introduce a class, '
+        'either because it has a matching table or because it only returns '
+        'one column.',
+      );
     }
 
     return resultSet.resultClassName ?? '${ReCase(name).pascalCase}Result';
@@ -245,8 +249,9 @@ abstract class SqlQuery {
     final subQueries = resultSet?.nestedResults.whereType<NestedResultQuery>();
     for (final subQuery in subQueries ?? const <NestedResultQuery>[]) {
       for (final subElement in subQuery.query.elementsWithNestedQueries()) {
-        if (elements
-            .none((e) => e.dartParameterName == subElement.dartParameterName)) {
+        if (elements.none(
+          (e) => e.dartParameterName == subElement.dartParameterName,
+        )) {
           elements.add(subElement);
         }
       }
@@ -262,7 +267,9 @@ abstract class SqlQuery {
     }
 
     return resultSet.mappingToRowClass(
-        _useResultClassName ? resultClassName : null, options);
+      _useResultClassName ? resultClassName : null,
+      options,
+    );
   }
 }
 
@@ -353,7 +360,8 @@ class NestedQueriesContainer {
       if (column case NestedStarResultColumn(:final resultSet?)) {
         // Nested star columns aren't resolved by the sqlparser package, so we
         // need to count columns here.
-        nextColumnIndex += resultSet.resolvedColumns
+        nextColumnIndex +=
+            resultSet.resolvedColumns
                 ?.where((c) => c.includedInResults)
                 .length ??
             0;
@@ -373,8 +381,9 @@ class NestedQueriesContainer {
   final List<ExpressionResultColumn> addedColumns = [];
 
   Iterable<CapturedVariable> get variablesCapturedByChildren {
-    return nestedQueries.values
-        .expand((nested) => nested.capturedVariables.values);
+    return nestedQueries.values.expand(
+      (nested) => nested.capturedVariables.values,
+    );
   }
 }
 
@@ -415,7 +424,7 @@ class CapturedVariable {
   int? columnIndex;
 
   CapturedVariable(this.reference, this.queryGlobalId)
-      : introducedVariable = NamedVariable.synthetic(':', 'r$queryGlobalId') {
+    : introducedVariable = NamedVariable.synthetic(':', 'r$queryGlobalId') {
     introducedVariable.setMeta<CapturedVariable>(this);
   }
 }
@@ -458,11 +467,11 @@ class InTransactionQuery extends SqlQuery {
   final List<SqlQuery> innerQueries;
 
   InTransactionQuery(this.innerQueries, String name)
-      : super(
-          name,
-          [for (final query in innerQueries) ...query.elements],
-          [for (final query in innerQueries) ...query.elementSources],
-        );
+    : super(
+        name,
+        [for (final query in innerQueries) ...query.elements],
+        [for (final query in innerQueries) ...query.elementSources],
+      );
 
   @override
   InferredResultSet? get resultSet => null;
@@ -520,11 +529,13 @@ class InferredResultSet {
   /// The amount of underlying columns (as selected from the database) wrapped
   /// in this result set.
   int get underlyingColumnCount => columns
-      .map((e) => switch (e) {
-            ScalarResultColumn() => 1,
-            NestedResultTable() => e.innerResultSet.underlyingColumnCount,
-            NestedResultQuery() => 1,
-          })
+      .map(
+        (e) => switch (e) {
+          ScalarResultColumn() => 1,
+          NestedResultTable() => e.innerResultSet.underlyingColumnCount,
+          NestedResultQuery() => 1,
+        },
+      )
       .sum;
 
   /// Whether a new class needs to be written to store the result of this query.
@@ -575,9 +586,9 @@ class InferredResultSet {
 
   /// [hashCode] that matches [isCompatibleTo] instead of `==`.
   int get compatibilityHashCode => Object.hash(
-        Object.hashAll(columns.map((e) => e.compatibilityHashCode)),
-        Object.hashAll(nestedResults.map((e) => e.compatibilityHashCode)),
-      );
+    Object.hashAll(columns.map((e) => e.compatibilityHashCode)),
+    Object.hashAll(nestedResults.map((e) => e.compatibilityHashCode)),
+  );
 
   /// Checks whether this and the [other] result set have the same columns and
   /// nested result sets.
@@ -594,7 +605,9 @@ class InferredResultSet {
   /// To share that logic in the query writer, we represent both mappings with
   /// the same [QueryRowType] class.
   QueryRowType mappingToRowClass(
-      String? resultClassName, DriftOptions options) {
+    String? resultClassName,
+    DriftOptions options,
+  ) {
     final existingType = existingRowType;
     final matchingTable = this.matchingTable;
 
@@ -612,7 +625,8 @@ class InferredResultSet {
     } else if (matchingTable != null) {
       return QueryRowType(
         rowType: AnnotatedDartCode.build(
-            (b) => b.addElementRowType(matchingTable.table)),
+          (b) => b.addElementRowType(matchingTable.table),
+        ),
         singleValue: matchingTable,
         positionalArguments: const [],
         namedArguments: const {},
@@ -638,14 +652,16 @@ class InferredResultSet {
     return switch (column) {
       ScalarResultColumn() => column,
       NestedResultTable() => StructuredFromNestedColumn(
-          column,
-          column.innerResultSet
-              .mappingToRowClass(column.nameForGeneratedRowClass, options),
+        column,
+        column.innerResultSet.mappingToRowClass(
+          column.nameForGeneratedRowClass,
+          options,
         ),
+      ),
       NestedResultQuery() => MappedNestedListQuery(
-          column,
-          column.query.queryRowType(options),
-        ),
+        column,
+        column.query.queryRowType(options),
+      ),
     };
   }
 }
@@ -760,8 +776,9 @@ class MatchingDriftTable implements ArgumentForQueryRowType {
   /// This is the case if each result column name maps to a drift column with
   /// the same SQL name.
   bool get effectivelyNoAlias {
-    return columnToSource.entries
-        .every((entry) => entry.value.name == entry.key.nameInSql);
+    return columnToSource.entries.every(
+      (entry) => entry.value.name == entry.key.nameInSql,
+    );
   }
 }
 
@@ -792,8 +809,14 @@ final class ScalarResultColumn extends ResultColumn
   /// The analyzed column from the `sqlparser` package.
   final Column? sqlParserColumn;
 
-  ScalarResultColumn(this.index, this.name, this.sqlType, this.nullable,
-      {this.typeConverter, this.sqlParserColumn});
+  ScalarResultColumn(
+    this.index,
+    this.name,
+    this.sqlType,
+    this.nullable, {
+    this.typeConverter,
+    this.sqlParserColumn,
+  });
 
   @override
   bool get isArray => false;
@@ -819,8 +842,13 @@ final class ScalarResultColumn extends ResultColumn
 
   @override
   int get compatibilityHashCode {
-    return Object.hash(ScalarResultColumn, name, _columnTypeCompatibilityHash,
-        nullable, typeConverter);
+    return Object.hash(
+      ScalarResultColumn,
+      name,
+      _columnTypeCompatibilityHash,
+      nullable,
+      typeConverter,
+    );
   }
 
   @override
@@ -837,9 +865,9 @@ final class ScalarResultColumn extends ResultColumn
 
     switch ((sqlType, other.sqlType)) {
       case (
-          ColumnCustomType(:final custom),
-          ColumnCustomType(custom: final otherCustom)
-        ):
+        ColumnCustomType(:final custom),
+        ColumnCustomType(custom: final otherCustom),
+      ):
         if (custom.dartType != otherCustom.dartType) {
           return false;
         }
@@ -928,10 +956,7 @@ final class NestedResultQuery extends NestedResult {
 
   final SqlSelectQuery query;
 
-  NestedResultQuery({
-    required this.from,
-    required this.query,
-  });
+  NestedResultQuery({required this.from, required this.query});
 
   @override
   String dartGetterName(Iterable<String> existingNames) {
@@ -1050,10 +1075,10 @@ class FoundVariable extends FoundElement implements HasType {
     this.isArray = false,
     this.isRequired = false,
     this.typeConverter,
-  })  : originalIndex = index,
-        hidden = false,
-        syntacticOrigin = variable,
-        forCaptured = null;
+  }) : originalIndex = index,
+       hidden = false,
+       syntacticOrigin = variable,
+       forCaptured = null;
 
   FoundVariable.nestedQuery({
     required this.index,
@@ -1061,13 +1086,13 @@ class FoundVariable extends FoundElement implements HasType {
     required this.sqlType,
     required Variable variable,
     required CapturedVariable this.forCaptured,
-  })  : originalIndex = index,
-        typeConverter = null,
-        nullable = false,
-        isArray = false,
-        isRequired = true,
-        hidden = true,
-        syntacticOrigin = variable {
+  }) : originalIndex = index,
+       typeConverter = null,
+       nullable = false,
+       isArray = false,
+       isRequired = true,
+       hidden = true,
+       syntacticOrigin = variable {
     forCaptured!.resolvedVariable = this;
   }
 
@@ -1083,11 +1108,7 @@ class FoundVariable extends FoundElement implements HasType {
 
 abstract class DartPlaceholderType {}
 
-enum SimpleDartPlaceholderKind {
-  limit,
-  orderByTerm,
-  orderBy,
-}
+enum SimpleDartPlaceholderKind { limit, orderByTerm, orderBy }
 
 class SimpleDartPlaceholderType extends DartPlaceholderType {
   final SimpleDartPlaceholderKind kind;
@@ -1198,8 +1219,10 @@ class FoundDartPlaceholder extends FoundElement {
         other is FoundDartPlaceholder &&
             other.type == type &&
             other.name == name &&
-            const ListEquality()
-                .equals(other.availableResultSets, availableResultSets);
+            const ListEquality().equals(
+              other.availableResultSets,
+              availableResultSets,
+            );
   }
 
   /// Whether we should write this parameter as a function having available

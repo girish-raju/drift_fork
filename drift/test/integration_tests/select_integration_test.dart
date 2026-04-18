@@ -19,34 +19,44 @@ void main() {
       b.insertAll(db.users, [
         for (var i = 0; i < 1000; i++)
           UsersCompanion.insert(
-              name: 'user name $i', profilePicture: Uint8List(0)),
+            name: 'user name $i',
+            profilePicture: Uint8List(0),
+          ),
       ]);
     });
 
-    final rows = await (db.select(db.users)
-          ..orderBy([(_) => OrderingTerm.random()]))
-        .get();
+    final rows = await (db.select(
+      db.users,
+    )..orderBy([(_) => OrderingTerm.random()])).get();
     expect(rows.isSorted((a, b) => a.id.id.compareTo(b.id.id)), isFalse);
   });
 
   test('can select view', () async {
     final category = await db.categories.insertReturning(
-        CategoriesCompanion.insert(description: 'category description'));
-    await db.todosTable.insertOne(TodosTableCompanion.insert(
+      CategoriesCompanion.insert(description: 'category description'),
+    );
+    await db.todosTable.insertOne(
+      TodosTableCompanion.insert(
         content: 'some content',
         title: const Value('title'),
-        category: Value(category.id)));
+        category: Value(category.id),
+      ),
+    );
 
     final result = await db.todoWithCategoryView.select().getSingle();
     expect(
-        result,
-        const TodoWithCategoryViewData(
-            description: 'category description', title: 'title'));
+      result,
+      const TodoWithCategoryViewData(
+        description: 'category description',
+        title: 'title',
+      ),
+    );
   });
 
   test('all()', () async {
     final user = await db.users.insertReturning(
-        UsersCompanion.insert(name: 'Test user', profilePicture: Uint8List(0)));
+      UsersCompanion.insert(name: 'Test user', profilePicture: Uint8List(0)),
+    );
 
     expect(await db.users.all().get(), [user]);
   });
@@ -58,33 +68,34 @@ void main() {
         CategoriesCompanion.insert(description: 'b'),
       ]);
 
-      batch.insertAll(
-        db.todosTable,
-        [
-          TodosTableCompanion.insert(
-              content: 'aaaaa', category: Value(RowId(1))),
-          TodosTableCompanion.insert(content: 'aa', category: Value(RowId(1))),
-          TodosTableCompanion.insert(
-              content: 'bbbbbb', category: Value(RowId(2))),
-        ],
-      );
+      batch.insertAll(db.todosTable, [
+        TodosTableCompanion.insert(content: 'aaaaa', category: Value(RowId(1))),
+        TodosTableCompanion.insert(content: 'aa', category: Value(RowId(1))),
+        TodosTableCompanion.insert(
+          content: 'bbbbbb',
+          category: Value(RowId(2)),
+        ),
+      ]);
     });
 
     // Now write a query returning the amount of content chars in each
     // category (written using subqueries).
     final subqueryContentLength = db.todosTable.content.length.sum();
     final subquery = Subquery(
-        db.selectOnly(db.todosTable)
-          ..addColumns([db.todosTable.category, subqueryContentLength])
-          ..groupBy([db.todosTable.category]),
-        's');
+      db.selectOnly(db.todosTable)
+        ..addColumns([db.todosTable.category, subqueryContentLength])
+        ..groupBy([db.todosTable.category]),
+      's',
+    );
 
     final readableLength = subquery.ref(subqueryContentLength);
     final query = db.selectOnly(db.categories)
       ..addColumns([db.categories.id, readableLength])
       ..join([
-        innerJoin(subquery,
-            subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+        innerJoin(
+          subquery,
+          subquery.ref(db.todosTable.category).equalsExp(db.categories.id),
+        ),
       ])
       ..orderBy([OrderingTerm.asc(db.categories.id)]);
 
@@ -107,30 +118,34 @@ void main() {
         CategoriesCompanion.insert(description: 'category'),
       ]);
 
-      batch.insertAll(
-        db.todosTable,
-        [
-          for (var i = 0; i < 2; i++)
-            TodosTableCompanion.insert(content: 'a', category: Value(RowId(1))),
-          for (var i = 0; i < 3; i++)
-            TodosTableCompanion.insert(content: 'b', category: Value(null)),
-        ],
-      );
+      batch.insertAll(db.todosTable, [
+        for (var i = 0; i < 2; i++)
+          TodosTableCompanion.insert(content: 'a', category: Value(RowId(1))),
+        for (var i = 0; i < 3; i++)
+          TodosTableCompanion.insert(content: 'b', category: Value(null)),
+      ]);
     });
 
-    final count = subqueryExpression<int>(db.selectOnly(db.todosTable)
-      ..addColumns([countAll()])
-      ..where(db.todosTable.category.equalsExp(db.categories.id)));
-    final countWithoutCategory =
-        subqueryExpression<int>(db.selectOnly(db.todosTable)
-          ..addColumns([countAll()])
-          ..where(db.todosTable.category.isNull()));
+    final count = subqueryExpression<int>(
+      db.selectOnly(db.todosTable)
+        ..addColumns([countAll()])
+        ..where(db.todosTable.category.equalsExp(db.categories.id)),
+    );
+    final countWithoutCategory = subqueryExpression<int>(
+      db.selectOnly(db.todosTable)
+        ..addColumns([countAll()])
+        ..where(db.todosTable.category.isNull()),
+    );
 
     final query = db.selectOnly(db.categories)
       ..addColumns([db.categories.description, count])
       ..groupBy([db.categories.id]);
-    query.unionAll(db.selectExpressions(
-        [const Constant<String>(null), countWithoutCategory]));
+    query.unionAll(
+      db.selectExpressions([
+        const Constant<String>(null),
+        countWithoutCategory,
+      ]),
+    );
 
     final [category, withoutCategory] = await query.get();
     expect(category.read(db.categories.description), 'category');
@@ -141,12 +156,15 @@ void main() {
   });
 
   test('right outer join', () async {
-    await db.categories
-        .insertOne(CategoriesCompanion.insert(description: 'test'));
+    await db.categories.insertOne(
+      CategoriesCompanion.insert(description: 'test'),
+    );
 
     final query = db.select(db.todosTable).join([
       rightOuterJoin(
-          db.categories, db.categories.id.equalsExp(db.todosTable.category))
+        db.categories,
+        db.categories.id.equalsExp(db.todosTable.category),
+      ),
     ]);
 
     final row = await query.getSingle();
@@ -156,14 +174,16 @@ void main() {
 
   test('full outer join', () async {
     await db.todosTable.insertOne(TodosTableCompanion.insert(content: 'todo'));
-    await db.categories
-        .insertOne(CategoriesCompanion.insert(description: 'category'));
+    await db.categories.insertOne(
+      CategoriesCompanion.insert(description: 'category'),
+    );
 
     final query = db.select(db.todosTable).join([
       fullOuterJoin(
-          db.categories, db.categories.id.equalsExp(db.todosTable.category))
-    ])
-      ..orderBy([OrderingTerm.asc(db.todosTable.id, nulls: NullsOrder.first)]);
+        db.categories,
+        db.categories.id.equalsExp(db.todosTable.category),
+      ),
+    ])..orderBy([OrderingTerm.asc(db.todosTable.id, nulls: NullsOrder.first)]);
 
     final [a, b] = await query.get();
     expect(a.readTableOrNull(db.todosTable), isNull);

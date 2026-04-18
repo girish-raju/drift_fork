@@ -13,11 +13,7 @@ import '../test_utils/test_utils.dart';
 void main() {
   const jsonObject = {
     'foo': 'bar',
-    'array': [
-      'one',
-      'two',
-      'three',
-    ],
+    'array': ['one', 'two', 'three'],
   };
 
   late TodoDb db;
@@ -26,14 +22,21 @@ void main() {
   tearDown(() => db.close());
 
   test('json1 integration test', () async {
-    await db.into(db.pureDefaults).insert(PureDefaultsCompanion(
-        txt: Value(MyCustomObject(json.encode(jsonObject)))));
+    await db
+        .into(db.pureDefaults)
+        .insert(
+          PureDefaultsCompanion(
+            txt: Value(MyCustomObject(json.encode(jsonObject))),
+          ),
+        );
 
     final arrayLengthExpr = db.pureDefaults.txt.jsonArrayLength(r'$.array');
     final query = db.select(db.pureDefaults).addColumns([arrayLengthExpr]);
-    query.where(db.pureDefaults.txt
-        .jsonExtract(r'$.foo')
-        .equalsExp(Variable.withString('bar')));
+    query.where(
+      db.pureDefaults.txt
+          .jsonExtract(r'$.foo')
+          .equalsExp(Variable.withString('bar')),
+    );
 
     final resultRow = await query.getSingle();
     expect(resultRow.read(arrayLengthExpr), 3);
@@ -60,11 +63,12 @@ void main() {
     final function = Variable<String>(json.encode(jsonObject)).jsonTree(db);
     final parent = db.alias(function, 'parent');
 
-    final query = db
-        .selectOnly(function)
-        .join([leftOuterJoin(parent, parent.id.equalsExp(function.parent))])
-      ..addColumns([function.atom, parent.id])
-      ..where(function.atom.isNotNull());
+    final query =
+        db.selectOnly(function).join([
+            leftOuterJoin(parent, parent.id.equalsExp(function.parent)),
+          ])
+          ..addColumns([function.atom, parent.id])
+          ..where(function.atom.isNotNull());
 
     final rows = await query
         .map((row) => (row.read(function.atom), row.read(parent.id)))
@@ -85,14 +89,16 @@ void main() {
           ..insert(db.categories, CategoriesCompanion.insert(description: '_'))
           ..insertAll(db.todosTable, [
             TodosTableCompanion.insert(
-                title: Value('first title'),
-                content: 'entry in category',
-                category: Value(RowId(1))),
+              title: Value('first title'),
+              content: 'entry in category',
+              category: Value(RowId(1)),
+            ),
             TodosTableCompanion.insert(content: 'not in category'),
             TodosTableCompanion.insert(
-                title: Value('second title'),
-                content: 'another in category',
-                category: Value(RowId(1)))
+              title: Value('second title'),
+              content: 'another in category',
+              category: Value(RowId(1)),
+            ),
           ]);
       });
     });
@@ -100,13 +106,19 @@ void main() {
     test('json_group_array', () async {
       final query = db.select(db.categories).join([
         leftOuterJoin(
-            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
+          db.todosTable,
+          db.todosTable.category.equalsExp(db.categories.id),
+        ),
       ]);
 
-      final stringArray = jsonGroupArray(db.todosTable.id,
-          orderBy: OrderBy([OrderingTerm.desc(db.todosTable.id)]));
-      final binaryArray = jsonbGroupArray(db.todosTable.id,
-          orderBy: OrderBy([OrderingTerm.asc(db.todosTable.id)])).json();
+      final stringArray = jsonGroupArray(
+        db.todosTable.id,
+        orderBy: OrderBy([OrderingTerm.desc(db.todosTable.id)]),
+      );
+      final binaryArray = jsonbGroupArray(
+        db.todosTable.id,
+        orderBy: OrderBy([OrderingTerm.asc(db.todosTable.id)]),
+      ).json();
       query
         ..groupBy([db.categories.id])
         ..addColumns([stringArray, binaryArray]);
@@ -119,7 +131,9 @@ void main() {
     test('json_group_object', () async {
       final query = db.select(db.categories).join([
         leftOuterJoin(
-            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
+          db.todosTable,
+          db.todosTable.category.equalsExp(db.categories.id),
+        ),
       ]);
 
       final stringObject = jsonGroupObject({
@@ -146,8 +160,9 @@ void main() {
 
   group('jsonb', () {
     setUp(() async {
-      await db.categories
-          .insertOne(CategoriesCompanion.insert(description: '_'));
+      await db.categories.insertOne(
+        CategoriesCompanion.insert(description: '_'),
+      );
     });
 
     Expression<Uint8List> jsonb(Object? dart) {
@@ -169,7 +184,9 @@ void main() {
 
     test('jsonExtract', () async {
       expect(
-          await eval(jsonb(jsonObject).jsonExtract<String>(r'$.foo')), 'bar');
+        await eval(jsonb(jsonObject).jsonExtract<String>(r'$.foo')),
+        'bar',
+      );
     });
   });
 }

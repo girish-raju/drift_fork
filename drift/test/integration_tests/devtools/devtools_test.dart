@@ -34,10 +34,9 @@ void main() {
     final vmServiceListening = Completer<void>();
     final databaseOpened = Completer<void>();
 
-    child.stdout
-        .map(utf8.decode)
-        .transform(const LineSplitter())
-        .listen((line) {
+    child.stdout.map(utf8.decode).transform(const LineSplitter()).listen((
+      line,
+    ) {
       if (line.startsWith('The Dart VM service is listening')) {
         vmServiceListening.complete();
       } else if (line == 'database created') {
@@ -68,11 +67,12 @@ void main() {
     );
 
     expect(
-        response.json!['r'],
-        containsAll([
-          'CREATE TABLE IF NOT EXISTS "categories" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "desc" TEXT NOT NULL UNIQUE, "priority" INTEGER NOT NULL DEFAULT 0, "description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS (UPPER("desc")) VIRTUAL);',
-          'CREATE TABLE IF NOT EXISTS "todos" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, "content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, "category" INTEGER NULL REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED, "status" TEXT NULL, UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
-          'CREATE TABLE IF NOT EXISTS "shared_todos" ("todo" INTEGER NOT NULL, "user" INTEGER NOT NULL, PRIMARY KEY ("todo", "user"), FOREIGN KEY (todo) REFERENCES todos(id), FOREIGN KEY (user) REFERENCES users(id));'
-        ]));
+      response.json!['r'],
+      containsAll([
+        'CREATE TABLE IF NOT EXISTS "categories" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "desc" TEXT NOT NULL UNIQUE, "priority" INTEGER NOT NULL DEFAULT 0, "description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS (UPPER("desc")) VIRTUAL);',
+        'CREATE TABLE IF NOT EXISTS "todos" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, "content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, "category" INTEGER NULL REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED, "status" TEXT NULL, UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
+        'CREATE TABLE IF NOT EXISTS "shared_todos" ("todo" INTEGER NOT NULL, "user" INTEGER NOT NULL, PRIMARY KEY ("todo", "user"), FOREIGN KEY (todo) REFERENCES todos(id), FOREIGN KEY (user) REFERENCES users(id));',
+      ]),
+    );
   });
 }

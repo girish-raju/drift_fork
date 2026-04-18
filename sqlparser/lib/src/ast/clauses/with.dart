@@ -24,10 +24,7 @@ class WithClause extends AstNode {
   Iterable<AstNode> get childNodes => ctes;
 }
 
-enum MaterializationHint {
-  materialized,
-  notMaterialized,
-}
+enum MaterializationHint { materialized, notMaterialized }
 
 class CommonTableExpression extends AstNode with ResultSet {
   final String cteTableName;

@@ -83,7 +83,9 @@ abstract class Component {
 
 /// Writes all [components] into the [context], separated by commas.
 void _writeCommaSeparated(
-    GenerationContext context, Iterable<Component> components) {
+  GenerationContext context,
+  Iterable<Component> components,
+) {
   var first = true;
   for (final element in components) {
     if (!first) {

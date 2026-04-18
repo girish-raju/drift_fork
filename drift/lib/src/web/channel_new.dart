@@ -40,8 +40,9 @@ extension WebPortToChannel on web.MessagePort {
     int nativeSerializionVersion = 0,
   }) {
     final controller = StreamChannelController<Object?>();
-    final protocol =
-        WebProtocol(ProtocolVersion.negotiate(nativeSerializionVersion));
+    final protocol = WebProtocol(
+      ProtocolVersion.negotiate(nativeSerializionVersion),
+    );
 
     onmessage = (web.MessageEvent event) {
       final message = event.data;
@@ -56,21 +57,24 @@ extension WebPortToChannel on web.MessagePort {
       }
     }.toJS;
 
-    controller.local.stream.listen((e) {
-      if (webNativeSerialization) {
-        final serialized = protocol.serialize(e as Message);
-        postMessage(serialized);
-      } else {
-        postMessage(e.jsify());
-      }
-    }, onDone: () {
-      // Closed locally, inform the other end.
-      if (explicitClose) {
-        postMessage(_disconnectMessage.toJS);
-      }
+    controller.local.stream.listen(
+      (e) {
+        if (webNativeSerialization) {
+          final serialized = protocol.serialize(e as Message);
+          postMessage(serialized);
+        } else {
+          postMessage(e.jsify());
+        }
+      },
+      onDone: () {
+        // Closed locally, inform the other end.
+        if (explicitClose) {
+          postMessage(_disconnectMessage.toJS);
+        }
 
-      close();
-    });
+        close();
+      },
+    );
 
     return controller.foreign;
   }

@@ -100,8 +100,10 @@ extension DriftNativeStringExtensions on Expression<String> {
   /// Note that, while Dart has better support for an international alphabet,
   /// it can still yield unexpected results like the
   /// [Turkish İ Problem](https://haacked.com/archive/2012/07/05/turkish-i-problem-and-why-you-should-care.aspx/)
-  Expression<bool> containsCase(String substring,
-      {bool caseSensitive = false}) {
+  Expression<bool> containsCase(
+    String substring, {
+    bool caseSensitive = false,
+  }) {
     return FunctionCallExpression('moor_contains', [
       this,
       Variable<String>(substring),

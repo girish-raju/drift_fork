@@ -20,18 +20,16 @@ void main() {
     final state = await TestBackend.inTest(_content);
 
     final file = await state.analyze('package:a/main.drift');
-    expect(
-      file.allErrors,
-      [
-        isDriftError(
-          allOf(
-            contains('require sqlite 3.44 or later'),
-            contains(
-                'You can change the assumed sqlite version with build options.'),
+    expect(file.allErrors, [
+      isDriftError(
+        allOf(
+          contains('require sqlite 3.44 or later'),
+          contains(
+            'You can change the assumed sqlite version with build options.',
           ),
         ),
-      ],
-    );
+      ),
+    ]);
   });
 
   test('supports newer sqlite features', () async {

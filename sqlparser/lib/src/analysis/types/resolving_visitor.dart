@@ -97,7 +97,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final makeNullable = hasGroupBy || !hasAggregate;
 
     session._addRelation(
-        CopyTypeFrom(e, columnForExpr, makeNullable: makeNullable));
+      CopyTypeFrom(e, columnForExpr, makeNullable: makeNullable),
+    );
     visitChildren(e, arg);
   }
 
@@ -145,8 +146,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final constraint = e.constraint;
     if (constraint is OnConstraint) {
       // ON <expr>, <expr> should be boolean
-      visit(constraint.expression,
-          const ExactTypeExpectation.laxly(ResolvedType.bool()));
+      visit(
+        constraint.expression,
+        const ExactTypeExpectation.laxly(ResolvedType.bool()),
+      );
       visitExcept(e, constraint.expression, arg);
     } else {
       visitChildren(e, arg);
@@ -155,7 +158,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitSingleColumnSetComponent(
-      SingleColumnSetComponent e, TypeExpectation arg) {
+    SingleColumnSetComponent e,
+    TypeExpectation arg,
+  ) {
     visit(e.column, const NoTypeExpectation());
     _lazyCopy(e.expression, e.column);
     visit(e.expression, const NoTypeExpectation());
@@ -163,7 +168,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitMultiColumnSetComponent(
-      MultiColumnSetComponent e, TypeExpectation arg) {
+    MultiColumnSetComponent e,
+    TypeExpectation arg,
+  ) {
     visitList(e.columns, const NoTypeExpectation());
 
     final targets = e.resolvedTargetColumns ?? const [];
@@ -312,13 +319,17 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     } else if (operatorType == TokenType.tilde) {
       // bitwise negation - definitely int, but nullability depends on child
       session._checkAndResolve(
-          e, const ResolvedType(type: BasicType.int, nullable: null), arg);
+        e,
+        const ResolvedType(type: BasicType.int, nullable: null),
+        arg,
+      );
       session._addRelation(NullableIfSomeOtherIs(e, [e.inner]));
 
       visit(e.inner, const NoTypeExpectation());
     } else {
       throw StateError(
-          'Unary operator $operatorType not recognized by types2. At $e');
+        'Unary operator $operatorType not recognized by types2. At $e',
+      );
     }
   }
 
@@ -388,7 +399,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case TokenType.star:
       case TokenType.slash:
         session._addRelation(
-            CopyEncapsulating(e, [e.left, e.right], CastMode.numericPreferInt));
+          CopyEncapsulating(e, [e.left, e.right], CastMode.numericPreferInt),
+        );
         visitChildren(e, const RoughTypeExpectation.numeric());
         break;
       // all of those only really make sense for integers
@@ -425,8 +437,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         visit(e.right, _expectString);
         break;
       default:
-        throw StateError('Binary operator ${e.operator.type} not recognized '
-            'by types2. At $e');
+        throw StateError(
+          'Binary operator ${e.operator.type} not recognized '
+          'by types2. At $e',
+        );
     }
   }
 
@@ -461,10 +475,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitCaseExpression(CaseExpression e, TypeExpectation arg) {
-    session._addRelation(CopyEncapsulating(e, [
-      for (final when in e.whens) when.then,
-      if (e.elseExpr != null) e.elseExpr!,
-    ]));
+    session._addRelation(
+      CopyEncapsulating(e, [
+        for (final when in e.whens) when.then,
+        if (e.elseExpr != null) e.elseExpr!,
+      ]),
+    );
 
     if (e.base != null) {
       session._addRelation(
@@ -501,7 +517,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitStarFunctionParameter(
-      StarFunctionParameter e, TypeExpectation arg) {
+    StarFunctionParameter e,
+    TypeExpectation arg,
+  ) {
     final available = e.scope.expansionOfStarColumn;
     if (available != null) {
       // Make sure we resolve these columns, the type of some function
@@ -514,16 +532,17 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitStringComparison(
-      StringComparisonExpression e, TypeExpectation arg) {
+    StringComparisonExpression e,
+    TypeExpectation arg,
+  ) {
     session._checkAndResolve(e, const ResolvedType(type: BasicType.text), arg);
-    session._addRelation(NullableIfSomeOtherIs(
-      e,
-      [
+    session._addRelation(
+      NullableIfSomeOtherIs(e, [
         e.left,
         e.right,
         if (e.escape != null) e.escape!,
-      ],
-    ));
+      ]),
+    );
 
     visit(e.left, _expectString);
     visit(e.right, _expectString);
@@ -550,8 +569,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final result = _resolveInvocation(e);
     if (result.type case final resolvedType?) {
       session._checkAndResolve(e, resolvedType, arg);
-    } else if (arg case ExactTypeExpectation(type: final expectedType)
-        when result.needsContext) {
+    } else if (arg case ExactTypeExpectation(
+      type: final expectedType,
+    ) when result.needsContext) {
       // Use expected type when we need more context
       session._checkAndResolve(e, expectedType, arg);
     }
@@ -581,28 +601,34 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       return extensionHandler.inferReturnType(session, e, params);
     }
 
-    session.context.reportError(AnalysisError(
-      type: AnalysisErrorType.unknownFunction,
-      message: 'Function ${e.name} could not be found',
-      relevantNode: e.nameToken ?? e,
-    ));
+    session.context.reportError(
+      AnalysisError(
+        type: AnalysisErrorType.unknownFunction,
+        message: 'Function ${e.name} could not be found',
+        relevantNode: e.nameToken ?? e,
+      ),
+    );
     return ResolveResult.unknown();
   }
 
   ResolveResult? _resolveBuiltInFunction(
-      ExpressionInvocation e, List<Typeable> params) {
+    ExpressionInvocation e,
+    List<Typeable> params,
+  ) {
     void nullableIfChildIs() {
       session._addRelation(NullableIfSomeOtherIs(e, params));
     }
 
     void checkArgumentCount(int expectedArgs) {
       if (params.length != expectedArgs) {
-        session.context.reportError(AnalysisError(
-          type: AnalysisErrorType.invalidAmountOfParameters,
-          message:
-              '${e.name} expects $expectedArgs arguments, got ${params.length}.',
-          relevantNode: e.parameters,
-        ));
+        session.context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.invalidAmountOfParameters,
+            message:
+                '${e.name} expects $expectedArgs arguments, got ${params.length}.',
+            relevantNode: e.parameters,
+          ),
+        );
       }
     }
 
@@ -622,15 +648,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         checkArgumentCount(1);
 
         // The result of `sum()` is `NULL` if there are no input rows.
-        session._addRelation(CopyAndCast(
-          e,
-          params.first,
-          CastMode.numeric,
-          dropTypeHint: true,
-          makeNullable: true,
-        ));
         session._addRelation(
-            DefaultType(e, defaultType: _realType.withNullable(true)));
+          CopyAndCast(
+            e,
+            params.first,
+            CastMode.numeric,
+            dropTypeHint: true,
+            makeNullable: true,
+          ),
+        );
+        session._addRelation(
+          DefaultType(e, defaultType: _realType.withNullable(true)),
+        );
         return const ResolveResult.needsContext();
       case 'lower':
       case 'ltrim':
@@ -695,7 +724,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return const ResolveResult(ResolvedType(type: BasicType.blob));
       case 'unhex':
         return const ResolveResult(
-            ResolvedType(type: BasicType.blob, nullable: true));
+          ResolvedType(type: BasicType.blob, nullable: true),
+        );
       case 'avg':
         return ResolveResult(_realType.withNullable(true));
       case 'total':
@@ -716,12 +746,14 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         ];
 
         if (!allowedParamLengths.contains(params.length)) {
-          session.context.reportError(AnalysisError(
-            type: AnalysisErrorType.invalidAmountOfParameters,
-            message:
-                '${e.name} expects 3 arguments (2 are allowed since 3.48), got ${params.length}.',
-            relevantNode: e.parameters,
-          ));
+          session.context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.invalidAmountOfParameters,
+              message:
+                  '${e.name} expects 3 arguments (2 are allowed since 3.48), got ${params.length}.',
+              relevantNode: e.parameters,
+            ),
+          );
         }
 
         if (params.length == 3) {
@@ -738,8 +770,14 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return const ResolveResult.needsContext();
       case 'coalesce':
       case 'ifnull':
-        session._addRelation(CopyEncapsulating(
-            e, params, null, EncapsulatingNullability.nullIfAll));
+        session._addRelation(
+          CopyEncapsulating(
+            e,
+            params,
+            null,
+            EncapsulatingNullability.nullIfAll,
+          ),
+        );
         for (final param in params) {
           session._addRelation(DefaultType(param, isNullable: true));
         }
@@ -813,27 +851,31 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           final param = params[i];
           if (param is Expression) {
             visit(
-                param,
-                const ExactTypeExpectation(ResolvedType(
-                  type: BasicType.text,
-                  hints: [IsDateTime()],
-                )));
+              param,
+              const ExactTypeExpectation(
+                ResolvedType(type: BasicType.text, hints: [IsDateTime()]),
+              ),
+            );
             visited.add(param);
           }
         }
         break;
     }
 
-    final extensionHandler =
-        e is ExpressionInvocation ? _functionHandlerFor(e) : null;
+    final extensionHandler = e is ExpressionInvocation
+        ? _functionHandlerFor(e)
+        : null;
     if (extensionHandler != null) {
       for (final arg in params) {
         if (arg is! Expression) continue;
 
         final expressionArgument = arg;
 
-        final result =
-            extensionHandler.inferArgumentType(session, e, expressionArgument);
+        final result = extensionHandler.inferArgumentType(
+          session,
+          e,
+          expressionArgument,
+        );
         final type = result.type;
         if (type != null) {
           session._markTypeResolved(expressionArgument, type);

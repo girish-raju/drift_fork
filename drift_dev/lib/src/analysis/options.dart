@@ -54,8 +54,9 @@ class DriftOptions {
   /// For a column defined in a moor file, use the name directly instead of
   /// the transformed `camelCaseDartGetter`.
   @JsonKey(
-      name: 'use_column_name_as_json_key_when_defined_in_moor_file',
-      defaultValue: true)
+    name: 'use_column_name_as_json_key_when_defined_in_moor_file',
+    defaultValue: true,
+  )
   final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
 
   /// Uses the sql column name as the json key instead of the name in dart.
@@ -243,8 +244,10 @@ class DriftOptions {
         }
       }
 
-      checkRemovedOption(generateFromJsonStringConstructor,
-          'write_from_json_string_constructor');
+      checkRemovedOption(
+        generateFromJsonStringConstructor,
+        'write_from_json_string_constructor',
+      );
     }
   }
 
@@ -332,8 +335,10 @@ final class _TableFromSql extends JsonConverter<Table, String> {
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
     final result = engine.parse(ParserEntrypoint.statement, json);
     if (result.errors.isNotEmpty) {
-      throw ArgumentError.value(json,
-          'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}');
+      throw ArgumentError.value(
+        json,
+        'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}',
+      );
     }
 
     final root = result.rootNode;

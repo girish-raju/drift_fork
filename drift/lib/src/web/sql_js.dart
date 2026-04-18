@@ -16,10 +16,13 @@ Future<SqlJsModule> initSqlJs() {
 
   final completer = _moduleCompleter = Completer();
   if (!globalContext.has('initSqlJs')) {
-    completer.completeError(UnsupportedError(
+    completer.completeError(
+      UnsupportedError(
         'Could not access the sql.js javascript library. '
         'The drift documentation contains instructions on how to setup drift '
-        'the web, which might help you fix this.'));
+        'the web, which might help you fix this.',
+      ),
+    );
   } else {
     completer.complete((_initSqlJs().toDart).then(SqlJsModule._));
   }
@@ -63,7 +66,9 @@ extension type _SqlJsStatement._(JSObject _) implements JSObject {
   external void bind(JSArray<JSAny?> values);
   external JSBoolean step();
   external JSArray<JSAny?> get(
-      JSObject? params, _SqlJsStatementGetOptions? config);
+    JSObject? params,
+    _SqlJsStatementGetOptions? config,
+  );
   external JSArray<JSString> getColumnNames();
   external void free();
 }
@@ -103,7 +108,7 @@ JSArray<JSAny?> _replaceDartBigInts(List<Object?> dartList) {
       if (arg is BigInt)
         _bigInt(arg.checkRange.toString().toJS)
       else
-        arg.jsify()
+        arg.jsify(),
   ].toJS;
 }
 
@@ -186,14 +191,16 @@ class PreparedStatement {
   /// Reads the current from the underlying js api
   List<dynamic> currentRow([bool useBigInt = false]) {
     if (useBigInt) {
-      final result =
-          _obj.get(null, _SqlJsStatementGetOptions(useBigInt: true)).toDart;
+      final result = _obj
+          .get(null, _SqlJsStatementGetOptions(useBigInt: true))
+          .toDart;
       final dartResult = <Object?>[];
 
       for (var i = 0; i < result.length; i++) {
         if (result[i].typeofEquals('bigint')) {
-          final toString =
-              (result[i] as JSObject).callMethod<JSString>('toString'.toJS);
+          final toString = (result[i] as JSObject).callMethod<JSString>(
+            'toString'.toJS,
+          );
           dartResult.add(BigInt.parse(toString.toDart));
         } else {
           dartResult.add(result[i].dartify());

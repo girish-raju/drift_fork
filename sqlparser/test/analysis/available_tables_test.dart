@@ -21,7 +21,10 @@ void main() {
       isA<AnalysisError>()
           .having((e) => e.span?.text, 'span.text', 'demo.id')
           .having(
-              (e) => e.type, 'type', AnalysisErrorType.referencedUnknownTable),
+            (e) => e.type,
+            'type',
+            AnalysisErrorType.referencedUnknownTable,
+          ),
     );
   });
 

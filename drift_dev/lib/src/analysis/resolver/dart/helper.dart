@@ -58,15 +58,17 @@ class KnownDriftTypes {
 
   late final TypeChecker? checkDriftColumnDeclarationBuilder =
       switch (driftColumnDeclarationBuilder) {
-    null => null,
-    final builderClass => TypeChecker.fromStatic(builderClass.thisType),
-  };
+        null => null,
+        final builderClass => TypeChecker.fromStatic(builderClass.thisType),
+      };
 
   /// Constructs the set of known drift types from a helper library, which is
   /// resolved from `package:drift/src/drift_dev_helper.dart`.
   factory KnownDriftTypes._fromLibrary(
-      LibraryElement helper, LibraryElement? sqliteHelper,
-      {bool forDrift3 = false}) {
+    LibraryElement helper,
+    LibraryElement? sqliteHelper, {
+    bool forDrift3 = false,
+  }) {
     final exportNamespace = helper.exportNamespace;
     final tableElement = exportNamespace.get2('Table') as ClassElement;
     final dbElement = exportNamespace.get2('DriftDatabase') as ClassElement;
@@ -82,9 +84,10 @@ class KnownDriftTypes {
       tableIndexType:
           (exportNamespace.get2('TableIndex') as InterfaceElement).thisType,
       viewType: (exportNamespace.get2('View') as InterfaceElement).thisType,
-      tableInfoType: (exportNamespace
-              .get2(forDrift3 ? 'ResultSet' : 'TableInfo') as InterfaceElement)
-          .thisType,
+      tableInfoType:
+          (exportNamespace.get2(forDrift3 ? 'ResultSet' : 'TableInfo')
+                  as InterfaceElement)
+              .thisType,
       userDefinedSqlType:
           exportNamespace.get2(forDrift3 ? 'SqlType' : 'UserDefinedSqlType')
               as InterfaceElement,
@@ -102,7 +105,7 @@ class KnownDriftTypes {
               ?.defaultInstantiation,
       driftColumnDeclarationBuilder: forDrift3
           ? exportNamespace.get2('DriftColumnDeclarationBuilder')
-              as InterfaceElement
+                as InterfaceElement
           : null,
     );
   }
@@ -124,8 +127,9 @@ class KnownDriftTypes {
   ///
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asJsonTypeConverter(DartType? type) {
-    final converter = helperLibrary.exportNamespace.get2('JsonTypeConverter2')
-        as InterfaceElement;
+    final converter =
+        helperLibrary.exportNamespace.get2('JsonTypeConverter2')
+            as InterfaceElement;
     return type?.asInstanceOf(converter);
   }
 
@@ -139,7 +143,9 @@ class KnownDriftTypes {
   }
 
   static Future<KnownDriftTypes?> resolve(
-      DriftOptions options, DriftBackend backend) async {
+    DriftOptions options,
+    DriftBackend backend,
+  ) async {
     if (backend.canReadDart) {
       if (options.drift3Preview) {
         final mainLibrary = await backend.readDart(drift3Uri);
@@ -151,8 +157,11 @@ class KnownDriftTypes {
           // Ignore, no SQLite types then.
         }
 
-        return KnownDriftTypes._fromLibrary(mainLibrary, sqliteLibrary,
-            forDrift3: true);
+        return KnownDriftTypes._fromLibrary(
+          mainLibrary,
+          sqliteLibrary,
+          forDrift3: true,
+        );
       } else {
         final library = await backend.readDart(drift2Uri);
         return KnownDriftTypes._fromLibrary(library, library);
@@ -162,12 +171,15 @@ class KnownDriftTypes {
     return null;
   }
 
-  static final Uri drift2Uri =
-      Uri.parse('package:drift/src/drift_dev_helper.dart');
-  static final Uri drift3Uri =
-      Uri.parse('package:drift3/src/drift_dev_helper.dart');
-  static final Uri drift3SqliteUri =
-      Uri.parse('package:drift_sqlite/src/drift_dev_helper.dart');
+  static final Uri drift2Uri = Uri.parse(
+    'package:drift/src/drift_dev_helper.dart',
+  );
+  static final Uri drift3Uri = Uri.parse(
+    'package:drift3/src/drift_dev_helper.dart',
+  );
+  static final Uri drift3SqliteUri = Uri.parse(
+    'package:drift_sqlite/src/drift_dev_helper.dart',
+  );
 }
 
 Expression? returnExpressionOfMethod(MethodDeclaration method) {
@@ -200,9 +212,11 @@ int? readIntLiteral(Expression expression) {
 }
 
 Expression? findNamedArgument(ArgumentList args, String argName) {
-  final argument = args.arguments.singleWhereOrNull(
-    (e) => e is NamedExpression && e.name.label.name == argName,
-  ) as NamedExpression?;
+  final argument =
+      args.arguments.singleWhereOrNull(
+            (e) => e is NamedExpression && e.name.label.name == argName,
+          )
+          as NamedExpression?;
 
   return argument?.expression;
 }
@@ -246,7 +260,9 @@ extension IsFromDrift on Element {
 
 extension on InterfaceElement {
   InterfaceType get defaultInstantiation => instantiate(
-      typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
+    typeArguments: const [],
+    nullabilitySuffix: NullabilitySuffix.none,
+  );
 }
 
 extension TypeUtils on DartType {
@@ -302,10 +318,12 @@ class DataClassInformation {
     }
 
     if (dataClassName != null && useRowClass != null) {
-      resolver.reportError(DriftAnalysisError.forDartElement(
-        element,
-        "A table can't be annotated with both @DataClassName and @UseRowClass",
-      ));
+      resolver.reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          "A table can't be annotated with both @DataClassName and @UseRowClass",
+        ),
+      );
     }
 
     var name = dataClassName?.getField('name')!.toStringValue();
@@ -315,8 +333,12 @@ class DataClassInformation {
     List<AnnotatedDartCode> implementedInterfaces = const [];
 
     if (dataClassName != null) {
-      customParentClass =
-          parseCustomParentClass(name, dataClassName, element, resolver);
+      customParentClass = parseCustomParentClass(
+        name,
+        dataClassName,
+        element,
+        resolver,
+      );
 
       final interfaces = dataClassName
           .getField('implementing')
@@ -332,31 +354,48 @@ class DataClassInformation {
       final typeProvider = element.library.typeProvider;
       final typeSystem = element.library.typeSystem;
 
-      final type =
-          useRowClass.getField('type')!.extractType(typeProvider, typeSystem);
-      final constructorInExistingClass =
-          useRowClass.getField('constructor')!.toStringValue()!;
-      final generateInsertable =
-          useRowClass.getField('generateInsertable')!.toBoolValue()!;
+      final type = useRowClass
+          .getField('type')!
+          .extractType(typeProvider, typeSystem);
+      final constructorInExistingClass = useRowClass
+          .getField('constructor')!
+          .toStringValue()!;
+      final generateInsertable = useRowClass
+          .getField('generateInsertable')!
+          .toBoolValue()!;
       final helper = await resolver.resolver.driver.knownTypes;
 
       if (type is InterfaceType) {
         final found = FoundDartClass(type.element, type.typeArguments);
 
-        existingClass = validateExistingClass(columns, found,
-            constructorInExistingClass, generateInsertable, resolver, helper);
+        existingClass = validateExistingClass(
+          columns,
+          found,
+          constructorInExistingClass,
+          generateInsertable,
+          resolver,
+          helper,
+        );
 
         if (existingClass?.isRecord != true) {
           name = type.element.name!;
         }
       } else if (type is RecordType) {
         existingClass = validateRowClassFromRecordType(
-            element, columns, type, generateInsertable, resolver, helper);
-      } else {
-        resolver.reportError(DriftAnalysisError.forDartElement(
           element,
-          'The @UseRowClass annotation must be used with a class',
-        ));
+          columns,
+          type,
+          generateInsertable,
+          resolver,
+          helper,
+        );
+      } else {
+        resolver.reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'The @UseRowClass annotation must be used with a class',
+          ),
+        );
       }
     }
 
@@ -400,8 +439,9 @@ extension on DartObject {
       }
 
       for (final named in type.namedFields) {
-        final type =
-            getField(named.name)?.extractType(typeProvider, typeSystem);
+        final type = getField(
+          named.name,
+        )?.extractType(typeProvider, typeSystem);
         if (type == null) return null;
 
         namedFields[named.name] = type;

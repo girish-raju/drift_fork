@@ -19,8 +19,9 @@ final class SchemaExporter {
 
   /// Opens the database and runs the `onCreate` migration callback, collecting
   /// all statements that were executed in the process.
-  Future<List<String>> collectOnCreateStatements(
-      [SqlDialect dialect = SqlDialect.sqlite]) async {
+  Future<List<String>> collectOnCreateStatements([
+    SqlDialect dialect = SqlDialect.sqlite,
+  ]) async {
     final collected = await _collect(dialects: [dialect]);
     return collected.collectedStatements.map((e) => e.stmt).toList();
   }
@@ -30,8 +31,9 @@ final class SchemaExporter {
     List<String>? elementNames,
   }) async {
     final interceptor = _CollectByDialect();
-    final collector =
-        CollectCreateStatements(SqlDialect.sqlite).interceptWith(interceptor);
+    final collector = CollectCreateStatements(
+      SqlDialect.sqlite,
+    ).interceptWith(interceptor);
     final db = _database(collector);
 
     await db.runConnectionZoned(BeforeOpenRunner(db, collector), () async {
@@ -73,19 +75,21 @@ final class SchemaExporter {
 
     if (args case ['v2', final options]) {
       final parsedOptions = json.decode(options);
-      final dialects = (parsedOptions['dialects'] as List)
-          .map((e) => SqlDialect.values.byName(e as String));
+      final dialects = (parsedOptions['dialects'] as List).map(
+        (e) => SqlDialect.values.byName(e as String),
+      );
 
       final result = await export._collect(dialects: dialects);
       final serialized = [
         for (final row in result.collectedStatements)
-          [row.element, row.dialect.name, row.stmt]
+          [row.element, row.dialect.name, row.stmt],
       ];
 
       port.send(serialized);
     } else {
-      final statements = await export
-          .collectOnCreateStatements(SqlDialect.values.byName(args.single));
+      final statements = await export.collectOnCreateStatements(
+        SqlDialect.values.byName(args.single),
+      );
       port.send(statements);
     }
   }
@@ -96,7 +100,7 @@ final class _CollectByDialect extends QueryInterceptor {
   String? currentName;
 
   final List<({String element, SqlDialect dialect, String stmt})>
-      collectedStatements = [];
+  collectedStatements = [];
 
   @override
   SqlDialect dialect(QueryExecutor executor) {
@@ -105,10 +109,16 @@ final class _CollectByDialect extends QueryInterceptor {
 
   @override
   Future<void> runCustom(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     if (currentName != null) {
-      collectedStatements.add(
-          (element: currentName!, dialect: currentDialect, stmt: statement));
+      collectedStatements.add((
+        element: currentName!,
+        dialect: currentDialect,
+        stmt: statement,
+      ));
     }
 
     return executor.runCustom(statement, args);

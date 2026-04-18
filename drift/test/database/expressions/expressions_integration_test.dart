@@ -11,8 +11,9 @@ void main() {
 
   group('storing date times as text', () {
     _testDateTimes(
-      () => TodoDb(testInMemoryDatabase())
-        ..options = const DriftDatabaseOptions(storeDateTimeAsText: true),
+      () =>
+          TodoDb(testInMemoryDatabase())
+            ..options = const DriftDatabaseOptions(storeDateTimeAsText: true),
       dateTimeAsText: true,
     );
   });
@@ -25,13 +26,21 @@ void main() {
 
       // some tests rely on a single row existing in the users table so that
       // they can select from it.
-      await db.into(db.users).insert(UsersCompanion.insert(
-          name: 'User name', profilePicture: Uint8List(0)));
+      await db
+          .into(db.users)
+          .insert(
+            UsersCompanion.insert(
+              name: 'User name',
+              profilePicture: Uint8List(0),
+            ),
+          );
     });
     tearDown(() => db.close());
 
-    Future<T?> eval<T extends Object>(Expression<T> expr,
-        {TableInfo? onTable}) {
+    Future<T?> eval<T extends Object>(
+      Expression<T> expr, {
+      TableInfo? onTable,
+    }) {
       if (onTable == null) {
         return db
             .selectExpressions([expr])
@@ -53,20 +62,29 @@ void main() {
       group('groupConcat', () {
         setUp(() async {
           for (var i = 0; i < 5; i++) {
-            await db.into(db.users).insert(UsersCompanion.insert(
-                name: 'User $i', profilePicture: Uint8List(0)));
+            await db
+                .into(db.users)
+                .insert(
+                  UsersCompanion.insert(
+                    name: 'User $i',
+                    profilePicture: Uint8List(0),
+                  ),
+                );
           }
         });
 
         test('simple', () {
-          expect(eval(db.users.id.groupConcat(), onTable: db.users),
-              completion('2,3,4,5,6'));
+          expect(
+            eval(db.users.id.groupConcat(), onTable: db.users),
+            completion('2,3,4,5,6'),
+          );
         });
 
         test('custom separator', () {
           expect(
-              eval(db.users.id.groupConcat(separator: '-'), onTable: db.users),
-              completion('2-3-4-5-6'));
+            eval(db.users.id.groupConcat(separator: '-'), onTable: db.users),
+            completion('2-3-4-5-6'),
+          );
         });
 
         test('distinct', () async {
@@ -80,25 +98,30 @@ void main() {
           }
 
           expect(
-              eval(db.todosTable.content.groupConcat(distinct: true),
-                  onTable: db.todosTable),
-              completion('entry 0,entry 1,entry 2,entry 3,entry 4'));
+            eval(
+              db.todosTable.content.groupConcat(distinct: true),
+              onTable: db.todosTable,
+            ),
+            completion('entry 0,entry 1,entry 2,entry 3,entry 4'),
+          );
           expect(
-              eval(
-                  db.todosTable.content.groupConcat(
-                      distinct: true,
-                      orderBy:
-                          OrderBy([OrderingTerm.desc(db.todosTable.content)])),
-                  onTable: db.todosTable),
-              completion('entry 4,entry 3,entry 2,entry 1,entry 0'));
+            eval(
+              db.todosTable.content.groupConcat(
+                distinct: true,
+                orderBy: OrderBy([OrderingTerm.desc(db.todosTable.content)]),
+              ),
+              onTable: db.todosTable,
+            ),
+            completion('entry 4,entry 3,entry 2,entry 1,entry 0'),
+          );
         });
 
         test('filter', () {
           expect(
             eval(
-                db.users.id
-                    .groupConcat(filter: db.users.id.isBiggerThanValue(3)),
-                onTable: db.users),
+              db.users.id.groupConcat(filter: db.users.id.isBiggerThanValue(3)),
+              onTable: db.users,
+            ),
             completion('4,5,6'),
           );
         });
@@ -106,49 +129,64 @@ void main() {
         test('order by', () {
           expect(
             eval(
-                db.users.id.groupConcat(
-                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)])),
-                onTable: db.users),
+              db.users.id.groupConcat(
+                orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+              ),
+              onTable: db.users,
+            ),
             completion('6,5,4,3,2'),
           );
           expect(
             eval(
-                db.users.id.groupConcat(
-                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
-                    separator: '-'),
-                onTable: db.users),
+              db.users.id.groupConcat(
+                orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                separator: '-',
+              ),
+              onTable: db.users,
+            ),
             completion('6-5-4-3-2'),
           );
           expect(
             eval(
-                db.users.id.groupConcat(
-                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
-                    filter: db.users.id.isBiggerThanValue(3)),
-                onTable: db.users),
+              db.users.id.groupConcat(
+                orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                filter: db.users.id.isBiggerThanValue(3),
+              ),
+              onTable: db.users,
+            ),
             completion('6,5,4'),
           );
           expect(
             eval(
-                db.users.id.groupConcat(
-                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
-                    separator: '-',
-                    filter: db.users.id.isBiggerThanValue(3)),
-                onTable: db.users),
+              db.users.id.groupConcat(
+                orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                separator: '-',
+                filter: db.users.id.isBiggerThanValue(3),
+              ),
+              onTable: db.users,
+            ),
             completion('6-5-4'),
           );
         });
       });
 
       test('filters', () async {
-        await db.into(db.tableWithoutPK).insert(
-            TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 7));
-        await db.into(db.tableWithoutPK).insert(
-            TableWithoutPKCompanion.insert(notReallyAnId: 2, someFloat: 1));
+        await db
+            .into(db.tableWithoutPK)
+            .insert(
+              TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 7),
+            );
+        await db
+            .into(db.tableWithoutPK)
+            .insert(
+              TableWithoutPKCompanion.insert(notReallyAnId: 2, someFloat: 1),
+            );
 
         expect(
           eval(
             db.tableWithoutPK.someFloat.sum(
-                filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3)),
+              filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3),
+            ),
             onTable: db.tableWithoutPK,
           ),
           completion(7),
@@ -183,8 +221,10 @@ void main() {
         final input = Constant('hello world');
         expect(eval(input.substr(7)), completion('world'));
 
-        expect(eval(input.substrExpr(Variable(1), input.length - Variable(6))),
-            completion('hello'));
+        expect(
+          eval(input.substrExpr(Variable(1), input.length - Variable(6))),
+          completion('hello'),
+        );
       });
     });
 
@@ -230,11 +270,12 @@ void main() {
           .into(db.categories)
           .insert(CategoriesCompanion.insert(description: 'description'));
 
-      final subquery = subqueryExpression<String>(db.selectOnly(db.categories)
-        ..addColumns([db.categories.description]));
-      final stream = (db.selectOnly(db.users)..addColumns([subquery]))
-          .map((row) => row.read(subquery))
-          .watchSingle();
+      final subquery = subqueryExpression<String>(
+        db.selectOnly(db.categories)..addColumns([db.categories.description]),
+      );
+      final stream = (db.selectOnly(
+        db.users,
+      )..addColumns([subquery])).map((row) => row.read(subquery)).watchSingle();
 
       expect(stream, emitsInOrder(['description', 'changed']));
 
@@ -244,11 +285,13 @@ void main() {
     });
 
     test('custom expressions can introduces new tables to watch', () async {
-      final custom =
-          CustomExpression<int>('1', watchedTables: [db.sharedTodos]);
-      final stream = (db.selectOnly(db.users)..addColumns([custom]))
-          .map((row) => row.read(custom))
-          .watchSingle();
+      final custom = CustomExpression<int>(
+        '1',
+        watchedTables: [db.sharedTodos],
+      );
+      final stream = (db.selectOnly(
+        db.users,
+      )..addColumns([custom])).map((row) => row.read(custom)).watchSingle();
 
       expect(stream, emitsInOrder([1, 1]));
 
@@ -260,14 +303,18 @@ void main() {
 
     test('bitwise operations - big int', () {
       expect(eval(~Variable.withInt(12)), completion(-13));
-      expect(eval(~Variable.withBigInt(BigInt.from(12))),
-          completion(BigInt.from(-13)));
+      expect(
+        eval(~Variable.withBigInt(BigInt.from(12))),
+        completion(BigInt.from(-13)),
+      );
 
       expect(eval(Variable.withInt(2).bitwiseOr(Variable(5))), completion(7));
       expect(
-          eval(Variable.withBigInt(BigInt.two)
-              .bitwiseAnd(Variable(BigInt.from(10)))),
-          completion(BigInt.two));
+        eval(
+          Variable.withBigInt(BigInt.two).bitwiseAnd(Variable(BigInt.from(10))),
+        ),
+        completion(BigInt.two),
+      );
     });
 
     group('isIn and isNotIn', () {
@@ -293,8 +340,9 @@ void main() {
 
     test('window functions', () async {
       for (var length = 1; length <= 10; length++) {
-        await db.todosTable
-            .insertOne(TodosTableCompanion.insert(content: 'a' * length));
+        await db.todosTable.insertOne(
+          TodosTableCompanion.insert(content: 'a' * length),
+        );
       }
 
       final lengthRanking = WindowFunctionExpression(
@@ -325,8 +373,14 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
 
     // we selectOnly from users for the lack of a better option. Insert one
     // row so that getSingle works
-    await db.into(db.users).insert(
-        UsersCompanion.insert(name: 'User name', profilePicture: Uint8List(0)));
+    await db
+        .into(db.users)
+        .insert(
+          UsersCompanion.insert(
+            name: 'User name',
+            profilePicture: Uint8List(0),
+          ),
+        );
   });
   tearDown(() => db.close());
 
@@ -339,16 +393,13 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
     'DateTime',
     () {
       if (dateTimeAsText) {
-        test(
-          'UTC-ness is kept when storing date times',
-          () async {
-            final utc = DateTime.utc(2020, 09, 03, 23, 55);
-            final local = DateTime(2020, 09, 03, 23, 55);
+        test('UTC-ness is kept when storing date times', () async {
+          final utc = DateTime.utc(2020, 09, 03, 23, 55);
+          final local = DateTime(2020, 09, 03, 23, 55);
 
-            expect(await eval(Variable(utc)), utc);
-            expect(await eval(Variable(local)), local);
-          },
-        );
+          expect(await eval(Variable(utc)), utc);
+          expect(await eval(Variable(local)), local);
+        });
 
         test('preserves milliseconds', () async {
           final local = DateTime(2020, 09, 03, 23, 55, 0, 123);
@@ -363,12 +414,14 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
         final nowStamp = nowExpr.unixepoch;
         final tomorrowStamp = tomorrow.unixepoch;
 
-        final row = await (db.selectOnly(db.users)
-              ..addColumns([nowStamp, tomorrowStamp]))
-            .getSingle();
+        final row = await (db.selectOnly(
+          db.users,
+        )..addColumns([nowStamp, tomorrowStamp])).getSingle();
 
-        expect(row.read(tomorrowStamp)! - row.read(nowStamp)!,
-            const Duration(days: 1).inSeconds);
+        expect(
+          row.read(tomorrowStamp)! - row.read(nowStamp)!,
+          const Duration(days: 1).inSeconds,
+        );
       });
 
       test('extracting values', () {
@@ -382,15 +435,21 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
         expect(eval(expr.second), completion(0));
 
         expect(eval(expr.date), completion('2020-09-03'));
-        expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
-            completion('2020-09-06'));
+        expect(
+          eval(expr.modify(const DateTimeModifier.days(3)).date),
+          completion('2020-09-06'),
+        );
         expect(eval(expr.time), completion('23:55:00'));
         expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));
-        expect(eval(expr.julianday),
-            completion(closeTo(2459096.496527778, 0.0001)));
+        expect(
+          eval(expr.julianday),
+          completion(closeTo(2459096.496527778, 0.0001)),
+        );
         expect(eval(expr.unixepoch), completion(1599177300));
-        expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
-            completion('2020-09-03 23:55:00'));
+        expect(
+          eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
+          completion('2020-09-03 23:55:00'),
+        );
       });
 
       DateTime result(DateTime date) {
@@ -408,8 +467,11 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
         final dateTime = DateTime(2022, 07, 23, 22, 44);
 
         expect(
-          eval(DateTimeExpressions.fromUnixEpoch(
-              Variable(dateTime.millisecondsSinceEpoch ~/ 1000))),
+          eval(
+            DateTimeExpressions.fromUnixEpoch(
+              Variable(dateTime.millisecondsSinceEpoch ~/ 1000),
+            ),
+          ),
           completion(result(dateTime)),
         );
       });
@@ -417,30 +479,50 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
       test('modifiers', () {
         final expr = Variable.withDateTime(DateTime.utc(2022, 07, 05));
 
-        expect(eval(expr.modify(const DateTimeModifier.days(2))),
-            completion(result(DateTime.utc(2022, 07, 07))));
-        expect(eval(expr.modify(const DateTimeModifier.months(-2))),
-            completion(result(DateTime.utc(2022, 05, 05))));
-        expect(eval(expr.modify(const DateTimeModifier.years(1))),
-            completion(result(DateTime.utc(2023, 07, 05))));
+        expect(
+          eval(expr.modify(const DateTimeModifier.days(2))),
+          completion(result(DateTime.utc(2022, 07, 07))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.months(-2))),
+          completion(result(DateTime.utc(2022, 05, 05))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.years(1))),
+          completion(result(DateTime.utc(2023, 07, 05))),
+        );
 
-        expect(eval(expr.modify(const DateTimeModifier.hours(12))),
-            completion(result(DateTime.utc(2022, 07, 05, 12))));
-        expect(eval(expr.modify(const DateTimeModifier.minutes(30))),
-            completion(result(DateTime.utc(2022, 07, 05, 0, 30))));
-        expect(eval(expr.modify(const DateTimeModifier.seconds(30))),
-            completion(result(DateTime.utc(2022, 07, 05, 0, 0, 30))));
+        expect(
+          eval(expr.modify(const DateTimeModifier.hours(12))),
+          completion(result(DateTime.utc(2022, 07, 05, 12))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.minutes(30))),
+          completion(result(DateTime.utc(2022, 07, 05, 0, 30))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.seconds(30))),
+          completion(result(DateTime.utc(2022, 07, 05, 0, 0, 30))),
+        );
 
-        expect(eval(expr.modify(const DateTimeModifier.startOfDay())),
-            completion(result(DateTime.utc(2022, 07, 05))));
-        expect(eval(expr.modify(const DateTimeModifier.startOfMonth())),
-            completion(result(DateTime.utc(2022, 07, 01))));
-        expect(eval(expr.modify(const DateTimeModifier.startOfYear())),
-            completion(result(DateTime.utc(2022, 01, 01))));
+        expect(
+          eval(expr.modify(const DateTimeModifier.startOfDay())),
+          completion(result(DateTime.utc(2022, 07, 05))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.startOfMonth())),
+          completion(result(DateTime.utc(2022, 07, 01))),
+        );
+        expect(
+          eval(expr.modify(const DateTimeModifier.startOfYear())),
+          completion(result(DateTime.utc(2022, 01, 01))),
+        );
 
         // The original expression is a Tuesday
-        expect(eval(expr.modify(DateTimeModifier.weekday(DateTime.tuesday))),
-            completion(result(DateTime.utc(2022, 07, 05))));
+        expect(
+          eval(expr.modify(DateTimeModifier.weekday(DateTime.tuesday))),
+          completion(result(DateTime.utc(2022, 07, 05))),
+        );
         expect(
           eval(expr.modify(DateTimeModifier.weekday(DateTime.saturday))),
           completion(result(DateTime.utc(2022, 07, 09))),
@@ -457,18 +539,25 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
             // means subtracting the UTC offset in SQL. Interpreting that timestamp
             // in dart will effectively add it back, so we have the same value bit
             // without the UTC flag in Dart.
-            expect(eval(expr.modify(const DateTimeModifier.utc())),
-                completion(DateTime(2022, 07, 05)));
+            expect(
+              eval(expr.modify(const DateTimeModifier.utc())),
+              completion(DateTime(2022, 07, 05)),
+            );
 
             // And vice-versa (note that original expr is in UTC, this one isn't)
             expect(
-                eval(Variable.withDateTime(DateTime(2022, 07, 05))
-                    .modify(const DateTimeModifier.localTime())),
-                completion(DateTime.utc(2022, 07, 05).toLocal()));
+              eval(
+                Variable.withDateTime(
+                  DateTime(2022, 07, 05),
+                ).modify(const DateTimeModifier.localTime()),
+              ),
+              completion(DateTime.utc(2022, 07, 05).toLocal()),
+            );
           },
           onPlatform: const {
-            'browser':
-                Skip('TODO: UTC offsets are unknown in WebAssembly module')
+            'browser': Skip(
+              'TODO: UTC offsets are unknown in WebAssembly module',
+            ),
           },
         );
       }
@@ -478,28 +567,41 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
         final secondTime = DateTime(2021, 5, 14);
 
         await db.delete(db.users).go();
-        await db.into(db.users).insert(
+        await db
+            .into(db.users)
+            .insert(
               UsersCompanion.insert(
-                  name: 'User name',
-                  profilePicture: Uint8List(0),
-                  creationTime: Value(firstTime)),
+                name: 'User name',
+                profilePicture: Uint8List(0),
+                creationTime: Value(firstTime),
+              ),
             );
-        await db.into(db.users).insert(
+        await db
+            .into(db.users)
+            .insert(
               UsersCompanion.insert(
-                  name: 'User name 2',
-                  profilePicture: Uint8List(0),
-                  creationTime: Value(secondTime)),
+                name: 'User name 2',
+                profilePicture: Uint8List(0),
+                creationTime: Value(secondTime),
+              ),
             );
 
         expect(
-            eval(db.users.creationTime.min()), completion(result(firstTime)));
+          eval(db.users.creationTime.min()),
+          completion(result(firstTime)),
+        );
         expect(
-            eval(db.users.creationTime.max()), completion(result(secondTime)));
-        expect(eval(db.users.creationTime.avg()),
-            completion(result(DateTime(2021, 5, 10, 12))));
+          eval(db.users.creationTime.max()),
+          completion(result(secondTime)),
+        );
+        expect(
+          eval(db.users.creationTime.avg()),
+          completion(result(DateTime(2021, 5, 10, 12))),
+        );
       });
     },
-    skip:
-        sqlite3Version.versionNumber < 3039000 ? 'Requires sqlite 3.39' : null,
+    skip: sqlite3Version.versionNumber < 3039000
+        ? 'Requires sqlite 3.39'
+        : null,
   );
 }

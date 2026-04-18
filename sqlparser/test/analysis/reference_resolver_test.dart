@@ -10,17 +10,23 @@ void main() {
   test('correctly resolves return columns', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context =
-        engine.analyze('SELECT id, d.content, *, 3 + 4 FROM demo AS d '
-            'WHERE _rowid_ = 3');
+    final context = engine.analyze(
+      'SELECT id, d.content, *, 3 + 4 FROM demo AS d '
+      'WHERE _rowid_ = 3',
+    );
 
     final select = context.root as SelectStatement;
     final resolvedColumns = select.resolvedColumns!;
 
     expect(context.errors, isEmpty);
 
-    expect(resolvedColumns.map((c) => c.name),
-        ['id', 'content', 'id', 'content', '3 + 4']);
+    expect(resolvedColumns.map((c) => c.name), [
+      'id',
+      'content',
+      'id',
+      'content',
+      '3 + 4',
+    ]);
 
     expect(resolvedColumns.map((c) => context.typeOf(c).type!.type), [
       BasicType.int,
@@ -36,7 +42,9 @@ void main() {
 
     expect((firstColumn.expression as Reference).resolvedColumn?.source, id);
     expect(
-        (secondColumn.expression as Reference).resolvedColumn?.source, content);
+      (secondColumn.expression as Reference).resolvedColumn?.source,
+      content,
+    );
     expect(from.resultSet?.unalias(), demoTable);
 
     final where = select.where as BinaryExpression;
@@ -46,26 +54,32 @@ void main() {
   test('resolves columns from views', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final viewCtx = engine.analyze('CREATE VIEW my_view (foo, bar) AS '
-        'SELECT * FROM demo;');
-    engine.registerView(engine.schemaReader
-        .readView(viewCtx, viewCtx.root as CreateViewStatement));
+    final viewCtx = engine.analyze(
+      'CREATE VIEW my_view (foo, bar) AS '
+      'SELECT * FROM demo;',
+    );
+    engine.registerView(
+      engine.schemaReader.readView(
+        viewCtx,
+        viewCtx.root as CreateViewStatement,
+      ),
+    );
 
     final context = engine.analyze('SELECT * FROM my_view');
     expect(context.errors, isEmpty);
 
     final resolvedColumns = (context.root as SelectStatement).resolvedColumns!;
     expect(resolvedColumns.map((e) => e.name), ['foo', 'bar']);
-    expect(
-      resolvedColumns.map((e) => context.typeOf(e).type!.type),
-      [BasicType.int, BasicType.text],
-    );
+    expect(resolvedColumns.map((e) => context.typeOf(e).type!.type), [
+      BasicType.int,
+      BasicType.text,
+    ]);
   });
 
   test("resolved columns don't include drift nested results", () {
-    final engine =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-          ..registerTable(demoTable);
+    final engine = SqlEngine(
+      EngineOptions(driftOptions: const DriftSqlOptions()),
+    )..registerTable(demoTable);
 
     final context = engine.analyze('SELECT demo.** FROM demo;');
 
@@ -76,8 +90,9 @@ void main() {
   test('resolves the column for order by clauses', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine
-        .analyze('SELECT d.content, 3 * d.id AS t FROM demo AS d ORDER BY t');
+    final context = engine.analyze(
+      'SELECT d.content, 3 * d.id AS t FROM demo AS d ORDER BY t',
+    );
 
     expect(context.errors, isEmpty);
 
@@ -111,8 +126,9 @@ void main() {
   test('does not allow references to result column outside of ORDER BY', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine
-        .analyze('SELECT d.content, 3 * d.id AS t, t AS u FROM demo AS d');
+    final context = engine.analyze(
+      'SELECT d.content, 3 * d.id AS t, t AS u FROM demo AS d',
+    );
 
     context.expectError('t', type: AnalysisErrorType.referencedUnknownColumn);
   });
@@ -123,8 +139,10 @@ void main() {
           ..registerTable(demoTable)
           ..registerTable(anotherTable);
 
-    final context = engine.analyze('SELECT SUM(*) AS rst FROM '
-        '(SELECT COUNT(*) FROM demo UNION ALL SELECT COUNT(*) FROM tbl);');
+    final context = engine.analyze(
+      'SELECT SUM(*) AS rst FROM '
+      '(SELECT COUNT(*) FROM demo UNION ALL SELECT COUNT(*) FROM tbl);',
+    );
 
     expect(context.errors, isEmpty);
 
@@ -137,12 +155,13 @@ void main() {
   });
 
   test('resolves columns in nested queries', () {
-    final engine =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-          ..registerTable(demoTable);
+    final engine = SqlEngine(
+      EngineOptions(driftOptions: const DriftSqlOptions()),
+    )..registerTable(demoTable);
 
-    final context =
-        engine.analyze('SELECT content, LIST(SELECT id FROM demo) FROM demo');
+    final context = engine.analyze(
+      'SELECT content, LIST(SELECT id FROM demo) FROM demo',
+    );
 
     expect(context.errors, isEmpty);
 
@@ -183,7 +202,8 @@ void main() {
       final engine = SqlEngine()..registerTable(demoTable);
 
       final context = engine.analyze(
-          'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;');
+        'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;',
+      );
 
       expect(context.errors, isEmpty);
     });
@@ -192,17 +212,22 @@ void main() {
       final engine = SqlEngine()..registerTable(demoTable);
 
       final context = engine.analyze(
-          'SELECT d.* FROM demo d, (SELECT * FROM demo WHERE id = d.id);');
+        'SELECT d.* FROM demo d, (SELECT * FROM demo WHERE id = d.id);',
+      );
 
-      context.expectError('d.id',
-          type: AnalysisErrorType.referencedUnknownTable);
+      context.expectError(
+        'd.id',
+        type: AnalysisErrorType.referencedUnknownTable,
+      );
     });
 
     test('can refer to CTEs if used in FROM', () {
       final engine = SqlEngine()..registerTable(demoTable);
 
-      final context = engine.analyze('WITH cte AS (SELECT * FROM demo) '
-          'SELECT d.* FROM demo d, (SELECT * FROM cte);');
+      final context = engine.analyze(
+        'WITH cte AS (SELECT * FROM demo) '
+        'SELECT d.* FROM demo d, (SELECT * FROM cte);',
+      );
 
       expect(context.errors, isEmpty);
     });
@@ -221,8 +246,10 @@ SELECT
 ''');
 
       // note that "outer".id is visible and should not report an error
-      context.expectError('"inner".id',
-          type: AnalysisErrorType.referencedUnknownTable);
+      context.expectError(
+        '"inner".id',
+        type: AnalysisErrorType.referencedUnknownTable,
+      );
     });
 
     test('nested via FROM cannot see outer result sets', () {
@@ -236,19 +263,16 @@ SELECT *
       (SELECT * FROM demo WHERE "inner".id = "outer".id))
 ''');
 
-      expect(
-        context.errors,
-        [
-          analysisErrorWith(
-            lexeme: '"inner".id',
-            type: AnalysisErrorType.referencedUnknownTable,
-          ),
-          analysisErrorWith(
-            lexeme: '"outer".id',
-            type: AnalysisErrorType.referencedUnknownTable,
-          ),
-        ],
-      );
+      expect(context.errors, [
+        analysisErrorWith(
+          lexeme: '"inner".id',
+          type: AnalysisErrorType.referencedUnknownTable,
+        ),
+        analysisErrorWith(
+          lexeme: '"outer".id',
+          type: AnalysisErrorType.referencedUnknownTable,
+        ),
+      ]);
     });
   });
 
@@ -257,8 +281,10 @@ SELECT *
       ..registerTable(demoTable)
       ..registerTable(anotherTable);
 
-    final context = engine.analyze('SELECT d.* FROM demo d INNER JOIN tbl '
-        'ON tbl.id = (SELECT id FROM tbl WHERE date = ? AND id = d.id)');
+    final context = engine.analyze(
+      'SELECT d.* FROM demo d INNER JOIN tbl '
+      'ON tbl.id = (SELECT id FROM tbl WHERE date = ? AND id = d.id)',
+    );
 
     expect(context.errors, isEmpty);
   });
@@ -271,8 +297,9 @@ SELECT row_number() OVER wnd FROM demo
   WINDOW wnd AS (PARTITION BY content GROUPS CURRENT ROW EXCLUDE TIES)
     ''');
 
-    final column = (context.root as SelectStatement).resolvedColumns!.single
-        as ExpressionColumn;
+    final column =
+        (context.root as SelectStatement).resolvedColumns!.single
+            as ExpressionColumn;
 
     final over = (column.expression as WindowFunctionInvocation).over!;
 
@@ -292,8 +319,9 @@ SELECT row_number() OVER wnd FROM demo
   test('warns about ambigious references', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context =
-        engine.analyze('SELECT id FROM demo, (SELECT id FROM demo) AS a');
+    final context = engine.analyze(
+      'SELECT id FROM demo, (SELECT id FROM demo) AS a',
+    );
     expect(context.errors, hasLength(1));
     expect(
       context.errors.single,
@@ -309,11 +337,15 @@ SELECT row_number() OVER wnd FROM demo
     final context = engine.analyze('SELECT demo.id;');
     expect(context.errors, hasLength(1));
     expect(
-        context.errors.single,
-        isA<AnalysisError>()
-            .having(
-                (e) => e.type, 'type', AnalysisErrorType.referencedUnknownTable)
-            .having((e) => e.span?.text, 'span.text', 'demo.id'));
+      context.errors.single,
+      isA<AnalysisError>()
+          .having(
+            (e) => e.type,
+            'type',
+            AnalysisErrorType.referencedUnknownTable,
+          )
+          .having((e) => e.span?.text, 'span.text', 'demo.id'),
+    );
   });
 
   group('nullability for references from outer join', () {
@@ -341,33 +373,45 @@ SELECT row_number() OVER wnd FROM demo
     }
 
     test('unaliased columns, unaliased tables', () {
-      testWith('SELECT sender, id FROM messages '
-          'LEFT JOIN users ON id = sender');
+      testWith(
+        'SELECT sender, id FROM messages '
+        'LEFT JOIN users ON id = sender',
+      );
     });
 
     test('unaliased columns, aliased tables', () {
-      testWith('SELECT sender, id FROM messages m '
-          'LEFT JOIN users u ON id = sender');
+      testWith(
+        'SELECT sender, id FROM messages m '
+        'LEFT JOIN users u ON id = sender',
+      );
     });
 
     test('aliased columns, unaliased tables', () {
-      testWith('SELECT messages.sender, users.id FROM messages '
-          'LEFT JOIN users ON id = sender');
+      testWith(
+        'SELECT messages.sender, users.id FROM messages '
+        'LEFT JOIN users ON id = sender',
+      );
     });
 
     test('aliased columns, aliased tables', () {
-      testWith('SELECT m.*, u.* FROM messages m '
-          'LEFT JOIN users u ON u.id = m.sender');
+      testWith(
+        'SELECT m.*, u.* FROM messages m '
+        'LEFT JOIN users u ON u.id = m.sender',
+      );
     });
 
     test('single star, aliased tables', () {
-      testWith('SELECT * FROM messages m '
-          'LEFT JOIN users u ON u.id = m.sender');
+      testWith(
+        'SELECT * FROM messages m '
+        'LEFT JOIN users u ON u.id = m.sender',
+      );
     });
 
     test('single star, unaliased tables', () {
-      testWith('SELECT * FROM messages '
-          'LEFT JOIN users ON id = sender');
+      testWith(
+        'SELECT * FROM messages '
+        'LEFT JOIN users ON id = sender',
+      );
     });
   });
 
@@ -386,10 +430,12 @@ SELECT row_number() OVER wnd FROM demo
       final root = result.root as StatementReturningColumns;
 
       expect(
-        root.returnedResultSet!.resolvedColumns!
-            .map((e) => result.typeOf(e).type),
+        root.returnedResultSet!.resolvedColumns!.map(
+          (e) => result.typeOf(e).type,
+        ),
         everyElement(
-            isA<ResolvedType>().having((e) => e.nullable, 'nullable', isFalse)),
+          isA<ResolvedType>().having((e) => e.nullable, 'nullable', isFalse),
+        ),
       );
     }
 
@@ -407,7 +453,8 @@ SELECT row_number() OVER wnd FROM demo
   });
 
   test('resolves column in foreign key declaration', () {
-    final engine = SqlEngine()..registerTableFromSql('''
+    final engine = SqlEngine()
+      ..registerTableFromSql('''
 CREATE TABLE points (
   id INTEGER NOT NULL PRIMARY KEY,
   lat REAL NOT NULL,
@@ -422,8 +469,9 @@ CREATE TABLE routes (
   "to" INTEGER NOT NULL REFERENCES points (id)
 );
 ''');
-    final table = const SchemaFromCreateTable()
-        .read(parseResult.rootNode as CreateTableStatement);
+    final table = const SchemaFromCreateTable().read(
+      parseResult.rootNode as CreateTableStatement,
+    );
     engine.registerTable(table);
 
     final result = engine.analyzeParsed(parseResult);
@@ -437,8 +485,10 @@ CREATE TABLE routes (
         fromReference.clause.columnNames.single.resolvedColumn;
 
     expect(fromReferenced, isNotNull);
-    expect(fromReferenced!.source.containingSet,
-        result.rootScope.knownTables['points']);
+    expect(
+      fromReferenced!.source.containingSet,
+      result.rootScope.knownTables['points'],
+    );
   });
 
   test('warns about identifiers that should have been strings', () {
@@ -457,9 +507,6 @@ WITH users AS (SELECT 1, bar)
 SELECT *, 'foo' as bar FROM users;
 ''');
 
-    result.expectError(
-      'bar',
-      type: AnalysisErrorType.referencedUnknownColumn,
-    );
+    result.expectError('bar', type: AnalysisErrorType.referencedUnknownColumn);
   });
 }

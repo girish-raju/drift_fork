@@ -14,11 +14,12 @@ import 'package:drift/drift.dart';
 class Foo extends Table {
   TextColumn get foo => text().references(dynamic, #what)();
 }
-'''
+''',
       });
 
-      final file = await backend.driver
-          .resolveElements(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver.resolveElements(
+        Uri.parse('package:a/main.dart'),
+      );
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
@@ -38,18 +39,20 @@ const column = #other;
 class Foo extends Table {
   TextColumn get foo => text().references(Table, column)();
 }
-'''
+''',
       });
 
-      final file = await backend.driver
-          .resolveElements(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver.resolveElements(
+        Uri.parse('package:a/main.dart'),
+      );
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
       expect(result.result, isA<DriftTable>());
       expect(result.errorsDuringAnalysis, [
-        isDriftError(contains('This should be a symbol literal'))
-            .withSpan('column'),
+        isDriftError(
+          contains('This should be a symbol literal'),
+        ).withSpan('column'),
       ]);
     });
 
@@ -65,19 +68,21 @@ class OtherTable {
 class Foo extends Table {
   TextColumn get foo => text().references(OtherTable, #column)();
 }
-'''
+''',
       });
 
-      final file = await backend.driver
-          .resolveElements(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver.resolveElements(
+        Uri.parse('package:a/main.dart'),
+      );
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
       expect(result.result, isA<DriftTable>());
       expect(result.errorsDuringAnalysis, [
-        isDriftError('The referenced element, OtherTable, is not understood by '
-                'drift.')
-            .withSpan('OtherTable'),
+        isDriftError(
+          'The referenced element, OtherTable, is not understood by '
+          'drift.',
+        ).withSpan('OtherTable'),
       ]);
     });
   });
@@ -95,7 +100,7 @@ class Foo extends Table {
   TextColumn get foo => text().references(OtherTable, #column,
     onUpdate: KeyAction.restrict, onDelete: KeyAction.cascade)();
 }
-'''
+''',
     });
 
     final uri = Uri.parse('package:a/main.dart');
@@ -124,11 +129,12 @@ class Foo extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get parentId => integer().nullable().references(Foo, #id)();
 }
-'''
+''',
     });
 
-    final file =
-        await backend.driver.resolveElements(Uri.parse('package:a/main.dart'));
+    final file = await backend.driver.resolveElements(
+      Uri.parse('package:a/main.dart'),
+    );
     final table = file.analysis.values.single.result as DriftTable;
 
     expect(table.references, isEmpty);
@@ -137,15 +143,20 @@ class Foo extends Table {
     final parentId = table.columns[1];
 
     expect(
-        parentId.constraints,
-        contains(isA<ForeignKeyReference>()
-            .having((e) => e.otherColumn, 'otherColumn', id)));
+      parentId.constraints,
+      contains(
+        isA<ForeignKeyReference>().having(
+          (e) => e.otherColumn,
+          'otherColumn',
+          id,
+        ),
+      ),
+    );
   });
 
   test('parses initially deferred mode', () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+    final state = await TestBackend.inTest({
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Foo extends Table {
@@ -160,35 +171,36 @@ class Others extends Table {
 
 @DriftDatabase(tables: [Foo])
 class Database {}
-'''
-      },
-    );
+''',
+    });
 
     final file = await state.analyze('package:a/main.dart');
     expect(file.allErrors, isEmpty);
 
-    final foo = file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
-        as DriftTable;
+    final foo =
+        file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
+            as DriftTable;
 
     final column = foo.columns[1];
-    final constraint =
-        column.constraints.whereType<ForeignKeyReference>().first;
+    final constraint = column.constraints
+        .whereType<ForeignKeyReference>()
+        .first;
 
     expect(constraint.otherColumn.nameInSql, 'id');
     expect(constraint.initiallyDeferred, isTrue);
 
     final otherColumn = foo.columns[2];
-    final otherConstraint =
-        otherColumn.constraints.whereType<ForeignKeyReference>().first;
+    final otherConstraint = otherColumn.constraints
+        .whereType<ForeignKeyReference>()
+        .first;
 
     expect(otherConstraint.otherColumn.nameInSql, 'test');
     expect(otherConstraint.initiallyDeferred, isTrue);
   });
 
   test('parses reference from SQL', () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+    final state = await TestBackend.inTest({
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Foo extends Table {
@@ -202,19 +214,20 @@ class Others extends Table {
 
 @DriftDatabase(tables: [Foo])
 class Database {}
-'''
-      },
-    );
+''',
+    });
 
     final file = await state.analyze('package:a/main.dart');
     expect(file.allErrors, isEmpty);
 
-    final foo = file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
-        as DriftTable;
+    final foo =
+        file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
+            as DriftTable;
 
     final column = foo.columns[1];
-    final constraint =
-        column.constraints.whereType<ForeignKeyReference>().first;
+    final constraint = column.constraints
+        .whereType<ForeignKeyReference>()
+        .first;
     expect(constraint.otherColumn.nameInSql, 'test');
     expect(constraint.initiallyDeferred, isTrue);
   });

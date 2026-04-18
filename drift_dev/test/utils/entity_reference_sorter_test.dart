@@ -22,8 +22,10 @@ void main() {
     first.references.add(second);
     second.references.add(first);
 
-    expect(() => [first, second].sortTopologically(),
-        throwsA(isCircularReferenceException([first, second])));
+    expect(
+      () => [first, second].sortTopologically(),
+      throwsA(isCircularReferenceException([first, second])),
+    );
   });
 
   test('throws cyclic exception on a circular reference with three tables', () {
@@ -37,8 +39,10 @@ void main() {
     c.references.add(d);
     d.references.add(b);
 
-    expect(() => [a, b, c, d].sortTopologically(),
-        throwsA(isCircularReferenceException([b, c, d])));
+    expect(
+      () => [a, b, c, d].sortTopologically(),
+      throwsA(isCircularReferenceException([b, c, d])),
+    );
   });
 
   test('sortOr returns original order and reports message for erro', () {
@@ -53,9 +57,11 @@ void main() {
     d.references.add(b);
 
     expect(
-      [a, b, c, d].sortTopologicallyOrElse(expectAsync1((message) {
-        expect(message, contains('Invalid cycle from b->c->d->b'));
-      })),
+      [a, b, c, d].sortTopologicallyOrElse(
+        expectAsync1((message) {
+          expect(message, contains('Invalid cycle from b->c->d->b'));
+        }),
+      ),
       [a, b, c, d],
     );
   });
@@ -85,7 +91,11 @@ void main() {
 }
 
 TypeMatcher<CircularReferenceException> isCircularReferenceException(
-    List<DriftElement> path) {
-  return isA<CircularReferenceException>()
-      .having((e) => e.affected, 'affected', path);
+  List<DriftElement> path,
+) {
+  return isA<CircularReferenceException>().having(
+    (e) => e.affected,
+    'affected',
+    path,
+  );
 }

@@ -22,14 +22,21 @@ void main() {
 
   group('generates update statements', () {
     test('for entire table', () async {
-      await db.update(db.todosTable).write(const TodosTableCompanion(
-            title: Value('Updated title'),
-            category: Value(RowId(3)),
-          ));
+      await db
+          .update(db.todosTable)
+          .write(
+            const TodosTableCompanion(
+              title: Value('Updated title'),
+              category: Value(RowId(3)),
+            ),
+          );
 
-      verify(executor.runUpdate(
-          'UPDATE "todos" SET "title" = ?, "category" = ?;',
-          ['Updated title', 3]));
+      verify(
+        executor.runUpdate('UPDATE "todos" SET "title" = ?, "category" = ?;', [
+          'Updated title',
+          3,
+        ]),
+      );
     });
 
     test('with a WHERE clause', () async {
@@ -37,9 +44,12 @@ void main() {
             ..where((t) => t.id.isSmallerThanValue(50)))
           .write(const TodosTableCompanion(title: Value('Changed title')));
 
-      verify(executor.runUpdate(
-          'UPDATE "todos" SET "title" = ? WHERE "id" < ?;',
-          ['Changed title', 50]));
+      verify(
+        executor.runUpdate('UPDATE "todos" SET "title" = ? WHERE "id" < ?;', [
+          'Changed title',
+          50,
+        ]),
+      );
     });
 
     test('with escaped column names', () async {
@@ -47,29 +57,39 @@ void main() {
           .update(db.pureDefaults)
           .write(PureDefaultsCompanion(txt: Value(MyCustomObject('foo'))));
 
-      verify(executor
-          .runUpdate('UPDATE "pure_defaults" SET "insert" = ?;', ['foo']));
+      verify(
+        executor.runUpdate('UPDATE "pure_defaults" SET "insert" = ?;', ['foo']),
+      );
     });
   });
 
   group('generates replace statements', () {
     test('regular', () async {
-      await db.update(db.todosTable).replace(const TodoEntry(
-            id: RowId(3),
-            title: 'Title',
-            content: 'Updated content',
-            status: TodoStatus.workInProgress,
-            // category and targetDate are null
-          ));
+      await db
+          .update(db.todosTable)
+          .replace(
+            const TodoEntry(
+              id: RowId(3),
+              title: 'Title',
+              content: 'Updated content',
+              status: TodoStatus.workInProgress,
+              // category and targetDate are null
+            ),
+          );
 
-      verify(executor.runUpdate(
+      verify(
+        executor.runUpdate(
           'UPDATE "todos" SET "title" = ?, "content" = ?, '
           '"target_date" = ?, "category" = ?, "status" = ? WHERE "id" = ?;',
-          const ['Title', 'Updated content', null, null, 'workInProgress', 3]));
+          const ['Title', 'Updated content', null, null, 'workInProgress', 3],
+        ),
+      );
     });
 
     test('applies default values', () async {
-      await db.update(db.users).replace(
+      await db
+          .update(db.users)
+          .replace(
             UsersCompanion(
               id: const Value(RowId(3)),
               name: const Value('Hummingbird'),
@@ -77,11 +97,14 @@ void main() {
             ),
           );
 
-      verify(executor.runUpdate(
+      verify(
+        executor.runUpdate(
           'UPDATE "users" SET "name" = ?, "profile_picture" = ?, "is_awesome" = 1, '
           '"creation_time" = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
           ' WHERE "id" = ?;',
-          ['Hummingbird', Uint8List(0), 3]));
+          ['Hummingbird', Uint8List(0), 3],
+        ),
+      );
     });
   });
 
@@ -99,12 +122,15 @@ void main() {
     test('are issued when data was changed', () async {
       when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
 
-      await db.update(db.todosTable).write(const TodosTableCompanion(
-            content: Value('Updated content'),
-          ));
+      await db
+          .update(db.todosTable)
+          .write(const TodosTableCompanion(content: Value('Updated content')));
 
-      verify(streamQueries.handleTableUpdates(
-          {TableUpdate.onTable(db.todosTable, kind: UpdateKind.update)}));
+      verify(
+        streamQueries.handleTableUpdates({
+          TableUpdate.onTable(db.todosTable, kind: UpdateKind.update),
+        }),
+      );
     });
 
     test('are not issued when no data was changed', () async {
@@ -117,17 +143,23 @@ void main() {
   });
 
   test('can update with custom companions', () async {
-    await db.update(db.todosTable).replace(TodosTableCompanion.custom(
-          id: const Variable(4),
-          content: db.todosTable.content.dartCast(),
-          targetDate: db.todosTable.targetDate + const Duration(days: 1),
-        ));
+    await db
+        .update(db.todosTable)
+        .replace(
+          TodosTableCompanion.custom(
+            id: const Variable(4),
+            content: db.todosTable.content.dartCast(),
+            targetDate: db.todosTable.targetDate + const Duration(days: 1),
+          ),
+        );
 
-    verify(executor.runUpdate(
-      'UPDATE "todos" SET "content" = "content", "target_date" = "target_date" + ? '
-      'WHERE "id" = ?;',
-      argThat(equals([86400, 4])),
-    ));
+    verify(
+      executor.runUpdate(
+        'UPDATE "todos" SET "content" = "content", "target_date" = "target_date" + ? '
+        'WHERE "id" = ?;',
+        argThat(equals([86400, 4])),
+      ),
+    );
   });
 
   group('custom updates', () {
@@ -139,16 +171,21 @@ void main() {
 
     test('map the variables correctly', () async {
       await db.customUpdate(
-          'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
-          variables: [
-            Variable.withString('Name'),
-            Variable.withDateTime(
-                DateTime.fromMillisecondsSinceEpoch(1551297563000))
-          ]);
+        'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
+        variables: [
+          Variable.withString('Name'),
+          Variable.withDateTime(
+            DateTime.fromMillisecondsSinceEpoch(1551297563000),
+          ),
+        ],
+      );
 
-      verify(executor.runUpdate(
+      verify(
+        executor.runUpdate(
           'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
-          ['Name', 1551297563]));
+          ['Name', 1551297563],
+        ),
+      );
     });
 
     test('returns information from executor', () async {
@@ -160,8 +197,12 @@ void main() {
     test('informs about updated tables', () async {
       await db.customUpdate('', updates: {db.users, db.todosTable});
 
-      verify(streamQueries.handleTableUpdates(
-          {const TableUpdate('users'), const TableUpdate('todos')}));
+      verify(
+        streamQueries.handleTableUpdates({
+          const TableUpdate('users'),
+          const TableUpdate('todos'),
+        }),
+      );
     });
   });
 
@@ -173,12 +214,19 @@ void main() {
     });
 
     test('replace', () async {
-      await db.categories.replaceOne(const CategoriesCompanion(
-          id: Value(RowId(3)), description: Value('new name')));
+      await db.categories.replaceOne(
+        const CategoriesCompanion(
+          id: Value(RowId(3)),
+          description: Value('new name'),
+        ),
+      );
 
-      verify(executor.runUpdate(
+      verify(
+        executor.runUpdate(
           'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
-          ['new name', 3]));
+          ['new name', 3],
+        ),
+      );
     });
   });
 
@@ -194,14 +242,20 @@ void main() {
       ]);
     });
 
-    final rows = await db.categories
-        .update()
-        .writeReturning(const CategoriesCompanion(description: Value('test')));
+    final rows = await db.categories.update().writeReturning(
+      const CategoriesCompanion(description: Value('test')),
+    );
 
-    verify(executor.runSelect(
-        'UPDATE "categories" SET "desc" = ? RETURNING *;', ['test']));
-    verify(streamQueries.handleTableUpdates(
-        {TableUpdate.onTable(db.categories, kind: UpdateKind.update)}));
+    verify(
+      executor.runSelect('UPDATE "categories" SET "desc" = ? RETURNING *;', [
+        'test',
+      ]),
+    );
+    verify(
+      streamQueries.handleTableUpdates({
+        TableUpdate.onTable(db.categories, kind: UpdateKind.update),
+      }),
+    );
 
     expect(rows, const [
       Category(

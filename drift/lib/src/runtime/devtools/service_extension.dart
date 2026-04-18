@@ -28,9 +28,7 @@ class DriftServiceExtension {
 
     switch (action) {
       case 'get-supported-features':
-        return {
-          'isExportSupported': isExportSupported,
-        };
+        return {'isExportSupported': isExportSupported};
       case 'download':
         final exported = await exportDatabase(tracked.database);
 
@@ -45,8 +43,9 @@ class DriftServiceExtension {
         _activeSubscriptions[id] = stream.listen((event) {
           postEvent('event', {
             'subscription': id,
-            'payload':
-                _protocol.encodePayload(NotifyTablesUpdated(event.toList()))
+            'payload': _protocol.encodePayload(
+              NotifyTablesUpdated(event.toList()),
+            ),
           });
         });
 
@@ -55,35 +54,46 @@ class DriftServiceExtension {
         _activeSubscriptions.remove(int.parse(parameters['id']!))?.cancel();
         return null;
       case 'execute-query':
-        final execute = _protocol
-            .decodePayload(json.decode(parameters['query']!)) as ExecuteQuery;
+        final execute =
+            _protocol.decodePayload(json.decode(parameters['query']!))
+                as ExecuteQuery;
         final variables = [
-          for (final variable in execute.args) Variable(variable)
+          for (final variable in execute.args) Variable(variable),
         ];
 
         final result = await switch (execute.method) {
-          StatementMethod.select => tracked.database
-              .customSelect(execute.sql, variables: variables)
-              .get()
-              .then((rows) => SelectResult([for (final row in rows) row.data])),
-          StatementMethod.insert =>
-            tracked.database.customInsert(execute.sql, variables: variables),
-          StatementMethod.deleteOrUpdate =>
-            tracked.database.customUpdate(execute.sql, variables: variables),
-          StatementMethod.custom => tracked.database
-              .customStatement(execute.sql, execute.args)
-              .then((_) => 0),
+          StatementMethod.select =>
+            tracked.database
+                .customSelect(execute.sql, variables: variables)
+                .get()
+                .then(
+                  (rows) => SelectResult([for (final row in rows) row.data]),
+                ),
+          StatementMethod.insert => tracked.database.customInsert(
+            execute.sql,
+            variables: variables,
+          ),
+          StatementMethod.deleteOrUpdate => tracked.database.customUpdate(
+            execute.sql,
+            variables: variables,
+          ),
+          StatementMethod.custom =>
+            tracked.database
+                .customStatement(execute.sql, execute.args)
+                .then((_) => 0),
         };
 
         return _protocol.encodePayload(result);
       case 'collect-expected-schema':
         final executor = CollectCreateStatements(SqlDialect.sqlite);
         await tracked.database.runConnectionZoned(
-            BeforeOpenRunner(tracked.database, executor), () async {
-          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-          final migrator = tracked.database.createMigrator();
-          await migrator.createAll();
-        });
+          BeforeOpenRunner(tracked.database, executor),
+          () async {
+            // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+            final migrator = tracked.database.createMigrator();
+            await migrator.createAll();
+          },
+        );
 
         return executor.statements;
       case 'clear':
@@ -97,14 +107,17 @@ class DriftServiceExtension {
           await database.customStatement('PRAGMA integrity_check');
 
           await database.customStatement('PRAGMA user_version = 0');
-          await database.beforeOpen(database.resolvedEngine.executor,
-              OpeningDetails(null, database.schemaVersion));
+          await database.beforeOpen(
+            database.resolvedEngine.executor,
+            OpeningDetails(null, database.schemaVersion),
+          );
           await database.customStatement(
-              'PRAGMA user_version = ${database.schemaVersion}');
+            'PRAGMA user_version = ${database.schemaVersion}',
+          );
 
           // Refresh all stream queries
           database.notifyUpdates({
-            for (final table in database.allTables) TableUpdate.onTable(table)
+            for (final table in database.allTables) TableUpdate.onTable(table),
           });
         });
         return true;
@@ -131,20 +144,19 @@ class DriftServiceExtension {
       final extension = DriftServiceExtension();
       registerExtension('ext.drift.database', (method, parameters) {
         return Future(() => extension._handle(parameters))
-            .then((value) => ServiceExtensionResponse.result(json.encode({
-                  'r': value,
-                })))
+            .then(
+              (value) =>
+                  ServiceExtensionResponse.result(json.encode({'r': value})),
+            )
             .onError((error, stackTrace) {
-          return ServiceExtensionResponse.error(
-            ServiceExtensionResponse.extensionErrorMin,
-            json.encode(
-              {
-                'e': error.toString(),
-                'trace': stackTrace.toString(),
-              },
-            ),
-          );
-        });
+              return ServiceExtensionResponse.error(
+                ServiceExtensionResponse.extensionErrorMin,
+                json.encode({
+                  'e': error.toString(),
+                  'trace': stackTrace.toString(),
+                }),
+              );
+            });
       });
     }
   }
@@ -198,7 +210,9 @@ final class CollectCreateStatements extends QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
+    String statement,
+    List<Object?> args,
+  ) {
     throw UnimplementedError();
   }
 

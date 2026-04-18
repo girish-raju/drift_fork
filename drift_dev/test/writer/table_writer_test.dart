@@ -21,17 +21,21 @@ class Tags extends Table {
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(
-        allOf(
-          contains("import 'package:a/a.dart' as i0;"),
-          contains(
-            r'class $TagsTable extends i0.Tags with i2.TableInfo<$TagsTable, i1.MyTag>',
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains("import 'package:a/a.dart' as i0;"),
+            contains(
+              r'class $TagsTable extends i0.Tags with i2.TableInfo<$TagsTable, i1.MyTag>',
+            ),
+            contains('class MyTag extends i0.MyBaseDataClass'),
           ),
-          contains('class MyTag extends i0.MyBaseDataClass'),
         ),
-      ),
-    }, result.dartOutputs, result.writer);
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates index attached to table in monolithic build', () async {
@@ -56,14 +60,20 @@ class Tags extends Table {
       },
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(allOf(
-        contains(
-          "Index tagId = Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')",
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains(
+              "Index tagId = Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')",
+            ),
+            contains('allSchemaEntities => [tags, tagId]'),
+          ),
         ),
-        contains('allSchemaEntities => [tags, tagId]'),
-      )),
-    }, result.dartOutputs, result.writer);
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates index attached to table in same file', () async {
@@ -84,14 +94,20 @@ class MyDatabase {}
       },
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(allOf(
-        contains(
-          "Index tagId = Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')",
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains(
+              "Index tagId = Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')",
+            ),
+            contains('allSchemaEntities => [tags, tagId]'),
+          ),
         ),
-        contains('allSchemaEntities => [tags, tagId]'),
-      )),
-    }, result.dartOutputs, result.writer);
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates index attached to table in modular build', () async {
@@ -117,14 +133,20 @@ class Tags extends Table {
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/database.drift.dart':
-          decodedMatches(contains('get allSchemaEntities => [tags, i1.tagId]')),
-      'a|lib/table.drift.dart': decodedMatches(
-        contains(
-            "i0.Index get tagId => i0.Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')"),
-      ),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/database.drift.dart': decodedMatches(
+          contains('get allSchemaEntities => [tags, i1.tagId]'),
+        ),
+        'a|lib/table.drift.dart': decodedMatches(
+          contains(
+            "i0.Index get tagId => i0.Index('tag_id', 'CREATE INDEX tag_id ON tags (id)')",
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test(
@@ -148,10 +170,15 @@ class Foo extends Table {
         modularBuild: true,
       );
 
-      checkOutputs({
-        'a|lib/a.drift.dart':
-            decodedMatches(isNot(contains('instance.toColumns(true);'))),
-      }, result.dartOutputs, result.writer);
+      checkOutputs(
+        {
+          'a|lib/a.drift.dart': decodedMatches(
+            isNot(contains('instance.toColumns(true);')),
+          ),
+        },
+        result.dartOutputs,
+        result.writer,
+      );
     },
   );
 
@@ -184,14 +211,17 @@ class Author {
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(isNot(contains('Object??'))),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {'a|lib/a.drift.dart': decodedMatches(isNot(contains('Object??')))},
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('does not write unecessary verification metas', () async {
-    final result = await emulateDriftBuild(inputs: {
-      'a|lib/a.dart': '''
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
 enum ThemeSetting {
@@ -206,11 +236,18 @@ class GlobalSettings extends Table {
   IntColumn get foo => integer()();
 }
 ''',
-    }, modularBuild: true);
+      },
+      modularBuild: true,
+    );
 
-    checkOutputs({
-      'a|lib/a.drift.dart':
-          decodedMatches(isNot(contains('_themeSettingMeta'))),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          isNot(contains('_themeSettingMeta')),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 }

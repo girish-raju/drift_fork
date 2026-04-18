@@ -58,8 +58,10 @@ void main() {
     test('read pool cannot be negative', () {
       final file = File(d.path('test.db'));
 
-      expect(() => NativeDatabase.createInBackground(file, readPool: -4),
-          throwsRangeError);
+      expect(
+        () => NativeDatabase.createInBackground(file, readPool: -4),
+        throwsRangeError,
+      );
     });
 
     test('read pool', () async {
@@ -72,7 +74,9 @@ void main() {
             var counter = 0;
 
             db.createFunction(
-                functionName: 'inc_counter', function: (args) => counter++);
+              functionName: 'inc_counter',
+              function: (args) => counter++,
+            );
           },
           readPool: 10,
         ),
@@ -84,10 +88,14 @@ void main() {
             .customSelect('SELECT inc_counter() AS r;')
             .getSingle()
             .then((row) {
-          final counter = row.data['r'] as int;
-          expect(counter < 20, isTrue,
-              reason: 'should distribute somewhat evenly, counter is $counter');
-        });
+              final counter = row.data['r'] as int;
+              expect(
+                counter < 20,
+                isTrue,
+                reason:
+                    'should distribute somewhat evenly, counter is $counter',
+              );
+            });
 
         group.add(future);
       }
@@ -110,8 +118,10 @@ void main() {
 
     test('can avoid disposing the underlying instance', () async {
       final underlying = sqlite3.openInMemory();
-      final db =
-          NativeDatabase.opened(underlying, closeUnderlyingOnClose: false);
+      final db = NativeDatabase.opened(
+        underlying,
+        closeUnderlyingOnClose: false,
+      );
       await db.ensureOpen(_FakeExecutorUser());
       await db.close();
 
@@ -144,11 +154,12 @@ void main() {
 
     test('in runBatched', () {
       expect(
-        db.runBatched(BatchedStatements([
-          'SELECT ?; SELECT ?;'
-        ], [
-          ArgumentsForBatchedStatement(0, []),
-        ])),
+        db.runBatched(
+          BatchedStatements(
+            ['SELECT ?; SELECT ?;'],
+            [ArgumentsForBatchedStatement(0, [])],
+          ),
+        ),
         throwsArgumentError,
       );
     });
@@ -158,14 +169,11 @@ void main() {
     const exception = 'exception';
     var count = 0;
     final db = NativeDatabase.memory(
-      setup: expectAsync1(
-        (_) {
-          if (count++ == 0) {
-            throw exception;
-          }
-        },
-        count: 2,
-      ),
+      setup: expectAsync1((_) {
+        if (count++ == 0) {
+          throw exception;
+        }
+      }, count: 2),
     );
 
     await expectLater(db.ensureOpen(_FakeExecutorUser()), throwsA(exception));
@@ -186,8 +194,10 @@ void main() {
 
   test('disposes statements directly if cache is disabled', () async {
     final underlying = sqlite3.openInMemory();
-    final db =
-        NativeDatabase.opened(underlying, cachePreparedStatements: false);
+    final db = NativeDatabase.opened(
+      underlying,
+      cachePreparedStatements: false,
+    );
     addTearDown(db.close);
 
     await db.ensureOpen(_FakeExecutorUser());
@@ -201,15 +211,20 @@ void main() {
     await db.ensureOpen(_FakeExecutorUser());
 
     await db.runCustom(
-        'create table test(id integer primary key, description text)');
+      'create table test(id integer primary key, description text)',
+    );
     await db.runCustom('create index i1 on test(description)');
     // The schema is locked while an explain is active, so caching this
     // statement makes the test fail at the `drop index` statement.
     await db.runSelect(
-        'explain query plan select * from test where description = ?', ['t']);
+      'explain query plan select * from test where description = ?',
+      ['t'],
+    );
     await db.runCustom('drop index i1');
     await db.runSelect(
-        'explain query plan select * from test where description = ?', ['t']);
+      'explain query plan select * from test where description = ?',
+      ['t'],
+    );
   });
 
   group('can disable migrations', () {
@@ -217,7 +232,7 @@ void main() {
       final db = TodoDb(executor);
       db.migration = MigrationStrategy(
         onCreate: (_) => fail('should not call onCreate'),
-        onUpgrade: (_, __, ___) => fail('should not call onUpgrade'),
+        onUpgrade: (_, _, _) => fail('should not call onUpgrade'),
         beforeOpen: expectAsync1((details) async {}),
       );
 
@@ -228,44 +243,51 @@ void main() {
 
     test(
       'with native database',
-      () => runTest(NativeDatabase(
-        File(d.path('test.db')),
-        enableMigrations: false,
-      )),
+      () => runTest(
+        NativeDatabase(File(d.path('test.db')), enableMigrations: false),
+      ),
     );
 
     test(
       'createInBackground',
-      () => runTest(NativeDatabase.createInBackground(
-        File(d.path('test.db')),
-        enableMigrations: false,
-      )),
+      () => runTest(
+        NativeDatabase.createInBackground(
+          File(d.path('test.db')),
+          enableMigrations: false,
+        ),
+      ),
     );
 
     test(
       'createBackgroundConnection',
-      () => runTest(NativeDatabase.createBackgroundConnection(
-        File(d.path('test.db')),
-        enableMigrations: false,
-      )),
+      () => runTest(
+        NativeDatabase.createBackgroundConnection(
+          File(d.path('test.db')),
+          enableMigrations: false,
+        ),
+      ),
     );
 
     test(
       'in background with read pool',
-      () => runTest(NativeDatabase.createBackgroundConnection(
-        File(d.path('test.db')),
-        enableMigrations: false,
-        readPool: 10,
-      )),
+      () => runTest(
+        NativeDatabase.createBackgroundConnection(
+          File(d.path('test.db')),
+          enableMigrations: false,
+          readPool: 10,
+        ),
+      ),
     );
 
     test(
       'opened',
-      () => runTest(NativeDatabase.opened(
-        sqlite3.openInMemory(),
-        enableMigrations: false,
-        closeUnderlyingOnClose: true,
-      )),
+      () => runTest(
+        NativeDatabase.opened(
+          sqlite3.openInMemory(),
+          enableMigrations: false,
+          closeUnderlyingOnClose: true,
+        ),
+      ),
     );
   });
 
@@ -285,8 +307,9 @@ void main() {
 
   test('customStatement can run multiple statements', () async {
     final db = TodoDb(NativeDatabase.memory());
-    db.migration = MigrationStrategy(onCreate: (_) async {
-      await db.customStatement('''
+    db.migration = MigrationStrategy(
+      onCreate: (_) async {
+        await db.customStatement('''
 CREATE TABLE users (
   id INTEGER NOT NULL PRIMARY KEY,
   name TEXT NOT NULL
@@ -297,7 +320,8 @@ CREATE TABLE groups (
   name TEXT NOT NULL
 );
 ''');
-    });
+      },
+    );
 
     await db.customSelect('SELECT * FROM groups').get();
   });
@@ -306,13 +330,12 @@ CREATE TABLE groups (
     test('synchronous file', () async {
       final mockSqlite = _MockSqlite();
 
-      final db = NativeDatabase(
-        File('/dev/null'),
-        sqlite3: () => mockSqlite,
-      );
+      final db = NativeDatabase(File('/dev/null'), sqlite3: () => mockSqlite);
 
       await expectLater(
-          TodoDb(db).customSelect('SELECT 1').get(), throwsA(anything));
+        TodoDb(db).customSelect('SELECT 1').get(),
+        throwsA(anything),
+      );
 
       expect(mockSqlite.openedPaths, contains('/dev/null'));
     });
@@ -324,9 +347,15 @@ CREATE TABLE groups (
       );
 
       await expectLater(
-          TodoDb(db).customSelect('SELECT 1').get(),
-          throwsA(isA<Object>().having(
-              (e) => e.toString(), 'toString', contains('mock sqlite open'))));
+        TodoDb(db).customSelect('SELECT 1').get(),
+        throwsA(
+          isA<Object>().having(
+            (e) => e.toString(),
+            'toString',
+            contains('mock sqlite open'),
+          ),
+        ),
+      );
     });
 
     test('memory', () async {
@@ -335,9 +364,15 @@ CREATE TABLE groups (
       final db = NativeDatabase.memory(sqlite3: () => mockSqlite);
 
       await expectLater(
-          TodoDb(db).customSelect('SELECT 1').get(),
-          throwsA(isA<Object>().having((e) => e.toString(), 'toString',
-              contains('mock sqlite openInMemory'))));
+        TodoDb(db).customSelect('SELECT 1').get(),
+        throwsA(
+          isA<Object>().having(
+            (e) => e.toString(),
+            'toString',
+            contains('mock sqlite openInMemory'),
+          ),
+        ),
+      );
     });
   });
 }
@@ -362,11 +397,13 @@ final class _MockSqlite implements Sqlite3 {
   }
 
   @override
-  Database open(String filename,
-      {String? vfs,
-      OpenMode mode = OpenMode.readWriteCreate,
-      bool uri = false,
-      bool? mutex}) {
+  Database open(
+    String filename, {
+    String? vfs,
+    OpenMode mode = OpenMode.readWriteCreate,
+    bool uri = false,
+    bool? mutex,
+  }) {
     openedPaths.add(filename);
     throw UnimplementedError('mock sqlite open');
   }

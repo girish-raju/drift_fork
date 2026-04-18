@@ -4,14 +4,22 @@ part of '../query_builder.dart';
 extension ArithmeticExpr<DT extends num> on Expression<DT> {
   /// Performs an addition (`this` + [other]) in sql.
   Expression<DT> operator +(Expression<DT> other) {
-    return BaseInfixOperator(this, '+', other,
-        precedence: Precedence.plusMinus);
+    return BaseInfixOperator(
+      this,
+      '+',
+      other,
+      precedence: Precedence.plusMinus,
+    );
   }
 
   /// Performs a subtraction (`this` - [other]) in sql.
   Expression<DT> operator -(Expression<DT> other) {
-    return BaseInfixOperator(this, '-', other,
-        precedence: Precedence.plusMinus);
+    return BaseInfixOperator(
+      this,
+      '-',
+      other,
+      precedence: Precedence.plusMinus,
+    );
   }
 
   /// Returns the negation of this value.
@@ -21,14 +29,22 @@ extension ArithmeticExpr<DT extends num> on Expression<DT> {
 
   /// Performs a multiplication (`this` * [other]) in sql.
   Expression<DT> operator *(Expression<DT> other) {
-    return BaseInfixOperator(this, '*', other,
-        precedence: Precedence.mulDivide);
+    return BaseInfixOperator(
+      this,
+      '*',
+      other,
+      precedence: Precedence.mulDivide,
+    );
   }
 
   /// Performs a division (`this` / [other]) in sql.
   Expression<DT> operator /(Expression<DT> other) {
-    return BaseInfixOperator(this, '/', other,
-        precedence: Precedence.mulDivide);
+    return BaseInfixOperator(
+      this,
+      '/',
+      other,
+      precedence: Precedence.mulDivide,
+    );
   }
 
   /// Calculates the absolute value of this number.

@@ -16,8 +16,13 @@ void main() {
 
           await expectLater(
             () => backend.readDart(partOfUri),
-            throwsA(const TypeMatcher<NotALibraryException>()
-                .having((e) => e.uri, 'uri', partOfUri)),
+            throwsA(
+              const TypeMatcher<NotALibraryException>().having(
+                (e) => e.uri,
+                'uri',
+                partOfUri,
+              ),
+            ),
           );
         },
       ),
@@ -27,7 +32,7 @@ part 'helper.dart';
          ''',
         'foo|lib/helper.dart': '''
 part of 'main.dart';
-        '''
+        ''',
       },
     );
   });

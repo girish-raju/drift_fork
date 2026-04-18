@@ -139,11 +139,7 @@ class WindowFunctionExpression<T extends Object> extends Expression<T> {
     this.boundary = const FrameBoundary.range(),
   }) {
     if (orderBy.isEmpty) {
-      throw ArgumentError.value(
-        orderBy,
-        'orderBy',
-        'Must not be empty',
-      );
+      throw ArgumentError.value(orderBy, 'orderBy', 'Must not be empty');
     }
   }
 
@@ -286,15 +282,11 @@ final class FrameBoundary extends Component {
   /// If you want to use [FrameExclude.noOthers] then keeping [exclude] as null will give you the same behaviour.
   final FrameExclude? exclude;
 
-  const FrameBoundary._(
-    this.start,
-    this.end,
-    this._frameType, {
-    this.exclude,
-  }) : assert(
-          start == null || start <= 0 || (end == null || end > 0),
-          'Invalid frame specification. A FOLLOWING start boundary must have an end boundary as FOLLOWING or UNBOUNDED.',
-        );
+  const FrameBoundary._(this.start, this.end, this._frameType, {this.exclude})
+    : assert(
+        start == null || start <= 0 || (end == null || end > 0),
+        'Invalid frame specification. A FOLLOWING start boundary must have an end boundary as FOLLOWING or UNBOUNDED.',
+      );
 
   /// Constructs a ROWS frame with the given [start] and [end] boundaries.
   ///
@@ -302,11 +294,8 @@ final class FrameBoundary extends Component {
   /// many rows before and/or after the current row should be included in the frame.
   ///
   /// {@macro drift_window_boundary}
-  const FrameBoundary.rows({
-    int? start,
-    int? end = 0,
-    FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.rows, exclude: exclude);
+  const FrameBoundary.rows({int? start, int? end = 0, FrameExclude? exclude})
+    : this._(start, end, _FrameType.rows, exclude: exclude);
 
   /// Constructs a GROUPS frame with the given [start] and [end] boundaries.
   ///
@@ -318,11 +307,8 @@ final class FrameBoundary extends Component {
   /// Most devices will use an older sqlite version.
   ///
   /// {@macro drift_window_boundary}
-  const FrameBoundary.groups({
-    int? start,
-    int? end = 0,
-    FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.groups, exclude: exclude);
+  const FrameBoundary.groups({int? start, int? end = 0, FrameExclude? exclude})
+    : this._(start, end, _FrameType.groups, exclude: exclude);
 
   /// Constructs a RANGE boundary with the given [start] and [end].
   ///
@@ -339,11 +325,8 @@ final class FrameBoundary extends Component {
   /// Most devices will use an older sqlite version.
   ///
   /// 0 (CURRENT ROW) and null (UNBOUNDED) are supported from sqlite 3.25.0, released on 2018-09-15.
-  const FrameBoundary.range({
-    num? start,
-    num? end = 0,
-    FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.range, exclude: exclude);
+  const FrameBoundary.range({num? start, num? end = 0, FrameExclude? exclude})
+    : this._(start, end, _FrameType.range, exclude: exclude);
 
   @override
   void writeInto(GenerationContext context) {

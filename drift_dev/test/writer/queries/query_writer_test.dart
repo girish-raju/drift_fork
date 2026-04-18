@@ -18,21 +18,20 @@ void main() {
     ),
     Map<String, String> additionalSources = const {},
   }) async {
-    final state = await TestBackend.inTest(
-      {'a|lib/main.drift': driftFile, ...additionalSources},
-      options: options,
-    );
+    final state = await TestBackend.inTest({
+      'a|lib/main.drift': driftFile,
+      ...additionalSources,
+    }, options: options);
     final file = await state.analyze('package:a/main.drift');
     state.expectNoErrors();
 
     final writer = Writer(
       options,
-      generationOptions: GenerationOptions(
-        imports: NullImportManager(),
-      ),
+      generationOptions: GenerationOptions(imports: NullImportManager()),
     );
-    QueryWriter(writer.child())
-        .write(file.fileAnalysis!.resolvedQueries.values.single);
+    QueryWriter(
+      writer.child(),
+    ).write(file.fileAnalysis!.resolvedQueries.values.single);
 
     return writer.writeGenerated();
   }
@@ -111,7 +110,8 @@ void main() {
         generated,
         allOf(
           contains(
-              "tbl: await tbl.mapFromRowOrNull(row, tablePrefix: 'nested_0')"),
+            "tbl: await tbl.mapFromRowOrNull(row, tablePrefix: 'nested_0')",
+          ),
           contains('final TblData? tbl;'),
         ),
       );
@@ -130,8 +130,10 @@ void main() {
       expect(
         generated,
         allOf(
-          contains("tbl: row.data['nested_0.b'] == null ? null : "
-              'tbl.mapFromRowWithAlias(row'),
+          contains(
+            "tbl: row.data['nested_0.b'] == null ? null : "
+            'tbl.mapFromRowWithAlias(row',
+          ),
           contains('final TblData? tbl;'),
         ),
       );
@@ -146,9 +148,11 @@ void main() {
       expect(
         generated,
         allOf(
-          contains("joined: row.data['nested_0.c'] == null ? null : "
-              "QueryNestedColumn0(b: row.readNullable<String>('nested_0.b'), "
-              "c: row.read<int>('nested_0.c'), )"),
+          contains(
+            "joined: row.data['nested_0.c'] == null ? null : "
+            "QueryNestedColumn0(b: row.readNullable<String>('nested_0.b'), "
+            "c: row.read<int>('nested_0.c'), )",
+          ),
           contains('final QueryNestedColumn0? joined;'),
         ),
       );
@@ -188,10 +192,14 @@ query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
       result,
       allOf(
         contains(r'var $arrayStartIndex = 3;'),
-        contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
-            'AND c = ?2'),
-        contains(r'variables: [Variable<String>(a), Variable<String>(c), '
-            r'for (var $ in b) Variable<String>($)], readsFrom: {tbl'),
+        contains(
+          r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
+          'AND c = ?2',
+        ),
+        contains(
+          r'variables: [Variable<String>(a), Variable<String>(c), '
+          r'for (var $ in b) Variable<String>($)], readsFrom: {tbl',
+        ),
       ),
     );
   });
@@ -225,9 +233,10 @@ query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
 
   group('generates correct code for nested queries', () {
     Future<void> runTest(
-        DriftOptions options, List<Matcher> expectation) async {
-      final result = await generateForQueryInDriftFile(
-        '''
+      DriftOptions options,
+      List<Matcher> expectation,
+    ) async {
+      final result = await generateForQueryInDriftFile('''
 CREATE TABLE tbl (
   a TEXT,
   b TEXT,
@@ -239,9 +248,7 @@ SELECT
   parent.a,
   LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b)
 FROM tbl AS parent WHERE parent.a = :a;
-''',
-        options: options,
-      );
+''', options: options);
 
       for (final e in expectation) {
         expect(result, e);
@@ -249,44 +256,31 @@ FROM tbl AS parent WHERE parent.a = :a;
     }
 
     test('should generate correct queries with variables', () {
-      return runTest(
-        const DriftOptions.defaults(),
-        [
-          contains(
-            r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
-          ),
-          contains(
-            r'[Variable<String>(a)]',
-          ),
-          contains(
-            r'SELECT b, c FROM tbl WHERE a = ?1 OR a = ?2 AND b = ?3',
-          ),
-          contains(
-            r"[Variable<String>(a), Variable<String>(row.read('\$n_0')), Variable<String>(b)]",
-          ),
-        ],
-      );
+      return runTest(const DriftOptions.defaults(), [
+        contains(
+          r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
+        ),
+        contains(r'[Variable<String>(a)]'),
+        contains(r'SELECT b, c FROM tbl WHERE a = ?1 OR a = ?2 AND b = ?3'),
+        contains(
+          r"[Variable<String>(a), Variable<String>(row.read('\$n_0')), Variable<String>(b)]",
+        ),
+      ]);
     });
 
     test('drift3 preview', () {
-      return runTest(
-        const DriftOptions.defaults(drift3Preview: true),
-        [
-          contains(
-            r"variables: [mapValue(BuiltinDriftType.text, a), MappedValue.raw(type$0,row[1]), mapValue(BuiltinDriftType.text, b)]",
-          ),
-        ],
-      );
+      return runTest(const DriftOptions.defaults(drift3Preview: true), [
+        contains(
+          r"variables: [mapValue(BuiltinDriftType.text, a), MappedValue.raw(type$0,row[1]), mapValue(BuiltinDriftType.text, b)]",
+        ),
+      ]);
     });
 
     test('should generate correct data class', () {
-      return runTest(
-        const DriftOptions.defaults(),
-        [
-          contains('QueryNestedQuery0({this.b,this.c,})'),
-          contains('QueryResult({this.a,required this.nestedQuery0,})'),
-        ],
-      );
+      return runTest(const DriftOptions.defaults(), [
+        contains('QueryNestedQuery0({this.b,this.c,})'),
+        contains('QueryResult({this.a,required this.nestedQuery0,})'),
+      ]);
     });
   });
 
@@ -327,7 +321,8 @@ class MyRow {
 
     checkOutputs(
       {
-        'a|lib/a.drift.dart': decodedMatches(contains('''
+        'a|lib/a.drift.dart': decodedMatches(
+          contains('''
   i0.Selectable<i1.MyRow> foo() {
     return customSelect(
         'SELECT name,"otherUser"."id" AS "nested_0.id", "otherUser"."name" AS "nested_0.name" FROM users INNER JOIN users AS otherUser ON otherUser.id = users.id + 1',
@@ -344,7 +339,8 @@ class MyRow {
               }).map((i0.QueryRow row) => row.read<int>('id')).get(),
         ));
   }
-'''))
+'''),
+        ),
       },
       result.dartOutputs,
       result.writer,
@@ -392,22 +388,29 @@ getTest WITH TestCustom:
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(
-          '  i0.Selectable<i3.TestCustom> getTest() {\n'
-          '    return customSelect(\n'
-          '        \'SELECT one.*, two.test_two_text FROM TestOne AS one INNER JOIN TestTwo AS two ON one.test_id = two.test_id\',\n'
-          '        variables: [],\n'
-          '        readsFrom: {\n'
-          '          testTwo,\n'
-          '          testOne,\n'
-          '        }).map((i0.QueryRow row) => i3.TestCustom(\n'
-          '          testId: row.read<int>(\'test_id\'),\n'
-          '          testOneText: row.read<String>(\'test_one_text\'),\n'
-          '          testTwoText: row.read<String>(\'test_two_text\'),\n'
-          '        ));\n'
-          '  }')),
-    }, result.dartOutputs, result.writer);
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(
+            '  i0.Selectable<i3.TestCustom> getTest() {\n'
+            '    return customSelect(\n'
+            '        \'SELECT one.*, two.test_two_text FROM TestOne AS one INNER JOIN TestTwo AS two ON one.test_id = two.test_id\',\n'
+            '        variables: [],\n'
+            '        readsFrom: {\n'
+            '          testTwo,\n'
+            '          testOne,\n'
+            '        }).map((i0.QueryRow row) => i3.TestCustom(\n'
+            '          testId: row.read<int>(\'test_id\'),\n'
+            '          testOneText: row.read<String>(\'test_one_text\'),\n'
+            '          testTwoText: row.read<String>(\'test_two_text\'),\n'
+            '        ));\n'
+            '  }',
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates correct code for variables in LIST subquery', () async {
@@ -430,8 +433,10 @@ failQuery:
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains('''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains('''
   i0.Selectable<FailQueryResult> failQuery(double? inA, int? inB) {
     return customSelect(
         'SELECT * FROM (SELECT * FROM t WHERE a = ?1 AND b = ?2)',
@@ -454,8 +459,12 @@ failQuery:
               }).asyncMap(t.mapFromRow).get(),
         ));
   }
-'''))
-    }, outputs.dartOutputs, outputs.writer);
+'''),
+        ),
+      },
+      outputs.dartOutputs,
+      outputs.writer,
+    );
   });
 
   test('supports Dart component in HAVING', () async {
@@ -494,14 +503,22 @@ filterAlbums: SELECT
           r'required FilterAlbums$having having, FilterAlbums$order? order, '
           r'required FilterAlbums$limit limit})',
         ),
-        contains(r'typedef FilterAlbums$predicate = '
-            'Expression<bool> Function(Albums albums, Songs songs);'),
-        contains(r'typedef FilterAlbums$having = '
-            'Expression<bool> Function(Albums albums, Songs songs);'),
-        contains(r'typedef FilterAlbums$order = '
-            'OrderBy Function(Albums albums, Songs songs);'),
-        contains(r'typedef FilterAlbums$limit = '
-            'Limit Function(Albums albums, Songs songs);'),
+        contains(
+          r'typedef FilterAlbums$predicate = '
+          'Expression<bool> Function(Albums albums, Songs songs);',
+        ),
+        contains(
+          r'typedef FilterAlbums$having = '
+          'Expression<bool> Function(Albums albums, Songs songs);',
+        ),
+        contains(
+          r'typedef FilterAlbums$order = '
+          'OrderBy Function(Albums albums, Songs songs);',
+        ),
+        contains(
+          r'typedef FilterAlbums$limit = '
+          'Limit Function(Albums albums, Songs songs);',
+        ),
       ),
     );
   });
@@ -527,8 +544,10 @@ class MyRow {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains('''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains('''
 class ADrift extends i1.ModularAccessor {
   ADrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i2.MyRow> foo() {
@@ -538,8 +557,12 @@ class ADrift extends i1.ModularAccessor {
               row.read<int>('b'),
             ));
   }
-}'''))
-    }, outputs.dartOutputs, outputs.writer);
+}'''),
+        ),
+      },
+      outputs.dartOutputs,
+      outputs.writer,
+    );
   });
 
   test('creates dialect-specific query code', () async {
@@ -548,8 +571,10 @@ class ADrift extends i1.ModularAccessor {
 query (:foo AS TEXT): SELECT :foo;
 ''',
       options: const DriftOptions.defaults(
-        dialect: DialectOptions(
-            null, [SqlDialect.sqlite, SqlDialect.postgres], null),
+        dialect: DialectOptions(null, [
+          SqlDialect.sqlite,
+          SqlDialect.postgres,
+        ], null),
       ),
     );
 
@@ -593,12 +618,14 @@ query: SELECT CAST ($status AS INT) AS status FROM examples;
 
   test('can generate into generic class via typedef', () async {
     // Regression test for https://github.com/simolus3/drift/issues/3625.
-    final generated = await generateForQueryInDriftFile(r'''
+    final generated = await generateForQueryInDriftFile(
+      r'''
 import 'type.dart';
 
 query WITH SyncedString: SELECT '' AS entity, FALSE as synchronized;
-''', additionalSources: {
-      'a|lib/type.dart': '''
+''',
+      additionalSources: {
+        'a|lib/type.dart': '''
 class Synced<T> {
   final T entity;
   final bool synchronized;
@@ -608,7 +635,8 @@ class Synced<T> {
 
 typedef SyncedString = Synced<String>;
 ''',
-    });
+      },
+    );
 
     expect(generated, contains('Selectable<SyncedString> query('));
   });

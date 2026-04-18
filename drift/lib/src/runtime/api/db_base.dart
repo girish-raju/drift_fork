@@ -60,7 +60,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   /// Used by generated code
   GeneratedDatabase(super.executor, {StreamQueryStore? streamStore})
-      : super(streamQueries: streamStore) {
+    : super(streamQueries: streamStore) {
     _whenConstructed();
   }
 
@@ -81,8 +81,8 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       return true;
     }
 
-    final count =
-        _openedDbCount[runtimeType] = _openedDbCount[runtimeType]! + 1;
+    final count = _openedDbCount[runtimeType] =
+        _openedDbCount[runtimeType]! + 1;
     if (count > 1) {
       driftRuntimeOptions.debugPrint(
         'WARNING (drift): It looks like you\'ve created the database class '
@@ -131,7 +131,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       } else if (details.hadUpgrade) {
         final migrator = createMigrator();
         await _resolvedMigration.onUpgrade(
-            migrator, details.versionBefore!, details.versionNow);
+          migrator,
+          details.versionBefore!,
+          details.versionNow,
+        );
       }
 
       await _resolvedMigration.beforeOpen?.call(details);
@@ -208,7 +211,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   Future<Ret> computeWithDatabase<Ret, DB extends GeneratedDatabase>({
     required FutureOr<Ret> Function(DB) computation,
     required DB Function(DatabaseConnection) connect,
-  }) =>
-      computeWithDatabaseImplementation(
-          computation: computation, connect: connect, database: this as DB);
+  }) => computeWithDatabaseImplementation(
+    computation: computation,
+    connect: connect,
+    database: this as DB,
+  );
 }

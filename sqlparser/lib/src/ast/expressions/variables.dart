@@ -39,8 +39,8 @@ class NamedVariable extends Expression implements Variable {
   NamedVariable.synthetic(String prefix, this.name) : fullName = '$prefix$name';
 
   NamedVariable(NamedVariableToken token)
-      : fullName = token.fullName,
-        name = token.name;
+    : fullName = token.fullName,
+      name = token.name;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

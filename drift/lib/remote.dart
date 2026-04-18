@@ -76,11 +76,16 @@ abstract class DriftServer {
   /// clients can use [shutdown] to stop this server remotely.
   /// If [closeConnectionAfterShutdown] is set to `true` (the default), shutting
   /// down the server will also close the [connection].
-  factory DriftServer(QueryExecutor connection,
-      {bool allowRemoteShutdown = false,
-      bool closeConnectionAfterShutdown = true}) {
+  factory DriftServer(
+    QueryExecutor connection, {
+    bool allowRemoteShutdown = false,
+    bool closeConnectionAfterShutdown = true,
+  }) {
     return ServerImplementation(
-        connection, allowRemoteShutdown, closeConnectionAfterShutdown);
+      connection,
+      allowRemoteShutdown,
+      closeConnectionAfterShutdown,
+    );
   }
 
   /// A stream of table update notifications sent from clients to this server.

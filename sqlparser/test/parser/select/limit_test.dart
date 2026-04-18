@@ -7,9 +7,14 @@ import '../utils.dart';
 void main() {
   group('limit clauses', () {
     test('with just a limit', () {
-      final select = SqlEngine()
-          .parse(ParserEntrypoint.statement, 'SELECT * FROM test LIMIT 5 * 3')
-          .rootNode as SelectStatement;
+      final select =
+          SqlEngine()
+                  .parse(
+                    ParserEntrypoint.statement,
+                    'SELECT * FROM test LIMIT 5 * 3',
+                  )
+                  .rootNode
+              as SelectStatement;
 
       enforceHasSpan(select);
       enforceEqual(
@@ -25,10 +30,14 @@ void main() {
     });
 
     test('with offset', () {
-      final select = SqlEngine()
-          .parse(ParserEntrypoint.statement,
-              'SELECT * FROM test LIMIT 10 OFFSET 2')
-          .rootNode as SelectStatement;
+      final select =
+          SqlEngine()
+                  .parse(
+                    ParserEntrypoint.statement,
+                    'SELECT * FROM test LIMIT 10 OFFSET 2',
+                  )
+                  .rootNode
+              as SelectStatement;
 
       enforceHasSpan(select);
       enforceEqual(
@@ -44,9 +53,14 @@ void main() {
     test('with offset as comma', () {
       // with the comma notation, the offset comes first.
       // https://www.sqlite.org/lang_select.html#limitoffset
-      final select = SqlEngine()
-          .parse(ParserEntrypoint.statement, 'SELECT * FROM test LIMIT 10, 2')
-          .rootNode as SelectStatement;
+      final select =
+          SqlEngine()
+                  .parse(
+                    ParserEntrypoint.statement,
+                    'SELECT * FROM test LIMIT 10, 2',
+                  )
+                  .rootNode
+              as SelectStatement;
 
       enforceHasSpan(select);
       enforceEqual(

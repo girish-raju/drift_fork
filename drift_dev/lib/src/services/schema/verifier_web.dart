@@ -17,9 +17,13 @@ final class WebSchemaVerifier extends VerifierImplementation<CommonDatabase>
   }
 
   @override
-  QueryExecutor wrapOpened(CommonDatabase db,
-      {required bool closeUnderlyingOnClose}) {
-    return WasmDatabase.opened(db,
-        closeUnderlyingOnClose: closeUnderlyingOnClose);
+  QueryExecutor wrapOpened(
+    CommonDatabase db, {
+    required bool closeUnderlyingOnClose,
+  }) {
+    return WasmDatabase.opened(
+      db,
+      closeUnderlyingOnClose: closeUnderlyingOnClose,
+    );
   }
 }

@@ -32,7 +32,7 @@ class Trigger extends DatabaseSchemaEntity {
   /// Creates a trigger representation by the [createTriggerStmt] and its
   /// [entityName]. Mainly used by generated code.
   Trigger(String createTriggerStmt, String entityName)
-      : this.byDialect(entityName, {SqlDialect.sqlite: createTriggerStmt});
+    : this.byDialect(entityName, {SqlDialect.sqlite: createTriggerStmt});
 
   /// Creates the trigger model from its [entityName] in the schema and all
   /// [createStatementsByDialect] for the supported dialects.
@@ -61,7 +61,7 @@ class Index extends DatabaseSchemaEntity {
   /// Creates an index model by the [createIndexStmt] and its [entityName].
   /// Mainly used by generated code.
   Index(this.entityName, String createIndexStmt)
-      : createStatementsByDialect = {SqlDialect.sqlite: createIndexStmt};
+    : createStatementsByDialect = {SqlDialect.sqlite: createIndexStmt};
 
   /// Creates an index model by its [entityName] used in the schema and the
   /// `CREATE INDEX` statements for each supported dialect.

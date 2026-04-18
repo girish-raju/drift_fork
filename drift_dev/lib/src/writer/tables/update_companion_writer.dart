@@ -32,9 +32,11 @@ class UpdateCompanionWriter {
       : 'dynamic';
 
   void write() {
-    _buffer.write('class $_companionClass '
-        'extends '
-        '${_emitter.drift('UpdateCompanion')}<$_rowType> {\n');
+    _buffer.write(
+      'class $_companionClass '
+      'extends '
+      '${_emitter.drift('UpdateCompanion')}<$_rowType> {\n',
+    );
     _writeFields();
 
     _writeConstructor();
@@ -125,18 +127,20 @@ class UpdateCompanionWriter {
     // "custom", in which case we'll use createCustom
     final constructorName =
         columns.map((e) => e.nameInDart).any((name) => name == 'custom')
-            ? 'createCustom'
-            : 'custom';
+        ? 'createCustom'
+        : 'custom';
 
     _buffer
       ..write(
-          'static ${_emitter.drift('Insertable')}<$_rowType> $constructorName')
+        'static ${_emitter.drift('Insertable')}<$_rowType> $constructorName',
+      )
       ..write('({');
 
     final expression = _emitter.drift('Expression');
     for (final column in columns) {
-      final typeName =
-          _emitter.dartCode(_emitter.innerColumnType(column.sqlType));
+      final typeName = _emitter.dartCode(
+        _emitter.innerColumnType(column.sqlType),
+      );
       _buffer.write('$expression<$typeName>? ${column.nameInDart}, \n');
     }
 
@@ -182,8 +186,10 @@ class UpdateCompanionWriter {
   void _writeToColumnsOverride() {
     final expression = _emitter.drift('Expression');
     _buffer
-      ..write('@override\nMap<String, $expression> toColumns'
-          '(bool nullToAbsent) {\n')
+      ..write(
+        '@override\nMap<String, $expression> toColumns'
+        '(bool nullToAbsent) {\n',
+      )
       ..write('final map = <String, $expression> {};');
 
     const locals = {'map', 'nullToAbsent', 'converter'};
@@ -196,7 +202,8 @@ class UpdateCompanionWriter {
       var value = '$getterName.value';
 
       _emitter.writeDart(
-          _emitter.wrapInVariable(column, AnnotatedDartCode.text(value)));
+        _emitter.wrapInVariable(column, AnnotatedDartCode.text(value)),
+      );
 
       _buffer.writeln(';}');
     }
@@ -205,11 +212,9 @@ class UpdateCompanionWriter {
   }
 
   void _writeToString() {
-    overrideToString(
-      _emitter.companionType(table).toString(),
-      [for (final column in columns) column.nameInDart],
-      _buffer,
-    );
+    overrideToString(_emitter.companionType(table).toString(), [
+      for (final column in columns) column.nameInDart,
+    ], _buffer);
   }
 
   /// Writes an extension on an existing row class to map an instance of that

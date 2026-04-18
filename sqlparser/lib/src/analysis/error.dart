@@ -8,9 +8,11 @@ class AnalysisError {
 
   AnalysisError._internal(this.type, this.message, this.source);
 
-  AnalysisError(
-      {required this.type, this.message, SyntacticEntity? relevantNode})
-      : source = relevantNode;
+  AnalysisError({
+    required this.type,
+    this.message,
+    SyntacticEntity? relevantNode,
+  }) : source = relevantNode;
 
   factory AnalysisError.fromParser(ParsingError error) {
     return AnalysisError._internal(
@@ -43,11 +45,12 @@ class UnresolvedReferenceError extends AnalysisError {
   /// A list of alternative references that would be available for [reference].
   final Iterable<String> available;
 
-  UnresolvedReferenceError(
-      {required super.type,
-      required this.reference,
-      required this.available,
-      AstNode? super.relevantNode});
+  UnresolvedReferenceError({
+    required super.type,
+    required this.reference,
+    required this.available,
+    AstNode? super.relevantNode,
+  });
 
   @override
   String get message {

@@ -25,14 +25,18 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   @override
   void visitCreateIndexStatement(
-      CreateIndexStatement e, ColumnResolverContext arg) {
+    CreateIndexStatement e,
+    ColumnResolverContext arg,
+  ) {
     _handle(e.on, [], arg);
     visitExcept(e, e.on, arg);
   }
 
   @override
   void visitCreateTriggerStatement(
-      CreateTriggerStatement e, ColumnResolverContext arg) {
+    CreateTriggerStatement e,
+    ColumnResolverContext arg,
+  ) {
     final table = _resolveTableReference(e.onTable, arg);
     if (table == null) {
       // further analysis is not really possible without knowing the table
@@ -50,8 +54,11 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     }
 
     if (e.target case final UpdateTarget onUpdate) {
-      onUpdate.scope = SingleTableReferenceScope(scope, e.onTable.tableName,
-          ResultSetAvailableInStatement(e.onTable, table, e.onTable.as?.name));
+      onUpdate.scope = SingleTableReferenceScope(
+        scope,
+        e.onTable.tableName,
+        ResultSetAvailableInStatement(e.onTable, table, e.onTable.as?.name),
+      );
     }
 
     visitChildren(e, arg);
@@ -59,7 +66,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   @override
   void visitCompoundSelectStatement(
-      CompoundSelectStatement e, ColumnResolverContext arg) {
+    CompoundSelectStatement e,
+    ColumnResolverContext arg,
+  ) {
     e.withClause?.accept(this, arg);
     e.base.accept(this, arg);
     visitList(e.additional, arg);
@@ -69,7 +78,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   @override
   void visitValuesSelectStatement(
-      ValuesSelectStatement e, ColumnResolverContext arg) {
+    ValuesSelectStatement e,
+    ColumnResolverContext arg,
+  ) {
     e.withClause?.accept(this, arg);
     _resolveValuesSelect(e);
 
@@ -80,7 +91,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   @override
   void visitCommonTableExpression(
-      CommonTableExpression e, ColumnResolverContext arg) {
+    CommonTableExpression e,
+    ColumnResolverContext arg,
+  ) {
     // If we have a compound select statement as a CTE, resolve the initial
     // query first because the whole CTE will have those columns in the end.
     // This allows subsequent parts of the compound select to refer to the CTE.
@@ -101,13 +114,15 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         e.resolvedColumns = resolved;
       } else {
         if (names.length != resolved.length) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.cteColumnCountMismatch,
-            message:
-                'This CTE declares ${names.length} columns, but its select '
-                'statement actually returns ${resolved.length}.',
-            relevantNode: e.tableNameToken ?? e,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.cteColumnCountMismatch,
+              message:
+                  'This CTE declares ${names.length} columns, but its select '
+                  'statement actually returns ${resolved.length}.',
+              relevantNode: e.tableNameToken ?? e,
+            ),
+          );
         }
 
         final cteColumns = names
@@ -164,7 +179,10 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       e.foreignTable.tableName,
       resolved != null
           ? ResultSetAvailableInStatement(
-              e.foreignTable, resolved, e.foreignTable.as?.name)
+              e.foreignTable,
+              resolved,
+              e.foreignTable.as?.name,
+            )
           : null,
     );
     e.scope = scope;
@@ -206,7 +224,10 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   }
 
   ResultSet? _addIfResolved(
-      AstNode node, TableReference ref, ColumnResolverContext arg) {
+    AstNode node,
+    TableReference ref,
+    ColumnResolverContext arg,
+  ) {
     final availableColumns = <Column>[];
     _handle(ref, availableColumns, arg);
 
@@ -279,8 +300,11 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   ///
   /// This also adds columns contributed to the resolved source to
   /// [availableColumns], which is later used to expand `*` parameters.
-  void _handle(Queryable queryable, List<Column> availableColumns,
-      ColumnResolverContext state) {
+  void _handle(
+    Queryable queryable,
+    List<Column> availableColumns,
+    ColumnResolverContext state,
+  ) {
     void addColumns(Iterable<Column> columns) {
       ResultSetAvailableInStatement? available;
       if (queryable is TableOrSubquery) {
@@ -288,8 +312,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       }
 
       if (available != null) {
-        availableColumns.addAll(
-            [for (final column in columns) AvailableColumn(column, available)]);
+        availableColumns.addAll([
+          for (final column in columns) AvailableColumn(column, available),
+        ]);
       } else {
         availableColumns.addAll(columns);
       }
@@ -298,14 +323,18 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     final scope = queryable.scope;
 
     void markAvailableResultSet(
-        Queryable source, ResolvesToResultSet resultSet, String? name) {
+      Queryable source,
+      ResolvesToResultSet resultSet,
+      String? name,
+    ) {
       final added = ResultSetAvailableInStatement(
-          source,
-          resultSet,
-          switch (source) {
-            Renamable(as: final alias?) => alias.name,
-            _ => null,
-          });
+        source,
+        resultSet,
+        switch (source) {
+          Renamable(as: final alias?) => alias.name,
+          _ => null,
+        },
+      );
 
       if (source is TableOrSubquery) {
         source.availableResultSet = added;
@@ -318,7 +347,10 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       case final TableReference table:
         final resolved = _resolveTableReference(table, state);
         markAvailableResultSet(
-            table, resolved ?? table, table.as?.name ?? table.tableName);
+          table,
+          resolved ?? table,
+          table.as?.name ?? table.tableName,
+        );
 
         if (resolved != null) {
           addColumns(table.resultSet!.resolvedColumns!);
@@ -348,7 +380,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         }
       case final TableValuedFunction function:
         final handler = context
-            .engineOptions.addedTableFunctions[function.name.toLowerCase()];
+            .engineOptions
+            .addedTableFunctions[function.name.toLowerCase()];
         var resolved = handler?.resolveTableValued(context, function);
 
         // Virtual tables can also be used as table-valued functions, so try to
@@ -363,14 +396,20 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         }
 
         markAvailableResultSet(
-            function, resolved ?? function, function.as?.name ?? function.name);
+          function,
+          resolved ?? function,
+          function.as?.name ?? function.name,
+        );
 
         if (resolved == null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.unknownFunction,
-            message: 'Could not extract the result set for this table function',
-            relevantNode: function,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.unknownFunction,
+              message:
+                  'Could not extract the result set for this table function',
+              relevantNode: function,
+            ),
+          );
         } else {
           function.resultSet = resolved;
           addColumns(resolved.resolvedColumns!);
@@ -390,9 +429,12 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     s.resolvedColumns = _resolveColumns(scope, s.columns, context);
   }
 
-  List<Column> _resolveColumns(StatementScope scope, List<ResultColumn> columns,
-      ColumnResolverContext state,
-      {List<Column>? columnsForStar}) {
+  List<Column> _resolveColumns(
+    StatementScope scope,
+    List<ResultColumn> columns,
+    ColumnResolverContext state, {
+    List<Column>? columnsForStar,
+  }) {
     final usedColumns = <Column>[];
     final availableColumns = <Column>[...?scope.expansionOfStarColumn];
 
@@ -403,21 +445,24 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         Iterable<Column> visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
-          final tableResolver =
-              scope.resolveResultSetForReference(resultColumn.tableName!);
+          final tableResolver = scope.resolveResultSetForReference(
+            resultColumn.tableName!,
+          );
           if (tableResolver == null) {
-            context.reportError(AnalysisError(
-              type: AnalysisErrorType.referencedUnknownTable,
-              message: 'Unknown table: ${resultColumn.tableName}',
-              relevantNode: resultColumn,
-            ));
+            context.reportError(
+              AnalysisError(
+                type: AnalysisErrorType.referencedUnknownTable,
+                message: 'Unknown table: ${resultColumn.tableName}',
+                relevantNode: resultColumn,
+              ),
+            );
             continue;
           }
 
-          visibleColumnsForStar = tableResolver
-                  .resultSet.resultSet?.resolvedColumns
-                  ?.map((tableColumn) =>
-                      AvailableColumn(tableColumn, tableResolver)) ??
+          visibleColumnsForStar =
+              tableResolver.resultSet.resultSet?.resolvedColumns?.map(
+                (tableColumn) => AvailableColumn(tableColumn, tableResolver),
+              ) ??
               const [];
         } else {
           // we have a * column without a table, that resolves to every column
@@ -428,16 +473,19 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           // Star columns can't be used without a table (e.g. `SELECT *` is
           // not allowed)
           if (scope.resultSets.isEmpty) {
-            context.reportError(AnalysisError(
-              type: AnalysisErrorType.starColumnWithoutTable,
-              message: "Can't use * when no tables have been added",
-              relevantNode: resultColumn,
-            ));
+            context.reportError(
+              AnalysisError(
+                type: AnalysisErrorType.starColumnWithoutTable,
+                message: "Can't use * when no tables have been added",
+                relevantNode: resultColumn,
+              ),
+            );
           }
         }
 
-        final added =
-            visibleColumnsForStar.where((e) => e.includedInResults).toList();
+        final added = visibleColumnsForStar
+            .where((e) => e.includedInResults)
+            .toList();
 
         usedColumns.addAll(added);
         resultColumn.resolvedColumns = added;
@@ -477,15 +525,18 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           }
         }
       } else if (resultColumn is NestedStarResultColumn) {
-        final target =
-            scope.resolveResultSetForReference(resultColumn.tableName);
+        final target = scope.resolveResultSetForReference(
+          resultColumn.tableName,
+        );
 
         if (target == null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.referencedUnknownTable,
-            message: 'Unknown table: ${resultColumn.tableName}',
-            relevantNode: resultColumn,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.referencedUnknownTable,
+              message: 'Unknown table: ${resultColumn.tableName}',
+              relevantNode: resultColumn,
+            ),
+          );
           continue;
         }
 
@@ -501,19 +552,22 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   void _resolveCompoundSelect(CompoundSelectStatement statement) {
     final columnSets = [
       statement.base.resolvedColumns,
-      for (var part in statement.additional) part.select.resolvedColumns
+      for (var part in statement.additional) part.select.resolvedColumns,
     ];
 
     // each select statement must return the same amount of columns
     final amount = columnSets.first!.length;
     for (var i = 1; i < columnSets.length; i++) {
       if (columnSets[i]!.length != amount) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.compoundColumnCountMismatch,
-          relevantNode: statement,
-          message: 'The parts of this compound statement return different '
-              'amount of columns',
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.compoundColumnCountMismatch,
+            relevantNode: statement,
+            message:
+                'The parts of this compound statement return different '
+                'amount of columns',
+          ),
+        );
         break;
       }
     }
@@ -524,11 +578,12 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     for (var i = 0; i < amount; i++) {
       final columnsAtThisIndex = [
         for (var set in columnSets)
-          if (set!.length > i) set[i]
+          if (set!.length > i) set[i],
       ];
 
       resolved.add(
-          CompoundSelectColumn(columnsAtThisIndex)..containingSet = statement);
+        CompoundSelectColumn(columnsAtThisIndex)..containingSet = statement,
+      );
     }
     statement.resolvedColumns = resolved;
   }
@@ -536,8 +591,10 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   void _resolveValuesSelect(ValuesSelectStatement statement) {
     // ideally all tuples should have the same arity, but the parser doesn't
     // enforce that.
-    final amountOfColumns =
-        statement.values.fold<int?>(null, (maxLength, tuple) {
+    final amountOfColumns = statement.values.fold<int?>(null, (
+      maxLength,
+      tuple,
+    ) {
       final lengthHere = tuple.expressions.length;
       return maxLength == null ? lengthHere : max(maxLength, lengthHere);
     })!;
@@ -553,8 +610,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           .map((tuple) => tuple.expressions[i])
           .toList();
 
-      columns.add(ValuesSelectColumn(columnName, expressions)
-        ..containingSet = statement);
+      columns.add(
+        ValuesSelectColumn(columnName, expressions)..containingSet = statement,
+      );
     }
 
     statement.resolvedColumns = columns;
@@ -576,14 +634,18 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   }
 
   ResultSet? _resolveTableReference(
-      TableReference r, ColumnResolverContext state) {
+    TableReference r,
+    ColumnResolverContext state,
+  ) {
     // Check for circular references
     if (state.inDefinitionOfCte.contains(r.tableName.toLowerCase())) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.circularReference,
-        relevantNode: r,
-        message: 'Circular reference to its own CTE',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.circularReference,
+          relevantNode: r,
+          message: 'Circular reference to its own CTE',
+        ),
+      );
       return null;
     }
 
@@ -602,25 +664,26 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       Iterable<String>? available;
 
       if (scope is StatementScope) {
-        available = StatementScope.cast(scope)
-            .allAvailableResultSets
+        available = StatementScope.cast(scope).allAvailableResultSets
             .where((e) => e.resultSet.resultSet != null)
             .map((t) {
-          final resultSet = t.resultSet.resultSet;
-          if (resultSet is HumanReadable) {
-            return (resultSet as HumanReadable).humanReadableDescription();
-          }
+              final resultSet = t.resultSet.resultSet;
+              if (resultSet is HumanReadable) {
+                return (resultSet as HumanReadable).humanReadableDescription();
+              }
 
-          return t.toString();
-        });
+              return t.toString();
+            });
       }
 
-      context.reportError(UnresolvedReferenceError(
-        type: AnalysisErrorType.referencedUnknownTable,
-        relevantNode: r,
-        reference: r.tableName,
-        available: available ?? const Iterable.empty(),
-      ));
+      context.reportError(
+        UnresolvedReferenceError(
+          type: AnalysisErrorType.referencedUnknownTable,
+          relevantNode: r,
+          reference: r.tableName,
+          available: available ?? const Iterable.empty(),
+        ),
+      );
     }
 
     return null;

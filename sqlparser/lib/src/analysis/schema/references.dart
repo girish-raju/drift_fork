@@ -53,7 +53,9 @@ abstract class ReferenceScope {
   /// This operation is not supported for all kinds of scopes, a [StateError]
   /// is thrown for invalid scopes.
   void addResolvedResultSet(
-      String? name, ResultSetAvailableInStatement resultSet) {
+    String? name,
+    ResultSetAvailableInStatement resultSet,
+  ) {
     throw StateError('Result set cannot be added in this scope: $this');
   }
 
@@ -76,8 +78,12 @@ abstract class ReferenceScope {
     final createdAlias = TableAlias(resultSet, alias);
     addResolvedResultSet(
       alias,
-      ResultSetAvailableInStatement(origin, createdAlias, alias,
-          canUseUnqualifiedColumns: canUseUnqualifiedColumns),
+      ResultSetAvailableInStatement(
+        origin,
+        createdAlias,
+        alias,
+        canUseUnqualifiedColumns: canUseUnqualifiedColumns,
+      ),
     );
   }
 
@@ -100,9 +106,10 @@ abstract class ReferenceScope {
   ///
   /// If an empty list is returned, the reference couldn't be resolved. If the
   /// returned list contains more than one column, the lookup is ambigious.
-  List<Column> resolveUnqualifiedReference(String columnName,
-          {bool allowReferenceToResultColumn = false}) =>
-      const [];
+  List<Column> resolveUnqualifiedReference(
+    String columnName, {
+    bool allowReferenceToResultColumn = false,
+  }) => const [];
 }
 
 /// The root scope created by the SQL engine to analyze a statement.
@@ -148,9 +155,10 @@ mixin _HasParentScope on ReferenceScope {
       _parentScopeForLookups.resolveResultSetToAdd(name);
 
   @override
-  List<Column> resolveUnqualifiedReference(String columnName,
-          {bool allowReferenceToResultColumn = false}) =>
-      _parentScopeForLookups.resolveUnqualifiedReference(columnName);
+  List<Column> resolveUnqualifiedReference(
+    String columnName, {
+    bool allowReferenceToResultColumn = false,
+  }) => _parentScopeForLookups.resolveUnqualifiedReference(columnName);
 }
 
 /// A scope used by statements.
@@ -231,13 +239,18 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }) {
     final createdAlias = TableAlias(resultSet, alias);
     resultSets[alias] = ResultSetAvailableInStatement(
-        origin, createdAlias, alias,
-        canUseUnqualifiedColumns: canUseUnqualifiedColumns);
+      origin,
+      createdAlias,
+      alias,
+      canUseUnqualifiedColumns: canUseUnqualifiedColumns,
+    );
   }
 
   @override
   void addResolvedResultSet(
-      String? name, ResultSetAvailableInStatement resultSet) {
+    String? name,
+    ResultSetAvailableInStatement resultSet,
+  ) {
     resultSets[name] = resultSet;
   }
 
@@ -252,11 +265,14 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }
 
   @override
-  List<Column> resolveUnqualifiedReference(String columnName,
-      {bool allowReferenceToResultColumn = false}) {
+  List<Column> resolveUnqualifiedReference(
+    String columnName, {
+    bool allowReferenceToResultColumn = false,
+  }) {
     if (allowReferenceToResultColumn) {
       final foundColumn = namedResultColumns.firstWhereOrNull(
-          (c) => c.name.toLowerCase() == columnName.toLowerCase());
+        (c) => c.name.toLowerCase() == columnName.toLowerCase(),
+      );
       if (foundColumn != null) {
         return [foundColumn];
       }
@@ -300,7 +316,10 @@ class StatementScope extends ReferenceScope with _HasParentScope {
       return other.parent;
     } else {
       throw ArgumentError.value(
-          other, 'other', 'Not resolvable to a statement scope');
+        other,
+        'other',
+        'Not resolvable to a statement scope',
+      );
     }
   }
 }
@@ -361,7 +380,9 @@ class MiscStatementSubScope extends ReferenceScope with _HasParentScope {
 
   @override
   void addResolvedResultSet(
-      String? name, ResultSetAvailableInStatement resultSet) {
+    String? name,
+    ResultSetAvailableInStatement resultSet,
+  ) {
     additionalResultSets[name] = resultSet;
   }
 }
@@ -391,8 +412,10 @@ class SingleTableReferenceScope extends ReferenceScope {
   }
 
   @override
-  List<Column> resolveUnqualifiedReference(String columnName,
-      {bool allowReferenceToResultColumn = false}) {
+  List<Column> resolveUnqualifiedReference(
+    String columnName, {
+    bool allowReferenceToResultColumn = false,
+  }) {
     final column = addedTable?.resultSet.resultSet?.findColumn(columnName);
     if (column != null) {
       return [AvailableColumn(column, addedTable!)];

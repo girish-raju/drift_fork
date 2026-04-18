@@ -21,12 +21,12 @@ class DriftDatabaseOptions {
   /// For details on how datetimes can be stored, see [the documentation].
   ///
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
-  const DriftDatabaseOptions({
-    bool storeDateTimeAsText = false,
-  })  : _storeDateTimeAsText = storeDateTimeAsText,
-        // ignore: deprecated_member_use_from_same_package
-        types =
-            storeDateTimeAsText ? const SqlTypes(true) : const SqlTypes(false);
+  const DriftDatabaseOptions({bool storeDateTimeAsText = false})
+    : _storeDateTimeAsText = storeDateTimeAsText,
+      // ignore: deprecated_member_use_from_same_package
+      types = storeDateTimeAsText
+          ? const SqlTypes(true)
+          : const SqlTypes(false);
 
   /// Creates a type mapping suitable for these options and the given [dialect].
   SqlTypes createTypeMapping(SqlDialect dialect) {

@@ -81,34 +81,40 @@ void main() {
     verifyNever(executor.runSelect(any, any));
   });
 
-  test('does not emit cached data when resuming and data did not change',
-      () async {
-    final stream = db.select(db.users).watch();
-    final completer = Completer<void>();
+  test(
+    'does not emit cached data when resuming and data did not change',
+    () async {
+      final stream = db.select(db.users).watch();
+      final completer = Completer<void>();
 
-    final subscription = stream.listen(expectAsync1((data) {
-      completer.complete();
-    }));
+      final subscription = stream.listen(
+        expectAsync1((data) {
+          completer.complete();
+        }),
+      );
 
-    // The stream should emit a first event as we have a new subscription
-    await completer.future;
+      // The stream should emit a first event as we have a new subscription
+      await completer.future;
 
-    subscription.pause();
-    await pumpEventQueue();
+      subscription.pause();
+      await pumpEventQueue();
 
-    // Resume and wait for a bit. The stream should not emit a second event.
-    subscription.resume();
-    await pumpEventQueue();
-    await subscription.cancel();
-  });
+      // Resume and wait for a bit. The stream should not emit a second event.
+      subscription.resume();
+      await pumpEventQueue();
+      await subscription.cancel();
+    },
+  );
 
   test('emits new data if it changed during a paused subscription', () async {
     final stream = db.select(db.users).watch();
     final completer = Completer<void>();
 
-    final subscription = stream.listen(expectAsync1((data) {
-      if (!completer.isCompleted) completer.complete();
-    }, count: 2));
+    final subscription = stream.listen(
+      expectAsync1((data) {
+        if (!completer.isCompleted) completer.complete();
+      }, count: 2),
+    );
 
     // The stream should emit a first event as we have a new subscription
     await completer.future;
@@ -131,14 +137,16 @@ void main() {
       final first = db.select(db.categories).watch();
       await first.first; // subscribe to first stream, then drop subscription
 
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {
-              'id': 1,
-              'desc': 'd',
-              'description_in_upper_case': 'D',
-              'priority': 0,
-            }
-          ]));
+      when(executor.runSelect(any, any)).thenAnswer(
+        (_) => Future.value([
+          {
+            'id': 1,
+            'desc': 'd',
+            'description_in_upper_case': 'D',
+            'priority': 0,
+          },
+        ]),
+      );
       await db
           .into(db.categories)
           .insert(CategoriesCompanion.insert(description: 'd'));
@@ -152,14 +160,16 @@ void main() {
       final first = db.select(db.categories).watch();
       final subscription = first.listen((_) {});
 
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {
-              'id': 1,
-              'desc': 'd',
-              'description_in_upper_case': 'D',
-              'priority': 0,
-            }
-          ]));
+      when(executor.runSelect(any, any)).thenAnswer(
+        (_) => Future.value([
+          {
+            'id': 1,
+            'desc': 'd',
+            'description_in_upper_case': 'D',
+            'priority': 0,
+          },
+        ]),
+      );
       await db
           .into(db.categories)
           .insert(CategoriesCompanion.insert(description: 'd'));
@@ -216,25 +226,29 @@ void main() {
 
   test('stream emits error when loading the query throws', () {
     final exception = Exception('stub');
-    when(executor.runSelect(any, any))
-        .thenAnswer((_) => Future.error(exception));
+    when(
+      executor.runSelect(any, any),
+    ).thenAnswer((_) => Future.error(exception));
 
     final result = db.customSelect('select 1').watch().first;
     expectLater(result, throwsA(exception));
   });
 
-  test('database can be closed when a stream has a paused subscription',
-      () async {
-    // this test is more relevant than it seems - some test stream matchers
-    // leave the stream in an empty state.
-    final stream = db.select(db.users).watch();
-    final subscription = stream.listen((_) {})..pause();
+  test(
+    'database can be closed when a stream has a paused subscription',
+    () async {
+      // this test is more relevant than it seems - some test stream matchers
+      // leave the stream in an empty state.
+      final stream = db.select(db.users).watch();
+      final subscription = stream.listen((_) {})..pause();
 
-    await db.close();
+      await db.close();
 
-    subscription.resume();
-    await subscription.cancel();
-  }, skip: 'testing out awaited streams');
+      subscription.resume();
+      await subscription.cancel();
+    },
+    skip: 'testing out awaited streams',
+  );
 
   test('closing database waits for streams', () async {
     final stream = db.select(db.users).watch();
@@ -315,14 +329,16 @@ void main() {
       await pumpEventQueue();
 
       // Return a new row on the next select
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {
-              'id': 1,
-              'desc': 'd',
-              'description_in_upper_case': 'D',
-              'priority': 0,
-            }
-          ]));
+      when(executor.runSelect(any, any)).thenAnswer(
+        (_) => Future.value([
+          {
+            'id': 1,
+            'desc': 'd',
+            'description_in_upper_case': 'D',
+            'priority': 0,
+          },
+        ]),
+      );
       db.markTablesUpdated([db.categories]);
       await pumpEventQueue();
       final hadData = Completer<void>();
@@ -410,21 +426,27 @@ void main() {
     test('specific table and update kind', () async {
       var counter = 0;
       db
-          .tableUpdates(TableUpdateQuery.onTable(db.users,
-              limitUpdateKind: UpdateKind.update))
+          .tableUpdates(
+            TableUpdateQuery.onTable(
+              db.users,
+              limitUpdateKind: UpdateKind.update,
+            ),
+          )
           .listen((event) => counter++);
 
       db.markTablesUpdated({db.todosTable});
       await pumpEventQueue(times: 1);
       expect(counter, 0);
 
-      db.notifyUpdates(
-          {TableUpdate.onTable(db.users, kind: UpdateKind.update)});
+      db.notifyUpdates({
+        TableUpdate.onTable(db.users, kind: UpdateKind.update),
+      });
       await pumpEventQueue(times: 1);
       expect(counter, 1);
 
-      db.notifyUpdates(
-          {TableUpdate.onTable(db.users, kind: UpdateKind.delete)});
+      db.notifyUpdates({
+        TableUpdate.onTable(db.users, kind: UpdateKind.delete),
+      });
       await pumpEventQueue(times: 1);
       expect(counter, 1);
     });
@@ -449,19 +471,27 @@ void main() {
     // https://github.com/simolus3/drift/issues/3061
     executor = MockExecutor(OpeningDetails(null, 1));
     db = TodoDb(executor);
-    db.migration = MigrationStrategy(onCreate: expectAsync1((m) async {
-      await m.createAll();
-      // This invalidates the user stream
-      await db.into(db.users).insert(UsersCompanion.insert(
-          name: 'test user', profilePicture: Uint8List(0)));
-      await pumpEventQueue();
+    db.migration = MigrationStrategy(
+      onCreate: expectAsync1((m) async {
+        await m.createAll();
+        // This invalidates the user stream
+        await db
+            .into(db.users)
+            .insert(
+              UsersCompanion.insert(
+                name: 'test user',
+                profilePicture: Uint8List(0),
+              ),
+            );
+        await pumpEventQueue();
 
-      try {
-        checkIfCancelled();
-      } on CancellationException {
-        fail('Should not have been cancelled');
-      }
-    }));
+        try {
+          checkIfCancelled();
+        } on CancellationException {
+          fail('Should not have been cancelled');
+        }
+      }),
+    );
 
     await db.users.all().watch().first;
   });

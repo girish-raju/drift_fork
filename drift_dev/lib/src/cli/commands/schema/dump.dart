@@ -29,9 +29,11 @@ class DumpSchemaCommand extends Command {
 
   DumpSchemaCommand(this.cli) {
     argParser.registerExportSchemaStartupCodeOption();
-    argParser.addSeparator("It's recommended to run this command from the "
-        'directory containing your pubspec.yaml so that compiler options '
-        'are respected.');
+    argParser.addSeparator(
+      "It's recommended to run this command from the "
+      'directory containing your pubspec.yaml so that compiler options '
+      'are respected.',
+    );
   }
 
   @override
@@ -78,8 +80,11 @@ class DumpSchemaCommand extends Command {
       await parent.create(recursive: true);
     }
 
-    await file.writeAsString(SchemaWriter.json.convert(
-        await writer.createSchemaJson(dumpStartupCode: dumpSchemaCode)));
+    await file.writeAsString(
+      SchemaWriter.json.convert(
+        await writer.createSchemaJson(dumpStartupCode: dumpSchemaCode),
+      ),
+    );
     print('Wrote to $target');
   }
 

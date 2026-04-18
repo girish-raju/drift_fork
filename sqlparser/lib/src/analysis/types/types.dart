@@ -16,7 +16,7 @@ class TypeInferenceSession {
   TypeInferenceResults? results;
 
   TypeInferenceSession(this.context, [EngineOptions? options])
-      : options = options ?? EngineOptions() {
+    : options = options ?? EngineOptions() {
     results = TypeInferenceResults._(this);
   }
 
@@ -25,7 +25,10 @@ class TypeInferenceSession {
   }
 
   void _checkAndResolve(
-      Typeable t, ResolvedType r, TypeExpectation expectation) {
+    Typeable t,
+    ResolvedType r,
+    TypeExpectation expectation,
+  ) {
     if (expectation is ExactTypeExpectation) {
       final expectedType = expectation.type;
 

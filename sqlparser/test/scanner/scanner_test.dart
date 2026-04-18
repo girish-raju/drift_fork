@@ -6,8 +6,10 @@ import '../parser/utils.dart';
 void main() {
   test('parses ** as two tokens when not using drift mode', () {
     final tokens = SqlEngine().tokenizeString('**');
-    expect(tokens.map((e) => e.type),
-        containsAllInOrder([TokenType.star, TokenType.star]));
+    expect(
+      tokens.map((e) => e.type),
+      containsAllInOrder([TokenType.star, TokenType.star]),
+    );
   });
 
   test('throws when seeing an invalid token', () {
@@ -20,16 +22,26 @@ void main() {
   test('scans identifiers with backticks', () {
     expect(
       SqlEngine().tokenizeString('`SELECT`'),
-      contains(isA<IdentifierToken>()
-          .having((e) => e.identifier, 'identifier', 'SELECT')),
+      contains(
+        isA<IdentifierToken>().having(
+          (e) => e.identifier,
+          'identifier',
+          'SELECT',
+        ),
+      ),
     );
   });
 
   test('scans identifiers with double quotes', () {
     expect(
       SqlEngine().tokenizeString('"SELECT"'),
-      contains(isA<IdentifierToken>()
-          .having((e) => e.identifier, 'identifier', 'SELECT')),
+      contains(
+        isA<IdentifierToken>().having(
+          (e) => e.identifier,
+          'identifier',
+          'SELECT',
+        ),
+      ),
     );
   });
 
@@ -37,8 +49,11 @@ void main() {
     expect(SqlEngine().tokenizeString('- -> ->>'), [
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.minus),
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.dashRangle),
-      isA<Token>()
-          .having((e) => e.type, 'tokenType', TokenType.dashRangleRangle),
+      isA<Token>().having(
+        (e) => e.type,
+        'tokenType',
+        TokenType.dashRangleRangle,
+      ),
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.eof),
     ]);
   });
@@ -53,8 +68,11 @@ void main() {
             'errors',
             contains(
               isA<TokenizerError>()
-                  .having((e) => e.message, 'message',
-                      r'Expected identifier after `$`')
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    r'Expected identifier after `$`',
+                  )
                   .having((e) => e.location.offset, 'location.offset', 1),
             ),
           ),
@@ -71,8 +89,11 @@ void main() {
             'errors',
             contains(
               isA<TokenizerError>()
-                  .having((e) => e.message, 'message',
-                      r'Expected identifier after `@`')
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    r'Expected identifier after `@`',
+                  )
                   .having((e) => e.location.offset, 'location.offset', 1),
             ),
           ),
@@ -92,8 +113,10 @@ class Screen extends ConsumerStatefulWidget {
 }
 ''';
 
-    expect(() => SqlEngine().tokenizeString(badInput),
-        throwsA(isA<CumulatedTokenizerException>()));
+    expect(
+      () => SqlEngine().tokenizeString(badInput),
+      throwsA(isA<CumulatedTokenizerException>()),
+    );
 
     final parsed = SqlEngine().parse(ParserEntrypoint.statement, badInput);
     expect(parsed.errors, isNotEmpty);

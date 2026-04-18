@@ -33,10 +33,12 @@ void main() {
     // create an executor that runs selects in this isolate and writes in
     // another isolate.
     final background = await isolate.connect();
-    final foreground = background.withExecutor(MultiExecutor.withReadPool(
-      reads: [_createExecutor()],
-      write: background.executor,
-    ));
+    final foreground = background.withExecutor(
+      MultiExecutor.withReadPool(
+        reads: [_createExecutor()],
+        write: background.executor,
+      ),
+    );
 
     final db = TodoDb(foreground);
 

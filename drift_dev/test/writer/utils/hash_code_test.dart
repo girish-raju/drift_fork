@@ -10,10 +10,14 @@ void main() {
 
   setUp(() {
     final imports = LibraryImportManager(Uri.parse('drift:test'));
-    final generationOptions =
-        GenerationOptions(imports: imports, isModular: true);
-    writer = Writer(const DriftOptions.defaults(),
-        generationOptions: generationOptions);
+    final generationOptions = GenerationOptions(
+      imports: imports,
+      isModular: true,
+    );
+    writer = Writer(
+      const DriftOptions.defaults(),
+      generationOptions: generationOptions,
+    );
     imports.linkToWriter(writer);
   });
 
@@ -38,15 +42,20 @@ void main() {
       EqualityField('b', isList: true),
       EqualityField('c'),
     ], writer.leaf());
-    expect(writer.writeGenerated(),
-        contains(r'Object.hash(a, i0.$driftBlobEquality.hash(b), c)'));
+    expect(
+      writer.writeGenerated(),
+      contains(r'Object.hash(a, i0.$driftBlobEquality.hash(b), c)'),
+    );
   });
 
   test('hash code for lots of fields', () {
     writeHashCode(
-        List.generate(
-            26, (index) => EqualityField(String.fromCharCode($a + index))),
-        writer.leaf());
+      List.generate(
+        26,
+        (index) => EqualityField(String.fromCharCode($a + index)),
+      ),
+      writer.leaf(),
+    );
     expect(
       writer.writeGenerated(),
       r'Object.hashAll([a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, '

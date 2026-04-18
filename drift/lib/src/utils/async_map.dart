@@ -16,30 +16,27 @@ extension AsyncMapPerSubscription<S> on Stream<S> {
   /// re-implement it in a simple variant that transforms each subscription
   /// individually.
   Stream<T> asyncMapPerSubscription<T>(FutureOr<T> Function(S) mapper) {
-    return Stream.multi(
-      (listener) {
-        late StreamSubscription<S> subscription;
+    return Stream.multi((listener) {
+      late StreamSubscription<S> subscription;
 
-        void onData(S original) {
-          subscription.pause();
-          Future.sync(() => mapper(original))
-              .then(listener.addSync, onError: listener.addErrorSync)
-              .whenComplete(subscription.resume);
-        }
+      void onData(S original) {
+        subscription.pause();
+        Future.sync(() => mapper(original))
+            .then(listener.addSync, onError: listener.addErrorSync)
+            .whenComplete(subscription.resume);
+      }
 
-        subscription = listen(
-          onData,
-          onError: listener.addErrorSync,
-          onDone: listener.closeSync,
-          cancelOnError: false, // Determined by downstream subscription
-        );
+      subscription = listen(
+        onData,
+        onError: listener.addErrorSync,
+        onDone: listener.closeSync,
+        cancelOnError: false, // Determined by downstream subscription
+      );
 
-        listener
-          ..onPause = subscription.pause
-          ..onResume = subscription.resume
-          ..onCancel = subscription.cancel;
-      },
-      isBroadcast: isBroadcast,
-    );
+      listener
+        ..onPause = subscription.pause
+        ..onResume = subscription.resume
+        ..onCancel = subscription.cancel;
+    }, isBroadcast: isBroadcast);
   }
 }

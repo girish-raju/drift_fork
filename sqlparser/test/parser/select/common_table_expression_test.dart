@@ -26,9 +26,7 @@ void main() {
               as: CompoundSelectStatement(
                 base: SelectStatement(
                   columns: [
-                    ExpressionResultColumn(
-                      expression: NumericLiteral(1),
-                    ),
+                    ExpressionResultColumn(expression: NumericLiteral(1)),
                   ],
                 ),
                 additional: [
@@ -45,9 +43,7 @@ void main() {
                         ),
                       ],
                       from: TableReference('cnt'),
-                      limit: Limit(
-                        count: NumericLiteral(1000000),
-                      ),
+                      limit: Limit(count: NumericLiteral(1000000)),
                     ),
                   ),
                 ],

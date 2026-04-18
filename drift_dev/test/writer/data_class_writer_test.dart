@@ -29,15 +29,20 @@ class Users extends Table {
   tables: [Users],
 )
 class Database extends _$Database {}
-'''
+''',
         },
       );
 
-      checkOutputs(const {
-        'a|lib/main.drift.dart': _GeneratesConstDataClasses(
-          {'User', 'UsersCompanion'},
-        ),
-      }, writer.dartOutputs, writer.writer);
+      checkOutputs(
+        const {
+          'a|lib/main.drift.dart': _GeneratesConstDataClasses({
+            'User',
+            'UsersCompanion',
+          }),
+        },
+        writer.dartOutputs,
+        writer.writer,
+      );
     },
     tags: 'analyzer',
   );
@@ -68,12 +73,14 @@ class MyCustomClass {
   tables: [Tbl],
 )
 class Database extends _$Database {}
-'''
+''',
         },
       );
 
-      checkOutputs({
-        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+      checkOutputs(
+        {
+          'a|lib/main.drift.dart': decodedMatches(
+            contains(r'''
   @override
   Future<MyCustomClass> map(
     Map<String, dynamic> data, {
@@ -91,8 +98,12 @@ class Database extends _$Database {}
       )!,
     );
   }
-''')),
-      }, writer.dartOutputs, writer.writer);
+'''),
+          ),
+        },
+        writer.dartOutputs,
+        writer.writer,
+      );
     },
     tags: 'analyzer',
   );
@@ -117,15 +128,21 @@ class Todos extends Table {
   tables: [Todos],
 )
 class Database extends _$Database {}
-'''
+''',
         },
       );
 
-      checkOutputs({
-        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+      checkOutputs(
+        {
+          'a|lib/main.drift.dart': decodedMatches(
+            contains(r'''
   static JsonTypeConverter2<Priority, String, String> $converterpriority =
-      const EnumNameConverter<Priority>(Priority.values);''')),
-      }, writer.dartOutputs, writer.writer);
+      const EnumNameConverter<Priority>(Priority.values);'''),
+          ),
+        },
+        writer.dartOutputs,
+        writer.writer,
+      );
     },
     tags: 'analyzer',
   );
@@ -164,8 +181,10 @@ class Post with PostsToColumns {
       options: BuilderOptions({'write_to_columns_mixins': true}),
     );
 
-    checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(contains('''
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+          contains('''
 mixin PostsToColumns implements i1.Insertable<i2.Post> {
   int get id;
   String get content;
@@ -177,30 +196,43 @@ mixin PostsToColumns implements i1.Insertable<i2.Post> {
     return map;
   }
 }
-''')),
-    }, writer.dartOutputs, writer.writer);
+'''),
+        ),
+      },
+      writer.dartOutputs,
+      writer.writer,
+    );
   });
 
   test('generates copyWithCompanion', () async {
-    final result = await emulateDriftBuild(modularBuild: true, inputs: {
-      'a|lib/a.dart': '''
+    final result = await emulateDriftBuild(
+      modularBuild: true,
+      inputs: {
+        'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
 class Items extends Table {
   TextColumn get name => text()();
 }
 ''',
-    });
+      },
+    );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'''
   Item copyWithCompanion(i1.ItemsCompanion data) {
     return Item(
       name: data.name.present ? data.name.value : this.name,
     );
   }
-''')),
-    }, result.dartOutputs, result.writer);
+'''),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates correct fromJson for nullable converters', () async {
@@ -227,8 +259,10 @@ class MyTable extends Table {
       modularBuild: true,
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'''
   factory MyTableData.fromJson(Map<String, dynamic> json,
       {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
@@ -236,8 +270,12 @@ class MyTable extends Table {
       invoiceContact: i1.$MyTableTable.$converterinvoiceContact
           .fromJson(serializer.fromJson<String?>(json['invoiceContact'])),
     );
-  }''')),
-    }, result.dartOutputs, result.writer);
+  }'''),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates correct companions for modular row classes', () async {
@@ -318,12 +356,14 @@ class MyTable extends Table {
   tables: [MyTable],
 )
 class Database extends _$Database {}
-'''
+''',
         },
       );
 
-      checkOutputs({
-        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+      checkOutputs(
+        {
+          'a|lib/main.drift.dart': decodedMatches(
+            contains(r'''
   factory MyTableData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
@@ -342,8 +382,12 @@ class Database extends _$Database {}
       'my_second_column': serializer.toJson<int>(mySecondColumn),
     };
   }
-''')),
-      }, writer.dartOutputs, writer.writer);
+'''),
+          ),
+        },
+        writer.dartOutputs,
+        writer.writer,
+      );
     },
     tags: 'analyzer',
   );
@@ -380,32 +424,38 @@ class ThirdTable extends Table {
   tables: [FirstTable, SecondTable, ThirdTable],
 )
 class Database extends _$Database {}
-'''
+''',
         },
       );
 
-      checkOutputs({
-        'a|lib/main.drift.dart': decodedMatches(allOf([
-          contains(
-            'class FirstDataClass extends DataClass implements Insertable<FirstDataClass> {',
+      checkOutputs(
+        {
+          'a|lib/main.drift.dart': decodedMatches(
+            allOf([
+              contains(
+                'class FirstDataClass extends DataClass implements Insertable<FirstDataClass> {',
+              ),
+              contains(
+                'class FirstCompanionClass extends UpdateCompanion<FirstDataClass> {',
+              ),
+              contains(
+                'class SecondDataClass extends DataClass implements Insertable<SecondDataClass> {',
+              ),
+              contains(
+                'class SecondCompanionClass extends UpdateCompanion<SecondDataClass> {',
+              ),
+              contains(
+                'class ThirdTableData extends DataClass implements Insertable<ThirdTableData> {',
+              ),
+              contains(
+                'class ThirdCompanionClass extends UpdateCompanion<ThirdTableData> {',
+              ),
+            ]),
           ),
-          contains(
-            'class FirstCompanionClass extends UpdateCompanion<FirstDataClass> {',
-          ),
-          contains(
-            'class SecondDataClass extends DataClass implements Insertable<SecondDataClass> {',
-          ),
-          contains(
-            'class SecondCompanionClass extends UpdateCompanion<SecondDataClass> {',
-          ),
-          contains(
-            'class ThirdTableData extends DataClass implements Insertable<ThirdTableData> {',
-          ),
-          contains(
-            'class ThirdCompanionClass extends UpdateCompanion<ThirdTableData> {',
-          ),
-        ])),
-      }, writer.dartOutputs, writer.writer);
+        },
+        writer.dartOutputs,
+        writer.writer,
+      );
     },
     tags: 'analyzer',
   );
@@ -431,14 +481,15 @@ class Accounts extends Table {
   tables: [Accounts],
 )
 class Database extends _$Database {}
-'''
+''',
       },
     );
 
     checkOutputs(
       {
         'a|lib/main.drift.dart': decodedMatches(
-            contains('implements Insertable<Account>, HasCreationTimes'))
+          contains('implements Insertable<Account>, HasCreationTimes'),
+        ),
       },
       results.dartOutputs,
       results.writer,
@@ -453,8 +504,10 @@ class _GeneratesConstDataClasses extends Matcher {
 
   @override
   Description describe(Description description) {
-    return description.add('generates classes $expectedWithConstConstructor '
-        'const constructor.');
+    return description.add(
+      'generates classes $expectedWithConstConstructor '
+      'const constructor.',
+    );
   }
 
   @override
@@ -488,7 +541,8 @@ class _GeneratesConstDataClasses extends Matcher {
             .whereType<ConstructorDeclaration>()
             .firstWhereOrNull((e) => e.name == null);
         if (constructor?.constKeyword == null) {
-          matchState['desc'] = 'Constructor $definedClassName is not '
+          matchState['desc'] =
+              'Constructor $definedClassName is not '
               'const.';
           return false;
         }
@@ -507,9 +561,14 @@ class _GeneratesConstDataClasses extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
-    return mismatchDescription
-        .add((matchState['desc'] as String?) ?? 'Had syntax errors');
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    return mismatchDescription.add(
+      (matchState['desc'] as String?) ?? 'Had syntax errors',
+    );
   }
 }

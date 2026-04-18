@@ -32,8 +32,8 @@ class CustomExpression<D extends Object> extends Expression<D> {
     this.watchedTables = const [],
     this.precedence = Precedence.unknown,
     UserDefinedSqlType<D>? customType,
-  })  : _dialectSpecificContent = null,
-        _customSqlType = customType;
+  }) : _dialectSpecificContent = null,
+       _customSqlType = customType;
 
   /// Constructs a custom expression providing the raw SQL in [content] depending
   /// on the SQL dialect when this expression is built.
@@ -42,9 +42,9 @@ class CustomExpression<D extends Object> extends Expression<D> {
     this.watchedTables = const [],
     this.precedence = Precedence.unknown,
     UserDefinedSqlType<D>? customType,
-  })  : _dialectSpecificContent = content,
-        content = '',
-        _customSqlType = customType;
+  }) : _dialectSpecificContent = content,
+       content = '',
+       _customSqlType = customType;
 
   @override
   void writeInto(GenerationContext context) {

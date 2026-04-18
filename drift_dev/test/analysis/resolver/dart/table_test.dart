@@ -192,8 +192,9 @@ class Pianos extends Table {
     test('should use field name if no name has been set explicitly', () async {
       final result = await findTable('Users');
       final table = result!.result as DriftTable;
-      final idColumn =
-          table.columns.singleWhere((col) => col.nameInDart == 'id');
+      final idColumn = table.columns.singleWhere(
+        (col) => col.nameInDart == 'id',
+      );
 
       expect(idColumn.nameInSql, 'id');
     });
@@ -201,8 +202,9 @@ class Pianos extends Table {
     test('should use explicit name, if it exists', () async {
       final result = await findTable('Users');
       final table = result!.result as DriftTable;
-      final idColumn =
-          table.columns.singleWhere((col) => col.nameInDart == 'name');
+      final idColumn = table.columns.singleWhere(
+        (col) => col.nameInDart == 'name',
+      );
 
       expect(idColumn.nameInSql, 'user_name');
     });
@@ -210,20 +212,26 @@ class Pianos extends Table {
     test('should parse min and max length for text columns', () async {
       final result = await findTable('Users');
       final table = result!.result as DriftTable;
-      final idColumn =
-          table.columns.singleWhere((col) => col.nameInDart == 'name');
+      final idColumn = table.columns.singleWhere(
+        (col) => col.nameInDart == 'name',
+      );
 
-      expect(idColumn.constraints,
-          contains(LimitingTextLength(minLength: 6, maxLength: 32)));
+      expect(
+        idColumn.constraints,
+        contains(LimitingTextLength(minLength: 6, maxLength: 32)),
+      );
     });
 
     test('should only parse max length when relevant', () async {
       final table = (await findTable('Users'))!.result as DriftTable;
-      final idColumn =
-          table.columns.singleWhere((col) => col.nameInDart == 'onlyMax');
+      final idColumn = table.columns.singleWhere(
+        (col) => col.nameInDart == 'onlyMax',
+      );
 
       expect(
-          idColumn.constraints, contains(LimitingTextLength(maxLength: 100)));
+        idColumn.constraints,
+        contains(LimitingTextLength(maxLength: 100)),
+      );
     });
 
     test('parses custom constraints', () async {
@@ -238,19 +246,22 @@ class Pianos extends Table {
 
     test('parsed default values', () async {
       final table = (await findTable('Users'))!.result as DriftTable;
-      final defaultsColumn =
-          table.columns.singleWhere((c) => c.nameInSql == 'defaults');
+      final defaultsColumn = table.columns.singleWhere(
+        (c) => c.nameInSql == 'defaults',
+      );
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });
 
     test('parses documentation comments', () async {
       final table = (await findTable('Users'))!.result as DriftTable;
-      final idColumn =
-          table.columns.singleWhere((col) => col.nameInSql == 'id');
+      final idColumn = table.columns.singleWhere(
+        (col) => col.nameInSql == 'id',
+      );
 
-      final usernameColumn =
-          table.columns.singleWhere((col) => col.nameInSql == 'user_name');
+      final usernameColumn = table.columns.singleWhere(
+        (col) => col.nameInSql == 'user_name',
+      );
 
       expect(idColumn.documentationComment, '/// The user id');
       expect(
@@ -263,12 +274,14 @@ class Pianos extends Table {
   test('parses custom primary keys', () async {
     final table = (await findTable('CustomPrimaryKey'))!.result as DriftTable;
 
-    final pkFromTable =
-        table.tableConstraints.whereType<PrimaryKeyColumns>().first;
+    final pkFromTable = table.tableConstraints
+        .whereType<PrimaryKeyColumns>()
+        .first;
     expect(pkFromTable.primaryKey, containsAll(table.columns));
     expect(
       table.columns.any(
-          (column) => column.constraints.any((c) => c is PrimaryKeyColumn)),
+        (column) => column.constraints.any((c) => c is PrimaryKeyColumn),
+      ),
       isFalse,
     );
   });
@@ -278,8 +291,9 @@ class Pianos extends Table {
 
     expect(
       result!.errorsDuringAnalysis,
-      contains(isDriftError(
-          contains('override primaryKey and use autoIncrement()'))),
+      contains(
+        isDriftError(contains('override primaryKey and use autoIncrement()')),
+      ),
     );
   });
 
@@ -296,7 +310,9 @@ class Pianos extends Table {
 
       expect(table.columns, hasLength(2));
       expect(
-          table.columns.map((c) => c.nameInSql), containsAll(['id', 'name']));
+        table.columns.map((c) => c.nameInSql),
+        containsAll(['id', 'name']),
+      );
     });
 
     test('from regular classes', () async {
@@ -308,11 +324,16 @@ class Pianos extends Table {
       expect(socks.columns.map((c) => c.nameInSql), ['name', 'id']);
 
       expect(archivedSocks.columns, hasLength(4));
-      expect(archivedSocks.columns.map((c) => c.nameInSql),
-          ['name', 'id', 'archived_by', 'archived_on']);
+      expect(archivedSocks.columns.map((c) => c.nameInSql), [
+        'name',
+        'id',
+        'archived_by',
+        'archived_on',
+      ]);
 
-      final pkFromTable =
-          archivedSocks.tableConstraints.whereType<PrimaryKeyColumns>().first;
+      final pkFromTable = archivedSocks.tableConstraints
+          .whereType<PrimaryKeyColumns>()
+          .first;
       expect(pkFromTable.primaryKey.map((e) => e.nameInSql), ['id']);
     });
   });
@@ -322,16 +343,17 @@ class Pianos extends Table {
 
     expect(
       result!.errorsDuringAnalysis,
-      containsAll(
-        [
-          isDriftError(allOf(contains('both drift-defined constraints'),
-                  contains('and a customConstraint()')))
-              .withSpan('a'),
-          isDriftError(contains(
-                  "You've already set custom constraints on this column"))
-              .withSpan('customConstraint'),
-        ],
-      ),
+      containsAll([
+        isDriftError(
+          allOf(
+            contains('both drift-defined constraints'),
+            contains('and a customConstraint()'),
+          ),
+        ).withSpan('a'),
+        isDriftError(
+          contains("You've already set custom constraints on this column"),
+        ).withSpan('customConstraint'),
+      ]),
     );
   });
 
@@ -355,7 +377,7 @@ class WithConstraints extends Table {
     1, 'two', 'three'
   ];
 }
-'''
+''',
     });
 
     final state = await backend.analyze('package:a/a.dart');
@@ -367,13 +389,16 @@ class WithConstraints extends Table {
 
     expect(state.errorsDuringDiscovery, isEmpty);
     expect(badTable.errorsDuringAnalysis, [
-      isDriftError('This must return a list literal!')
-          .withSpan('customConstraints')
+      isDriftError(
+        'This must return a list literal!',
+      ).withSpan('customConstraints'),
     ]);
     expect(withConstraints.errorsDuringAnalysis, [
-      isDriftError(contains(
-              'can only verify custom constraints set as constant string literals'))
-          .withSpan('1'),
+      isDriftError(
+        contains(
+          'can only verify custom constraints set as constant string literals',
+        ),
+      ).withSpan('1'),
       isDriftError('Could not parse this table constraint').withSpan("'two'"),
       isDriftError('Could not parse this table constraint').withSpan("'three'"),
     ]);
@@ -399,7 +424,7 @@ class WithConstraints extends Table {
     'FOREIGN KEY (foo) REFERENCES "references" (id)',
   ];
 }
-'''
+''',
     });
 
     final state = await backend.analyze('package:a/a.dart');
@@ -449,9 +474,11 @@ class Videos extends Table {
 
     final table = state.analyzedElements.single as DriftTable;
     expect(
-        table.references,
-        contains(isA<DriftTable>()
-            .having((e) => e.schemaName, 'schemaName', 'topics')));
+      table.references,
+      contains(
+        isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'topics'),
+      ),
+    );
   });
 
   test('supports autoIncrement on int64 columns', () async {
@@ -462,7 +489,7 @@ import 'package:drift/drift.dart';
 class MyTable extends Table {
   Int64Column get id => int64().autoIncrement()();
 }
-'''
+''',
     });
 
     final state = await backend.analyze('package:a/a.dart');
@@ -472,9 +499,15 @@ class MyTable extends Table {
     final id = table.columns.single;
     expect(table.fullPrimaryKey, {id});
     expect(
-        id.constraints,
-        contains(isA<PrimaryKeyColumn>()
-            .having((e) => e.isAutoIncrement, 'isAutoIncrement', isTrue)));
+      id.constraints,
+      contains(
+        isA<PrimaryKeyColumn>().having(
+          (e) => e.isAutoIncrement,
+          'isAutoIncrement',
+          isTrue,
+        ),
+      ),
+    );
   });
 
   test('warns about using ANY outside of strict tables', () async {
@@ -491,8 +524,9 @@ class Preferences extends Table {
 
     final file = await backend.analyze('package:a/main.dart');
 
-    expect(file.allErrors,
-        [isDriftError(contains('is only meaningful for `STRICT` tables'))]);
+    expect(file.allErrors, [
+      isDriftError(contains('is only meaningful for `STRICT` tables')),
+    ]);
   });
 
   test('warns about non-constant custom constraints', () async {
@@ -522,8 +556,11 @@ class MyOtherThings extends Table {
 
     final file = await backend.analyze('package:a/main.dart');
     expect(file.allErrors, [
-      isDriftError(contains(
-          'can only verify custom constraints set as constant string literals.'))
+      isDriftError(
+        contains(
+          'can only verify custom constraints set as constant string literals.',
+        ),
+      ),
     ]);
   });
 
@@ -546,8 +583,14 @@ class Users extends Table {
     final otherId = table.columns[1];
     expect(otherId.nameInSql, 'other_id');
     expect(
-        otherId.constraints,
-        contains(isA<ForeignKeyReference>()
-            .having((e) => e.onDelete, 'onDelete', ReferenceAction.cascade)));
+      otherId.constraints,
+      contains(
+        isA<ForeignKeyReference>().having(
+          (e) => e.onDelete,
+          'onDelete',
+          ReferenceAction.cascade,
+        ),
+      ),
+    );
   });
 }

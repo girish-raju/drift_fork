@@ -6,10 +6,14 @@ import '../utils.dart';
 
 void main() {
   test('parses order by clauses', () {
-    final parsed = SqlEngine()
-        .parse(
-            ParserEntrypoint.statement, 'SELECT * FROM tbl ORDER BY -a, b DESC')
-        .rootNode as SelectStatement;
+    final parsed =
+        SqlEngine()
+                .parse(
+                  ParserEntrypoint.statement,
+                  'SELECT * FROM tbl ORDER BY -a, b DESC',
+                )
+                .rootNode
+            as SelectStatement;
 
     enforceHasSpan(parsed);
     enforceEqual(
@@ -34,9 +38,12 @@ void main() {
   test('parses clauses with NULLS FIRST or NULLS LAST', () {
     final parsed =
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-            .parse(ParserEntrypoint.statement,
-                r'SELECT * FROM tbl ORDER BY $a NULLS LAST, b NULLS FIRST')
-            .rootNode as SelectStatement;
+                .parse(
+                  ParserEntrypoint.statement,
+                  r'SELECT * FROM tbl ORDER BY $a NULLS LAST, b NULLS FIRST',
+                )
+                .rootNode
+            as SelectStatement;
 
     enforceHasSpan(parsed);
     enforceEqual(

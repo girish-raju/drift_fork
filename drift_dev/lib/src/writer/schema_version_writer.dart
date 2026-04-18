@@ -18,11 +18,7 @@ class SchemaVersion {
   SchemaVersion(this.version, this.schema, this.options);
 }
 
-enum _ResultSetKind {
-  table,
-  virtualTable,
-  view,
-}
+enum _ResultSetKind { table, virtualTable, view }
 
 final class _TableShape {
   final _ResultSetKind kind;
@@ -45,7 +41,8 @@ final class _TableShape {
   static const _equality = MapEquality<String, (String, DriftSqlType)>();
 
   static Map<String, (String, DriftSqlType)> columnsFrom(
-      DriftElementWithResultSet e) {
+    DriftElementWithResultSet e,
+  ) {
     return {
       for (final column in e.columns)
         column.nameInDart: (column.nameInSql, column.sqlType.builtin),
@@ -62,8 +59,9 @@ final class _TableShape {
 /// metadata not strictly necessary for migrations and by re-using column
 /// definitions where possible.
 class SchemaVersionWriter {
-  static final Uri _schemaLibrary =
-      Uri.parse('package:drift/internal/versioned_schema.dart');
+  static final Uri _schemaLibrary = Uri.parse(
+    'package:drift/internal/versioned_schema.dart',
+  );
 
   /// All schema versions, sorted by [SchemaVersion.version].
   final List<SchemaVersion> versions;
@@ -87,28 +85,37 @@ class SchemaVersionWriter {
   /// called in different places. This method looks up or creates a method for
   /// the given [column], returning it if doesn't exist.
   String _referenceColumn(DriftColumn column) {
-    final text = libraryScope.leaf(writeTaggedDartCode: (tag, buffer) {
-      final dartName = tag.tag;
-      final referencedColumn = column.owner.columns
-          .singleWhereOrNull((e) => e.nameInDart == dartName);
+    final text = libraryScope.leaf(
+      writeTaggedDartCode: (tag, buffer) {
+        final dartName = tag.tag;
+        final referencedColumn = column.owner.columns.singleWhereOrNull(
+          (e) => e.nameInDart == dartName,
+        );
 
-      if (referencedColumn != null) {
-        // This references a column in the same table. Since we're not
-        // generating columns in a table structure where they would be in scope
-        // for Dart, we have to replace this with a custom expression evaluating
-        // to the column.
-        final sqlType = libraryScope.innerColumnType(referencedColumn.sqlType);
-        final result = libraryScope.dartCode(AnnotatedDartCode.build((b) => b
-          ..addText('(')
-          ..addSymbol('VersionedTable', _schemaLibrary)
-          ..addText('.col<')
-          ..addCode(sqlType)
-          ..addText('>(${asDartLiteral(referencedColumn.nameInSql)}))')));
-        buffer.write(result);
-      } else {
-        buffer.write(tag.lexeme);
-      }
-    });
+        if (referencedColumn != null) {
+          // This references a column in the same table. Since we're not
+          // generating columns in a table structure where they would be in scope
+          // for Dart, we have to replace this with a custom expression evaluating
+          // to the column.
+          final sqlType = libraryScope.innerColumnType(
+            referencedColumn.sqlType,
+          );
+          final result = libraryScope.dartCode(
+            AnnotatedDartCode.build(
+              (b) => b
+                ..addText('(')
+                ..addSymbol('VersionedTable', _schemaLibrary)
+                ..addText('.col<')
+                ..addCode(sqlType)
+                ..addText('>(${asDartLiteral(referencedColumn.nameInSql)}))'),
+            ),
+          );
+          buffer.write(result);
+        } else {
+          buffer.write(tag.lexeme);
+        }
+      },
+    );
     final (type, code) = TableOrViewWriter.instantiateColumn(column, text);
 
     return _columnCodeToFactory.putIfAbsent(code, () {
@@ -143,9 +150,9 @@ class SchemaVersionWriter {
   String _shapeClass(DriftElementWithResultSet resultSet) {
     final (kind, superclass) = switch (resultSet) {
       DriftTable(virtualTableData: null) => (
-          _ResultSetKind.table,
-          'VersionedTable'
-        ),
+        _ResultSetKind.table,
+        'VersionedTable',
+      ),
       DriftTable() => (_ResultSetKind.virtualTable, 'VersionedVirtualTable'),
       DriftView() => (_ResultSetKind.view, 'VersionedView'),
       _ => throw ArgumentError.value(resultSet, 'resultSet', 'Unknown type'),
@@ -161,7 +168,8 @@ class SchemaVersionWriter {
         ..writeUriRef(_schemaLibrary, superclass)
         ..writeln('{')
         ..writeln(
-            '$className({required super.source, required super.alias}) : super.aliased();');
+          '$className({required super.source, required super.alias}) : super.aliased();',
+        );
 
       for (final MapEntry(key: getterName, value: (sqlName, type))
           in shape.columnTypes.entries) {
@@ -185,12 +193,12 @@ class SchemaVersionWriter {
   }
 
   String _suffixForElement(DriftSchemaElement element) => switch (element) {
-        DriftTable() => 'Table',
-        DriftView() => 'View',
-        DriftIndex() => 'Index',
-        DriftTrigger() => 'Trigger',
-        _ => throw ArgumentError('Unhandled element type $element'),
-      };
+    DriftTable() => 'Table',
+    DriftView() => 'View',
+    DriftIndex() => 'Index',
+    DriftTrigger() => 'Trigger',
+    _ => throw ArgumentError('Unhandled element type $element'),
+  };
 
   String _writeWithResultSet(
     String getterName,
@@ -222,40 +230,43 @@ class SchemaVersionWriter {
             for (final constraint in entity.tableConstraints) {
               final astNode = switch (constraint) {
                 PrimaryKeyColumns(primaryKey: var columns) => sql.KeyClause(
-                    null,
-                    isPrimaryKey: true,
-                    columns: [
-                      for (final column in columns)
-                        sql.IndexedColumn(
-                            sql.Reference(columnName: column.nameInSql))
-                    ],
-                  ),
+                  null,
+                  isPrimaryKey: true,
+                  columns: [
+                    for (final column in columns)
+                      sql.IndexedColumn(
+                        sql.Reference(columnName: column.nameInSql),
+                      ),
+                  ],
+                ),
                 UniqueColumns(uniqueSet: var columns) => sql.KeyClause(
-                    null,
-                    isPrimaryKey: false,
-                    columns: [
-                      for (final column in columns)
-                        sql.IndexedColumn(
-                            sql.Reference(columnName: column.nameInSql))
-                    ],
-                  ),
+                  null,
+                  isPrimaryKey: false,
+                  columns: [
+                    for (final column in columns)
+                      sql.IndexedColumn(
+                        sql.Reference(columnName: column.nameInSql),
+                      ),
+                  ],
+                ),
                 ForeignKeyTable() => sql.ForeignKeyTableConstraint(
-                    null,
-                    columns: [
-                      for (final column in constraint.localColumns)
-                        sql.Reference(columnName: column.nameInSql)
-                    ],
-                    clause: sql.ForeignKeyClause(
-                      foreignTable:
-                          sql.TableReference(constraint.otherTable.schemaName),
-                      columnNames: [
-                        for (final column in constraint.otherColumns)
-                          sql.Reference(columnName: column.nameInSql)
-                      ],
-                      onUpdate: constraint.onUpdate,
-                      onDelete: constraint.onDelete,
+                  null,
+                  columns: [
+                    for (final column in constraint.localColumns)
+                      sql.Reference(columnName: column.nameInSql),
+                  ],
+                  clause: sql.ForeignKeyClause(
+                    foreignTable: sql.TableReference(
+                      constraint.otherTable.schemaName,
                     ),
+                    columnNames: [
+                      for (final column in constraint.otherColumns)
+                        sql.Reference(columnName: column.nameInSql),
+                    ],
+                    onUpdate: constraint.onUpdate,
+                    onDelete: constraint.onDelete,
                   ),
+                ),
               };
 
               tableConstraints.add(astNode.toSql());
@@ -286,7 +297,8 @@ class SchemaVersionWriter {
           ..writeUriRef(_schemaLibrary, 'VersionedView(')
           ..write('entityName: ${asDartLiteral(entity.schemaName)},')
           ..write(
-              'createViewStmt: ${asDartLiteral(source.sqlCreateViewStmt)},');
+            'createViewStmt: ${asDartLiteral(source.sqlCreateViewStmt)},',
+          );
 
         break;
     }
@@ -372,8 +384,10 @@ class SchemaVersionWriter {
         ..write('final class $versionClass extends ')
         ..writeUriRef(_schemaLibrary, 'VersionedSchema')
         ..writeln('{')
-        ..writeln('$versionClass({required super.database}): '
-            'super(version: $versionNo);');
+        ..writeln(
+          '$versionClass({required super.database}): '
+          'super(version: $versionNo);',
+        );
 
       // Override the allEntities getters by VersionedSchema
       final allEntitiesWriter = versionScope.leaf()
@@ -383,13 +397,16 @@ class SchemaVersionWriter {
         ..writeDriftRef('DatabaseSchemaEntity')
         ..write('> entities = [');
 
-      final engine =
-          sql.SqlEngine(sql.EngineOptions(version: sql.SqliteVersion.current));
+      final engine = sql.SqlEngine(
+        sql.EngineOptions(version: sql.SqliteVersion.current),
+      );
       for (final entity in version.schema) {
         // Creata field for the entity and include it in the list
         if (entity is DriftSchemaElement) {
-          final fieldName =
-              _writeEntity(element: entity, definition: versionScope.leaf());
+          final fieldName = _writeEntity(
+            element: entity,
+            definition: versionScope.leaf(),
+          );
 
           allEntitiesWriter.write('$fieldName,');
         } else if (entity is DefinedSqlQuery &&
@@ -398,7 +415,10 @@ class SchemaVersionWriter {
             versionScope,
             entity,
             SqlQuery.astOnly(
-                engine: engine, name: entity.name, sql: entity.sql),
+              engine: engine,
+              name: entity.name,
+              sql: entity.sql,
+            ),
           );
 
           allEntitiesWriter.write('$code, ');
@@ -426,18 +446,21 @@ class SchemaVersionWriter {
       steps
         ..writeln('case ${current.version}:')
         ..write(
-            'final schema = ${_nameForSchemaClass(next.version)}(database: database);')
+          'final schema = ${_nameForSchemaClass(next.version)}(database: database);',
+        )
         ..write('final migrator = ')
         ..writeDriftRef('Migrator')
         ..writeln('(database, schema);')
         ..writeln(
-            'await from${current.version}To${next.version}(migrator, schema);')
+          'await from${current.version}To${next.version}(migrator, schema);',
+        )
         ..writeln('return ${next.version};');
     }
 
     steps
       ..writeln(
-          r"default: throw ArgumentError.value('Unknown migration from $currentVersion');")
+        r"default: throw ArgumentError.value('Unknown migration from $currentVersion');",
+      )
       ..writeln('}') // End of switch
       ..writeln('};') // End of function literal
       ..writeln('}'); // End of migrationSteps method

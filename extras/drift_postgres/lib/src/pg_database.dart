@@ -12,14 +12,14 @@ class PgDatabase extends DelegatedDatabase {
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
-          _PgDelegate(
-            () => Connection.open(endpoint, settings: settings),
-            true,
-            enableMigrations,
-          ),
-          isSequential: true,
-          logStatements: logStatements,
-        );
+         _PgDelegate(
+           () => Connection.open(endpoint, settings: settings),
+           true,
+           enableMigrations,
+         ),
+         isSequential: true,
+         logStatements: logStatements,
+       );
 
   /// Creates a drift database implementation from a postgres database
   /// [connection].
@@ -27,8 +27,11 @@ class PgDatabase extends DelegatedDatabase {
     Session connection, {
     bool logStatements = false,
     bool enableMigrations = true,
-  }) : super(_PgDelegate(() => connection, false, enableMigrations),
-            isSequential: true, logStatements: logStatements);
+  }) : super(
+         _PgDelegate(() => connection, false, enableMigrations),
+         isSequential: true,
+         logStatements: logStatements,
+       );
 
   @override
   SqlDialect get dialect => SqlDialect.postgres;
@@ -76,8 +79,10 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     final session = _openedSession!;
-    final prepared =
-        List<Statement?>.filled(statements.statements.length, null);
+    final prepared = List<Statement?>.filled(
+      statements.statements.length,
+      null,
+    );
 
     try {
       for (final instantation in statements.arguments) {
@@ -89,8 +94,9 @@ class _PgDelegate extends DatabaseDelegate {
         var stmt = prepared[stmtIndex];
         if (stmt == null) {
           final sql = statements.statements[stmtIndex];
-          stmt = prepared[stmtIndex] =
-              await session.prepare(Sql(sql, types: pgArgs.types));
+          stmt = prepared[stmtIndex] = await session.prepare(
+            Sql(sql, types: pgArgs.types),
+          );
         }
 
         await stmt.run(pgArgs.parameters);
@@ -122,8 +128,10 @@ class _PgDelegate extends DatabaseDelegate {
   Future<int> runInsert(String statement, List<Object?> args) async {
     final session = _openedSession!;
     final pgArgs = _BoundArguments.ofDartArgs(args);
-    final result = await session.execute(Sql(statement, types: pgArgs.types),
-        parameters: pgArgs.parameters);
+    final result = await session.execute(
+      Sql(statement, types: pgArgs.types),
+      parameters: pgArgs.parameters,
+    );
     return result.firstOrNull?[0] as int? ?? 0;
   }
 
@@ -136,8 +144,10 @@ class _PgDelegate extends DatabaseDelegate {
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final session = _openedSession!;
     final pgArgs = _BoundArguments.ofDartArgs(args);
-    final result = await session.execute(Sql(statement, types: pgArgs.types),
-        parameters: pgArgs.parameters);
+    final result = await session.execute(
+      Sql(statement, types: pgArgs.types),
+      parameters: pgArgs.parameters,
+    );
 
     return QueryResult([
       for (final pgColumn in result.schema.columns) pgColumn.columnName ?? '',
@@ -159,29 +169,25 @@ class _BoundArguments {
   final List<TypedValue> parameters;
 
   _BoundArguments(this.parameters)
-      : types = parameters.map((p) => p.type).toList(growable: false);
+    : types = parameters.map((p) => p.type).toList(growable: false);
 
   factory _BoundArguments.ofDartArgs(List<Object?> args) {
-    final parameters = List<TypedValue>.generate(
-      args.length,
-      (i) {
-        final value = args[i];
-        return switch (value) {
-          TypedValue() => value,
-          null => TypedValue(Type.unspecified, null),
-          int() => TypedValue(Type.bigInteger, value),
-          String() => TypedValue(Type.text, value),
-          bool() => TypedValue(Type.boolean, value),
-          double() => TypedValue(Type.double, value),
-          List<int>() => TypedValue(Type.byteArray, value),
-          // Drift's BigInts are also just 64bit, we just support them to
-          // represent large numbers on the web.
-          BigInt() => TypedValue(Type.bigInteger, value.rangeCheckedToInt()),
-          _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
-        };
-      },
-      growable: false,
-    );
+    final parameters = List<TypedValue>.generate(args.length, (i) {
+      final value = args[i];
+      return switch (value) {
+        TypedValue() => value,
+        null => TypedValue(Type.unspecified, null),
+        int() => TypedValue(Type.bigInteger, value),
+        String() => TypedValue(Type.text, value),
+        bool() => TypedValue(Type.boolean, value),
+        double() => TypedValue(Type.double, value),
+        List<int>() => TypedValue(Type.byteArray, value),
+        // Drift's BigInts are also just 64bit, we just support them to
+        // represent large numbers on the web.
+        BigInt() => TypedValue(Type.bigInteger, value.rangeCheckedToInt()),
+        _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
+      };
+    }, growable: false);
 
     return _BoundArguments(parameters);
   }
@@ -199,8 +205,12 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
   }
 
   Future init() async {
-    await database.execute(Sql('CREATE TABLE IF NOT EXISTS __schema ('
-        'version integer NOT NULL DEFAULT 0)'));
+    await database.execute(
+      Sql(
+        'CREATE TABLE IF NOT EXISTS __schema ('
+        'version integer NOT NULL DEFAULT 0)',
+      ),
+    );
 
     final count = await database.execute(Sql('SELECT COUNT(*) FROM __schema'));
     if (count[0][0] as int == 0) {
@@ -212,9 +222,7 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
   Future<void> setSchemaVersion(int version) async {
     await database.execute(
       Sql(r'UPDATE __schema SET version = $1', types: [Type.integer]),
-      parameters: [
-        TypedValue(Type.integer, version),
-      ],
+      parameters: [TypedValue(Type.integer, version)],
     );
   }
 }

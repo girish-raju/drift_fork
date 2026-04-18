@@ -21,15 +21,19 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitAggregateFunctionInvocation(
-      AggregateFunctionInvocation e, void arg) {
+    AggregateFunctionInvocation e,
+    void arg,
+  ) {
     if (e.orderBy != null &&
         context.engineOptions.version < SqliteVersion.v3_44) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message:
-            'ORDER BY in aggregate functions require sqlite 3.44 or later.',
-        relevantNode: e.orderBy,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message:
+              'ORDER BY in aggregate functions require sqlite 3.44 or later.',
+          relevantNode: e.orderBy,
+        ),
+      );
     }
 
     super.visitAggregateFunctionInvocation(e, arg);
@@ -78,15 +82,17 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     StatementScope scope;
 
     if (e.parent is Queryable) {
-      final surroundingSelect = e.parents
-          .firstWhere((node) => node is HasFrom)
-          .scope as StatementScope;
+      final surroundingSelect =
+          e.parents.firstWhere((node) => node is HasFrom).scope
+              as StatementScope;
       scope = StatementScope(SourceScope(surroundingSelect), e);
     } else if (e.parent case final CommonTableExpression cte) {
       final withClause = cte.parent!;
       assert(withClause is WithClause);
       scope = StatementScope(
-          SourceScope(withClause.parent!.scope as StatementScope), e);
+        SourceScope(withClause.parent!.scope as StatementScope),
+        e,
+      );
     } else {
       scope = StatementScope.forStatement(context.rootScope, e);
     }
@@ -115,18 +121,23 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
       if (!isLast) {
         if (e.limit != null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.synctactic,
-            message: 'Limit clause must appear in the last compound statement',
-            relevantNode: e.limit,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.synctactic,
+              message:
+                  'Limit clause must appear in the last compound statement',
+              relevantNode: e.limit,
+            ),
+          );
         }
         if (e.orderBy != null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.synctactic,
-            message: 'Order by clause must appear in the compound statement',
-            relevantNode: e.orderBy,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.synctactic,
+              message: 'Order by clause must appear in the compound statement',
+              relevantNode: e.orderBy,
+            ),
+          );
         }
       }
     }
@@ -218,11 +229,13 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         context.engineOptions.version >= SqliteVersion.v3_35;
     final withoutTargetOk = lastWithoutTargetOk && isLast;
     if (e.onColumns == null && e.action is DoUpdate && !withoutTargetOk) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.synctactic,
-        message: 'Expected a conflict clause when using DO UPDATE',
-        relevantNode: e.action,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          message: 'Expected a conflict clause when using DO UPDATE',
+          relevantNode: e.action,
+        ),
+      );
     }
 
     // DO UPDATE clauses have their own reference scope, in which the row
@@ -253,12 +266,14 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     // Window functions can't use ORDER BY in their arguments:
     // https://github.com/sqlite/sqlite/blob/85b1f5c2f6a05ba151496122fc62b10d560498ca/src/expr.c#L1231-L1235
     if (e.orderBy != null) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.synctactic,
-        message:
-            'Window functions may not use `ORDER BY` in their parameter list',
-        relevantNode: e.orderBy,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          message:
+              'Window functions may not use `ORDER BY` in their parameter list',
+          relevantNode: e.orderBy,
+        ),
+      );
     }
 
     super.visitWindowFunctionInvocation(e, arg);

@@ -18,7 +18,7 @@ final class VacuumStatement extends Statement {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [if (into case final into?) into];
+  Iterable<AstNode> get childNodes => [?into];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

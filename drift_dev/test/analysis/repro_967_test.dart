@@ -20,8 +20,9 @@ class Dao extends DatabaseAccessor<Db> {}
       ''',
     });
 
-    final file =
-        await state.driver.fullyAnalyze(Uri.parse('package:a/bar.dart'));
+    final file = await state.driver.fullyAnalyze(
+      Uri.parse('package:a/bar.dart'),
+    );
 
     expect(file.allErrors, isNotEmpty);
 

@@ -28,8 +28,11 @@ abstract class FunctionHandler {
   ///
   /// If resolving to a type isn't possible, implementations should return
   /// [ResolveResult.unknown].
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs);
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  );
 
   /// Resolve the type of an argument used in a function invocation.
   ///
@@ -41,7 +44,10 @@ abstract class FunctionHandler {
   /// If resolving to a type isn't possible, implementations should return
   /// [ResolveResult.unknown].
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument);
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  );
 
   /// Can optionally be used by implementations to provide [AnalysisError]s
   /// from the [call].
@@ -75,13 +81,20 @@ mixin ArgumentCountLinter {
   }
 
   void reportArgumentCountMismatch(
-      SqlInvocation call, AnalysisContext context, int? expected, int actual) {
-    context.reportError(AnalysisError(
-      relevantNode: call,
-      message: '${call.name} expects $expected arguments, '
-          'got $actual.',
-      type: AnalysisErrorType.other,
-    ));
+    SqlInvocation call,
+    AnalysisContext context,
+    int? expected,
+    int actual,
+  ) {
+    context.reportError(
+      AnalysisError(
+        relevantNode: call,
+        message:
+            '${call.name} expects $expected arguments, '
+            'got $actual.',
+        type: AnalysisErrorType.other,
+      ),
+    );
   }
 }
 
@@ -98,7 +111,9 @@ abstract class TableValuedFunctionHandler {
   /// See also:
   ///  - https://www.sqlite.org/vtab.html#tabfunc2
   ResultSet resolveTableValued(
-      AnalysisContext context, TableValuedFunction call);
+    AnalysisContext context,
+    TableValuedFunction call,
+  );
 }
 
 /// An sqlite module, which can be used in a `CREATE VIRTUAL TABLE` statement

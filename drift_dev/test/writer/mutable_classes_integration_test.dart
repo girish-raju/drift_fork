@@ -9,8 +9,9 @@ void main() {
   test('generates mutable classes if needed', () async {
     const options = BuilderOptions({'mutable_classes': true});
 
-    final writer = await emulateDriftBuild(inputs: {
-      'a|lib/main.dart': r'''
+    final writer = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
 part 'main.drift.dart';
@@ -28,13 +29,15 @@ class Users extends Table {
 )
 class Database extends _$Database {}
 ''',
-    }, options: options);
+      },
+      options: options,
+    );
 
     checkOutputs(
       {
-        'a|lib/main.drift.dart': IsValidDartFile(_WithoutFinalFields(
-          {'User', 'UsersCompanion', 'SomeQueryResult'},
-        )),
+        'a|lib/main.drift.dart': IsValidDartFile(
+          _WithoutFinalFields({'User', 'UsersCompanion', 'SomeQueryResult'}),
+        ),
       },
       writer.dartOutputs,
       writer.writer,
@@ -49,8 +52,10 @@ class _WithoutFinalFields extends Matcher {
 
   @override
   Description describe(Description description) {
-    return description.add('generates classes $expectedWithoutFinals without '
-        'final fields.');
+    return description.add(
+      'generates classes $expectedWithoutFinals without '
+      'final fields.',
+    );
   }
 
   @override
@@ -80,7 +85,8 @@ class _WithoutFinalFields extends Matcher {
             }
           } else if (member is ConstructorDeclaration) {
             if (member.constKeyword != null) {
-              matchState['desc'] = 'Constructor ${member.name?.lexeme ?? ''} '
+              matchState['desc'] =
+                  'Constructor ${member.name?.lexeme ?? ''} '
                   'in $definedClassName is constant.';
               return false;
             }
@@ -101,9 +107,14 @@ class _WithoutFinalFields extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
-    return mismatchDescription
-        .add((matchState['desc'] as String?) ?? 'Had syntax errors');
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    return mismatchDescription.add(
+      (matchState['desc'] as String?) ?? 'Had syntax errors',
+    );
   }
 }

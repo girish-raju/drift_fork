@@ -73,10 +73,11 @@ extension JsonExtensions on Expression<String> {
   /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
   /// and [JsonTableFunction].
   JsonTableFunction jsonEach(DatabaseConnectionUser database, [String? path]) {
-    return JsonTableFunction._(database, functionName: 'json_each', arguments: [
-      this,
-      if (path != null) Variable(path),
-    ]);
+    return JsonTableFunction._(
+      database,
+      functionName: 'json_each',
+      arguments: [this, if (path != null) Variable(path)],
+    );
   }
 
   /// Calls the `json_tree` table-valued function on `this` string, optionally
@@ -88,10 +89,11 @@ extension JsonExtensions on Expression<String> {
   /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
   /// and [JsonTableFunction].
   JsonTableFunction jsonTree(DatabaseConnectionUser database, [String? path]) {
-    return JsonTableFunction._(database, functionName: 'json_tree', arguments: [
-      this,
-      if (path != null) Variable(path),
-    ]);
+    return JsonTableFunction._(
+      database,
+      functionName: 'json_tree',
+      arguments: [this, if (path != null) Variable(path)],
+    );
   }
 }
 
@@ -143,8 +145,12 @@ Expression<String> jsonGroupArray(
   OrderBy? orderBy,
   Expression<bool>? filter,
 }) {
-  return AggregateFunctionExpression('json_group_array', [value],
-      orderBy: orderBy, filter: filter);
+  return AggregateFunctionExpression(
+    'json_group_array',
+    [value],
+    orderBy: orderBy,
+    filter: filter,
+  );
 }
 
 /// Returns a binary representation of a JSON array containing the result of
@@ -157,8 +163,12 @@ Expression<Uint8List> jsonbGroupArray(
   OrderBy? orderBy,
   Expression<bool>? filter,
 }) {
-  return AggregateFunctionExpression('jsonb_group_array', [value],
-      orderBy: orderBy, filter: filter);
+  return AggregateFunctionExpression(
+    'jsonb_group_array',
+    [value],
+    orderBy: orderBy,
+    filter: filter,
+  );
 }
 
 List<Expression> _groupObjectArgs(Map<Expression<String>, Expression> values) {
@@ -227,7 +237,8 @@ Expression<String> jsonGroupObject(Map<Expression<String>, Expression> values) {
 /// See [jsonGroupObject], the variant of this function returning a textual
 /// description, for more details and an example.
 Expression<Uint8List> jsonbGroupObject(
-    Map<Expression<String>, Expression> values) {
+  Map<Expression<String>, Expression> values,
+) {
   return FunctionCallExpression('jsonb_group_object', _groupObjectArgs(values));
 }
 
@@ -295,25 +306,57 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
     required super.arguments,
     super.alias,
   }) : super(
-          columns: [
-            GeneratedColumn<DriftAny>('key', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<DriftAny>('value', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<String>('type', alias ?? functionName, true,
-                type: DriftSqlType.string),
-            GeneratedColumn<DriftAny>('atom', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<int>('id', alias ?? functionName, true,
-                type: DriftSqlType.int),
-            GeneratedColumn<int>('parent', alias ?? functionName, true,
-                type: DriftSqlType.int),
-            GeneratedColumn<String>('fullkey', alias ?? functionName, true,
-                type: DriftSqlType.string),
-            GeneratedColumn<String>('path', alias ?? functionName, true,
-                type: DriftSqlType.string),
-          ],
-        );
+         columns: [
+           GeneratedColumn<DriftAny>(
+             'key',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.any,
+           ),
+           GeneratedColumn<DriftAny>(
+             'value',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.any,
+           ),
+           GeneratedColumn<String>(
+             'type',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.string,
+           ),
+           GeneratedColumn<DriftAny>(
+             'atom',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.any,
+           ),
+           GeneratedColumn<int>(
+             'id',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.int,
+           ),
+           GeneratedColumn<int>(
+             'parent',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.int,
+           ),
+           GeneratedColumn<String>(
+             'fullkey',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.string,
+           ),
+           GeneratedColumn<String>(
+             'path',
+             alias ?? functionName,
+             true,
+             type: DriftSqlType.string,
+           ),
+         ],
+       );
 
   Expression<T> _col<T extends Object>(String name) {
     return columnsByName[name]! as Expression<T>;
@@ -356,7 +399,8 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
 
   @override
   ResultSetImplementation<JsonTableFunction, TypedResult> createAlias(
-      String alias) {
+    String alias,
+  ) {
     return JsonTableFunction._(
       attachedDatabase,
       functionName: entityName,

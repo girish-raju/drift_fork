@@ -17,9 +17,11 @@ typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 Future<void> _defaultOnCreate(Migrator m) => m.createAll();
 
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
-    throw Exception("You've bumped the schema version for your drift database "
-        "but didn't provide a strategy for schema updates. Please do that by "
-        'adapting the migrations getter in your database class.');
+    throw Exception(
+      "You've bumped the schema version for your drift database "
+      "but didn't provide a strategy for schema updates. Please do that by "
+      'adapting the migrations getter in your database class.',
+    );
 
 /// Handles database migrations by delegating work to [OnCreate] and [OnUpgrade]
 /// methods.
@@ -115,8 +117,10 @@ class Migrator {
   }
 
   GenerationContext _createContext({bool supportsVariables = false}) {
-    return GenerationContext.fromDb(database,
-        supportsVariables: supportsVariables);
+    return GenerationContext.fromDb(
+      database,
+      supportsVariables: supportsVariables,
+    );
   }
 
   /// Creates the given table if it doesn't exist
@@ -175,10 +179,12 @@ class Migrator {
       // re-create those later.
       // We use the legacy sqlite_master table since the _schema rename happened
       // in a very recent version (3.33.0)
-      final schemaQuery = await database.customSelect(
-        'SELECT type, name, sql FROM sqlite_master WHERE tbl_name = ?;',
-        variables: [Variable<String>(tableName)],
-      ).get();
+      final schemaQuery = await database
+          .customSelect(
+            'SELECT type, name, sql FROM sqlite_master WHERE tbl_name = ?;',
+            variables: [Variable<String>(tableName)],
+          )
+          .get();
 
       final createAffected = <String>[];
 
@@ -265,10 +271,12 @@ class Migrator {
           // A workaround is to drop all views and to re-create them later.
           // We're not doing this by default to ensure we're not breaking
           // existing users (e.g. if the new table references a view somehow).
-          final allViews = await database.customSelect(
-            'SELECT name, sql FROM sqlite_master WHERE type = ?;',
-            variables: [Variable<String>('view')],
-          ).get();
+          final allViews = await database
+              .customSelect(
+                'SELECT name, sql FROM sqlite_master WHERE type = ?;',
+                variables: [Variable<String>('view')],
+              )
+              .get();
 
           for (final row in allViews) {
             final sql = row.read<String>('sql');
@@ -284,8 +292,9 @@ class Migrator {
 
       // Step 7: Rename the new table to the old name
       await _issueCustomQuery(
-          'ALTER TABLE ${context.identifier(temporaryName)} '
-          'RENAME TO ${context.identifier(tableName)}');
+        'ALTER TABLE ${context.identifier(temporaryName)} '
+        'RENAME TO ${context.identifier(tableName)}',
+      );
 
       if (legacyAlterTable == false) {
         await _issueCustomQuery('pragma legacy_alter_table = 0;');
@@ -306,8 +315,10 @@ class Migrator {
   }
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
-    context.buffer.write('CREATE TABLE IF NOT EXISTS '
-        '${context.identifier(table.aliasedName)} (');
+    context.buffer.write(
+      'CREATE TABLE IF NOT EXISTS '
+      '${context.identifier(table.aliasedName)} (',
+    );
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
@@ -371,7 +382,7 @@ class Migrator {
 
     final options = [
       if (dslTable.withoutRowId) 'WITHOUT ROWID',
-      if (dslTable.isStrict) 'STRICT'
+      if (dslTable.isStrict) 'STRICT',
     ].join(', ');
 
     if (options.isNotEmpty) {
@@ -408,15 +419,19 @@ class Migrator {
     if (stmts != null) {
       await _issueQueryByDialect(stmts);
     } else if (view.query != null) {
-      final context =
-          GenerationContext.fromDb(database, supportsVariables: false);
+      final context = GenerationContext.fromDb(
+        database,
+        supportsVariables: false,
+      );
       final columnNames = view.$columns
           .map((e) => e.escapedNameFor(context.dialect))
           .join(', ');
 
       context.generatingForView = view.entityName;
-      context.buffer.write('CREATE VIEW IF NOT EXISTS '
-          '${context.identifier(view.entityName)} ($columnNames) AS ');
+      context.buffer.write(
+        'CREATE VIEW IF NOT EXISTS '
+        '${context.identifier(view.entityName)} ($columnNames) AS ',
+      );
       view.query!.writeInto(context);
       await _issueCustomQuery(context.sql, const []);
     }
@@ -450,7 +465,8 @@ class Migrator {
   Future<void> deleteTable(String name) async {
     final context = _createContext();
     return _issueCustomQuery(
-        'DROP TABLE IF EXISTS ${context.identifier(name)};');
+      'DROP TABLE IF EXISTS ${context.identifier(name)};',
+    );
   }
 
   /// Adds the given column to the specified table.
@@ -458,7 +474,8 @@ class Migrator {
     final context = _createContext();
 
     context.buffer.write(
-        'ALTER TABLE ${context.identifier(table.aliasedName)} ADD COLUMN ');
+      'ALTER TABLE ${context.identifier(table.aliasedName)} ADD COLUMN ',
+    );
     column.writeColumnDefinition(context);
     context.buffer.write(';');
 
@@ -482,7 +499,8 @@ class Migrator {
   Future<void> dropColumn(TableInfo table, String column) async {
     final context = _createContext();
     context.buffer.write(
-        'ALTER TABLE ${context.identifier(table.aliasedName)} DROP COLUMN ${context.identifier(column)}');
+      'ALTER TABLE ${context.identifier(table.aliasedName)} DROP COLUMN ${context.identifier(column)}',
+    );
     await _issueCustomQuery(context.sql);
   }
 
@@ -503,7 +521,10 @@ class Migrator {
   /// In MariaDB, support for that same syntax was added in MariaDB version
   /// 10.5.2, released on 2020-03-26.
   Future<void> renameColumn(
-      TableInfo table, String oldName, GeneratedColumn column) async {
+    TableInfo table,
+    String oldName,
+    GeneratedColumn column,
+  ) async {
     final context = _createContext();
     context.buffer
       ..write('ALTER TABLE ${context.identifier(table.aliasedName)} ')
@@ -522,10 +543,12 @@ class Migrator {
   Future<void> renameTable(TableInfo table, String oldName) async {
     final context = _createContext();
     context.buffer.write(switch (context.dialect) {
-      SqlDialect.mariadb => 'RENAME TABLE ${context.identifier(oldName)} '
-          'TO ${context.identifier(table.actualTableName)};',
-      _ => 'ALTER TABLE ${context.identifier(oldName)} '
-          'RENAME TO ${context.identifier(table.actualTableName)};',
+      SqlDialect.mariadb =>
+        'RENAME TABLE ${context.identifier(oldName)} '
+            'TO ${context.identifier(table.actualTableName)};',
+      _ =>
+        'ALTER TABLE ${context.identifier(oldName)} '
+            'RENAME TO ${context.identifier(table.actualTableName)};',
     });
 
     return _issueCustomQuery(context.sql);
@@ -553,10 +576,9 @@ class Migrator {
   /// [step] with the current version, assuming that [step] will perform an
   /// upgrade from that version to the version returned by the callback.
   @Deprecated(
-      'Re-generate code so that it uses `VersionedSchema.stepByStepHelper`')
-  static OnUpgrade stepByStepHelper({
-    required MigrationStepWithVersion step,
-  }) {
+    'Re-generate code so that it uses `VersionedSchema.stepByStepHelper`',
+  )
+  static OnUpgrade stepByStepHelper({required MigrationStepWithVersion step}) {
     return VersionedSchema.stepByStepHelper(step: step);
   }
 
@@ -600,7 +622,11 @@ class Migrator {
     required MigrationStepWithVersion steps,
   }) {
     return VersionedSchema.runMigrationSteps(
-        migrator: this, from: from, to: to, steps: steps);
+      migrator: this,
+      from: from,
+      to: to,
+      steps: steps,
+    );
   }
 }
 
@@ -622,8 +648,8 @@ class OpeningDetails {
 
   /// Used internally by drift when opening a database.
   const OpeningDetails(this.versionBefore, this.versionNow)
-      // Should use null instead of 0 for consistency
-      : assert(versionBefore != 0);
+    // Should use null instead of 0 for consistency
+    : assert(versionBefore != 0);
 }
 
 /// Extension providing the [destructiveFallback] strategy.

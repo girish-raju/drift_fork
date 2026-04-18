@@ -27,7 +27,8 @@ import 'schema_files.dart';
 /// code.
 class SchemaIsolate {
   static Future<String> generateStartupCode(
-      SchemaIsolateOptions options) async {
+    SchemaIsolateOptions options,
+  ) async {
     final imports = LibraryImportManager();
     final writer = Writer(
       DriftOptions.fromJson({
@@ -66,11 +67,15 @@ class SchemaIsolate {
     final schemaTools = Uri.parse('package:drift/internal/export_schema.dart');
 
     writer.leaf()
-      ..writeln('void main('
-          '${prefixed(core, 'List')}<${prefixed(core, 'String')}> args, '
-          '${prefixed(isolate, 'SendPort')} port) {')
-      ..writeln('${prefixed(schemaTools, 'SchemaExporter')}'
-          '.run(args, port, DatabaseAtV1.new);')
+      ..writeln(
+        'void main('
+        '${prefixed(core, 'List')}<${prefixed(core, 'String')}> args, '
+        '${prefixed(isolate, 'SendPort')} port) {',
+      )
+      ..writeln(
+        '${prefixed(schemaTools, 'SchemaExporter')}'
+        '.run(args, port, DatabaseAtV1.new);',
+      )
       ..writeln('}');
 
     final database = DriftDatabase(
@@ -82,18 +87,15 @@ class SchemaIsolate {
       declaredViews: const [],
       hasConstructorArgumentForConnection: false,
     );
-    final resolved =
-        ResolvedDatabaseAccessor(const {}, const [], options.elements);
-    final input = DatabaseGenerationInput(
-      database,
-      resolved,
-      {
-        for (final query in options.elements.whereType<DefinedSqlQuery>())
-          if (query.mode == QueryMode.atCreate)
-            if (query.resolved case final resolved?) query: resolved,
-      },
-      null,
+    final resolved = ResolvedDatabaseAccessor(
+      const {},
+      const [],
+      options.elements,
     );
+    final input = DatabaseGenerationInput(database, resolved, {
+      for (final query in options.elements.whereType<DefinedSqlQuery>())
+        if (query.mode == QueryMode.atCreate) query: ?query.resolved,
+    }, null);
 
     DatabaseWriter(input, writer.child()).write();
 
@@ -101,7 +103,9 @@ class SchemaIsolate {
   }
 
   static Future<Object?> _startAndRun(
-      SchemaIsolateOptions options, List<String> args) async {
+    SchemaIsolateOptions options,
+    List<String> args,
+  ) async {
     final code = await generateStartupCode(options);
     File entrypointFile;
     Directory? deleteAfterGeneration;
@@ -110,8 +114,9 @@ class SchemaIsolate {
       await file.parent.create(recursive: true);
       entrypointFile = file;
     } else {
-      deleteAfterGeneration =
-          Directory.systemTemp.createTempSync('drift_export');
+      deleteAfterGeneration = Directory.systemTemp.createTempSync(
+        'drift_export',
+      );
       entrypointFile = File(p.join(deleteAfterGeneration.path, 'main.dart'));
     }
 
@@ -137,7 +142,7 @@ class SchemaIsolate {
       receive.firstOrNever,
       receiveErrors.firstOrNever.then((e) {
         throw SchemaIsolateException(e! as Object, entrypointFile);
-      })
+      }),
     ]);
 
     isolate.kill();
@@ -151,7 +156,8 @@ class SchemaIsolate {
   }
 
   static Future<List<String>> collectAllCreateStatements(
-      SchemaIsolateOptions options) async {
+    SchemaIsolateOptions options,
+  ) async {
     final result = await _startAndRun(options, [options.dialect!.name]);
     return result as List<String>;
   }
@@ -161,19 +167,22 @@ class SchemaIsolate {
     required List<DriftElement> allElements,
     File? dumpStartupCode,
   }) async {
-    final result = await _startAndRun((
-      options: options,
-      dialect: null,
-      elements: allElements,
-      dumpStartupCode: dumpStartupCode,
-    ), [
-      'v2',
-      json.encode({
-        'dialects': [
-          for (final dialect in options.supportedDialects) dialect.name,
-        ],
-      })
-    ]);
+    final result = await _startAndRun(
+      (
+        options: options,
+        dialect: null,
+        elements: allElements,
+        dumpStartupCode: dumpStartupCode,
+      ),
+      [
+        'v2',
+        json.encode({
+          'dialects': [
+            for (final dialect in options.supportedDialects) dialect.name,
+          ],
+        }),
+      ],
+    );
 
     // This returns a list of [name, dialectName, createStmt] entries
     return (result as List<List>).map((row) {
@@ -205,13 +214,16 @@ extension<T> on Stream<T> {
   Future<T> get firstOrNever {
     final completer = Completer<T>.sync();
     late StreamSubscription<T> subscription;
-    subscription = listen((data) {
-      subscription.cancel();
-      completer.complete(data);
-    }, onError: (Object error, StackTrace trace) {
-      subscription.cancel();
-      completer.completeError(error, trace);
-    });
+    subscription = listen(
+      (data) {
+        subscription.cancel();
+        completer.complete(data);
+      },
+      onError: (Object error, StackTrace trace) {
+        subscription.cancel();
+        completer.completeError(error, trace);
+      },
+    );
     return completer.future;
   }
 }
@@ -228,14 +240,16 @@ final class SchemaIsolateException implements Exception {
       causeDesc = '${causeDesc.substring(0, 300)}...';
     }
 
-    var desc = 'Drift tried to run parts of your database code to obtain a '
+    var desc =
+        'Drift tried to run parts of your database code to obtain a '
         'complete schema for aspects where static analysis is not enough.\n'
         'This failed: $causeDesc.\n'
         'A copy of the code that failed to run has been written to: '
         '${p.relative(startupCodeWrittenTo.path)}.';
 
     if (!isFatal) {
-      desc += '\nDrift will fall-back to only using results obtained through '
+      desc +=
+          '\nDrift will fall-back to only using results obtained through '
           'static analysis, but restructing your code to avoid this compiler '
           'error can help drift export more detailed schema descriptions.';
     }
@@ -256,7 +270,8 @@ extension RegisterExportSchemaStartupOptions on ArgParser {
     addOption(
       'export-schema-startup-code',
       valueHelp: 'file',
-      help: 'When drift needs to run parts of your database code to infer '
+      help:
+          'When drift needs to run parts of your database code to infer '
           'the schema, emit that code to find possible issues.',
     );
   }

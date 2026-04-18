@@ -16,7 +16,7 @@ class ExampleTable extends Table {
 @DriftDatabase(tables: [ExampleTable])
 final class ExampleDatabase extends _$ExampleDatabase {
   ExampleDatabase([QueryExecutor? implementation])
-      : super(implementation ?? driftDatabase(name: 'db'));
+    : super(implementation ?? driftDatabase(name: 'db'));
 
   @override
   int get schemaVersion => 1;

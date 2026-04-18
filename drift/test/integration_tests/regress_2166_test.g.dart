@@ -12,17 +12,25 @@ class $_SomeTableTable extends _SomeTable
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -31,8 +39,10 @@ class $_SomeTableTable extends _SomeTable
   String get actualTableName => $name;
   static const String $name = 'some_table';
   @override
-  VerificationContext validateIntegrity(Insertable<_SomeTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<_SomeTableData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -40,7 +50,9 @@ class $_SomeTableTable extends _SomeTable
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
     }
     return context;
   }
@@ -51,10 +63,14 @@ class $_SomeTableTable extends _SomeTable
   _SomeTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return _SomeTableData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      ),
     );
   }
 
@@ -85,19 +101,23 @@ class _SomeTableData extends DataClass implements Insertable<_SomeTableData> {
     );
   }
 
-  factory _SomeTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory _SomeTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return _SomeTableData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String?>(json['name']),
     );
   }
-  factory _SomeTableData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      _SomeTableData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory _SomeTableData.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => _SomeTableData.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -107,12 +127,13 @@ class _SomeTableData extends DataClass implements Insertable<_SomeTableData> {
     };
   }
 
-  _SomeTableData copyWith(
-          {int? id, Value<String?> name = const Value.absent()}) =>
-      _SomeTableData(
-        id: id ?? this.id,
-        name: name.present ? name.value : this.name,
-      );
+  _SomeTableData copyWith({
+    int? id,
+    Value<String?> name = const Value.absent(),
+  }) => _SomeTableData(
+    id: id ?? this.id,
+    name: name.present ? name.value : this.name,
+  );
   _SomeTableData copyWithCompanion(_SomeTableCompanion data) {
     return _SomeTableData(
       id: data.id.present ? data.id.value : this.id,
@@ -161,10 +182,7 @@ class _SomeTableCompanion extends UpdateCompanion<_SomeTableData> {
   }
 
   _SomeTableCompanion copyWith({Value<int>? id, Value<String?>? name}) {
-    return _SomeTableCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+    return _SomeTableCompanion(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
@@ -200,14 +218,10 @@ abstract class _$_SomeDb extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
 }
 
-typedef $$_SomeTableTableCreateCompanionBuilder = _SomeTableCompanion Function({
-  Value<int> id,
-  Value<String?> name,
-});
-typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
-  Value<int> id,
-  Value<String?> name,
-});
+typedef $$_SomeTableTableCreateCompanionBuilder =
+    _SomeTableCompanion Function({Value<int> id, Value<String?> name});
+typedef $$_SomeTableTableUpdateCompanionBuilder =
+    _SomeTableCompanion Function({Value<int> id, Value<String?> name});
 
 class $$_SomeTableTableFilterComposer
     extends Composer<_$_SomeDb, $_SomeTableTable> {
@@ -219,10 +233,14 @@ class $$_SomeTableTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$_SomeTableTableOrderingComposer
@@ -235,10 +253,14 @@ class $$_SomeTableTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$_SomeTableTableAnnotationComposer
@@ -257,23 +279,27 @@ class $$_SomeTableTableAnnotationComposer
       $composableBuilder(column: $table.name, builder: (column) => column);
 }
 
-class $$_SomeTableTableTableManager extends RootTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableAnnotationComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (
-      _SomeTableData,
-      BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>
-    ),
-    _SomeTableData,
-    PrefetchHooks Function()> {
+class $$_SomeTableTableTableManager
+    extends
+        RootTableManager<
+          _$_SomeDb,
+          $_SomeTableTable,
+          _SomeTableData,
+          $$_SomeTableTableFilterComposer,
+          $$_SomeTableTableOrderingComposer,
+          $$_SomeTableTableAnnotationComposer,
+          $$_SomeTableTableCreateCompanionBuilder,
+          $$_SomeTableTableUpdateCompanionBuilder,
+          (
+            _SomeTableData,
+            BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>,
+          ),
+          _SomeTableData,
+          PrefetchHooks Function()
+        > {
   $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -282,44 +308,41 @@ class $$_SomeTableTableTableManager extends RootTableManager<
               $$_SomeTableTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$_SomeTableTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion.insert(
-            id: id,
-            name: name,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+              }) => _SomeTableCompanion(id: id, name: name),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+              }) => _SomeTableCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableAnnotationComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (
+typedef $$_SomeTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$_SomeDb,
+      $_SomeTableTable,
       _SomeTableData,
-      BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>
-    ),
-    _SomeTableData,
-    PrefetchHooks Function()>;
+      $$_SomeTableTableFilterComposer,
+      $$_SomeTableTableOrderingComposer,
+      $$_SomeTableTableAnnotationComposer,
+      $$_SomeTableTableCreateCompanionBuilder,
+      $$_SomeTableTableUpdateCompanionBuilder,
+      (
+        _SomeTableData,
+        BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>,
+      ),
+      _SomeTableData,
+      PrefetchHooks Function()
+    >;
 
 class $_SomeDbManager {
   final _$_SomeDb _db;

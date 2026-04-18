@@ -40,8 +40,11 @@ class DriftPreprocessorResult {
 
   final List<Uri> imports;
 
-  DriftPreprocessorResult._(this.inlineDartExpressionsToHelperField,
-      this.declaredTablesAndViews, this.imports);
+  DriftPreprocessorResult._(
+    this.inlineDartExpressionsToHelperField,
+    this.declaredTablesAndViews,
+    this.imports,
+  );
 
   factory DriftPreprocessorResult.fromJson(Map<String, Object?> json) =>
       _$DriftPreprocessorResultFromJson(json);
@@ -61,18 +64,26 @@ class DriftPreprocessor {
   DriftPreprocessor._(this.result, this.temporaryDartFile);
 
   static Iterable<Uri> _imports(AstNode node, Uri ownUri) {
-    return node.allDescendants
-        .whereType<ImportStatement>()
-        .map((stmt) => ownUri.resolve(stmt.importedFile));
+    return node.allDescendants.whereType<ImportStatement>().map(
+      (stmt) => ownUri.resolve(stmt.importedFile),
+    );
   }
 
   static Future<DriftPreprocessor> analyze(
-      DriftBackend backend, Uri uri) async {
+    DriftBackend backend,
+    Uri uri,
+  ) async {
     final contents = await backend.readAsString(uri);
-    final engine = SqlEngine(EngineOptions(
-        driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
-    final parsedInput = engine.parseSpan(ParserEntrypoint.driftFile,
-        SourceFile.fromString(contents, url: uri).span(0));
+    final engine = SqlEngine(
+      EngineOptions(
+        driftOptions: const DriftSqlOptions(),
+        version: SqliteVersion.current,
+      ),
+    );
+    final parsedInput = engine.parseSpan(
+      ParserEntrypoint.driftFile,
+      SourceFile.fromString(contents, url: uri).span(0),
+    );
 
     final directImports = _imports(parsedInput.rootNode, uri).toList();
 
@@ -101,10 +112,12 @@ class DriftPreprocessor {
             ParseResult parsed;
             try {
               parsed = engine.parseSpan(
-                  ParserEntrypoint.driftFile,
-                  SourceFile.fromString(await backend.readAsString(foundImport),
-                          url: foundImport)
-                      .span(0));
+                ParserEntrypoint.driftFile,
+                SourceFile.fromString(
+                  await backend.readAsString(foundImport),
+                  url: foundImport,
+                ).span(0),
+              );
             } catch (e, s) {
               // Not being able to read or parse this file isn't critical, we'll
               // just ignore the imports it contributes.
@@ -116,9 +129,11 @@ class DriftPreprocessor {
             }
 
             _imports(parsed.rootNode, foundImport)
-                .where((importedId) =>
-                    !seenFiles.contains(importedId) &&
-                    !queue.contains(importedId))
+                .where(
+                  (importedId) =>
+                      !seenFiles.contains(importedId) &&
+                      !queue.contains(importedId),
+                )
                 .forEach(queue.add);
           }
         }
@@ -129,8 +144,9 @@ class DriftPreprocessor {
       seenFiles.addAll(queue);
     }
 
-    final importedDartFiles =
-        seenFiles.where((uri) => url.extension(uri.path) == '.dart');
+    final importedDartFiles = seenFiles.where(
+      (uri) => url.extension(uri.path) == '.dart',
+    );
 
     // to analyze the expressions, generate a fake Dart file that declares each
     // expression in a `var`, we can then read the static type when resolving

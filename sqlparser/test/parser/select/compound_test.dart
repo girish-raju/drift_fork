@@ -16,21 +16,13 @@ void main() {
           CompoundSelectPart(
             mode: CompoundSelectMode.unionAll,
             select: SelectStatement(
-              columns: [
-                ExpressionResultColumn(
-                  expression: NumericLiteral(1),
-                ),
-              ],
+              columns: [ExpressionResultColumn(expression: NumericLiteral(1))],
             ),
           ),
           CompoundSelectPart(
             mode: CompoundSelectMode.except,
             select: SelectStatement(
-              columns: [
-                ExpressionResultColumn(
-                  expression: NumericLiteral(2),
-                ),
-              ],
+              columns: [ExpressionResultColumn(expression: NumericLiteral(2))],
             ),
           ),
         ],

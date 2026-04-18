@@ -49,11 +49,7 @@ void main() {
       SelectStatement(
         from: TableReference('notes', as: AliasClause('n')),
         columns: [StarResultColumn()],
-        where: BinaryExpression(
-          caseExpr,
-          token(TokenType.and),
-          folderExpr,
-        ),
+        where: BinaryExpression(caseExpr, token(TokenType.and), folderExpr),
       ),
     );
   });
@@ -71,11 +67,7 @@ void main() {
       SelectStatement(
         from: TableReference('notes', as: AliasClause('n')),
         columns: [StarResultColumn()],
-        where: BinaryExpression(
-          folderExpr,
-          token(TokenType.and),
-          caseExpr,
-        ),
+        where: BinaryExpression(folderExpr, token(TokenType.and), caseExpr),
       ),
     );
   });

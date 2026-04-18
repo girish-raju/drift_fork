@@ -167,9 +167,7 @@ final class SelectWithoutTables extends BaseSelectStatement<TypedResult>
   final DatabaseConnectionUser _db;
 
   SelectWithoutTables(this._db, Iterable<Expression> columns)
-      : _columns = {
-          for (final (i, column) in columns.indexed) column: 'c$i',
-        };
+    : _columns = {for (final (i, column) in columns.indexed) column: 'c$i'};
 
   @override
   Iterable<(Expression<Object>, String)> get _expandedColumns =>
@@ -230,11 +228,13 @@ final class SelectWithoutTables extends BaseSelectStatement<TypedResult>
   Stream<List<TypedResult>> watch() {
     final context = _createContext();
     return _db
-        .createStream(QueryStreamFetcher(
-          readsFrom: TableUpdateQuery.onAllTables(context.watchedTables),
-          key: StreamKey(context.sql, context.boundVariables),
-          fetchData: () => _fetchRaw(context),
-        ))
+        .createStream(
+          QueryStreamFetcher(
+            readsFrom: TableUpdateQuery.onAllTables(context.watchedTables),
+            key: StreamKey(context.sql, context.boundVariables),
+            fetchData: () => _fetchRaw(context),
+          ),
+        )
         .map((rows) => [for (final row in rows) _mapRow(row)]);
   }
 }
@@ -243,8 +243,11 @@ final class SelectWithoutTables extends BaseSelectStatement<TypedResult>
 /// multiple entities.
 class TypedResult {
   /// Creates the result from the parsed table data.
-  TypedResult(this._parsedData, this.rawData,
-      [this._parsedExpressions = const {}]);
+  TypedResult(
+    this._parsedData,
+    this.rawData, [
+    this._parsedExpressions = const {},
+  ]);
 
   final Map<ResultSetImplementation, dynamic> _parsedData;
   final Map<Expression, dynamic> _parsedExpressions;
@@ -259,9 +262,10 @@ class TypedResult {
   D readTable<T extends HasResultSet, D>(ResultSetImplementation<T, D> table) {
     if (!_parsedData.containsKey(table)) {
       throw ArgumentError(
-          'Invalid table passed to readTable: ${table.aliasedName}. This row '
-          'does not contain values for that table. \n'
-          'Please use readTableOrNull for outer joins.');
+        'Invalid table passed to readTable: ${table.aliasedName}. This row '
+        'does not contain values for that table. \n'
+        'Please use readTableOrNull for outer joins.',
+      );
     }
 
     return _parsedData[table] as D;
@@ -274,7 +278,8 @@ class TypedResult {
   ///
   /// See also: [readTable], which throws instead of returning `null`.
   D? readTableOrNull<T extends HasResultSet, D>(
-      ResultSetImplementation<T, D> table) {
+    ResultSetImplementation<T, D> table,
+  ) {
     return _parsedData[table] as D?;
   }
 
@@ -288,8 +293,9 @@ class TypedResult {
     }
 
     throw ArgumentError(
-        'Invalid call to read(): $expr. This result set does not have a column '
-        'for that expression.');
+      'Invalid call to read(): $expr. This result set does not have a column '
+      'for that expression.',
+    );
   }
 
   /// Reads a column that has a type converter applied to it from the row.
@@ -297,9 +303,12 @@ class TypedResult {
   /// This calls [read] internally, which reads the column but without applying
   /// a type converter.
   D? readWithConverter<D, S extends Object>(
-      GeneratedColumnWithTypeConverter<D, S> column) {
+    GeneratedColumnWithTypeConverter<D, S> column,
+  ) {
     return NullAwareTypeConverter.wrapFromSql(
-        column.converter, read<S>(column));
+      column.converter,
+      read<S>(column),
+    );
   }
 }
 

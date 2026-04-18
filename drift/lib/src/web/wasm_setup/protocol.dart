@@ -86,12 +86,15 @@ sealed class WasmInitializationMessage {
 
     return switch (type) {
       WorkerError.type => WorkerError.fromJsPayload(payload as JSObject),
-      ServeDriftDatabase.type =>
-        ServeDriftDatabase.fromJsPayload(payload as JSObject),
-      StartFileSystemServer.type =>
-        StartFileSystemServer.fromJsPayload(payload as JSObject),
-      RequestCompatibilityCheck.type =>
-        RequestCompatibilityCheck.fromJsPayload(payload),
+      ServeDriftDatabase.type => ServeDriftDatabase.fromJsPayload(
+        payload as JSObject,
+      ),
+      StartFileSystemServer.type => StartFileSystemServer.fromJsPayload(
+        payload as JSObject,
+      ),
+      RequestCompatibilityCheck.type => RequestCompatibilityCheck.fromJsPayload(
+        payload,
+      ),
       DedicatedWorkerCompatibilityResult.type =>
         DedicatedWorkerCompatibilityResult.fromJsPayload(payload as JSObject),
       SharedWorkerCompatibilityResult.type =>
@@ -206,16 +209,17 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
   @override
   void sendTo(PostMessage sender) {
     sender.sendTyped(
-        type,
-        [
-          canSpawnDedicatedWorkers.toJS,
-          dedicatedWorkersCanUseOpfs.toJS,
-          canUseIndexedDb.toJS,
-          indexedDbExists.toJS,
-          opfsExists.toJS,
-          existingDatabases.encodeToJs(),
-          version.versionCode.toJS,
-        ].toJS);
+      type,
+      [
+        canSpawnDedicatedWorkers.toJS,
+        dedicatedWorkersCanUseOpfs.toJS,
+        canUseIndexedDb.toJS,
+        indexedDbExists.toJS,
+        opfsExists.toJS,
+        existingDatabases.encodeToJs(),
+        version.versionCode.toJS,
+      ].toJS,
+    );
   }
 
   @override
@@ -283,8 +287,9 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     return ServeDriftDatabase(
       sqlite3WasmUri: Uri.parse((payload['sqlite'] as JSString).toDart),
       port: payload['port'] as MessagePort,
-      storage: WasmStorageImplementation.values
-          .byName((payload['storage'] as JSString).toDart),
+      storage: WasmStorageImplementation.values.byName(
+        (payload['storage'] as JSString).toDart,
+      ),
       databaseName: (payload['database'] as JSString).toDart,
       initializationPort: payload['initPort'] as MessagePort?,
       enableMigrations: version >= ProtocolVersion.v2
@@ -310,10 +315,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
 
     protocolVersion.writeToJs(object);
 
-    sender.sendTyped(type, object, [
-      port,
-      if (initializationPort != null) initializationPort!,
-    ]);
+    sender.sendTyped(type, object, [port, ?initializationPort]);
   }
 }
 
@@ -361,8 +363,9 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
     final existingDatabases = <ExistingDatabase>[];
 
     if (payload.has('existing')) {
-      existingDatabases
-          .addAll(EncodeLocations.readFromJs(payload['existing'] as JSArray));
+      existingDatabases.addAll(
+        EncodeLocations.readFromJs(payload['existing'] as JSArray),
+      );
     }
 
     return DedicatedWorkerCompatibilityResult(
@@ -463,9 +466,11 @@ extension EncodeLocations on List<ExistingDatabase> {
   JSObject encodeToJs() {
     final existing = <JSObject>[];
     for (final entry in this) {
-      existing.add(JSObject()
-        ..['l'] = entry.$1.name.toJS
-        ..['n'] = entry.$2.toJS);
+      existing.add(
+        JSObject()
+          ..['l'] = entry.$1.name.toJS
+          ..['n'] = entry.$2.toJS,
+      );
     }
 
     return existing.toJS;

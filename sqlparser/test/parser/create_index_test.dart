@@ -27,9 +27,7 @@ void main() {
         ifNotExists: true,
         indexName: 'foo',
         on: TableReference('bar'),
-        columns: [
-          IndexedColumn(Reference(columnName: 'baz')),
-        ],
+        columns: [IndexedColumn(Reference(columnName: 'baz'))],
       ),
     );
   });

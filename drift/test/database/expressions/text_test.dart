@@ -4,8 +4,10 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression =
-      CustomExpression<String>('col', precedence: Precedence.primary);
+  const expression = CustomExpression<String>(
+    'col',
+    precedence: Precedence.primary,
+  );
 
   test('generates like expressions', () {
     expect(expression.like('pattern'), generates('col LIKE ?', ['pattern']));
@@ -13,30 +15,35 @@ void main() {
   });
 
   test('can generate escape clause', () {
-    expect(expression.like('pattern', escapeChar: '?'),
-        generates("col LIKE ? ESCAPE '?'", ['pattern']));
-    expect(expression.likeExp(expression, escape: expression),
-        generates('col LIKE col ESCAPE col'));
+    expect(
+      expression.like('pattern', escapeChar: '?'),
+      generates("col LIKE ? ESCAPE '?'", ['pattern']),
+    );
+    expect(
+      expression.likeExp(expression, escape: expression),
+      generates('col LIKE col ESCAPE col'),
+    );
   });
 
   test('generates regexp expressions', () {
-    expect(
-      expression.regexp('fo+'),
-      generates('col REGEXP ?', ['fo+']),
-    );
+    expect(expression.regexp('fo+'), generates('col REGEXP ?', ['fo+']));
   });
 
   test('generates collate expressions', () {
     expect(expression.collate(Collate.binary), generates('col COLLATE BINARY'));
     expect(expression.collate(Collate.noCase), generates('col COLLATE NOCASE'));
     expect(expression.collate(Collate.rTrim), generates('col COLLATE RTRIM'));
-    expect(expression.collate(const Collate('custom')),
-        generates('col COLLATE custom'));
+    expect(
+      expression.collate(const Collate('custom')),
+      generates('col COLLATE custom'),
+    );
   });
 
   test('can use contains', () {
     expect(
-        expression.contains('foo bar'), generates('col LIKE ?', ['%foo bar%']));
+      expression.contains('foo bar'),
+      generates('col LIKE ?', ['%foo bar%']),
+    );
   });
 
   group('can use string functions', () {
@@ -60,7 +67,9 @@ void main() {
     expect(expression.substr(10), generates('SUBSTR(col, 10)'));
     expect(expression.substr(10, 2), generates('SUBSTR(col, 10, 2)'));
 
-    expect(expression.substrExpr(Variable(1), expression.length - Variable(5)),
-        generates('SUBSTR(col, ?, LENGTH(col) - ?)', [1, 5]));
+    expect(
+      expression.substrExpr(Variable(1), expression.length - Variable(5)),
+      generates('SUBSTR(col, ?, LENGTH(col) - ?)', [1, 5]),
+    );
   });
 }

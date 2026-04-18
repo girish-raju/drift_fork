@@ -12,8 +12,10 @@ Expression<bool> isNotNull(Expression inner) => inner.isNotNull();
 /// Evaluates to the first expression in [expressions] that's not null, or
 /// null if all [expressions] evaluate to null.
 Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
-  assert(expressions.length >= 2,
-      'expressions must be of length >= 2, got ${expressions.length}');
+  assert(
+    expressions.length >= 2,
+    'expressions must be of length >= 2, got ${expressions.length}',
+  );
 
   return FunctionCallExpression<T>('COALESCE', expressions);
 }
@@ -21,6 +23,8 @@ Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
 /// Evaluates to the first expression that's not null, or null if both evaluate
 /// to null. See [coalesce] if you need more than 2.
 Expression<T> ifNull<T extends Object>(
-    Expression<T> first, Expression<T> second) {
+  Expression<T> first,
+  Expression<T> second,
+) {
   return FunctionCallExpression<T>('IFNULL', [first, second]);
 }

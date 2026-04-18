@@ -15,13 +15,19 @@ CREATE VIEW user_ids AS SELECT id FROM users;
 
     expect(
       elements[0],
-      isA<DriftTable>()
-          .having((e) => e.nameOfRowClass, 'nameOfRowClass', 'UsersData'),
+      isA<DriftTable>().having(
+        (e) => e.nameOfRowClass,
+        'nameOfRowClass',
+        'UsersData',
+      ),
     );
     expect(
       elements[1],
-      isA<DriftView>()
-          .having((e) => e.nameOfRowClass, 'nameOfRowClass', 'UserId'),
+      isA<DriftView>().having(
+        (e) => e.nameOfRowClass,
+        'nameOfRowClass',
+        'UserId',
+      ),
     );
   });
 
@@ -105,7 +111,8 @@ CREATE TABLE users (
         }
     ]
 }
-''') as Map<String, Object?>,
+''')
+          as Map<String, Object?>,
     );
 
     final index = reader.entities.whereType<DriftIndex>().first;
@@ -122,7 +129,8 @@ Future<List<DriftElement>> _analyzeAndSerialize(String source) async {
   final writer = SchemaWriter(file.analyzedElements.toList());
   final schemaJson = json.decode(json.encode(await writer.createSchemaJson()));
 
-  final deserialized =
-      await SchemaReader.readJson(schemaJson as Map<String, Object?>);
+  final deserialized = await SchemaReader.readJson(
+    schemaJson as Map<String, Object?>,
+  );
   return deserialized.entities.toList();
 }

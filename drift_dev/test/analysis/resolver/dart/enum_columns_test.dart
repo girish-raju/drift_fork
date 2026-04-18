@@ -46,21 +46,28 @@ void main() {
   test('parses enum columns', () {
     final file =
         backend.driver.cache.knownFiles[Uri.parse('package:a/main.dart')]!;
-    final table = file.analyzedElements
-        .singleWhere((e) => e.id.name == 'valid_usage') as DriftTable;
+    final table =
+        file.analyzedElements.singleWhere((e) => e.id.name == 'valid_usage')
+            as DriftTable;
 
     expect(
       table.appliedConverters,
       contains(
-        isA<AppliedTypeConverter>().having((e) => e.expression.toString(),
-            'expression', contains('EnumIndexConverter')),
+        isA<AppliedTypeConverter>().having(
+          (e) => e.expression.toString(),
+          'expression',
+          contains('EnumIndexConverter'),
+        ),
       ),
     );
     expect(
       table.appliedConverters,
       contains(
-        isA<AppliedTypeConverter>().having((e) => e.expression.toString(),
-            'expression', contains('EnumNameConverter')),
+        isA<AppliedTypeConverter>().having(
+          (e) => e.expression.toString(),
+          'expression',
+          contains('EnumNameConverter'),
+        ),
       ),
     );
   });
@@ -69,13 +76,14 @@ void main() {
     final file =
         backend.driver.cache.knownFiles[Uri.parse('package:a/main.dart')]!;
 
-    final notAnEnumError = isA<DriftAnalysisError>().having((e) => e.message,
-        'message', allOf(contains('Not an enum'), contains('NotAnEnum')));
+    final notAnEnumError = isA<DriftAnalysisError>().having(
+      (e) => e.message,
+      'message',
+      allOf(contains('Not an enum'), contains('NotAnEnum')),
+    );
     expect(
       file.allErrors,
-      containsAllInOrder(
-        [notAnEnumError, notAnEnumError],
-      ),
+      containsAllInOrder([notAnEnumError, notAnEnumError]),
     );
   });
 }

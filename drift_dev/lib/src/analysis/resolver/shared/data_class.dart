@@ -41,8 +41,9 @@ CustomParentClass? parseCustomParentClass(
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final superType = extendingType.allSupertypes
-          .any((type) => isFromDrift(type) && type.element.name == 'DataClass');
+      final superType = extendingType.allSupertypes.any(
+        (type) => isFromDrift(type) && type.element.name == 'DataClass',
+      );
       if (!superType) {
         resolver.reportError(
           DriftAnalysisError.forDartElement(
@@ -63,8 +64,10 @@ CustomParentClass? parseCustomParentClass(
         );
       }
 
-      final defaultConstructor =
-          extendingType.lookUpConstructor(null, element.library);
+      final defaultConstructor = extendingType.lookUpConstructor(
+        null,
+        element.library,
+      );
       var isConst = true;
       AnnotatedDartCode code;
       if (defaultConstructor == null) {

@@ -16,8 +16,11 @@ abstract class TableInducingStatement extends Statement
   DriftTableName? driftTableName;
   Token? tableNameToken;
 
-  TableInducingStatement._(this.ifNotExists, this.tableName,
-      [this.driftTableName]);
+  TableInducingStatement._(
+    this.ifNotExists,
+    this.tableName, [
+    this.driftTableName,
+  ]);
 
   @override
   String get createdName => tableName;
@@ -60,18 +63,24 @@ class CreateTableStatement extends TableInducingStatement {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     columns = transformer.transformChildren(columns, this, arg);
-    tableConstraints =
-        transformer.transformChildren(tableConstraints, this, arg);
-    driftTableName =
-        transformer.transformNullableChild(driftTableName, this, arg);
+    tableConstraints = transformer.transformChildren(
+      tableConstraints,
+      this,
+      arg,
+    );
+    driftTableName = transformer.transformNullableChild(
+      driftTableName,
+      this,
+      arg,
+    );
   }
 
   @override
   Iterable<AstNode> get childNodes => [
-        ...columns,
-        ...tableConstraints,
-        if (driftTableName != null) driftTableName!,
-      ];
+    ...columns,
+    ...tableConstraints,
+    ?driftTableName,
+  ];
 }
 
 class CreateVirtualTableStatement extends TableInducingStatement {
@@ -104,11 +113,13 @@ class CreateVirtualTableStatement extends TableInducingStatement {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    driftTableName =
-        transformer.transformNullableChild(driftTableName, this, arg);
+    driftTableName = transformer.transformNullableChild(
+      driftTableName,
+      this,
+      arg,
+    );
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [if (driftTableName != null) driftTableName!];
+  Iterable<AstNode> get childNodes => [?driftTableName];
 }

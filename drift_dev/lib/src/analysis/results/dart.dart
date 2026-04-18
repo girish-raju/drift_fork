@@ -24,8 +24,9 @@ class AnnotatedDartCode {
   static final Uri dartAsync = Uri.parse('dart:async');
   static final Uri dartCore = Uri.parse('dart:core');
   static final Uri drift = Uri.parse('package:drift/drift.dart');
-  static final Uri driftSqlitePreview =
-      Uri.parse('package:drift_sqlite/drift_sqlite.dart');
+  static final Uri driftSqlitePreview = Uri.parse(
+    'package:drift_sqlite/drift_sqlite.dart',
+  );
 
   final List<DartCodeElement> elements;
 
@@ -42,7 +43,8 @@ class AnnotatedDartCode {
   }
 
   factory AnnotatedDartCode.build(
-      void Function(AnnotatedDartCodeBuilder builder) build) {
+    void Function(AnnotatedDartCodeBuilder builder) build,
+  ) {
     final builder = AnnotatedDartCodeBuilder();
     build(builder);
     return builder.build();
@@ -56,7 +58,7 @@ class AnnotatedDartCode {
     final serializedElements = json['elements'] as List;
 
     return AnnotatedDartCode([
-      for (final part in serializedElements) DartCodeElement.fromJson(part)
+      for (final part in serializedElements) DartCodeElement.fromJson(part),
     ]);
   }
 
@@ -187,14 +189,17 @@ class AnnotatedDartCodeBuilder {
     final resultSet = query.resultSet;
     if (resultSet == null) {
       throw ArgumentError(
-          'This query (${query.name}) does not have a result set');
+        'This query (${query.name}) does not have a result set',
+      );
     }
 
     addResultSetRowType(resultSet, () => query.resultClassName);
   }
 
   void addResultSetRowType(
-      InferredResultSet resultSet, String Function() resultClassName) {
+    InferredResultSet resultSet,
+    String Function() resultClassName,
+  ) {
     if (resultSet.existingRowType != null) {
       return addCode(resultSet.existingRowType!.rowType);
     }
@@ -213,7 +218,9 @@ class AnnotatedDartCodeBuilder {
   void addTypeOfNestedResult(NestedResult nested) {
     if (nested is NestedResultTable) {
       return addResultSetRowType(
-          nested.innerResultSet, () => nested.nameForGeneratedRowClass);
+        nested.innerResultSet,
+        () => nested.nameForGeneratedRowClass,
+      );
     } else if (nested is NestedResultQuery) {
       addSymbol('List', AnnotatedDartCode.dartCore);
       addText('<');
@@ -301,10 +308,14 @@ final class DartTopLevelSymbol implements DartCodeElement {
     return DartTopLevelSymbol(name, _driftUri);
   }
 
-  factory DartTopLevelSymbol.topLevelElement(Element element,
-      [String? elementName]) {
-    assert(element.library?.children.contains(element) == true,
-        '${element.name} is not a top-level element');
+  factory DartTopLevelSymbol.topLevelElement(
+    Element element, [
+    String? elementName,
+  ]) {
+    assert(
+      element.library?.children.contains(element) == true,
+      '${element.name} is not a top-level element',
+    );
 
     // We're using this to recover the right import URI when using
     // `package:build`:
@@ -315,7 +326,9 @@ final class DartTopLevelSymbol implements DartCodeElement {
     }
 
     return DartTopLevelSymbol(
-        elementName ?? element.name ?? '(???)', sourceUri);
+      elementName ?? element.name ?? '(???)',
+      sourceUri,
+    );
   }
 
   factory DartTopLevelSymbol.fromJson(Map json) =>
@@ -527,7 +540,8 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
       _builder.addText(name2.lexeme);
     } else {
       _builder.addTopLevel(
-          DartTopLevelSymbol.topLevelElement(element, name2.lexeme));
+        DartTopLevelSymbol.topLevelElement(element, name2.lexeme),
+      );
     }
   }
 
@@ -623,7 +637,8 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
     _builder
       ..addTopLevel(
-          DartTopLevelSymbol.topLevelElement(enclosing, enclosing.name!))
+        DartTopLevelSymbol.topLevelElement(enclosing, enclosing.name!),
+      )
       ..addText('(');
     node.target?.accept(this);
     _builder
@@ -679,7 +694,8 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitListLiteral(ListLiteral node) {
     _childEntities(
-        [node.constKeyword, node.typeArguments, node.leftBracket].whereType());
+      [node.constKeyword, node.typeArguments, node.leftBracket].whereType(),
+    );
     _visitCommaSeparated(node.elements);
     _childEntities([node.rightBracket]);
   }
@@ -687,7 +703,8 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
     _childEntities(
-        [node.constKeyword, node.typeArguments, node.leftBracket].whereType());
+      [node.constKeyword, node.typeArguments, node.leftBracket].whereType(),
+    );
     _visitCommaSeparated(node.elements);
     _childEntities([node.rightBracket]);
   }

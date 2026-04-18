@@ -21,11 +21,13 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
         if (feature.isAutoIncrement) {
           for (final dialect in SqlDialect.values) {
             if (dialect == SqlDialect.mariadb) {
-              dialectSpecificConstraints[dialect]!
-                  .add('PRIMARY KEY AUTO_INCREMENT');
+              dialectSpecificConstraints[dialect]!.add(
+                'PRIMARY KEY AUTO_INCREMENT',
+              );
             } else {
-              dialectSpecificConstraints[dialect]!
-                  .add('PRIMARY KEY AUTOINCREMENT');
+              dialectSpecificConstraints[dialect]!.add(
+                'PRIMARY KEY AUTOINCREMENT',
+              );
             }
           }
         } else {
@@ -93,10 +95,12 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
 
   if (column.sqlType.builtin == DriftSqlType.bool) {
     final name = column.nameInSql;
-    dialectSpecificConstraints[SqlDialect.sqlite]!
-        .add('CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))');
-    dialectSpecificConstraints[SqlDialect.mariadb]!
-        .add('CHECK (${SqlDialect.mariadb.escape(name)} IN (0, 1))');
+    dialectSpecificConstraints[SqlDialect.sqlite]!.add(
+      'CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))',
+    );
+    dialectSpecificConstraints[SqlDialect.mariadb]!.add(
+      'CHECK (${SqlDialect.mariadb.escape(name)} IN (0, 1))',
+    );
   }
 
   for (final constraints in dialectSpecificConstraints.values) {
@@ -135,7 +139,8 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
         entries.add(
-            'const ${emitter.drift('ColumnPrimaryKeyConstraint')}(isAutoIncrementing: ${feature.isAutoIncrement})');
+          'const ${emitter.drift('ColumnPrimaryKeyConstraint')}(isAutoIncrementing: ${feature.isAutoIncrement})',
+        );
         wrotePkConstraint = true;
         break;
       }
@@ -150,7 +155,8 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     final type = emitter.dartCode(emitter.innerColumnType(column.sqlType));
 
     entries.add(
-        '${emitter.drift('ColumnDefaultConstraint')}<$type>(${emitter.dartCode(columnDefault)})');
+      '${emitter.drift('ColumnDefaultConstraint')}<$type>(${emitter.dartCode(columnDefault)})',
+    );
   }
 
   for (final feature in column.constraints) {
@@ -163,7 +169,8 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
       final tableName = feature.otherColumn.owner.id.name;
       final columnName = feature.otherColumn.nameInSql;
 
-      var constraint = 'const ${emitter.drift('ColumnForeignKeyConstraint')}('
+      var constraint =
+          'const ${emitter.drift('ColumnForeignKeyConstraint')}('
           'otherTableName: ${asDartLiteral(tableName)},'
           'otherColumnName: ${asDartLiteral(columnName)},';
 
@@ -187,7 +194,8 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     } else if (feature is ColumnGeneratedAs) {
       final dartCode = emitter.dartCode(feature.dartExpression);
       entries.add(
-          '${emitter.drift('ColumnGeneratedAs')}($dartCode, stored: ${feature.stored})');
+        '${emitter.drift('ColumnGeneratedAs')}($dartCode, stored: ${feature.stored})',
+      );
     } else if (feature is DefaultConstraintsFromSchemaFile) {
       String buildFor(SqlDialect dialect) {
         final result = StringBuffer();
@@ -203,8 +211,9 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
         return result.toString();
       }
 
-      final result =
-          StringBuffer('${emitter.drift('ColumnConstraint')}.custom({');
+      final result = StringBuffer(
+        '${emitter.drift('ColumnConstraint')}.custom({',
+      );
 
       for (final dialect in emitter.writer.options.supportedDialects) {
         result.writeln('$dialect: ${asDartLiteral(buildFor(dialect))},');

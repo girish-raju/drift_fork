@@ -10,7 +10,8 @@ import 'cancellation_test_support.dart';
 
 void main() {
   test('together with switchMap', () async {
-    String slowQuery(int i) => '''
+    String slowQuery(int i) =>
+        '''
       with recursive slow(x) as (values(log_value($i)) union all select x+1 from slow where x < 1000000)
       select $i from slow;
     ''';

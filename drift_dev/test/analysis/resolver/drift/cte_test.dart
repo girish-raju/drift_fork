@@ -18,7 +18,7 @@ SELECT
 	      )
 	      SELECT * from cte
       );
-'''
+''',
     });
 
     final file = await backend.analyze('package:a/test.drift');
@@ -33,8 +33,9 @@ SELECT
     final resultSet = query.resultSet;
     expect(resultSet.singleColumn, isTrue);
     expect(resultSet.needsOwnClass, isFalse);
-    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin),
-        [DriftSqlType.int]);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
+      DriftSqlType.int,
+    ]);
   });
 
   test('recognizes CTE clause', () async {
@@ -49,7 +50,7 @@ WITH RECURSIVE
     LIMIT 1000000
   )
   SELECT x FROM cnt;
-'''
+''',
     });
 
     final file = await backend.analyze('package:a/test.drift');
@@ -65,8 +66,9 @@ WITH RECURSIVE
     expect(resultSet.singleColumn, isTrue);
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.columns.map(resultSet.dartNameFor), ['x']);
-    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin),
-        [DriftSqlType.int]);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
+      DriftSqlType.int,
+    ]);
   });
 
   test('finds the underlying table when aliased through CTE', () async {
@@ -79,7 +81,7 @@ CREATE TABLE foo (
 
 test2:
 WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
-'''
+''',
     });
 
     final file = await backend.analyze('package:a/test.drift');

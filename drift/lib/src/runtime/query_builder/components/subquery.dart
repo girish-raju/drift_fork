@@ -91,7 +91,8 @@ class Subquery<Row> extends ResultSetImplementation<Subquery, Row>
     final name = select._nameForColumn(inner);
     if (name == null) {
       throw ArgumentError(
-          'The source select statement does not contain that column');
+        'The source select statement does not contain that column',
+      );
     }
 
     return columnsByName[name]!.dartCast();
@@ -100,12 +101,7 @@ class Subquery<Row> extends ResultSetImplementation<Subquery, Row>
   @override
   late final List<GeneratedColumn<Object>> $columns = [
     for (final (expr, name) in select._expandedColumns)
-      GeneratedColumn(
-        name,
-        entityName,
-        true,
-        type: expr.driftSqlType,
-      ),
+      GeneratedColumn(name, entityName, true, type: expr.driftSqlType),
   ];
 
   @override

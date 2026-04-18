@@ -9,8 +9,10 @@ final bool isExportSupported = true;
 /// Exports contents of the [database] as a [Uint8List] representing its main
 /// file.
 Future<Uint8List> exportDatabase(GeneratedDatabase database) async {
-  final destination = p.join(Directory.systemTemp.path,
-      "drift-export-${DateTime.now().toUtc().millisecondsSinceEpoch}.tmp");
+  final destination = p.join(
+    Directory.systemTemp.path,
+    "drift-export-${DateTime.now().toUtc().millisecondsSinceEpoch}.tmp",
+  );
 
   await database.exclusively(() async {
     await database.customStatement('VACUUM INTO ?;', [destination]);

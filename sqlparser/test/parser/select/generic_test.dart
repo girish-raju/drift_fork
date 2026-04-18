@@ -5,27 +5,29 @@ import '../utils.dart';
 final Map<String, AstNode> testCases = {
   'SELECT tbl.*, *, 1 as name WHERE 1 ORDER BY name ASC LIMIT 3 OFFSET 5':
       SelectStatement(
-    columns: [
-      StarResultColumn('tbl'),
-      StarResultColumn(null),
-      ExpressionResultColumn(
-        expression: NumericLiteral(1),
-        as: AliasClause('name'),
+        columns: [
+          StarResultColumn('tbl'),
+          StarResultColumn(null),
+          ExpressionResultColumn(
+            expression: NumericLiteral(1),
+            as: AliasClause('name'),
+          ),
+        ],
+        where: NumericLiteral(1),
+        orderBy: OrderBy(
+          terms: [
+            OrderingTerm(
+              expression: Reference(columnName: 'name'),
+              orderingMode: OrderingMode.ascending,
+            ),
+          ],
+        ),
+        limit: Limit(
+          count: NumericLiteral(3),
+          offsetSeparator: token(TokenType.offset),
+          offset: NumericLiteral(5),
+        ),
       ),
-    ],
-    where: NumericLiteral(1),
-    orderBy: OrderBy(terms: [
-      OrderingTerm(
-        expression: Reference(columnName: 'name'),
-        orderingMode: OrderingMode.ascending,
-      ),
-    ]),
-    limit: Limit(
-      count: NumericLiteral(3),
-      offsetSeparator: token(TokenType.offset),
-      offset: NumericLiteral(5),
-    ),
-  ),
   'SELECT tbl.*, (SELECT * FROM table2) FROM tbl': SelectStatement(
     columns: [
       StarResultColumn('tbl'),
@@ -54,40 +56,46 @@ final Map<String, AstNode> testCases = {
     ],
     from: TableReference('tbl'),
   ),
-  'SELECT col IN tbl AS in_tbl': SelectStatement(columns: [
-    ExpressionResultColumn(
-      expression: InExpression(
-        left: Reference(columnName: 'col'),
-        inside: TableReference('tbl'),
+  'SELECT col IN tbl AS in_tbl': SelectStatement(
+    columns: [
+      ExpressionResultColumn(
+        expression: InExpression(
+          left: Reference(columnName: 'col'),
+          inside: TableReference('tbl'),
+        ),
+        as: AliasClause('in_tbl'),
       ),
-      as: AliasClause('in_tbl'),
-    ),
-  ]),
-  'SELECT col IN (SELECT 2) AS in_select': SelectStatement(columns: [
-    ExpressionResultColumn(
-      expression: InExpression(
-        left: Reference(columnName: 'col'),
-        inside: SubQuery(
-          select: SelectStatement(
-            columns: [ExpressionResultColumn(expression: NumericLiteral(2))],
+    ],
+  ),
+  'SELECT col IN (SELECT 2) AS in_select': SelectStatement(
+    columns: [
+      ExpressionResultColumn(
+        expression: InExpression(
+          left: Reference(columnName: 'col'),
+          inside: SubQuery(
+            select: SelectStatement(
+              columns: [ExpressionResultColumn(expression: NumericLiteral(2))],
+            ),
           ),
         ),
+        as: AliasClause('in_select'),
       ),
-      as: AliasClause('in_select'),
-    ),
-  ]),
-  'SELECT col IN tbl_valued() AS in_select': SelectStatement(columns: [
-    ExpressionResultColumn(
-      expression: InExpression(
-        left: Reference(columnName: 'col'),
-        inside: TableValuedFunction(
-          'tbl_valued',
-          ExprFunctionParameters(parameters: []),
+    ],
+  ),
+  'SELECT col IN tbl_valued() AS in_select': SelectStatement(
+    columns: [
+      ExpressionResultColumn(
+        expression: InExpression(
+          left: Reference(columnName: 'col'),
+          inside: TableValuedFunction(
+            'tbl_valued',
+            ExprFunctionParameters(parameters: []),
+          ),
         ),
+        as: AliasClause('in_select'),
       ),
-      as: AliasClause('in_select'),
-    ),
-  ]),
+    ],
+  ),
 };
 
 void main() {
@@ -96,13 +104,15 @@ void main() {
   test('supports mapped by columns', () {
     testStatement(
       'SELECT 1 MAPPED BY `foo` AS r',
-      SelectStatement(columns: [
-        ExpressionResultColumn(
-          expression: NumericLiteral(1),
-          mappedBy: MappedBy(null, inlineDart('foo')),
-          as: AliasClause('r'),
-        ),
-      ]),
+      SelectStatement(
+        columns: [
+          ExpressionResultColumn(
+            expression: NumericLiteral(1),
+            mappedBy: MappedBy(null, inlineDart('foo')),
+            as: AliasClause('r'),
+          ),
+        ],
+      ),
       driftMode: true,
     );
   });

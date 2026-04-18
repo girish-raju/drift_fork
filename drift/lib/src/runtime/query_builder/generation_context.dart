@@ -69,18 +69,23 @@ class GenerationContext {
 
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
-  GenerationContext.fromDb(DatabaseConnectionUser this.executor,
-      {this.supportsVariables = true})
-      // ignore: deprecated_member_use_from_same_package
-      : options = executor.options,
-        typeMapping = executor.typeMapping;
+  GenerationContext.fromDb(
+    DatabaseConnectionUser this.executor, {
+    this.supportsVariables = true,
+  })
+    // ignore: deprecated_member_use_from_same_package
+    : options = executor.options,
+       typeMapping = executor.typeMapping;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.
-  GenerationContext(this.options, this.executor,
-      {this.supportsVariables = true})
-      : typeMapping = options
-            .createTypeMapping(executor?.executor.dialect ?? SqlDialect.sqlite);
+  GenerationContext(
+    this.options,
+    this.executor, {
+    this.supportsVariables = true,
+  }) : typeMapping = options.createTypeMapping(
+         executor?.executor.dialect ?? SqlDialect.sqlite,
+       );
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

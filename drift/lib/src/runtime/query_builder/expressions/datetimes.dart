@@ -1,9 +1,13 @@
 part of '../query_builder.dart';
 
-const _currentDateLiteral =
-    CustomExpression<DateTime>('CURRENT_DATE', precedence: Precedence.primary);
-const _currentTimestampLiteral = CustomExpression<DateTime>('CURRENT_TIMESTAMP',
-    precedence: Precedence.primary);
+const _currentDateLiteral = CustomExpression<DateTime>(
+  'CURRENT_DATE',
+  precedence: Precedence.primary,
+);
+const _currentTimestampLiteral = CustomExpression<DateTime>(
+  'CURRENT_TIMESTAMP',
+  precedence: Precedence.primary,
+);
 
 /// A sql expression that evaluates to the current date.
 ///
@@ -17,10 +21,7 @@ const _currentTimestampLiteral = CustomExpression<DateTime>('CURRENT_TIMESTAMP',
 const Expression<DateTime> currentDate = _DependingOnDateTimeExpression(
   forIsoString: _currentDateLiteral,
   forTimestamps: _DartCastExpression(
-    FunctionCallExpression(
-      'strftime',
-      [Constant('%s'), _currentDateLiteral],
-    ),
+    FunctionCallExpression('strftime', [Constant('%s'), _currentDateLiteral]),
     null,
   ),
 );
@@ -30,10 +31,10 @@ const Expression<DateTime> currentDate = _DependingOnDateTimeExpression(
 const Expression<DateTime> currentDateAndTime = _DependingOnDateTimeExpression(
   forIsoString: _currentTimestampLiteral,
   forTimestamps: _CastInSqlExpression(
-    FunctionCallExpression(
-      'strftime',
-      [Constant('%s'), _currentTimestampLiteral],
-    ),
+    FunctionCallExpression('strftime', [
+      Constant('%s'),
+      _currentTimestampLiteral,
+    ]),
     DriftSqlType.dateTime,
   ),
 );
@@ -51,8 +52,10 @@ extension DateTimeExpressions on Expression<DateTime> {
   static Expression<DateTime> fromUnixEpoch(Expression<int> unixEpoch) {
     return _DependingOnDateTimeExpression(
       forTimestamps: unixEpoch.dartCast(),
-      forIsoString: FunctionCallExpression(
-          'datetime', [unixEpoch, const Constant('unixepoch')]),
+      forIsoString: FunctionCallExpression('datetime', [
+        unixEpoch,
+        const Constant('unixepoch'),
+      ]),
     );
   }
 
@@ -105,8 +108,10 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// {@macro drift_datetime_timezone}
   Expression<String> get date {
     return _DependingOnDateTimeExpression.generate((datesAsText) {
-      return FunctionCallExpression('DATE',
-          [this, if (!datesAsText) const DateTimeModifier._unixEpoch()]);
+      return FunctionCallExpression('DATE', [
+        this,
+        if (!datesAsText) const DateTimeModifier._unixEpoch(),
+      ]);
     });
   }
 
@@ -115,8 +120,10 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// {@macro drift_datetime_timezone}
   Expression<String> get time {
     return _DependingOnDateTimeExpression.generate((datesAsText) {
-      return FunctionCallExpression('TIME',
-          [this, if (!datesAsText) const DateTimeModifier._unixEpoch()]);
+      return FunctionCallExpression('TIME', [
+        this,
+        if (!datesAsText) const DateTimeModifier._unixEpoch(),
+      ]);
     });
   }
 
@@ -125,8 +132,10 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// {@macro drift_datetime_timezone}
   Expression<String> get datetime {
     return _DependingOnDateTimeExpression.generate((datesAsText) {
-      return FunctionCallExpression('DATETIME',
-          [this, if (!datesAsText) const DateTimeModifier._unixEpoch()]);
+      return FunctionCallExpression('DATETIME', [
+        this,
+        if (!datesAsText) const DateTimeModifier._unixEpoch(),
+      ]);
     });
   }
 
@@ -146,8 +155,10 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// days since noon in Greenwich on November 24, 4714 B.C.
   Expression<double> get julianday {
     return _DependingOnDateTimeExpression.generate((datesAsText) {
-      return FunctionCallExpression('JULIANDAY',
-          [this, if (!datesAsText) const DateTimeModifier._unixEpoch()]);
+      return FunctionCallExpression('JULIANDAY', [
+        this,
+        if (!datesAsText) const DateTimeModifier._unixEpoch(),
+      ]);
     });
   }
 
@@ -188,8 +199,11 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// be used with this method.
   Expression<DateTime> modify(DateTimeModifier modifier) {
     return _DependingOnDateTimeExpression(
-      forTimestamps: FunctionCallExpression(
-          'unixepoch', [this, const DateTimeModifier._unixEpoch(), modifier]),
+      forTimestamps: FunctionCallExpression('unixepoch', [
+        this,
+        const DateTimeModifier._unixEpoch(),
+        modifier,
+      ]),
       forIsoString: FunctionCallExpression('datetime', [this, modifier]),
     );
   }
@@ -201,8 +215,11 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// [DateTimeModifier] factories.
   Expression<DateTime> modifyAll(Iterable<DateTimeModifier> modifiers) {
     return _DependingOnDateTimeExpression(
-      forTimestamps: FunctionCallExpression('unixepoch',
-          [this, const DateTimeModifier._unixEpoch(), ...modifiers]),
+      forTimestamps: FunctionCallExpression('unixepoch', [
+        this,
+        const DateTimeModifier._unixEpoch(),
+        ...modifiers,
+      ]),
       forIsoString: FunctionCallExpression('datetime', [this, ...modifiers]),
     );
   }
@@ -223,10 +240,14 @@ extension DateTimeExpressions on Expression<DateTime> {
       // Date times are integers (unix timestamps), so we can do arithmetic on
       // them directly.
       forTimestamps: BaseInfixOperator(
-          this, '+', Variable<int>(duration.inSeconds),
-          precedence: Precedence.plusMinus),
-      forIsoString:
-          modify(DateTimeModifier.seconds(duration.inMilliseconds / 1000)),
+        this,
+        '+',
+        Variable<int>(duration.inSeconds),
+        precedence: Precedence.plusMinus,
+      ),
+      forIsoString: modify(
+        DateTimeModifier.seconds(duration.inMilliseconds / 1000),
+      ),
     );
   }
 
@@ -241,10 +262,14 @@ extension DateTimeExpressions on Expression<DateTime> {
       // Date times are integers (unix timestamps), so we can do arithmetic on
       // them directly.
       forTimestamps: BaseInfixOperator(
-          this, '-', Variable<int>(duration.inSeconds),
-          precedence: Precedence.plusMinus),
-      forIsoString:
-          modify(DateTimeModifier.seconds(-duration.inMilliseconds / 1000)),
+        this,
+        '-',
+        Variable<int>(duration.inSeconds),
+        precedence: Precedence.plusMinus,
+      ),
+      forIsoString: modify(
+        DateTimeModifier.seconds(-duration.inMilliseconds / 1000),
+      ),
     );
   }
 }
@@ -312,8 +337,9 @@ class _DependingOnDateTimeExpression<D extends Object> extends Expression<D> {
   @override
   void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
     // Overriding this method avoids having to know the precedence beforehand.
-    return _expressionForContext(context)
-        .writeAroundPrecedence(context, precedence);
+    return _expressionForContext(
+      context,
+    ).writeAroundPrecedence(context, precedence);
   }
 
   @override

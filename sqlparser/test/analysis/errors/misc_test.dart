@@ -10,7 +10,9 @@ void main() {
   test('warns about multiple parameters with DISTINCT', () {
     engine
         .analyze("SELECT group_concat(DISTINCT content, '-') FROM demo")
-        .expectError('DISTINCT',
-            type: AnalysisErrorType.distinctAggregateWithWrongParameterCount);
+        .expectError(
+          'DISTINCT',
+          type: AnalysisErrorType.distinctAggregateWithWrongParameterCount,
+        );
   });
 }

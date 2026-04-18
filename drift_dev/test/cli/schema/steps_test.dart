@@ -22,10 +22,8 @@ void main() {
 
   test('generates valid code when only one schema version is saved', () async {
     final project = await TestDriftProject.create([
-      d.dir(
-        'drift_schemas/',
-        [
-          d.file('v1.json', '''
+      d.dir('drift_schemas/', [
+        d.file('v1.json', '''
 {
   "meta": {
     "version": "1.0.0"
@@ -72,8 +70,7 @@ void main() {
   ],
 }
 '''),
-        ],
-      ),
+      ]),
     ]);
     final path = project.root.path;
     await project.runDriftCli([

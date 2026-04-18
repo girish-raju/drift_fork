@@ -16,22 +16,20 @@ class DriftDiscover extends Builder {
   final DriftOptions options;
 
   DriftDiscover(BuilderOptions options)
-      : options = DriftOptions.fromJson(options.config);
+    : options = DriftOptions.fromJson(options.config);
 
   @override
   Map<String, List<String>> get buildExtensions => const {
-        '.drift': [
-          '.drift.drift_elements.json',
-        ],
-        '.dart': [
-          '.dart.drift_elements.json',
-        ],
-      };
+    '.drift': ['.drift.drift_elements.json'],
+    '.dart': ['.dart.drift_elements.json'],
+  };
 
   @override
   Future<void> build(BuildStep buildStep) async {
-    final backend =
-        DriftBuildBackend(buildStep, forDrift3Preview: options.drift3Preview);
+    final backend = DriftBuildBackend(
+      buildStep,
+      forDrift3Preview: options.drift3Preview,
+    );
     final driver = DriftAnalysisDriver(backend, options);
 
     final prepared = await driver.findLocalElements(buildStep.inputId.uri);
@@ -44,10 +42,7 @@ class DriftDiscover extends Builder {
           'valid_import': discovery.isValidImport,
           'imports': [
             for (final import in discovery.importDependencies)
-              {
-                'uri': import.uri.toString(),
-                'transitive': import.transitive,
-              }
+              {'uri': import.uri.toString(), 'transitive': import.transitive},
           ],
           'elements': [
             for (final entry in discovery.locallyDefinedElements)
@@ -56,8 +51,8 @@ class DriftDiscover extends Builder {
                 'name': entry.ownId.name,
                 if (entry is DiscoveredDartElement)
                   'dart_name': entry.dartElementName,
-              }
-          ]
+              },
+          ],
         }),
       );
     }
@@ -68,27 +63,25 @@ class DriftAnalyzer extends Builder {
   final DriftOptions options;
 
   DriftAnalyzer(BuilderOptions options)
-      : options = DriftOptions.fromJson(options.config);
+    : options = DriftOptions.fromJson(options.config);
 
   @override
   Map<String, List<String>> get buildExtensions => const {
-        '.drift': [
-          '.drift.drift_module.json',
-          '.drift.types.temp.dart',
-        ],
-        '.dart': [
-          '.dart.drift_module.json',
-          '.dart.types.temp.dart',
-        ],
-      };
+    '.drift': ['.drift.drift_module.json', '.drift.types.temp.dart'],
+    '.dart': ['.dart.drift_module.json', '.dart.types.temp.dart'],
+  };
 
   @override
   Future<void> build(BuildStep buildStep) async {
-    final backend =
-        DriftBuildBackend(buildStep, forDrift3Preview: options.drift3Preview);
+    final backend = DriftBuildBackend(
+      buildStep,
+      forDrift3Preview: options.drift3Preview,
+    );
     final driver = DriftAnalysisDriver(backend, options)
-      ..cacheReader =
-          BuildCacheReader(buildStep, findsLocalElementsReliably: true);
+      ..cacheReader = BuildCacheReader(
+        buildStep,
+        findsLocalElementsReliably: true,
+      );
 
     final results = await driver.resolveElements(buildStep.inputId.uri);
     var hadWarnings = false;
@@ -111,8 +104,9 @@ class DriftAnalyzer extends Builder {
       }
 
       final serialized = driver.serializeState(results);
-      final asJson =
-          JsonUtf8Encoder(' ' * 2).convert(serialized.serializedData);
+      final asJson = JsonUtf8Encoder(
+        ' ' * 2,
+      ).convert(serialized.serializedData);
 
       final jsonOutput = buildStep.inputId.addExtension('.drift_module.json');
       final typesOutput = buildStep.inputId.addExtension('.types.temp.dart');
@@ -125,7 +119,8 @@ class DriftAnalyzer extends Builder {
         // we also want to be able to use newer features if the source package
         // opted in to them (e.g. to be able to express records in here).
         // So, we need to know about the package version from the pubspec.
-        final version = await buildStep.languageVersionForPackage ??
+        final version =
+            await buildStep.languageVersionForPackage ??
             _languageVersionForGeneralizedTypedefs;
 
         final imports = LibraryImportManager();
@@ -176,8 +171,10 @@ extension on BuildStep {
       }
     } on Object {
       // Can't read version, so be it
-      log.fine('Could not resolve language version of package to determine '
-          'whether a //@dart comment is necessary for intermediate sources');
+      log.fine(
+        'Could not resolve language version of package to determine '
+        'whether a //@dart comment is necessary for intermediate sources',
+      );
     }
 
     return null;

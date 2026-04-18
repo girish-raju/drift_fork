@@ -24,8 +24,10 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Uri resolveUri(Uri base, String uriString) {
-    return AssetId.resolve(Uri.parse(uriString), from: AssetId.resolve(base))
-        .uri;
+    return AssetId.resolve(
+      Uri.parse(uriString),
+      from: AssetId.resolve(base),
+    ).uri;
   }
 
   @override
@@ -64,10 +66,7 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<AstNode?> loadElementDeclaration(Element element) {
-    return _buildStep.resolver.astNodeFor(
-      element.firstFragment,
-      resolve: true,
-    );
+    return _buildStep.resolver.astNodeFor(element.firstFragment, resolve: true);
   }
 
   @override
@@ -83,8 +82,9 @@ class DriftBuildBackend extends DriftBackend {
     DriftPreprocessorResult prepResult;
     try {
       prepResult = DriftPreprocessorResult.fromJson(
-          json.decode(await _buildStep.readAsString(prepJson))
-              as Map<String, Object?>);
+        json.decode(await _buildStep.readAsString(prepJson))
+            as Map<String, Object?>,
+      );
     } on Exception catch (e, s) {
       log.warning('Could not read Dart expression $dartExpression', e, s);
       throw CannotReadExpressionException('Could not load helpers');
@@ -97,24 +97,26 @@ class DriftBuildBackend extends DriftBackend {
     }
 
     final library = await _buildStep.resolver.libraryFor(tempDart);
-    final field = library.firstFragment.topLevelVariables
-        .firstWhere((element) => element.name == getter);
-    final fieldAst = await _buildStep.resolver.astNodeFor(
-      field,
-      resolve: true,
+    final field = library.firstFragment.topLevelVariables.firstWhere(
+      (element) => element.name == getter,
     );
+    final fieldAst = await _buildStep.resolver.astNodeFor(field, resolve: true);
 
     final initializer = (fieldAst as VariableDeclaration).initializer;
     if (initializer == null) {
       throw CannotReadExpressionException(
-          'Malformed helper file, this should never happen');
+        'Malformed helper file, this should never happen',
+      );
     }
     return initializer;
   }
 
   @override
   Future<Element?> resolveTopLevelElement(
-      Uri context, String reference, Iterable<Uri> imports) async {
+    Uri context,
+    String reference,
+    Iterable<Uri> imports,
+  ) async {
     final original = AssetId.resolve(context);
     final tempDart = original.changeExtension('.expr.temp.dart');
 
@@ -128,9 +130,12 @@ class DriftBuildBackend extends DriftBackend {
       // For that, resolve a library we know exists and likely has been resolved
       // already.
       final libraryWeKnowExists = await _buildStep.resolver.libraryFor(
-          AssetId.resolve(forDrift3Preview
+        AssetId.resolve(
+          forDrift3Preview
               ? KnownDriftTypes.drift3Uri
-              : KnownDriftTypes.drift2Uri));
+              : KnownDriftTypes.drift2Uri,
+        ),
+      );
       final dartCore = libraryWeKnowExists.typeProvider.objectElement.library;
 
       return dartCore.exportNamespace.get2(reference);
@@ -169,7 +174,7 @@ class BuildCacheReader implements AnalysisResultCacheReader {
             (
               uri: Uri.parse(import['uri'] as String),
               transitive: import['transitive'] as bool,
-            )
+            ),
         ],
         [
           for (final element in rawElements)

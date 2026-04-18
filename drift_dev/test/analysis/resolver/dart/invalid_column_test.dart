@@ -21,8 +21,9 @@ void main() {
       ''',
     });
 
-    final file =
-        await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+    final file = await backend.driver.fullyAnalyze(
+      Uri.parse('package:a/main.dart'),
+    );
     final table = file.analyzedElements.single as DriftTable;
 
     expect(table.schemaName, 'has_invalid_column');
@@ -30,13 +31,12 @@ void main() {
 
     expect(
       file.allErrors,
-      containsAll(
-        [
-          isDriftError(contains('This getter does not create a valid column'))
-              .withSpan('id'),
-          isDriftError(contains('Column not found')).withSpan('id'),
-        ],
-      ),
+      containsAll([
+        isDriftError(
+          contains('This getter does not create a valid column'),
+        ).withSpan('id'),
+        isDriftError(contains('Column not found')).withSpan('id'),
+      ]),
     );
   });
 }

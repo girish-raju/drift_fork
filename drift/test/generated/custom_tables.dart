@@ -10,8 +10,9 @@ part 'custom_tables.g.dart';
 @DriftDatabase(
   include: {'tables.drift'},
   queries: {
-    'writeConfig': 'REPLACE INTO config (config_key, config_value) '
-        'VALUES (:key, :value)'
+    'writeConfig':
+        'REPLACE INTO config (config_key, config_value) '
+        'VALUES (:key, :value)',
   },
 )
 class CustomTablesDb extends _$CustomTablesDb {
@@ -26,6 +27,7 @@ class CustomTablesDb extends _$CustomTablesDb {
   MigrationStrategy migration = MigrationStrategy();
 
   @override
-  DriftDatabaseOptions options =
-      const DriftDatabaseOptions(storeDateTimeAsText: true);
+  DriftDatabaseOptions options = const DriftDatabaseOptions(
+    storeDateTimeAsText: true,
+  );
 }

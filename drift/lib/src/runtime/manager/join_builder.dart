@@ -21,12 +21,13 @@ class JoinBuilder {
   /// applied to a referenced table
   /// should be joined to the current table
   @internal
-  JoinBuilder(
-      {required this.currentTable,
-      required this.referencedTable,
-      required this.currentColumn,
-      required this.referencedColumn,
-      this.useColumns = false});
+  JoinBuilder({
+    required this.currentTable,
+    required this.referencedTable,
+    required this.currentColumn,
+    required this.referencedColumn,
+    this.useColumns = false,
+  });
 
   /// The name of the alias that this join will use
   String get aliasedName {
@@ -58,7 +59,9 @@ class JoinBuilder {
   /// Build a join from this join builder
   Join buildJoin() {
     return leftOuterJoin(
-        referencedTable, currentColumn.equalsExp(referencedColumn),
-        useColumns: useColumns);
+      referencedTable,
+      currentColumn.equalsExp(referencedColumn),
+      useColumns: useColumns,
+    );
   }
 }

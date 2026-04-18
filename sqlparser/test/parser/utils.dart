@@ -25,9 +25,9 @@ IdentifierToken identifier(String content) {
 }
 
 DriftFile parseDrift(String content) {
-  return SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
-      .parse(ParserEntrypoint.driftFile, content)
-      .rootNode;
+  return SqlEngine(
+    EngineOptions(driftOptions: const DriftSqlOptions()),
+  ).parse(ParserEntrypoint.driftFile, content).rootNode;
 }
 
 void testDriftFile(String driftFile, DriftFile expected) {
@@ -37,9 +37,9 @@ void testDriftFile(String driftFile, DriftFile expected) {
 }
 
 void testStatement(String sql, AstNode expected, {bool driftMode = false}) {
-  final result = SqlEngine(EngineOptions(
-          driftOptions: driftMode ? const DriftSqlOptions() : null))
-      .parse(ParserEntrypoint.statement, sql);
+  final result = SqlEngine(
+    EngineOptions(driftOptions: driftMode ? const DriftSqlOptions() : null),
+  ).parse(ParserEntrypoint.statement, sql);
   expect(result.errors, isEmpty);
 
   final parsed = result.rootNode;
@@ -88,7 +88,8 @@ void enforceHasSpan(AstNode node) {
     void checkHasToken(Object? property, Token? token, String name) {
       if ((property == null) != (token == null)) {
         throw ArgumentError(
-            'Node $node: $name must have both token and property set or none.');
+          'Node $node: $name must have both token and property set or none.',
+        );
       }
     }
 

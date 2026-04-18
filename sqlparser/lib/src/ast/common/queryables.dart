@@ -33,7 +33,7 @@ class TableReference extends TableOrSubquery
   TableReference(this.tableName, {this.as, this.schemaName});
 
   @override
-  Iterable<AstNode> get childNodes => [if (as case final alias?) alias];
+  Iterable<AstNode> get childNodes => [?as];
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -69,8 +69,7 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [statement, if (as case final alias?) alias];
+  Iterable<AstNode> get childNodes => [statement, ?as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
@@ -127,16 +126,12 @@ class JoinOperator extends AstNode {
   final bool outer;
   final JoinOperatorKind operator;
 
-  JoinOperator(
-    this.operator, {
-    this.natural = false,
-    this.outer = false,
-  });
+  JoinOperator(this.operator, {this.natural = false, this.outer = false});
 
   JoinOperator.comma()
-      : natural = false,
-        outer = false,
-        operator = JoinOperatorKind.comma;
+    : natural = false,
+      outer = false,
+      operator = JoinOperatorKind.comma;
 
   @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
@@ -162,7 +157,7 @@ class Join extends AstNode {
     return [
       operator,
       query,
-      if (constraint is OnConstraint) (constraint as OnConstraint).expression
+      if (constraint is OnConstraint) (constraint as OnConstraint).expression,
     ];
   }
 
@@ -177,8 +172,11 @@ class Join extends AstNode {
     query = transformer.transformChild(query, this, arg);
     if (constraint is OnConstraint) {
       final onConstraint = constraint as OnConstraint;
-      onConstraint.expression =
-          transformer.transformChild(onConstraint.expression, this, arg);
+      onConstraint.expression = transformer.transformChild(
+        onConstraint.expression,
+        this,
+        arg,
+      );
     }
   }
 }
@@ -232,8 +230,7 @@ class TableValuedFunction extends Queryable
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [parameters, if (as case final alias?) alias];
+  Iterable<AstNode> get childNodes => [parameters, ?as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

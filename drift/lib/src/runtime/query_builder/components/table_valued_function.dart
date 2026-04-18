@@ -50,9 +50,9 @@ abstract base class TableValuedFunction<Self extends ResultSetImplementation>
     required this.arguments,
     required List<GeneratedColumn> columns,
     String? alias,
-  })  : _functionName = functionName,
-        $columns = columns,
-        aliasedName = alias ?? functionName;
+  }) : _functionName = functionName,
+       $columns = columns,
+       aliasedName = alias ?? functionName;
 
   @override
   Self get asDslTable => this as Self;
@@ -68,15 +68,13 @@ abstract base class TableValuedFunction<Self extends ResultSetImplementation>
   @override
   FutureOr<TypedResult> map(Map<String, dynamic> data, {String? tablePrefix}) {
     final row = QueryRow(data.withoutPrefix(tablePrefix), attachedDatabase);
-    return TypedResult(
-      const {},
-      row,
-      {
-        for (final column in $columns)
-          column: attachedDatabase.typeMapping
-              .read(column.type, row.data[column.name]),
-      },
-    );
+    return TypedResult(const {}, row, {
+      for (final column in $columns)
+        column: attachedDatabase.typeMapping.read(
+          column.type,
+          row.data[column.name],
+        ),
+    });
   }
 
   @override

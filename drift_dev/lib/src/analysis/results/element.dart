@@ -58,7 +58,10 @@ class DriftDeclaration {
 
   factory DriftDeclaration.dartElement(Element element) {
     return DriftDeclaration(
-        element.library!.uri, element.firstFragment.nameOffset!, element.name!);
+      element.library!.uri,
+      element.firstFragment.nameOffset!,
+      element.name!,
+    );
   }
 
   factory DriftDeclaration.driftFile(SyntacticEntity node, Uri uri) {

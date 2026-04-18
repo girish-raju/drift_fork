@@ -16,9 +16,10 @@ CREATE VIRTUAL TABLE fts USING fts5(a, c, content=tbl);
 
       final result = await state.analyze('package:a/main.drift');
       expect(result.allErrors, [
-        isDriftError('Could not find referenced content table: '
-                '`tbl` could not be found in any import.')
-            .withSpan('content=tbl'),
+        isDriftError(
+          'Could not find referenced content table: '
+          '`tbl` could not be found in any import.',
+        ).withSpan('content=tbl'),
       ]);
     });
 
@@ -33,8 +34,9 @@ CREATE VIRTUAL TABLE fts USING fts5(a, c, content=tbl, content_rowid=d);
 
       final result = await state.analyze('package:a/main.drift');
       expect(result.allErrors, [
-        isDriftError('Invalid content rowid, `d` not found in `tbl`')
-            .withSpan('content_rowid=d'),
+        isDriftError(
+          'Invalid content rowid, `d` not found in `tbl`',
+        ).withSpan('content_rowid=d'),
       ]);
     });
 
@@ -48,8 +50,9 @@ CREATE VIRTUAL TABLE fts USING fts5(e, c, content=tbl, content_rowid=d);
       }, options: _options);
 
       final result = await state.analyze('package:a/main.drift');
-      expect(result.allErrors,
-          [isDriftError('The content table has no column `e`.').withSpan('e')]);
+      expect(result.allErrors, [
+        isDriftError('The content table has no column `e`.').withSpan('e'),
+      ]);
     });
   });
 

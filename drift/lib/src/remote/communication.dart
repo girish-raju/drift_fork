@@ -22,17 +22,20 @@ class DriftCommunication {
   // (one per remote). Each of them has an independent _currentRequestId field
   int _currentRequestId = 0;
   final Map<int, _PendingRequest> _pendingRequests = {};
-  final StreamController<Request> _incomingRequests =
-      StreamController(sync: true);
+  final StreamController<Request> _incomingRequests = StreamController(
+    sync: true,
+  );
 
   bool _startedClosingLocally = false;
   final Completer<void> _closeCompleter = Completer();
 
   /// Starts a drift communication channel over a raw [StreamChannel].
-  DriftCommunication(this._channel,
-      {bool debugLog = false, bool serialize = true})
-      : _debugLog = debugLog,
-        _serialize = serialize {
+  DriftCommunication(
+    this._channel, {
+    bool debugLog = false,
+    bool serialize = true,
+  }) : _debugLog = debugLog,
+       _serialize = serialize {
     // Note that this subscription does not need to be cancelled explicitly. As
     // per [StreamChannel] guarantees, closing the sink will emit a done event
     // and then dispose the stream.
@@ -91,7 +94,9 @@ class DriftCommunication {
       final request = _pendingRequests.remove(requestId);
 
       request?.completeWithError(
-          DriftRemoteException._(msg.error, msg.stackTrace), msg.stackTrace);
+        DriftRemoteException._(msg.error, msg.stackTrace),
+        msg.stackTrace,
+      );
     } else if (msg is Request) {
       _incomingRequests.add(msg);
     } else if (msg is CancelledResponse) {
@@ -125,8 +130,10 @@ class DriftCommunication {
 
   void _send(Message msg) {
     if (isClosed) {
-      throw StateError('Tried to send $msg over isolate channel, but the '
-          'connection was closed!');
+      throw StateError(
+        'Tried to send $msg over isolate channel, but the '
+        'connection was closed!',
+      );
     }
 
     if (_debugLog) {
@@ -186,13 +193,14 @@ class _PendingRequest {
 
   void completeWithError(Object error, [StackTrace? trace]) {
     completer.completeError(
-        error,
-        trace == null
-            ? requestTrace
-            : Chain([
-                if (trace is Chain) ...trace.traces else Trace.from(trace),
-                Trace.from(requestTrace)
-              ]));
+      error,
+      trace == null
+          ? requestTrace
+          : Chain([
+              if (trace is Chain) ...trace.traces else Trace.from(trace),
+              Trace.from(requestTrace),
+            ]),
+    );
   }
 }
 

@@ -5,16 +5,21 @@ import '../../analysis/errors/utils.dart';
 
 void main() {
   group('json with new type inference', () {
-    final engine = SqlEngine(EngineOptions(
-      enabledExtensions: const [Json1Extension()],
-      version: SqliteVersion.v3_45,
-    ));
+    final engine = SqlEngine(
+      EngineOptions(
+        enabledExtensions: const [Json1Extension()],
+        version: SqliteVersion.v3_45,
+      ),
+    );
     // add user (name, phone) table
     final table = engine.schemaReader.read(
       engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE TABLE user (name TEXT, phone TEXT)')
-          .rootNode as TableInducingStatement,
+              .parse(
+                ParserEntrypoint.statement,
+                'CREATE TABLE user (name TEXT, phone TEXT)',
+              )
+              .rootNode
+          as TableInducingStatement,
     );
     engine.registerTable(table);
 
@@ -67,7 +72,9 @@ void main() {
 
     test('json_valid', () {
       expect(
-          findResult('json_valid()'), const ResolveResult(ResolvedType.bool()));
+        findResult('json_valid()'),
+        const ResolveResult(ResolvedType.bool()),
+      );
     });
 
     test('json_extract', () {
@@ -106,7 +113,7 @@ SELECT DISTINCT user.name
       analysisErrorWith(
         lexeme: 'jsonb',
         type: AnalysisErrorType.unknownFunction,
-      )
+      ),
     ]);
   });
 
@@ -117,7 +124,7 @@ SELECT DISTINCT user.name
       analysisErrorWith(
         lexeme: 'json_pretty',
         type: AnalysisErrorType.notSupportedInDesiredVersion,
-      )
+      ),
     ]);
   });
 }

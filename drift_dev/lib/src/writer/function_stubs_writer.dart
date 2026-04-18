@@ -86,15 +86,20 @@ class FunctionStubsWriter {
       _emitter.write(';');
     }
 
-    final allArgs =
-        Iterable.generate(function.argumentTypes.length, (i) => 'arg$i')
-            .join(', ');
+    final allArgs = Iterable.generate(
+      function.argumentTypes.length,
+      (i) => 'arg$i',
+    ).join(', ');
     _emitter.write('return ${_nameFor(name)}($allArgs);');
   }
 
   static final _commonImport = Uri.parse('package:sqlite3/common.dart');
-  static final _commonDatabase =
-      AnnotatedDartCode.importedSymbol(_commonImport, 'CommonDatabase');
-  static final _allowedArgumentCount =
-      AnnotatedDartCode.importedSymbol(_commonImport, 'AllowedArgumentCount');
+  static final _commonDatabase = AnnotatedDartCode.importedSymbol(
+    _commonImport,
+    'CommonDatabase',
+  );
+  static final _allowedArgumentCount = AnnotatedDartCode.importedSymbol(
+    _commonImport,
+    'AllowedArgumentCount',
+  );
 }

@@ -21,8 +21,10 @@ class LazyDatabase extends QueryExecutor {
   SqlDialect get dialect {
     // Drift reads dialect before database opened, so we must know in advance
     if (_delegateAvailable && _dialect != _delegate.dialect) {
-      throw Exception('LazyDatabase created with $_dialect, but underlying '
-          'database is ${_delegate.dialect}.');
+      throw Exception(
+        'LazyDatabase created with $_dialect, but underlying '
+        'database is ${_delegate.dialect}.',
+      );
     }
     return _dialect;
   }
@@ -39,9 +41,11 @@ class LazyDatabase extends QueryExecutor {
   /// [opener] immediately. This can be useful when [opener] captures an
   /// existing future or other state, as [close] would otherwise not clean up
   /// if the database has never been used.
-  LazyDatabase(this.opener,
-      {SqlDialect dialect = SqlDialect.sqlite, bool openImmediately = false})
-      : _dialect = dialect {
+  LazyDatabase(
+    this.opener, {
+    SqlDialect dialect = SqlDialect.sqlite,
+    bool openImmediately = false,
+  }) : _dialect = dialect {
     if (openImmediately) {
       unawaited(_awaitOpened());
     }
@@ -92,7 +96,9 @@ class LazyDatabase extends QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
+    String statement,
+    List<Object?> args,
+  ) {
     return _delegate.runSelect(statement, args);
   }
 

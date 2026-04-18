@@ -31,9 +31,9 @@ void main() {
     final expr =
         (c.equals('A') | c.equals('B')) & (c.equals('C') | c.equals(''));
     expect(
-        expr,
-        generates(
-            '(c = ? OR c = ?) AND (c = ? OR c = ?)', ['A', 'B', 'C', '']));
+      expr,
+      generates('(c = ? OR c = ?) AND (c = ? OR c = ?)', ['A', 'B', 'C', '']),
+    );
   });
 
   test('generates cast expressions', () {
@@ -51,18 +51,26 @@ void main() {
     final db = TodoDb();
 
     expect(
-        subqueryExpression<String>(
-            db.selectOnly(db.users)..addColumns([db.users.name])),
-        generates('(SELECT "users"."name" AS "users.name" FROM "users")'));
+      subqueryExpression<String>(
+        db.selectOnly(db.users)..addColumns([db.users.name]),
+      ),
+      generates('(SELECT "users"."name" AS "users.name" FROM "users")'),
+    );
   });
 
   test('does not allow subqueries with more than one column', () {
     final db = TodoDb();
 
     expect(
-        () => subqueryExpression<String>(db.select(db.users)),
-        throwsA(isArgumentError.having((e) => e.message, 'message',
-            contains('Must return exactly one column'))));
+      () => subqueryExpression<String>(db.select(db.users)),
+      throwsA(
+        isArgumentError.having(
+          (e) => e.message,
+          'message',
+          contains('Must return exactly one column'),
+        ),
+      ),
+    );
   });
 
   test('does not count columns with useColumns: false', () {
@@ -70,14 +78,21 @@ void main() {
     final db = TodoDb();
 
     expect(
-      subqueryExpression<String>(db.selectOnly(db.users)
-        ..addColumns([db.users.name])
-        ..join([
-          innerJoin(db.categories, db.categories.id.equalsExp(db.users.id),
-              useColumns: false)
-        ])),
-      generates('(SELECT "users"."name" AS "users.name" FROM "users" '
-          'INNER JOIN "categories" ON "categories"."id" = "users"."id")'),
+      subqueryExpression<String>(
+        db.selectOnly(db.users)
+          ..addColumns([db.users.name])
+          ..join([
+            innerJoin(
+              db.categories,
+              db.categories.id.equalsExp(db.users.id),
+              useColumns: false,
+            ),
+          ]),
+      ),
+      generates(
+        '(SELECT "users"."name" AS "users.name" FROM "users" '
+        'INNER JOIN "categories" ON "categories"."id" = "users"."id")',
+      ),
     );
   });
 
@@ -101,13 +116,16 @@ void main() {
       final db = TodoDb(executor);
       addTearDown(db.close);
 
-      final query = db
-          .select(db.users)
-          .join([innerJoin(db.categories, db.categories.rowId.equals(3))]);
+      final query = db.select(db.users).join([
+        innerJoin(db.categories, db.categories.rowId.equals(3)),
+      ]);
       await query.get();
 
-      verify(executor
-          .runSelect(argThat(contains('ON "categories"."_rowid_" = ?')), [3]));
+      verify(
+        executor.runSelect(argThat(contains('ON "categories"."_rowid_" = ?')), [
+          3,
+        ]),
+      );
     });
   });
 
@@ -136,28 +154,32 @@ void main() {
     expect(
       Expression.and([
         for (var i = 0; i < 5; i++)
-          CustomExpression<bool>('e$i', precedence: Precedence.primary)
+          CustomExpression<bool>('e$i', precedence: Precedence.primary),
       ]),
       generates('(((e0 AND e1) AND e2) AND e3) AND e4'),
     );
 
     expect(Expression.and(const []), generates('1'));
-    expect(Expression.and(const [], ifEmpty: const Constant(false)),
-        generates('0'));
+    expect(
+      Expression.and(const [], ifEmpty: const Constant(false)),
+      generates('0'),
+    );
   });
 
   test('Expression.or', () {
     expect(
       Expression.or([
         for (var i = 0; i < 5; i++)
-          CustomExpression<bool>('e$i', precedence: Precedence.primary)
+          CustomExpression<bool>('e$i', precedence: Precedence.primary),
       ]),
       generates('(((e0 OR e1) OR e2) OR e3) OR e4'),
     );
 
     expect(Expression.or(const []), generates('0'));
     expect(
-        Expression.or(const [], ifEmpty: const Constant(true)), generates('1'));
+      Expression.or(const [], ifEmpty: const Constant(true)),
+      generates('1'),
+    );
   });
 
   test('and and or', () {

@@ -20,8 +20,9 @@ class AnalyzeCommand extends DriftCommand {
     await for (final file in cli.project.sourceFiles) {
       cli.logger.fine('Analyzing $file');
 
-      final results =
-          await driver.driver.fullyAnalyze(driver.uriFromPath(file.path));
+      final results = await driver.driver.fullyAnalyze(
+        driver.uriFromPath(file.path),
+      );
 
       for (final error in results.allErrors) {
         cli.logger.warning(error.toString());

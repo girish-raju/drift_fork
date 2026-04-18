@@ -47,8 +47,12 @@ void main() {
         .into(database.withCustomType)
         .insert(WithCustomTypeCompanion.insert(id: uuid));
 
-    verify(sqlite3Executor.runInsert(
-        'INSERT INTO "with_custom_type" ("id") VALUES (?)', [uuid.toString()]));
+    verify(
+      sqlite3Executor.runInsert(
+        'INSERT INTO "with_custom_type" ("id") VALUES (?)',
+        [uuid.toString()],
+      ),
+    );
 
     database.close();
     database = TodoDb(postgresExecutor);
@@ -57,8 +61,12 @@ void main() {
         .into(database.withCustomType)
         .insert(WithCustomTypeCompanion.insert(id: uuid));
 
-    verify(postgresExecutor.runInsert(
-        r'INSERT INTO "with_custom_type" ("id") VALUES ($1)', [uuid]));
+    verify(
+      postgresExecutor.runInsert(
+        r'INSERT INTO "with_custom_type" ("id") VALUES ($1)',
+        [uuid],
+      ),
+    );
   });
 
   test('for selects', () async {
@@ -67,7 +75,7 @@ void main() {
     final sqlite3Executor = MockExecutor();
     when(sqlite3Executor.runSelect(any, any)).thenAnswer((_) {
       return Future.value([
-        {'id': uuid.toString()}
+        {'id': uuid.toString()},
       ]);
     });
 
@@ -75,7 +83,7 @@ void main() {
     when(postgresExecutor.dialect).thenReturn(SqlDialect.postgres);
     when(postgresExecutor.runSelect(any, any)).thenAnswer((_) {
       return Future.value([
-        {'id': uuid}
+        {'id': uuid},
       ]);
     });
 

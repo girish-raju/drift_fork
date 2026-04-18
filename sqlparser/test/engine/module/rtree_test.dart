@@ -1,8 +1,9 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
-final _rtreeOptions =
-    EngineOptions(enabledExtensions: const [RTreeExtension()]);
+final _rtreeOptions = EngineOptions(
+  enabledExtensions: const [RTreeExtension()],
+);
 
 void main() {
   group('creating rtree tables', () {
@@ -16,8 +17,9 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
    minY, maxY       -- Minimum and maximum Y coordinate
 );''');
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(table.name, 'demo_index');
       final columns = table.resultColumns;
@@ -36,9 +38,11 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
 );''');
 
         expect(
-            () => const SchemaFromCreateTable()
-                .read(result.root as TableInducingStatement),
-            throwsArgumentError);
+          () => const SchemaFromCreateTable().read(
+            result.root as TableInducingStatement,
+          ),
+          throwsArgumentError,
+        );
       });
 
       test('no coordinates', () {
@@ -48,9 +52,11 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
 );''');
 
         expect(
-            () => const SchemaFromCreateTable()
-                .read(result.root as TableInducingStatement),
-            throwsArgumentError);
+          () => const SchemaFromCreateTable().read(
+            result.root as TableInducingStatement,
+          ),
+          throwsArgumentError,
+        );
       });
 
       test('too many dimensions', () {
@@ -66,9 +72,11 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
 );''');
 
         expect(
-            () => const SchemaFromCreateTable()
-                .read(result.root as TableInducingStatement),
-            throwsArgumentError);
+          () => const SchemaFromCreateTable().read(
+            result.root as TableInducingStatement,
+          ),
+          throwsArgumentError,
+        );
       });
     });
   });
@@ -85,13 +93,18 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
    minY, maxY       -- Minimum and maximum Y coordinate
 );''');
 
-      engine.registerTable(const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement));
+      engine.registerTable(
+        const SchemaFromCreateTable().read(
+          result.root as TableInducingStatement,
+        ),
+      );
     });
 
     test('insert', () {
-      final result = engine.analyze('INSERT INTO demo_index VALUES '
-          '(28215, -80.781227, -80.604706, 35.208813, 35.297367);');
+      final result = engine.analyze(
+        'INSERT INTO demo_index VALUES '
+        '(28215, -80.781227, -80.604706, 35.208813, 35.297367);',
+      );
       expect(result.errors, isEmpty);
     });
 

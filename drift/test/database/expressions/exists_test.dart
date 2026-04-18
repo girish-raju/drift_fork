@@ -14,7 +14,9 @@ void main() {
     expect(
       existsExpression,
       generates(
-          'EXISTS (SELECT * FROM "users" WHERE "users"."is_awesome" = ?)', [1]),
+        'EXISTS (SELECT * FROM "users" WHERE "users"."is_awesome" = ?)',
+        [1],
+      ),
     );
   });
 

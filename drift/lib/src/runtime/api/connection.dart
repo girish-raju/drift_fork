@@ -33,17 +33,21 @@ class DatabaseConnection implements QueryExecutor {
     StreamQueryStore? streamQueries,
     this.connectionData,
     bool closeStreamsSynchronously = false,
-  }) : streamQueries = streamQueries ??
-            switch (executor) {
-              DatabaseConnection() => executor.streamQueries,
-              _ => StreamQueryStore(
-                  closeStreamsSynchronously: closeStreamsSynchronously)
-            };
+  }) : streamQueries =
+           streamQueries ??
+           switch (executor) {
+             DatabaseConnection() => executor.streamQueries,
+             _ => StreamQueryStore(
+               closeStreamsSynchronously: closeStreamsSynchronously,
+             ),
+           };
 
   /// Constructs a [DatabaseConnection] from the [QueryExecutor] by using the
   /// default type system and a new [StreamQueryStore].
-  @Deprecated('Use the default unnamed constructor of `DatabaseConnection` '
-      'instead')
+  @Deprecated(
+    'Use the default unnamed constructor of `DatabaseConnection` '
+    'instead',
+  )
   DatabaseConnection.fromExecutor(QueryExecutor executor) : this(executor);
 
   /// Database connection that is instantly available, but delegates work to a
@@ -67,8 +71,10 @@ class DatabaseConnection implements QueryExecutor {
   ///   }
   /// }
   /// ```
-  factory DatabaseConnection.delayed(FutureOr<DatabaseConnection> connection,
-      {SqlDialect dialect = SqlDialect.sqlite}) {
+  factory DatabaseConnection.delayed(
+    FutureOr<DatabaseConnection> connection, {
+    SqlDialect dialect = SqlDialect.sqlite,
+  }) {
     if (connection is DatabaseConnection) {
       return connection;
     }
@@ -125,8 +131,9 @@ class DatabaseConnection implements QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-          String statement, List<Object?> args) =>
-      executor.runSelect(statement, args);
+    String statement,
+    List<Object?> args,
+  ) => executor.runSelect(statement, args);
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) =>

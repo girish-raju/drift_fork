@@ -33,7 +33,7 @@ totalDurationByArtist:
     INNER JOIN albums ON albums.artist = a.id
     INNER JOIN tracks ON tracks.album = albums.id
   GROUP BY a.id;
-    '''
+    ''',
     }, options: const DriftOptions.defaults());
 
     final file = await state.analyze('package:foo/a.drift');

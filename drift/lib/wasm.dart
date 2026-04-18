@@ -34,7 +34,7 @@ export 'src/web/wasm_setup/types.dart';
 /// is also available in the drift repository.
 class WasmDatabase extends DelegatedDatabase {
   WasmDatabase._(super.delegate, bool logStatements)
-      : super(isSequential: true, logStatements: logStatements);
+    : super(isSequential: true, logStatements: logStatements);
 
   /// Creates a wasm database at [path] in the virtual file system of the
   /// [sqlite3] module.
@@ -86,8 +86,13 @@ class WasmDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-      _WasmDelegate(sqlite3, null, setup, null,
-          cachePreparedStatements: cachePreparedStatements),
+      _WasmDelegate(
+        sqlite3,
+        null,
+        setup,
+        null,
+        cachePreparedStatements: cachePreparedStatements,
+      ),
       logStatements,
     );
   }
@@ -111,8 +116,13 @@ class WasmDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-      _WasmDelegate.opened(database, setup, closeUnderlyingOnClose,
-          cachePreparedStatements, enableMigrations),
+      _WasmDelegate.opened(
+        database,
+        setup,
+        closeUnderlyingOnClose,
+        cachePreparedStatements,
+        enableMigrations,
+      ),
       logStatements,
     );
   }
@@ -165,7 +175,8 @@ class WasmDatabase extends DelegatedDatabase {
     final availableImplementations = probed.availableStorages.toList();
     // Enum values are ordered by preferrability, so just pick the best option.
     availableImplementations.sortBy<num>((e) => e.index);
-    var selectedImplementation = availableImplementations.firstOrNull ??
+    var selectedImplementation =
+        availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
 
     // Check if there is an existing DB and restrict implementations to its storage.
@@ -192,8 +203,9 @@ class WasmDatabase extends DelegatedDatabase {
       }
 
       if (!didMove) {
-        selectedImplementation = availableImplementations
-            .firstWhere((e) => e.storageApi == currentDb);
+        selectedImplementation = availableImplementations.firstWhere(
+          (e) => e.storageApi == currentDb,
+        );
       }
     }
 
@@ -206,7 +218,10 @@ class WasmDatabase extends DelegatedDatabase {
     );
 
     return WasmDatabaseResult(
-        connection, selectedImplementation, probed.missingFeatures);
+      connection,
+      selectedImplementation,
+      probed.missingFeatures,
+    );
   }
 
   static WebStorageApi? _selectExistingDatabase(
@@ -219,13 +234,13 @@ class WasmDatabase extends DelegatedDatabase {
 
       final implementationsForStorage = switch (location) {
         WebStorageApi.indexedDb => const [
-            WasmStorageImplementation.sharedIndexedDb,
-            WasmStorageImplementation.unsafeIndexedDb,
-          ],
+          WasmStorageImplementation.sharedIndexedDb,
+          WasmStorageImplementation.unsafeIndexedDb,
+        ],
         WebStorageApi.opfs => const [
-            WasmStorageImplementation.opfsShared,
-            WasmStorageImplementation.opfsLocks,
-          ],
+          WasmStorageImplementation.opfsShared,
+          WasmStorageImplementation.opfsLocks,
+        ],
       };
 
       if (implementationsForStorage.any(available.contains)) {
@@ -266,8 +281,11 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     String? databaseName,
   }) async {
-    return await WasmDatabaseOpener(sqlite3Uri, driftWorkerUri, databaseName)
-        .probe();
+    return await WasmDatabaseOpener(
+      sqlite3Uri,
+      driftWorkerUri,
+      databaseName,
+    ).probe();
   }
 
   /// The entrypoint for a web worker suitable for use with [open].
@@ -282,18 +300,19 @@ class WasmDatabase extends DelegatedDatabase {
   /// This is particularly useful when using [setupAllDatabases], a callback
   /// that will be invoked on every new [CommonDatabase] created by the web
   /// worker. This is a suitable place to register custom functions.
-  static void workerMainForOpen({
-    WasmDatabaseSetup? setupAllDatabases,
-  }) {
+  static void workerMainForOpen({WasmDatabaseSetup? setupAllDatabases}) {
     final self = globalContext;
 
     if (self.instanceOfString('DedicatedWorkerGlobalScope')) {
       DedicatedDriftWorker(
-              self as DedicatedWorkerGlobalScope, setupAllDatabases)
-          .start();
+        self as DedicatedWorkerGlobalScope,
+        setupAllDatabases,
+      ).start();
     } else if (self.instanceOfString('SharedWorkerGlobalScope')) {
-      SharedDriftWorker(self as SharedWorkerGlobalScope, setupAllDatabases)
-          .start();
+      SharedDriftWorker(
+        self as SharedWorkerGlobalScope,
+        setupAllDatabases,
+      ).start();
     }
   }
 }
@@ -318,13 +337,13 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
     super.closeUnderlyingWhenClosed,
     bool cachePreparedStatements,
     bool enableMigrations,
-  )   : _sqlite3 = null,
-        _path = null,
-        _fileSystem = null,
-        super.opened(
-          cachePreparedStatements: cachePreparedStatements,
-          enableMigrations: enableMigrations,
-        );
+  ) : _sqlite3 = null,
+      _path = null,
+      _fileSystem = null,
+      super.opened(
+        cachePreparedStatements: cachePreparedStatements,
+        enableMigrations: enableMigrations,
+      );
 
   @override
   CommonDatabase openDatabase() {

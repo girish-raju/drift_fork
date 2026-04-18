@@ -14,23 +14,30 @@ void main() {
     sqlite3.open(p.join(project.root.path, 'test.db'))
       ..execute('CREATE TABLE users (id int primary key, name text) STRICT;')
       ..execute('CREATE VIEW names AS SELECT name FROM users;')
-      ..execute('CREATE TRIGGER to_upper AFTER UPDATE ON users BEGIN '
-          '  UPDATE users SET name = upper(new.name) where id = new.id;'
-          'END;')
+      ..execute(
+        'CREATE TRIGGER to_upper AFTER UPDATE ON users BEGIN '
+        '  UPDATE users SET name = upper(new.name) where id = new.id;'
+        'END;',
+      )
       ..execute('CREATE INDEX idx ON users (name);')
       ..execute('pragma user_version = 1234;')
       ..close();
 
-    await project
-        .runDriftCli(['schema', 'dump', 'test.db', 'drift_migrations/']);
+    await project.runDriftCli([
+      'schema',
+      'dump',
+      'test.db',
+      'drift_migrations/',
+    ]);
 
-    await project.validate(d.dir('drift_migrations', [
-      d.file(
-        'drift_schema_v1234.json',
-        isA<String>().having(
-          json.decode,
-          'parsed as json',
-          json.decode('''
+    await project.validate(
+      d.dir('drift_migrations', [
+        d.file(
+          'drift_schema_v1234.json',
+          isA<String>().having(
+            json.decode,
+            'parsed as json',
+            json.decode('''
 {
   "_meta": {
     "description": "This file contains a serialized version of schema entities for drift.",
@@ -161,8 +168,9 @@ void main() {
   ]
 }
           '''),
+          ),
         ),
-      ),
-    ]));
+      ]),
+    );
   });
 }

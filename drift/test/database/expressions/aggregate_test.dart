@@ -73,9 +73,12 @@ void main() {
       );
       expect(
         b1.count(
-            distinct: true, filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
-        generates(
-            'COUNT(DISTINCT b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]),
+          distinct: true,
+          filter: b1.isBiggerOrEqualValue(BigInt.from(3)),
+        ),
+        generates('COUNT(DISTINCT b1) FILTER (WHERE b1 >= ?)', [
+          BigInt.from(3),
+        ]),
       );
       expect(
         s1.count(distinct: true, filter: s1.equals('STRING_VALUE')),
@@ -92,10 +95,14 @@ void main() {
     expect(foo.avg(), generates('AVG(foo)'));
     expect(b1.avg(), generates('AVG(b1)'));
 
-    expect(foo.avg(filter: foo.isBiggerOrEqualValue(3)),
-        generates('AVG(foo) FILTER (WHERE foo >= ?)', [3]));
-    expect(b1.avg(filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
-        generates('AVG(b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]));
+    expect(
+      foo.avg(filter: foo.isBiggerOrEqualValue(3)),
+      generates('AVG(foo) FILTER (WHERE foo >= ?)', [3]),
+    );
+    expect(
+      b1.avg(filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
+      generates('AVG(b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]),
+    );
   });
 
   test('max', () {
@@ -136,80 +143,89 @@ void main() {
     });
 
     test('with a custom separator', () {
-      expect(foo.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(foo, ?)', [' and ']));
-      expect(b1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(b1, ?)', [' and ']));
-      expect(s1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(s1, ?)', [' and ']));
-      expect(p1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(p1, ?)', [' and ']));
+      expect(
+        foo.groupConcat(separator: ' and '),
+        generates('GROUP_CONCAT(foo, ?)', [' and ']),
+      );
+      expect(
+        b1.groupConcat(separator: ' and '),
+        generates('GROUP_CONCAT(b1, ?)', [' and ']),
+      );
+      expect(
+        s1.groupConcat(separator: ' and '),
+        generates('GROUP_CONCAT(s1, ?)', [' and ']),
+      );
+      expect(
+        p1.groupConcat(separator: ' and '),
+        generates('GROUP_CONCAT(p1, ?)', [' and ']),
+      );
     });
 
     test('with a filter', () {
-      expect(foo.groupConcat(filter: foo.isSmallerThan(const Variable(3))),
-          generates('GROUP_CONCAT(foo) FILTER (WHERE foo < ?)', [3]));
       expect(
-          b1.groupConcat(filter: b1.isSmallerThan(Variable(BigInt.from(3)))),
-          generates(
-              'GROUP_CONCAT(b1) FILTER (WHERE b1 < ?)', [BigInt.from(3)]));
+        foo.groupConcat(filter: foo.isSmallerThan(const Variable(3))),
+        generates('GROUP_CONCAT(foo) FILTER (WHERE foo < ?)', [3]),
+      );
       expect(
-          s1.groupConcat(filter: s1.isSmallerThan(Variable('STRING_VALUE'))),
-          generates(
-              'GROUP_CONCAT(s1) FILTER (WHERE s1 < ?)', ['STRING_VALUE']));
-      expect(p1.groupConcat(filter: p1.equals(true)),
-          generates('GROUP_CONCAT(p1) FILTER (WHERE p1 = ?)', [1]));
+        b1.groupConcat(filter: b1.isSmallerThan(Variable(BigInt.from(3)))),
+        generates('GROUP_CONCAT(b1) FILTER (WHERE b1 < ?)', [BigInt.from(3)]),
+      );
+      expect(
+        s1.groupConcat(filter: s1.isSmallerThan(Variable('STRING_VALUE'))),
+        generates('GROUP_CONCAT(s1) FILTER (WHERE s1 < ?)', ['STRING_VALUE']),
+      );
+      expect(
+        p1.groupConcat(filter: p1.equals(true)),
+        generates('GROUP_CONCAT(p1) FILTER (WHERE p1 = ?)', [1]),
+      );
     });
 
     test('with distinct', () {
-      expect(foo.groupConcat(distinct: true),
-          generates('GROUP_CONCAT(DISTINCT foo)', isEmpty));
-      expect(b1.groupConcat(distinct: true),
-          generates('GROUP_CONCAT(DISTINCT b1)', isEmpty));
-      expect(s1.groupConcat(distinct: true),
-          generates('GROUP_CONCAT(DISTINCT s1)', isEmpty));
-      expect(p1.groupConcat(distinct: true),
-          generates('GROUP_CONCAT(DISTINCT p1)', isEmpty));
+      expect(
+        foo.groupConcat(distinct: true),
+        generates('GROUP_CONCAT(DISTINCT foo)', isEmpty),
+      );
+      expect(
+        b1.groupConcat(distinct: true),
+        generates('GROUP_CONCAT(DISTINCT b1)', isEmpty),
+      );
+      expect(
+        s1.groupConcat(distinct: true),
+        generates('GROUP_CONCAT(DISTINCT s1)', isEmpty),
+      );
+      expect(
+        p1.groupConcat(distinct: true),
+        generates('GROUP_CONCAT(DISTINCT p1)', isEmpty),
+      );
 
       expect(
         foo.groupConcat(
           distinct: true,
           filter: foo.isSmallerThan(const Variable(3)),
         ),
-        generates(
-          'GROUP_CONCAT(DISTINCT foo) FILTER (WHERE foo < ?)',
-          [3],
-        ),
+        generates('GROUP_CONCAT(DISTINCT foo) FILTER (WHERE foo < ?)', [3]),
       );
       expect(
         b1.groupConcat(
           distinct: true,
           filter: b1.isSmallerThan(Variable(BigInt.from(3))),
         ),
-        generates(
-          'GROUP_CONCAT(DISTINCT b1) FILTER (WHERE b1 < ?)',
-          [BigInt.from(3)],
-        ),
+        generates('GROUP_CONCAT(DISTINCT b1) FILTER (WHERE b1 < ?)', [
+          BigInt.from(3),
+        ]),
       );
       expect(
         s1.groupConcat(
           distinct: true,
           filter: s1.isSmallerThan(Variable('STRING_VALUE')),
         ),
-        generates(
-          'GROUP_CONCAT(DISTINCT s1) FILTER (WHERE s1 < ?)',
-          ['STRING_VALUE'],
-        ),
+        generates('GROUP_CONCAT(DISTINCT s1) FILTER (WHERE s1 < ?)', [
+          'STRING_VALUE',
+        ]),
       );
       expect(
-        p1.groupConcat(
-          distinct: true,
-          filter: p1.equals(true),
-        ),
-        generates(
-          'GROUP_CONCAT(DISTINCT p1) FILTER (WHERE p1 = ?)',
-          [1],
-        ),
+        p1.groupConcat(distinct: true, filter: p1.equals(true)),
+        generates('GROUP_CONCAT(DISTINCT p1) FILTER (WHERE p1 = ?)', [1]),
       );
     });
 
@@ -235,22 +251,27 @@ void main() {
           orderBy: OrderBy([OrderingTerm.asc(s1)]),
           separator: ' - ',
         ),
-        generates(
-          'GROUP_CONCAT(s1, ? ORDER BY s1 ASC)',
-          [' - '],
-        ),
+        generates('GROUP_CONCAT(s1, ? ORDER BY s1 ASC)', [' - ']),
       );
     });
 
     test('does not allow distinct with a custom separator', () {
-      expect(() => foo.groupConcat(distinct: true, separator: ' and '),
-          throwsArgumentError);
-      expect(() => b1.groupConcat(distinct: true, separator: ' and '),
-          throwsArgumentError);
-      expect(() => s1.groupConcat(distinct: true, separator: ' and '),
-          throwsArgumentError);
-      expect(() => p1.groupConcat(distinct: true, separator: ' and '),
-          throwsArgumentError);
+      expect(
+        () => foo.groupConcat(distinct: true, separator: ' and '),
+        throwsArgumentError,
+      );
+      expect(
+        () => b1.groupConcat(distinct: true, separator: ' and '),
+        throwsArgumentError,
+      );
+      expect(
+        () => s1.groupConcat(distinct: true, separator: ' and '),
+        throwsArgumentError,
+      );
+      expect(
+        () => p1.groupConcat(distinct: true, separator: ' and '),
+        throwsArgumentError,
+      );
 
       expect(
         () => foo.groupConcat(

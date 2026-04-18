@@ -61,8 +61,10 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
           _rowIdColumn = column;
           // By design, the rowid is non-nullable, even if there isn't a NOT NULL
           // constraint set on the column definition.
-          column._type =
-              const ResolvedType(type: BasicType.int, nullable: false);
+          column._type = const ResolvedType(
+            type: BasicType.int,
+            nullable: false,
+          );
         }
       }
     }

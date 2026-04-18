@@ -82,8 +82,12 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
 }
 
 /// Built in filters for columns that have a type converter
-class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
-    T extends Object> extends _BaseColumnFilters<T> {
+class ColumnWithTypeConverterFilters<
+  CustomType,
+  CustomTypeNonNullable,
+  T extends Object
+>
+    extends _BaseColumnFilters<T> {
   /// This class is a wrapper on top of the generated column class
   /// for columns that have a type converter
   ///
@@ -94,21 +98,24 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
 
   @override
   ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, T>
-      get not => ColumnWithTypeConverterFilters(column, inverted: !inverted);
+  get not => ColumnWithTypeConverterFilters(column, inverted: !inverted);
 
   GeneratedColumnWithTypeConverter<CustomType, T> get _typedColumn =>
       column as GeneratedColumnWithTypeConverter<CustomType, T>;
 
   /// Get the actual value from the custom type
   T _customTypeToSql(CustomTypeNonNullable value) {
-    assert(value != null,
-        'The filter value cannot be null. This is likely a bug in the generated code. Please report this issue.');
+    assert(
+      value != null,
+      'The filter value cannot be null. This is likely a bug in the generated code. Please report this issue.',
+    );
     final mappedValue = _typedColumn.converter.toSql(value as CustomType);
 
     if (mappedValue == null) {
       throw ArgumentError(
-          'The TypeConverter for this column returned null when converting the type to sql.'
-          'Ensure that your TypeConverter never returns null when provided a non-null value.');
+        'The TypeConverter for this column returned null when converting the type to sql.'
+        'Ensure that your TypeConverter never returns null when provided a non-null value.',
+      );
     }
     return mappedValue;
   }
@@ -149,7 +156,10 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   /// We are using the default of {bool caseInsensitive = true}, so that users who haven't set
   /// the database to be case sensitive wont be confused why their like expressions are case insensitive
   Expression<bool> _buildExpression(
-      _StringFilterTypes type, String value, bool caseInsensitive) {
+    _StringFilterTypes type,
+    String value,
+    bool caseInsensitive,
+  ) {
     final Expression<String> column;
     if (caseInsensitive) {
       value = value.toUpperCase();
@@ -176,7 +186,8 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   /// to the like expression works.
   Expression<bool> contains(T value, {bool caseInsensitive = true}) {
     return $composableFilter(
-        _buildExpression(_StringFilterTypes.contains, value, caseInsensitive));
+      _buildExpression(_StringFilterTypes.contains, value, caseInsensitive),
+    );
   }
 
   /// Create a filter to check if the this text column starts with a substring
@@ -187,8 +198,9 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   /// See https://www.sqlitetutorial.net/sqlite-like/ for more information on how
   /// to the like expression works.
   Expression<bool> startsWith(T value, {bool caseInsensitive = true}) {
-    return $composableFilter(_buildExpression(
-        _StringFilterTypes.startsWith, value, caseInsensitive));
+    return $composableFilter(
+      _buildExpression(_StringFilterTypes.startsWith, value, caseInsensitive),
+    );
   }
 
   /// Create a filter to check if the this text column ends with a substring
@@ -200,7 +212,8 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   /// to the like expression works.
   Expression<bool> endsWith(T value, {bool caseInsensitive = true}) {
     return $composableFilter(
-        _buildExpression(_StringFilterTypes.endsWith, value, caseInsensitive));
+      _buildExpression(_StringFilterTypes.endsWith, value, caseInsensitive),
+    );
   }
 }
 
@@ -294,5 +307,5 @@ enum _BooleanOperator {
   and,
 
   /// Combine the existing filters to the new filter with an OR
-  or;
+  or,
 }

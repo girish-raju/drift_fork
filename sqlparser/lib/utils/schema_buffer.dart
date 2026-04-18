@@ -86,7 +86,7 @@ final class SchemaBuffer {
   Map<String, String> get definitions {
     return {
       for (final element in _currentElements.entries)
-        element.key: element.value.toString()
+        element.key: element.value.toString(),
     };
   }
 
@@ -133,7 +133,10 @@ final class SchemaBuffer {
   }
 
   void _defineNew(
-      List<AnalysisError> errors, DropType type, CreatingStatement statement) {
+    List<AnalysisError> errors,
+    DropType type,
+    CreatingStatement statement,
+  ) {
     if (_currentElements[statement.createdName] case final existingElement?) {
       if (existingElement.type != type) {
         errors.add(
@@ -158,7 +161,7 @@ final class SchemaBuffer {
 
     _currentElements[statement.createdName] = switch (statement) {
       CreateTableStatement() => _TableSchemaElement(statement),
-      _ => _OtherSchemaElement(type, statement.span!)
+      _ => _OtherSchemaElement(type, statement.span!),
     };
   }
 
@@ -185,8 +188,11 @@ final class SchemaBuffer {
     }
   }
 
-  void _applyAlterTable(List<AnalysisError> errors,
-      AlterTableInstruction instruction, _TableSchemaElement element) {
+  void _applyAlterTable(
+    List<AnalysisError> errors,
+    AlterTableInstruction instruction,
+    _TableSchemaElement element,
+  ) {
     switch (instruction) {
       case RenameTo(:final newTableName):
         if (_currentElements.containsKey(newTableName)) {
@@ -283,7 +289,7 @@ final class _TableSchemaElement extends _SchemaElement {
   final List<_ColumnDefinition> _columns = [];
 
   _TableSchemaElement(this.originalStatement)
-      : lowercaseName = originalStatement.createdName {
+    : lowercaseName = originalStatement.createdName {
     // Create editable source elements for all names and column definitions in
     // the CREATE TABLE statement, since they can be changed by ALTER TABLE
     // statements.
@@ -304,7 +310,9 @@ final class _TableSchemaElement extends _SchemaElement {
     }
 
     (_SourceElement?, _SourceElement) createElementFromSpan(
-        int offset, int length) {
+      int offset,
+      int length,
+    ) {
       final prior = elementUntil(offset);
       final element = elementUntil(currentPosition + length)!;
 
@@ -312,19 +320,29 @@ final class _TableSchemaElement extends _SchemaElement {
     }
 
     (_SourceElement?, _SourceElement) createElementFromSyntax(
-        SyntacticEntity entity) {
+      SyntacticEntity entity,
+    ) {
       return createElementFromSpan(
-          entity.firstPosition - startOffset, entity.length);
+        entity.firstPosition - startOffset,
+        entity.length,
+      );
     }
 
     name = createElementFromSyntax(originalStatement.tableNameToken!).$2;
     for (final (i, column) in originalStatement.columns.indexed) {
       final (before, name) = createElementFromSyntax(column.nameToken!);
-      final typeAndConstraints =
-          elementUntil(column.lastPosition - startOffset);
+      final typeAndConstraints = elementUntil(
+        column.lastPosition - startOffset,
+      );
 
-      _columns.add(_ColumnDefinition(i == 0 ? null : before, name,
-          column.columnName.toLowerCase(), typeAndConstraints));
+      _columns.add(
+        _ColumnDefinition(
+          i == 0 ? null : before,
+          name,
+          column.columnName.toLowerCase(),
+          typeAndConstraints,
+        ),
+      );
     }
 
     // Add remaining text from the CREATE TABLE statement.
@@ -343,8 +361,9 @@ final class _TableSchemaElement extends _SchemaElement {
   void addColumn(ColumnDefinition definition) {
     final definitionText = definition.span!.text;
     final name = _SourceElement(definition.nameToken!.lexeme);
-    final constraints =
-        _SourceElement(definitionText.substring(name.lexeme.length));
+    final constraints = _SourceElement(
+      definitionText.substring(name.lexeme.length),
+    );
 
     if (_columns.lastOrNull case final last?) {
       final precedingComma =
@@ -353,8 +372,14 @@ final class _TableSchemaElement extends _SchemaElement {
       precedingComma.insertAfter(name);
       name.insertAfter(constraints);
 
-      _columns.add(_ColumnDefinition(precedingComma, name,
-          definition.columnName.toLowerCase(), constraints));
+      _columns.add(
+        _ColumnDefinition(
+          precedingComma,
+          name,
+          definition.columnName.toLowerCase(),
+          constraints,
+        ),
+      );
     } else {
       throw UnsupportedError('TODO: Adding column to empty table');
     }
@@ -385,8 +410,12 @@ final class _ColumnDefinition {
   String lowercaseName;
   final _SourceElement? constraints;
 
-  _ColumnDefinition(this.precedingComma, this.nameLexeme, this.lowercaseName,
-      this.constraints);
+  _ColumnDefinition(
+    this.precedingComma,
+    this.nameLexeme,
+    this.lowercaseName,
+    this.constraints,
+  );
 }
 
 /// Any schema element that isn't a (non-virtual) table.

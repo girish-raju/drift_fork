@@ -34,11 +34,13 @@ class IdentifyDatabases extends DriftCommand {
 
         if (element is BaseDriftAccessor) {
           final message = StringBuffer(
-              'Found ${element.id.name} in ${element.id.libraryUri}!');
+            'Found ${element.id.name} in ${element.id.libraryUri}!',
+          );
 
           if (element is DriftDatabase) {
-            final daos =
-                element.accessors.map((e) => e.ownType.toString()).join(', ');
+            final daos = element.accessors
+                .map((e) => e.ownType.toString())
+                .join(', ');
             message
               ..writeln()
               ..write('Schema version: ${element.schemaVersion}, daos: $daos');

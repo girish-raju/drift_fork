@@ -28,11 +28,7 @@ class DriftProtocol {
 
   Object? serialize(Message message) {
     if (message is Request) {
-      return [
-        _tag_Request,
-        message.id,
-        encodePayload(message.payload),
-      ];
+      return [_tag_Request, message.id, encodePayload(message.payload)];
     } else if (message is ErrorResponse) {
       return [
         _tag_Response_error,
@@ -65,11 +61,16 @@ class DriftProtocol {
       case _tag_Response_error:
         final stringTrace = message[3] as String?;
 
-        return ErrorResponse(id, message[2] as Object,
-            stringTrace != null ? StackTrace.fromString(stringTrace) : null);
+        return ErrorResponse(
+          id,
+          message[2] as Object,
+          stringTrace != null ? StackTrace.fromString(stringTrace) : null,
+        );
       case _tag_Response_success:
         return SuccessResponse(
-            id, decodePayload(message[2]) as ResponsePayload?);
+          id,
+          decodePayload(message[2]) as ResponsePayload?,
+        );
       case _tag_Response_cancelled:
         return CancelledResponse(id);
     }
@@ -110,10 +111,7 @@ class DriftProtocol {
     } else if (payload is EnsureOpen) {
       return [_tag_EnsureOpen, payload.schemaVersion, payload.executorId];
     } else if (payload is ServerInfo) {
-      return [
-        _tag_ServerInfo,
-        payload.dialect.name,
-      ];
+      return [_tag_ServerInfo, payload.dialect.name];
     } else if (payload is RunBeforeOpen) {
       return [
         _tag_RunBeforeOpen,
@@ -125,10 +123,7 @@ class DriftProtocol {
       return [
         _tag_NotifyTablesUpdated,
         for (final update in payload.updates)
-          [
-            update.table,
-            update.kind?.index,
-          ]
+          [update.table, update.kind?.index],
       ];
     } else if (payload is SelectResult) {
       // We can't necessary transport maps, so encode as list
@@ -183,9 +178,9 @@ class DriftProtocol {
 
     int readInt(int index) => castInt(fullMessage![index]);
     int? readNullableInt(int index) => switch (fullMessage![index]) {
-          null => null,
-          var other => castInt(other),
-        };
+      null => null,
+      var other => castInt(other),
+    };
 
     switch (tag) {
       case _tag_NoArgsRequest_terminateAll:
@@ -203,10 +198,9 @@ class DriftProtocol {
         for (var i = 2; i < fullMessage.length - 1; i++) {
           final list = fullMessage[i] as List;
           args.add(
-            ArgumentsForBatchedStatement(
-              castInt(list[0]),
-              [for (final encoded in list.skip(1)) _decodeDbValue(encoded)],
-            ),
+            ArgumentsForBatchedStatement(castInt(list[0]), [
+              for (final encoded in list.skip(1)) _decodeDbValue(encoded),
+            ]),
           );
         }
 
@@ -215,7 +209,9 @@ class DriftProtocol {
           var other => castInt(other),
         };
         return ExecuteBatchedStatement(
-            BatchedStatements(sql, args), executorId);
+          BatchedStatements(sql, args),
+          executorId,
+        );
       case _tag_RunTransactionAction:
         final control = NestedExecutorControl.values[readInt(1)];
         return RunNestedExecutorControl(control, readNullableInt(2));
@@ -238,8 +234,10 @@ class DriftProtocol {
           };
 
           updates.add(
-            TableUpdate(encodedUpdate[0] as String,
-                kind: kindIndex == null ? null : UpdateKind.values[kindIndex]),
+            TableUpdate(
+              encodedUpdate[0] as String,
+              kind: kindIndex == null ? null : UpdateKind.values[kindIndex],
+            ),
           );
         }
         return NotifyTablesUpdated(updates);
@@ -259,7 +257,7 @@ class DriftProtocol {
 
           result.add({
             for (var c = 0; c < columnCount; c++)
-              columns[c]: _decodeDbValue(fullMessage[rowOffset + c])
+              columns[c]: _decodeDbValue(fullMessage[rowOffset + c]),
           });
         }
         return SelectResult(result);
@@ -370,12 +368,7 @@ enum NoArgsRequest implements RequestPayload {
   terminateAll,
 }
 
-enum StatementMethod {
-  custom,
-  deleteOrUpdate,
-  insert,
-  select,
-}
+enum StatementMethod { custom, deleteOrUpdate, insert, select }
 
 /// Sent from the client to run a sql query. The server replies with the
 /// result.

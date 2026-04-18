@@ -22,8 +22,9 @@ FROM json_each(:foo_jsons);
       },
       options: const DriftOptions.defaults(
         modules: [SqlModule.json1],
-        sqliteAnalysisOptions:
-            SqliteAnalysisOptions(version: SqliteVersion.v3_39),
+        sqliteAnalysisOptions: SqliteAnalysisOptions(
+          version: SqliteVersion.v3_39,
+        ),
       ),
     );
 

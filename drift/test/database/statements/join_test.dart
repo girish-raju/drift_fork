@@ -22,11 +22,14 @@ void main() {
 
     await db.select(todos).join([
       leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
-      leftOuterJoin(categoryTodoCountView,
-          categoryTodoCountView.categoryId.equalsExp(categories.id)),
+      leftOuterJoin(
+        categoryTodoCountView,
+        categoryTodoCountView.categoryId.equalsExp(categories.id),
+      ),
     ]).get();
 
-    verify(executor.runSelect(
+    verify(
+      executor.runSelect(
         'SELECT '
         '"t"."id" AS "t.id", '
         '"t"."title" AS "t.title", '
@@ -46,7 +49,9 @@ void main() {
         'ON "c"."id" = "t"."category" '
         'LEFT OUTER JOIN "category_todo_count_view" "ct" '
         'ON "ct"."category_id" = "c"."id";',
-        argThat(isEmpty)));
+        argThat(isEmpty),
+      ),
+    );
   });
 
   test('parses results from multiple tables', () async {
@@ -67,27 +72,28 @@ void main() {
           'c.desc': 'description',
           'c.description_in_upper_case': 'DESCRIPTION',
           'c.priority': 2,
-        }
+        },
       ]);
     });
 
     final result = await db.select(todos, distinct: true).join([
-      leftOuterJoin(categories, categories.id.equalsExp(todos.category))
+      leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
     ]).get();
 
     expect(result, hasLength(1));
 
     final row = result.single;
     expect(
-        row.readTable(todos),
-        TodoEntry(
-          id: RowId(5),
-          title: 'title',
-          content: 'content',
-          targetDate: date,
-          category: RowId(3),
-          status: TodoStatus.workInProgress,
-        ));
+      row.readTable(todos),
+      TodoEntry(
+        id: RowId(5),
+        title: 'title',
+        content: 'content',
+        targetDate: date,
+        category: RowId(3),
+        status: TodoStatus.workInProgress,
+      ),
+    );
 
     expect(
       row.readTable(categories),
@@ -118,13 +124,15 @@ void main() {
           'todos.content': 'content',
           'todos.target_date': null,
           'todos.category': null,
-        }
+        },
       ]);
     });
 
     final result = await db.select(db.todosTable).join([
       leftOuterJoin(
-          db.categories, db.categories.id.equalsExp(db.todosTable.category))
+        db.categories,
+        db.categories.id.equalsExp(db.todosTable.category),
+      ),
     ]).get();
 
     expect(result, hasLength(1));
@@ -132,12 +140,9 @@ void main() {
     final row = result.single;
     expect(() => row.readTable(db.categories), throwsArgumentError);
     expect(
-        row.readTable(db.todosTable),
-        const TodoEntry(
-          id: RowId(5),
-          title: 'title',
-          content: 'content',
-        ));
+      row.readTable(db.todosTable),
+      const TodoEntry(id: RowId(5), title: 'title', content: 'content'),
+    );
 
     expect(row.readTableOrNull(db.categories), isNull);
     expect(row.read(db.categories.id), isNull);
@@ -152,11 +157,16 @@ void main() {
       ..where((t) => t.id.isSmallerThanValue(3))
       ..orderBy([(t) => OrderingTerm(expression: t.title)]);
 
-    await normalQuery.join(
-        [innerJoin(categories, categories.id.equalsExp(todos.category))]).get();
+    await normalQuery.join([
+      innerJoin(categories, categories.id.equalsExp(todos.category)),
+    ]).get();
 
-    verify(executor.runSelect(
-        argThat(contains('WHERE "t"."id" < ? ORDER BY "t"."title" ASC')), [3]));
+    verify(
+      executor.runSelect(
+        argThat(contains('WHERE "t"."id" < ? ORDER BY "t"."title" ASC')),
+        [3],
+      ),
+    );
   });
 
   test('limit clause is kept', () async {
@@ -165,8 +175,9 @@ void main() {
 
     final normalQuery = db.select(todos)..limit(10, offset: 5);
 
-    await normalQuery.join(
-        [innerJoin(categories, categories.id.equalsExp(todos.category))]).get();
+    await normalQuery.join([
+      innerJoin(categories, categories.id.equalsExp(todos.category)),
+    ]).get();
 
     verify(executor.runSelect(argThat(contains('LIMIT 10 OFFSET 5')), []));
   });
@@ -175,9 +186,9 @@ void main() {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
 
-    final query = db
-        .select(todos)
-        .join([innerJoin(categories, todos.category.equalsExp(categories.id))]);
+    final query = db.select(todos).join([
+      innerJoin(categories, todos.category.equalsExp(categories.id)),
+    ]);
 
     final queue = StreamQueue(query.watch());
     expect(await queue.next, isEmpty);
@@ -193,12 +204,13 @@ void main() {
     final b = db.categories;
     final c = db.sharedTodos;
 
-    final query = (db.selectOnly(a)..where(c.todo.isNull())).join([
-      leftOuterJoin(b, b.id.equalsExp(a.id)),
-      leftOuterJoin(c, c.todo.equalsExp(b.id))
-    ])
-      ..addColumns([b.description])
-      ..groupBy([b.description]);
+    final query =
+        (db.selectOnly(a)..where(c.todo.isNull())).join([
+            leftOuterJoin(b, b.id.equalsExp(a.id)),
+            leftOuterJoin(c, c.todo.equalsExp(b.id)),
+          ])
+          ..addColumns([b.description])
+          ..groupBy([b.description]);
 
     final stream = query.watch();
     expectLater(stream, emitsInOrder([<Object?>[], <Object?>[]]));
@@ -212,16 +224,21 @@ void main() {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
 
-    final query = db
-        .select(todos)
-        .join([innerJoin(categories, todos.category.equalsExp(categories.id))])
-      ..where(todos.id.isSmallerThanValue(5))
-      ..where(categories.id.isBiggerOrEqualValue(10));
+    final query =
+        db.select(todos).join([
+            innerJoin(categories, todos.category.equalsExp(categories.id)),
+          ])
+          ..where(todos.id.isSmallerThanValue(5))
+          ..where(categories.id.isBiggerOrEqualValue(10));
 
     await query.get();
 
-    verify(executor.runSelect(
-        argThat(contains('WHERE "t"."id" < ? AND "c"."id" >= ?')), [5, 10]));
+    verify(
+      executor.runSelect(
+        argThat(contains('WHERE "t"."id" < ? AND "c"."id" >= ?')),
+        [5, 10],
+      ),
+    );
   });
 
   test('supports custom columns and results', () async {
@@ -237,20 +254,22 @@ void main() {
           'c.desc': 'Description',
           'c.description_in_upper_case': 'DESCRIPTION',
           'c.priority': 1,
-          'c0': 11
-        }
+          'c0': 11,
+        },
       ];
     });
 
     final result = await query.getSingle();
 
-    verify(executor.runSelect(
-      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
-      '"c"."priority" AS "c.priority", "c"."description_in_upper_case" AS '
-      '"c.description_in_upper_case", LENGTH("c"."desc") AS "c0" '
-      'FROM "categories" "c";',
-      [],
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
+        '"c"."priority" AS "c.priority", "c"."description_in_upper_case" AS '
+        '"c.description_in_upper_case", LENGTH("c"."desc") AS "c0" '
+        'FROM "categories" "c";',
+        [],
+      ),
+    );
 
     expect(
       result.readTable(categories),
@@ -276,7 +295,7 @@ void main() {
         todos,
         categories.id.equalsExp(todos.category),
         useColumns: false,
-      )
+      ),
     ]);
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
@@ -293,14 +312,16 @@ void main() {
 
     final result = await query.getSingle();
 
-    verify(executor.runSelect(
-      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority"'
-      ', "c"."description_in_upper_case" AS "c.description_in_upper_case", '
-      'LENGTH("c"."desc") AS "c0" '
-      'FROM "categories" "c" '
-      'INNER JOIN "todos" "t" ON "c"."id" = "t"."category";',
-      [],
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority"'
+        ', "c"."description_in_upper_case" AS "c.description_in_upper_case", '
+        'LENGTH("c"."desc") AS "c0" '
+        'FROM "categories" "c" '
+        'INNER JOIN "todos" "t" ON "c"."id" = "t"."category";',
+        [],
+      ),
+    );
 
     expect(
       result.readTable(categories),
@@ -326,14 +347,13 @@ void main() {
         todos,
         todos.category.equalsExp(categories.id),
         useColumns: false,
-      )
+      ),
     ]);
     query
       ..addColumns([amountOfTodos])
-      ..groupBy(
-        [categories.id],
-        having: amountOfTodos.isBiggerOrEqualValue(10),
-      );
+      ..groupBy([
+        categories.id,
+      ], having: amountOfTodos.isBiggerOrEqualValue(10));
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
@@ -343,20 +363,23 @@ void main() {
           'c.priority': 0,
           'c0': 10,
           'c.description_in_upper_case': 'DESC',
-        }
+        },
       ];
     });
 
     final result = await query.getSingle();
 
-    verify(executor.runSelect(
+    verify(
+      executor.runSelect(
         'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
         '"c"."priority" AS "c.priority", '
         '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
         'COUNT("t"."id") AS "c0" '
         'FROM "categories" "c" INNER JOIN "todos" "t" ON "t"."category" = "c"."id" '
         'GROUP BY "c"."id" HAVING COUNT("t"."id") >= ?;',
-        [10]));
+        [10],
+      ),
+    );
 
     expect(result.readTableOrNull(todos), isNull);
     expect(
@@ -386,10 +409,13 @@ void main() {
 
     final row = await query.getSingle();
 
-    verify(executor.runSelect(
+    verify(
+      executor.runSelect(
         'SELECT AVG(LENGTH("todos"."content")) AS "c0", '
         'MAX(LENGTH("todos"."content")) AS "c1" FROM "todos";',
-        []));
+        [],
+      ),
+    );
 
     expect(row.read(avgLength), 3.0);
     expect(row.read(maxLength), isNull);
@@ -405,7 +431,7 @@ void main() {
         todos,
         todos.category.equalsExp(categories.id),
         useColumns: false,
-      )
+      ),
     ]);
     query
       ..addColumns([categories.id, todos.id.count()])
@@ -413,35 +439,31 @@ void main() {
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {
-          'categories.id': 2,
-          'c1': 10,
-        }
+        {'categories.id': 2, 'c1': 10},
       ];
     });
 
     final result = await query.getSingle();
 
-    verify(executor.runSelect(
+    verify(
+      executor.runSelect(
         'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
         'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
         'GROUP BY "categories"."id";',
-        []));
+        [],
+      ),
+    );
 
     expect(result.read(categories.id), equals(2));
     expect(result.read(todos.id.count()), equals(10));
   });
 
-  test('use selectOnly(includeJoinedTableColumns) instead of useColumns',
-      () async {
+  test('use selectOnly(includeJoinedTableColumns) instead of useColumns', () async {
     final categories = db.categories;
     final todos = db.todosTable;
 
     final query = db.selectOnly(categories).join([
-      innerJoin(
-        todos,
-        todos.category.equalsExp(categories.id),
-      )
+      innerJoin(todos, todos.category.equalsExp(categories.id)),
     ]);
     query
       ..addColumns([categories.id, todos.id.count()])
@@ -449,49 +471,58 @@ void main() {
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {
-          'categories.id': 2,
-          'c1': 10,
-        }
+        {'categories.id': 2, 'c1': 10},
       ];
     });
 
     final result = await query.getSingle();
 
-    verify(executor.runSelect(
+    verify(
+      executor.runSelect(
         'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
         'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
         'GROUP BY "categories"."id";',
-        []));
+        [],
+      ),
+    );
 
     expect(result.read(categories.id), equals(2));
     expect(result.read(todos.id.count()), equals(10));
   });
 
-  test('injects custom error message when a table is used multiple times',
-      () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
+  test(
+    'injects custom error message when a table is used multiple times',
+    () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
 
-    expect(
-      db.select(db.todosTable).join([crossJoin(db.todosTable)]).get(),
-      throwsA(isA<DriftWrappedException>()
-          .having((e) => e.toString(), 'toString', contains('possible cause'))),
-    );
+      expect(
+        db.select(db.todosTable).join([crossJoin(db.todosTable)]).get(),
+        throwsA(
+          isA<DriftWrappedException>().having(
+            (e) => e.toString(),
+            'toString',
+            contains('possible cause'),
+          ),
+        ),
+      );
 
-    // Joining with aliases should not throw
-    final t1 = db.alias(db.todosTable, 't1');
-    final t2 = db.alias(db.todosTable, 't2');
+      // Joining with aliases should not throw
+      final t1 = db.alias(db.todosTable, 't1');
+      final t2 = db.alias(db.todosTable, 't2');
 
-    expect(
-      db.select(t1).join([crossJoin(t2)]).get(),
-      throwsA(isNot(isA<DriftWrappedException>())),
-    );
-  });
+      expect(
+        db.select(t1).join([crossJoin(t2)]).get(),
+        throwsA(isNot(isA<DriftWrappedException>())),
+      );
+    },
+  );
 
   test('right outer join', () {
     final stmt = db.select(db.todosTable).join([
       rightOuterJoin(
-          db.categories, db.todosTable.category.equalsExp(db.categories.id))
+        db.categories,
+        db.todosTable.category.equalsExp(db.categories.id),
+      ),
     ]);
 
     expect(stmt, generates(contains('RIGHT OUTER JOIN')));
@@ -500,7 +531,9 @@ void main() {
   test('full outer join', () {
     final stmt = db.select(db.todosTable).join([
       fullOuterJoin(
-          db.categories, db.todosTable.category.equalsExp(db.categories.id))
+        db.categories,
+        db.todosTable.category.equalsExp(db.categories.id),
+      ),
     ]);
 
     expect(stmt, generates(contains('FULL OUTER JOIN')));
@@ -518,8 +551,10 @@ void main() {
       final query = db.selectOnly(db.categories)
         ..addColumns([db.categories.id])
         ..join([
-          innerJoin(subquery,
-              subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+          innerJoin(
+            subquery,
+            subquery.ref(db.todosTable.category).equalsExp(db.categories.id),
+          ),
         ]);
       await query.get();
 
@@ -537,23 +572,26 @@ void main() {
     test('use column from subquery', () async {
       when(executor.runSelect(any, any)).thenAnswer((_) {
         return Future.value([
-          {'c0': 42}
+          {'c0': 42},
         ]);
       });
 
       final sumOfTitleLength = db.todosTable.title.length.sum();
       final subquery = Subquery(
-          db.selectOnly(db.todosTable)
-            ..addColumns([db.todosTable.category, sumOfTitleLength])
-            ..groupBy([db.todosTable.category]),
-          's');
+        db.selectOnly(db.todosTable)
+          ..addColumns([db.todosTable.category, sumOfTitleLength])
+          ..groupBy([db.todosTable.category]),
+        's',
+      );
 
       final readableLength = subquery.ref(sumOfTitleLength);
       final query = db.selectOnly(db.categories)
         ..addColumns([readableLength])
         ..join([
-          innerJoin(subquery,
-              subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+          innerJoin(
+            subquery,
+            subquery.ref(db.todosTable.category).equalsExp(db.categories.id),
+          ),
         ]);
 
       final row = await query.getSingle();
@@ -612,11 +650,11 @@ void main() {
     group('generate correct statements', () {
       final operators =
           <(String, void Function(JoinedSelectStatement, BaseSelectStatement))>[
-        ('UNION', (a, b) => a.union(b)),
-        ('UNION ALL', (a, b) => a.unionAll(b)),
-        ('EXCEPT', (a, b) => a.except(b)),
-        ('INTERSECT', (a, b) => a.intersect(b)),
-      ];
+            ('UNION', (a, b) => a.union(b)),
+            ('UNION ALL', (a, b) => a.unionAll(b)),
+            ('EXCEPT', (a, b) => a.except(b)),
+            ('INTERSECT', (a, b) => a.intersect(b)),
+          ];
 
       for (final (operator, method) in operators) {
         test('with $operator', () async {
@@ -628,7 +666,7 @@ void main() {
           when(executor.runSelect(any, any)).thenAnswer((_) {
             return Future.value([
               {'c0': 42},
-              {'c0': 84}
+              {'c0': 84},
             ]);
           });
 

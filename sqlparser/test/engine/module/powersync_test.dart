@@ -6,12 +6,14 @@ import '../../analysis/errors/utils.dart';
 
 void main() {
   final options = EngineOptions(
-      version: SqliteVersion.current,
-      enabledExtensions: [const PowerSyncSqliteExtension()]);
+    version: SqliteVersion.current,
+    enabledExtensions: [const PowerSyncSqliteExtension()],
+  );
   late SqlEngine engine;
 
   setUp(() {
-    engine = SqlEngine(options)..registerTableFromSql('''
+    engine = SqlEngine(options)
+      ..registerTableFromSql('''
 CREATE TABLE todo_lists (
    id TEXT NOT NULL PRIMARY KEY,
    created_by TEXT NOT NULL,
@@ -92,8 +94,11 @@ CREATE TRIGGER todo_lists_delete
       analyzed.expectNoError();
       final [column] = (analyzed.root as SelectStatement).resolvedColumns!;
 
-      expect(analyzed.typeOf(column).type?.type, type,
-          reason: '$call should resolve to $type');
+      expect(
+        analyzed.typeOf(column).type?.type,
+        type,
+        reason: '$call should resolve to $type',
+      );
     });
   });
 }

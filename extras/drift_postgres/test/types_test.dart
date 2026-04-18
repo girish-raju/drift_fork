@@ -54,14 +54,18 @@ void main() {
     group('point', () => testWith(PgTypes.point, pg.Point(90, -90)));
     group(
       'timestamp with timezone',
-      () => testWith(PgTypes.timestampWithTimezone,
-          PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
+      () => testWith(
+        PgTypes.timestampWithTimezone,
+        PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0)),
+      ),
     );
 
     group(
       'timestamp without timezone',
-      () => testWith(PgTypes.timestampNoTimezone,
-          PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
+      () => testWith(
+        PgTypes.timestampNoTimezone,
+        PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0)),
+      ),
     );
 
     group('bytea', () => testWith(null, Uint8List.fromList([1, 2, 3, 4, 5])));
@@ -72,27 +76,18 @@ void main() {
         () => testWith(PgTypes.booleanArray, [true, false, true]),
       );
 
-      group(
-        'bigint',
-        () => testWith(PgTypes.bigIntArray, [1, 2, 3]),
-      );
+      group('bigint', () => testWith(PgTypes.bigIntArray, [1, 2, 3]));
 
-      group(
-        'text',
-        () => testWith(PgTypes.textArray, ['hello', 'world']),
-      );
+      group('text', () => testWith(PgTypes.textArray, ['hello', 'world']));
 
-      group(
-        'double',
-        () => testWith(PgTypes.doubleArray, [0.0, 1.0, 0.5]),
-      );
+      group('double', () => testWith(PgTypes.doubleArray, [0.0, 1.0, 0.5]));
 
       group(
         'jsonb',
         () => testWith(PgTypes.jsonbArray, [
           true,
           {'hello': 'world'},
-          3
+          3,
         ]),
       );
     });
@@ -101,11 +96,14 @@ void main() {
   test('compare datetimes', () async {
     final time = DateTime.now();
     final before = Variable(
-        PgDateTime(time.subtract(const Duration(minutes: 10))),
-        PgTypes.timestampNoTimezone);
+      PgDateTime(time.subtract(const Duration(minutes: 10))),
+      PgTypes.timestampNoTimezone,
+    );
     final now = Variable(PgDateTime(time), PgTypes.timestampNoTimezone);
-    final after = Variable(PgDateTime(time.add(const Duration(days: 2))),
-        PgTypes.timestampNoTimezone);
+    final after = Variable(
+      PgDateTime(time.add(const Duration(days: 2))),
+      PgTypes.timestampNoTimezone,
+    );
 
     expect(await eval(before.isSmallerOrEqual(after)), isTrue);
     expect(await eval(now.isBetween(before, after)), isTrue);
@@ -116,15 +114,22 @@ void main() {
     final berlinWallFell = PgDate(year: 1989, month: 11, day: 9);
 
     expect(
-        await eval(Variable(berlinWallFell, PgTypes.date)
-            .isBiggerOrEqualValue(moonLanding)),
-        isTrue);
+      await eval(
+        Variable(
+          berlinWallFell,
+          PgTypes.date,
+        ).isBiggerOrEqualValue(moonLanding),
+      ),
+      isTrue,
+    );
   });
 
   test('serialize datetime', () {
     expect(json.encode(PgDate(year: 2025, month: 6, day: 14)), '"2025-06-14"');
-    expect(json.encode(PgDateTime(DateTime(2025, 6, 14, 15, 16, 17))),
-        '"2025-06-14 15:16:17.000"');
+    expect(
+      json.encode(PgDateTime(DateTime(2025, 6, 14, 15, 16, 17))),
+      '"2025-06-14 15:16:17.000"',
+    );
   });
 
   test('bigint', () async {

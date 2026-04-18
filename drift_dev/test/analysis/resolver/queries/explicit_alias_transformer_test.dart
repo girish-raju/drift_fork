@@ -4,12 +4,16 @@ import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final engine =
-      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-  final result =
-      engine.parse(ParserEntrypoint.statement, 'CREATE TABLE a (id INTEGER);');
-  engine.registerTable(const SchemaFromCreateTable()
-      .read(result.rootNode as CreateTableStatement));
+  final engine = SqlEngine(
+    EngineOptions(driftOptions: const DriftSqlOptions()),
+  );
+  final result = engine.parse(
+    ParserEntrypoint.statement,
+    'CREATE TABLE a (id INTEGER);',
+  );
+  engine.registerTable(
+    const SchemaFromCreateTable().read(result.rootNode as CreateTableStatement),
+  );
 
   void checkTransformation(String input, String output, {bool drift3 = false}) {
     final node = engine.analyze(input).root;
@@ -28,8 +32,10 @@ void main() {
   });
 
   test('rewrites references', () {
-    checkTransformation('SELECT "1+2" FROM (SELECT 1+2)',
-        'SELECT _c0 FROM (SELECT 1 + 2 AS _c0)');
+    checkTransformation(
+      'SELECT "1+2" FROM (SELECT 1+2)',
+      'SELECT _c0 FROM (SELECT 1 + 2 AS _c0)',
+    );
   });
 
   test('does not rewrite subquery expressions', () {
@@ -37,8 +43,10 @@ void main() {
   });
 
   test('rewrites compound select statements', () {
-    checkTransformation("SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
-        "SELECT 1 + 2 AS _c0, 'foo' AS _c1 UNION ALL SELECT 3 + 4, 'bar'");
+    checkTransformation(
+      "SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
+      "SELECT 1 + 2 AS _c0, 'foo' AS _c1 UNION ALL SELECT 3 + 4, 'bar'",
+    );
   });
 
   test('rewrites references for compount select statements', () {

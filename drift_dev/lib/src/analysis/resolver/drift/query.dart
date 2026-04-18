@@ -26,8 +26,10 @@ class DriftQueryResolver
     final as = discovered.sqlNode.as;
     if (as != null) {
       if (as.useExistingDartClass) {
-        final type =
-            await findDartTypeOrReportError(as.overriddenDataClassName, as);
+        final type = await findDartTypeOrReportError(
+          as.overriddenDataClassName,
+          as,
+        );
         if (type != null) {
           existingType = RequestedQueryResultType(type, as.constructorName);
         }

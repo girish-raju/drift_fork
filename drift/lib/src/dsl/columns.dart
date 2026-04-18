@@ -282,9 +282,10 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   ///
   /// Note that generated columns are only available in sqlite3 version
   /// `3.31.0`.
-  VirtualColumnBuilder<T> generatedAs(Expression<T> generatedAs,
-          {bool stored = false}) =>
-      _isGenerated();
+  VirtualColumnBuilder<T> generatedAs(
+    Expression<T> generatedAs, {
+    bool stored = false,
+  }) => _isGenerated();
 }
 
 /// Column builders available for both virtual and non-virtual columns.

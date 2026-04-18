@@ -37,8 +37,9 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     });
 
     if (rows > 0) {
-      database.notifyUpdates(
-          {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
+      database.notifyUpdates({
+        TableUpdate.onTable(_sourceTable, kind: UpdateKind.update),
+      });
     }
 
     return rows;
@@ -92,8 +93,9 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     });
 
     if (rows.isNotEmpty) {
-      database.notifyUpdates(
-          {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
+      database.notifyUpdates({
+        TableUpdate.onTable(_sourceTable, kind: UpdateKind.update),
+      });
     }
 
     return rows.mapAsyncAndAwait(table.map);
@@ -129,9 +131,10 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
         .validateIntegrity(entity, isInserting: true)
         .throwIfInvalid(entity);
     assert(
-        whereExpr == null,
-        'When using replace on an update statement, you may not use where(...)'
-        'as well. The where clause will be determined automatically');
+      whereExpr == null,
+      'When using replace on an update statement, you may not use where(...)'
+      'as well. The where clause will be determined automatically',
+    );
 
     whereSamePrimaryKey(entity);
 

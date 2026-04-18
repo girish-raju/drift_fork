@@ -6,36 +6,40 @@ import 'utils.dart';
 void main() {
   final oldEngine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
   final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
-  final engineInDriftMode = SqlEngine(EngineOptions(
-      version: SqliteVersion.v3_37, driftOptions: const DriftSqlOptions()));
+  final engineInDriftMode = SqlEngine(
+    EngineOptions(
+      version: SqliteVersion.v3_37,
+      driftOptions: const DriftSqlOptions(),
+    ),
+  );
 
   group('using STRICT', () {
     test('with an old sqlite3 version', () {
       const stmt = 'CREATE TABLE a (c INTEGER) STRICT';
 
-      oldEngine.analyze(stmt).expectError('STRICT',
-          type: AnalysisErrorType.notSupportedInDesiredVersion);
+      oldEngine
+          .analyze(stmt)
+          .expectError(
+            'STRICT',
+            type: AnalysisErrorType.notSupportedInDesiredVersion,
+          );
       engine.analyze(stmt).expectNoError();
     });
 
-    test(
-      'without a column type',
-      () {
-        engine
-            .analyze('CREATE TABLE a (c) STRICT;')
-            .expectError('c', type: AnalysisErrorType.noTypeNameInStrictTable);
-      },
-    );
+    test('without a column type', () {
+      engine
+          .analyze('CREATE TABLE a (c) STRICT;')
+          .expectError('c', type: AnalysisErrorType.noTypeNameInStrictTable);
+    });
 
-    test(
-      'with an invalid column type',
-      () {
-        engine.analyze('CREATE TABLE a (c INTEGER(12)) STRICT;').expectError(
-              'INTEGER(12)',
-              type: AnalysisErrorType.invalidTypeNameInStrictTable,
-            );
-      },
-    );
+    test('with an invalid column type', () {
+      engine
+          .analyze('CREATE TABLE a (c INTEGER(12)) STRICT;')
+          .expectError(
+            'INTEGER(12)',
+            type: AnalysisErrorType.invalidTypeNameInStrictTable,
+          );
+    });
 
     test('with a type that is only valid in drift mode', () {
       // https://github.com/simolus3/drift/discussions/1651
@@ -55,20 +59,26 @@ void main() {
         .analyze('CREATE TABLE a (c INTEGER PRIMARY KEY) WITHOUT ROWID;')
         .expectNoError();
 
-    final errors =
-        engine.analyze('CREATE TABLE a (c INTEGER, PRIMARY KEY (c));');
+    final errors = engine.analyze(
+      'CREATE TABLE a (c INTEGER, PRIMARY KEY (c));',
+    );
     expect(
-        errors,
-        isNot(contains(
-            analysisErrorWith(type: AnalysisErrorType.missingPrimaryKey))));
+      errors,
+      isNot(
+        contains(analysisErrorWith(type: AnalysisErrorType.missingPrimaryKey)),
+      ),
+    );
   });
 
   test('multiple primary key constraints', () {
     engine
         .analyze(
-            'CREATE TABLE a (c INTEGER PRIMARY KEY, c2 INTEGER PRIMARY KEY)')
-        .expectError('PRIMARY KEY',
-            type: AnalysisErrorType.duplicatePrimaryKeyDeclaration);
+          'CREATE TABLE a (c INTEGER PRIMARY KEY, c2 INTEGER PRIMARY KEY)',
+        )
+        .expectError(
+          'PRIMARY KEY',
+          type: AnalysisErrorType.duplicatePrimaryKeyDeclaration,
+        );
 
     final errors = engine
         .analyze('CREATE TABLE a (c INTEGER PRIMARY KEY, c2, PRIMARY KEY (c2))')
@@ -76,9 +86,12 @@ void main() {
 
     expect(
       errors,
-      contains(analysisErrorWith(
+      contains(
+        analysisErrorWith(
           lexeme: 'PRIMARY KEY (c2)',
-          type: AnalysisErrorType.duplicatePrimaryKeyDeclaration)),
+          type: AnalysisErrorType.duplicatePrimaryKeyDeclaration,
+        ),
+      ),
     );
   });
 }

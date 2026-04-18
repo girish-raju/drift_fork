@@ -73,7 +73,7 @@ enum DriftWorkerMode {
   /// Note that only Firefox seems to support spawning dedicated workers in
   /// shared workers, which makes this option effectively unsupported on Chrome
   /// and Safari.
-  dedicatedInShared;
+  dedicatedInShared,
 }
 
 /// A suitable entrypoint for a web worker aiming to make a drift database
@@ -148,8 +148,10 @@ void driftWorkerMain(QueryExecutor Function() openConnection) {
 ///
 /// When using a shared worker, the database (including stream queries!) are
 /// shared across multiple tabs in realtime.
-Future<DatabaseConnection> connectToDriftWorker(String workerJsUri,
-    {DriftWorkerMode mode = DriftWorkerMode.dedicated}) {
+Future<DatabaseConnection> connectToDriftWorker(
+  String workerJsUri, {
+  DriftWorkerMode mode = DriftWorkerMode.dedicated,
+}) {
   StreamChannel<Object?> channel;
 
   if (mode == DriftWorkerMode.dedicated) {
@@ -165,27 +167,32 @@ Future<DatabaseConnection> connectToDriftWorker(String workerJsUri,
 
     var didGetInitializationResponse = false;
     port.postMessage(mode.name.toJS);
-    channel = port.channel().transformStream(StreamTransformer.fromHandlers(
-      handleData: (data, sink) {
-        if (didGetInitializationResponse) {
-          sink.add(data);
-        } else {
-          didGetInitializationResponse = true;
-
-          final response = data as bool;
-          if (response) {
-            // Initialization ok, all good!
+    channel = port.channel().transformStream(
+      StreamTransformer.fromHandlers(
+        handleData: (data, sink) {
+          if (didGetInitializationResponse) {
+            sink.add(data);
           } else {
-            sink
-              ..addError(StateError(
-                  'Shared worker disagrees with desired mode $mode, is there '
-                  'another tab using `connectToDriftWorker()` in a different '
-                  'mode?'))
-              ..close();
+            didGetInitializationResponse = true;
+
+            final response = data as bool;
+            if (response) {
+              // Initialization ok, all good!
+            } else {
+              sink
+                ..addError(
+                  StateError(
+                    'Shared worker disagrees with desired mode $mode, is there '
+                    'another tab using `connectToDriftWorker()` in a different '
+                    'mode?',
+                  ),
+                )
+                ..close();
+            }
           }
-        }
-      },
-    ));
+        },
+      ),
+    );
   }
 
   return connectToRemoteAndInitialize(channel);
@@ -244,8 +251,9 @@ class _RunningDriftWorker {
     StreamSubscription<Object?>? subscription;
 
     StreamChannel<Object?> remainingChannel() {
-      return originalChannel
-          .changeStream((_) => SubscriptionStream(subscription!));
+      return originalChannel.changeStream(
+        (_) => SubscriptionStream(subscription!),
+      );
     }
 
     subscription = originalChannel.stream.listen((first) {
@@ -262,8 +270,9 @@ class _RunningDriftWorker {
           case DriftWorkerMode.shared:
             // Ok, we're supposed to run a drift server in this worker. Let's do
             // that then.
-            final server =
-                _establishModeAndLaunchServer(DriftWorkerMode.shared);
+            final server = _establishModeAndLaunchServer(
+              DriftWorkerMode.shared,
+            );
             originalChannel.sink.add(true);
             server.serve(remainingChannel());
             break;
@@ -312,7 +321,8 @@ class _RunningDriftWorker {
     assert(_knownMode != DriftWorkerMode.shared);
 
     if (message.isA<MessagePort>()) {
-      final server = _startedServer ??
+      final server =
+          _startedServer ??
           _establishModeAndLaunchServer(DriftWorkerMode.dedicated);
       server.serve((message as MessagePort).channel());
     } else {

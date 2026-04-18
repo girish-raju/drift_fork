@@ -16,10 +16,8 @@ import 'package:drift/drift.dart';
 /// migration step with a given [currentVersion] and the [database].
 ///
 /// Returns the schema version code that the function migrates to.
-typedef MigrationStepWithVersion = Future<int> Function(
-  int currentVersion,
-  GeneratedDatabase database,
-);
+typedef MigrationStepWithVersion =
+    Future<int> Function(int currentVersion, GeneratedDatabase database);
 
 /// A snapshot of a database schema at a previous version.
 ///
@@ -47,9 +45,7 @@ abstract base class VersionedSchema {
   /// If you want to customize the way the migration steps are invoked, for
   /// instance by running statements before and afterwards, see
   /// [runMigrationSteps].
-  static OnUpgrade stepByStepHelper({
-    required MigrationStepWithVersion step,
-  }) {
+  static OnUpgrade stepByStepHelper({required MigrationStepWithVersion step}) {
     return (m, from, to) async {
       return await runMigrationSteps(
         migrator: m,
@@ -172,26 +168,26 @@ class VersionedTable extends Table with TableInfo<Table, QueryRow> {
     required List<GeneratedColumn Function(String)> columns,
     required List<String> tableConstraints,
     String? alias,
-  })  : _columnFactories = columns,
-        customConstraints = tableConstraints,
-        $columns = [for (final column in columns) column(alias ?? entityName)],
-        _alias = alias;
+  }) : _columnFactories = columns,
+       customConstraints = tableConstraints,
+       $columns = [for (final column in columns) column(alias ?? entityName)],
+       _alias = alias;
 
   /// Create a table by copying fields from [source] and applying an [alias].
   VersionedTable.aliased({
     required VersionedTable source,
     required String? alias,
-  })  : entityName = source.entityName,
-        isStrict = source.isStrict,
-        withoutRowId = source.withoutRowId,
-        attachedDatabase = source.attachedDatabase,
-        customConstraints = source.customConstraints,
-        _columnFactories = source._columnFactories,
-        $columns = [
-          for (final column in source._columnFactories)
-            column(alias ?? source.entityName)
-        ],
-        _alias = alias;
+  }) : entityName = source.entityName,
+       isStrict = source.isStrict,
+       withoutRowId = source.withoutRowId,
+       attachedDatabase = source.attachedDatabase,
+       customConstraints = source.customConstraints,
+       _columnFactories = source._columnFactories,
+       $columns = [
+         for (final column in source._columnFactories)
+           column(alias ?? source.entityName),
+       ],
+       _alias = alias;
 
   @override
   String get actualTableName => entityName;
@@ -217,8 +213,10 @@ class VersionedTable extends Table with TableInfo<Table, QueryRow> {
   ///
   /// Intended for generated code.
   static Expression<T> col<T extends Object>(String name) {
-    return CustomExpression(SqlDialect.sqlite.escape(name),
-        precedence: Precedence.primary);
+    return CustomExpression(
+      SqlDialect.sqlite.escape(name),
+      precedence: Precedence.primary,
+    );
   }
 }
 
@@ -235,25 +233,19 @@ class VersionedVirtualTable extends VersionedTable
     required super.columns,
     required this.moduleAndArgs,
     super.alias,
-  }) : super(
-          isStrict: false,
-          withoutRowId: false,
-          tableConstraints: [],
-        );
+  }) : super(isStrict: false, withoutRowId: false, tableConstraints: []);
 
   /// Create a virtual table by copying fields from [source] and applying a
   /// [alias] to columns.
-  VersionedVirtualTable.aliased(
-      {required VersionedVirtualTable super.source, required super.alias})
-      : moduleAndArgs = source.moduleAndArgs,
-        super.aliased();
+  VersionedVirtualTable.aliased({
+    required VersionedVirtualTable super.source,
+    required super.alias,
+  }) : moduleAndArgs = source.moduleAndArgs,
+       super.aliased();
 
   @override
   VersionedVirtualTable createAlias(String alias) {
-    return VersionedVirtualTable.aliased(
-      source: this,
-      alias: alias,
-    );
+    return VersionedVirtualTable.aliased(source: this, alias: alias);
   }
 }
 
@@ -268,8 +260,9 @@ class VersionedView implements ViewInfo<HasResultSet, QueryRow>, HasResultSet {
   final String createViewStmt;
 
   @override
-  Map<SqlDialect, String>? get createViewStatements =>
-      {SqlDialect.sqlite: createViewStmt};
+  Map<SqlDialect, String>? get createViewStatements => {
+    SqlDialect.sqlite: createViewStmt,
+  };
 
   @override
   final List<GeneratedColumn> $columns;
@@ -293,21 +286,21 @@ class VersionedView implements ViewInfo<HasResultSet, QueryRow>, HasResultSet {
     required this.createViewStmt,
     required List<GeneratedColumn Function(String)> columns,
     String? alias,
-  })  : _columnFactories = columns,
-        $columns = [for (final column in columns) column(alias ?? entityName)],
-        _alias = alias;
+  }) : _columnFactories = columns,
+       $columns = [for (final column in columns) column(alias ?? entityName)],
+       _alias = alias;
 
   /// Copy an alias to a [source] view.
   VersionedView.aliased({required VersionedView source, required String? alias})
-      : entityName = source.entityName,
-        attachedDatabase = source.attachedDatabase,
-        createViewStmt = source.createViewStmt,
-        _columnFactories = source._columnFactories,
-        $columns = [
-          for (final column in source._columnFactories)
-            column(alias ?? source.entityName)
-        ],
-        _alias = alias;
+    : entityName = source.entityName,
+      attachedDatabase = source.attachedDatabase,
+      createViewStmt = source.createViewStmt,
+      _columnFactories = source._columnFactories,
+      $columns = [
+        for (final column in source._columnFactories)
+          column(alias ?? source.entityName),
+      ],
+      _alias = alias;
 
   @override
   String get aliasedName => _alias ?? entityName;

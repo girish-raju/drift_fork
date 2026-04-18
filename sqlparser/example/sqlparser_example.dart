@@ -4,32 +4,26 @@ import 'package:sqlparser/sqlparser.dart';
 // prints what columns would be returned by that statement.
 void main() {
   final engine = SqlEngine()
-    ..registerTableFromSql(
-      '''
+    ..registerTableFromSql('''
       CREATE TABLE frameworks (
         id INTEGER NOT NULL PRIMARY KEY,
         name TEXT NOT NULL,
         popularity REAL NOT NULL
       );
-      ''',
-    )
-    ..registerTableFromSql(
-      '''
+      ''')
+    ..registerTableFromSql('''
       CREATE TABLE languages (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL
       );
-      ''',
-    )
-    ..registerTableFromSql(
-      '''
+      ''')
+    ..registerTableFromSql('''
       CREATE TABLE uses_language (
         framework INTEGER NOT NULL REFERENCES frameworks (id),
         language INTEGER NOT NULL REFERENCES languages (id),
         PRIMARY KEY (framework, language)
       );
-      ''',
-    );
+      ''');
 
   // Use SqlEngine.analyze to parse a single sql statement and analyze it.
   // Analysis can be used to find semantic errors, lints and inferred types of
@@ -60,8 +54,9 @@ extension on SqlEngine {
   /// Utility function that parses a `CREATE TABLE` statement and registers the
   /// created table to the engine.
   void registerTableFromSql(String createTable) {
-    final stmt = parse(ParserEntrypoint.statement, createTable).rootNode
-        as CreateTableStatement;
+    final stmt =
+        parse(ParserEntrypoint.statement, createTable).rootNode
+            as CreateTableStatement;
     registerTable(schemaReader.read(stmt));
   }
 }

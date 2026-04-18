@@ -26,8 +26,12 @@ class CopyTypeFrom extends TypeRelation implements DirectedRelation {
   /// Whether [target] is the nullable version of [other].
   final bool makeNullable;
 
-  CopyTypeFrom(this.target, this.other,
-      {this.array, this.makeNullable = false});
+  CopyTypeFrom(
+    this.target,
+    this.other, {
+    this.array,
+    this.makeNullable = false,
+  });
 }
 
 /// Dependency declaring that [target] has a type that matches all of [from].
@@ -40,8 +44,12 @@ class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
   final CastMode? cast;
   final EncapsulatingNullability nullability;
 
-  CopyEncapsulating(this.target, this.from,
-      [this.cast, this.nullability = EncapsulatingNullability.nullIfAny]);
+  CopyEncapsulating(
+    this.target,
+    this.from, [
+    this.cast,
+    this.nullability = EncapsulatingNullability.nullIfAny,
+  ]);
 }
 
 /// Dependency declaring that [elements] all have the same type. This is
@@ -78,10 +86,7 @@ enum CastMode {
   boolean,
 }
 
-enum EncapsulatingNullability {
-  nullIfAny,
-  nullIfAll,
-}
+enum EncapsulatingNullability { nullIfAny, nullIfAll }
 
 /// Dependency declaring that [target] has the same type as [other] after
 /// casting it with [cast].

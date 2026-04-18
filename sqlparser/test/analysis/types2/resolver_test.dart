@@ -13,17 +13,21 @@ void main() {
     return TypeResolver(TypeInferenceSession(context))..run(context.root);
   }
 
-  Iterable<ResolvedType?> resolveVariableTypes(String sql,
-      {AnalyzeStatementOptions? options}) {
+  Iterable<ResolvedType?> resolveVariableTypes(
+    String sql, {
+    AnalyzeStatementOptions? options,
+  }) {
     final resolver = obtainResolver(sql, options: options);
     final session = resolver.session;
-    return session.context.root.allDescendants
-        .whereType<Variable>()
-        .map((variable) => session.typeOf(variable));
+    return session.context.root.allDescendants.whereType<Variable>().map(
+      (variable) => session.typeOf(variable),
+    );
   }
 
-  ResolvedType? resolveFirstVariable(String sql,
-      {AnalyzeStatementOptions? options}) {
+  ResolvedType? resolveFirstVariable(
+    String sql, {
+    AnalyzeStatementOptions? options,
+  }) {
     return resolveVariableTypes(sql, options: options).first;
   }
 
@@ -35,28 +39,42 @@ void main() {
   }
 
   test('resolves literals', () {
-    expect(resolveResultColumn('SELECT NULL'),
-        const ResolvedType(type: BasicType.nullType, nullable: true));
+    expect(
+      resolveResultColumn('SELECT NULL'),
+      const ResolvedType(type: BasicType.nullType, nullable: true),
+    );
 
     expect(resolveResultColumn('SELECT TRUE'), const ResolvedType.bool());
-    expect(resolveResultColumn("SELECT x''"),
-        const ResolvedType(type: BasicType.blob));
-    expect(resolveResultColumn("SELECT ''"),
-        const ResolvedType(type: BasicType.text));
-    expect(resolveResultColumn('SELECT 3'),
-        const ResolvedType(type: BasicType.int));
-    expect(resolveResultColumn('SELECT 3.5'),
-        const ResolvedType(type: BasicType.real));
+    expect(
+      resolveResultColumn("SELECT x''"),
+      const ResolvedType(type: BasicType.blob),
+    );
+    expect(
+      resolveResultColumn("SELECT ''"),
+      const ResolvedType(type: BasicType.text),
+    );
+    expect(
+      resolveResultColumn('SELECT 3'),
+      const ResolvedType(type: BasicType.int),
+    );
+    expect(
+      resolveResultColumn('SELECT 3.5'),
+      const ResolvedType(type: BasicType.real),
+    );
   });
 
   test('infers boolean type in where conditions', () {
-    expect(resolveFirstVariable('SELECT * FROM demo WHERE :foo'),
-        const ResolvedType.bool());
+    expect(
+      resolveFirstVariable('SELECT * FROM demo WHERE :foo'),
+      const ResolvedType.bool(),
+    );
   });
 
   test('does not infer boolean for grandchildren of where clause', () {
-    expect(resolveFirstVariable("SELECT * FROM demo WHERE 'foo' = :foo"),
-        const ResolvedType(type: BasicType.text));
+    expect(
+      resolveFirstVariable("SELECT * FROM demo WHERE 'foo' = :foo"),
+      const ResolvedType(type: BasicType.text),
+    );
   });
 
   test('infers boolean type in a join ON clause', () {
@@ -67,19 +85,25 @@ void main() {
   });
 
   test('infers type in a string concatenation', () {
-    expect(resolveFirstVariable("SELECT '' || :foo"),
-        const ResolvedType(type: BasicType.text));
+    expect(
+      resolveFirstVariable("SELECT '' || :foo"),
+      const ResolvedType(type: BasicType.text),
+    );
   });
 
   test('resolves arithmetic expressions', () {
-    expect(resolveFirstVariable('SELECT ((3 + 4) * 5) = ?'),
-        const ResolvedType(type: BasicType.int));
+    expect(
+      resolveFirstVariable('SELECT ((3 + 4) * 5) = ?'),
+      const ResolvedType(type: BasicType.int),
+    );
   });
 
   group('cast expressions', () {
     test('resolve to type argument', () {
-      expect(resolveResultColumn('SELECT CAST(3+4 AS TEXT)'),
-          const ResolvedType(type: BasicType.text));
+      expect(
+        resolveResultColumn('SELECT CAST(3+4 AS TEXT)'),
+        const ResolvedType(type: BasicType.text),
+      );
     });
 
     test('allow anything as their operand', () {
@@ -89,37 +113,50 @@ void main() {
 
   group('iif', () {
     test('has type of arguments', () {
-      expect(resolveResultColumn('SELECT IIF(false, 0, 1)'),
-          const ResolvedType(type: BasicType.int));
+      expect(
+        resolveResultColumn('SELECT IIF(false, 0, 1)'),
+        const ResolvedType(type: BasicType.int),
+      );
     });
 
     test('is nullable if argument is', () {
-      expect(resolveResultColumn('SELECT IIF(false, NULL, 1)'),
-          const ResolvedType(type: BasicType.int, nullable: true));
+      expect(
+        resolveResultColumn('SELECT IIF(false, NULL, 1)'),
+        const ResolvedType(type: BasicType.int, nullable: true),
+      );
     });
 
     test('is not nullable just because the condition is', () {
-      expect(resolveResultColumn('SELECT IIF(NULL, 0, 1)'),
-          const ResolvedType(type: BasicType.int));
+      expect(
+        resolveResultColumn('SELECT IIF(NULL, 0, 1)'),
+        const ResolvedType(type: BasicType.int),
+      );
     });
 
     test('infers one argument based on the other', () {
-      expect(resolveFirstVariable('SELECT IIF(false, ?, 1)'),
-          const ResolvedType(type: BasicType.int));
-      expect(resolveFirstVariable('SELECT IIF(false, 0, ?)'),
-          const ResolvedType(type: BasicType.int));
+      expect(
+        resolveFirstVariable('SELECT IIF(false, ?, 1)'),
+        const ResolvedType(type: BasicType.int),
+      );
+      expect(
+        resolveFirstVariable('SELECT IIF(false, 0, ?)'),
+        const ResolvedType(type: BasicType.int),
+      );
     });
 
     test('infers condition', () {
-      expect(resolveFirstVariable('SELECT IIF(?, 0, 1)'),
-          const ResolvedType(type: BasicType.int, hints: [IsBoolean()]));
+      expect(
+        resolveFirstVariable('SELECT IIF(?, 0, 1)'),
+        const ResolvedType(type: BasicType.int, hints: [IsBoolean()]),
+      );
     });
   });
 
   group('types in insert statements', () {
     test('for VALUES', () {
-      final resolver =
-          obtainResolver('INSERT INTO demo VALUES (:id, :content);');
+      final resolver = obtainResolver(
+        'INSERT INTO demo VALUES (:id, :content);',
+      );
       final root = resolver.session.context.root;
       final variables = root.allDescendants.whereType<Variable>();
 
@@ -171,12 +208,14 @@ void main() {
   });
 
   test('handles string matching expressions', () {
-    final type =
-        resolveFirstVariable('SELECT * FROM demo WHERE content LIKE ?');
+    final type = resolveFirstVariable(
+      'SELECT * FROM demo WHERE content LIKE ?',
+    );
     expect(type, const ResolvedType(type: BasicType.text));
 
     final escapedType = resolveFirstVariable(
-        "SELECT * FROM demo WHERE content LIKE 'foo' ESCAPE ?");
+      "SELECT * FROM demo WHERE content LIKE 'foo' ESCAPE ?",
+    );
     expect(escapedType, const ResolvedType(type: BasicType.text));
   });
 
@@ -186,13 +225,17 @@ void main() {
       final argType = resolveFirstVariable('SELECT timediff(?, ?)');
 
       expect(resultType, const ResolvedType(type: BasicType.text));
-      expect(argType,
-          const ResolvedType(type: BasicType.text, hints: [IsDateTime()]));
+      expect(
+        argType,
+        const ResolvedType(type: BasicType.text, hints: [IsDateTime()]),
+      );
     });
 
     test('octet_length', () {
-      expect(resolveResultColumn('SELECT octet_length(?)'),
-          equals(const ResolvedType(type: BasicType.int)));
+      expect(
+        resolveResultColumn('SELECT octet_length(?)'),
+        equals(const ResolvedType(type: BasicType.int)),
+      );
     });
 
     test('nth_value', () {
@@ -205,11 +248,15 @@ void main() {
       variables.moveNext();
       final secondVar = variables.current;
 
-      expect(resolver.session.typeOf(firstVar),
-          equals(const ResolvedType(type: BasicType.int)));
+      expect(
+        resolver.session.typeOf(firstVar),
+        equals(const ResolvedType(type: BasicType.int)),
+      );
 
-      expect(resolver.session.typeOf(secondVar),
-          equals(const ResolvedType(type: BasicType.text, nullable: true)));
+      expect(
+        resolver.session.typeOf(secondVar),
+        equals(const ResolvedType(type: BasicType.text, nullable: true)),
+      );
     });
   });
 
@@ -230,8 +277,10 @@ void main() {
     });
 
     test('infers type of whole when expression', () {
-      final type = resolveResultColumn("SELECT CASE WHEN false THEN 'one' "
-          "WHEN true THEN 'two' ELSE 'three' END;");
+      final type = resolveResultColumn(
+        "SELECT CASE WHEN false THEN 'one' "
+        "WHEN true THEN 'two' ELSE 'three' END;",
+      );
       expect(type, const ResolvedType(type: BasicType.text));
     });
   });
@@ -264,7 +313,8 @@ void main() {
 
     expect(
       resolveResultColumn(
-          'SELECT (SELECT COUNT(*) == 0 FROM demo GROUP BY id);'),
+        'SELECT (SELECT COUNT(*) == 0 FROM demo GROUP BY id);',
+      ),
       const ResolvedType.bool(nullable: true),
     );
 
@@ -275,17 +325,20 @@ void main() {
 
     expect(
       resolveResultColumn(
-          'SELECT (SELECT IFNULL(CAST(SUM(id) AS INT), 0) FROM demo);'),
+        'SELECT (SELECT IFNULL(CAST(SUM(id) AS INT), 0) FROM demo);',
+      ),
       const ResolvedType(type: BasicType.int, nullable: false),
     );
   });
 
   test('infers types for dart placeholders', () {
     final resolver = obtainResolver(r'SELECT * FROM demo WHERE $pred');
-    final type = resolver.session.typeOf(resolver
-            .session.context.root.allDescendants
-            .firstWhere((e) => e is DartExpressionPlaceholder)
-        as DartExpressionPlaceholder);
+    final type = resolver.session.typeOf(
+      resolver.session.context.root.allDescendants.firstWhere(
+            (e) => e is DartExpressionPlaceholder,
+          )
+          as DartExpressionPlaceholder,
+    );
 
     expect(type, const ResolvedType.bool());
   });
@@ -326,30 +379,43 @@ WITH RECURSIVE
   });
 
   test('handles multi column set components in updates', () {
-    final variableTypes =
-        resolveVariableTypes('UPDATE demo SET (id, content) = (?, ?)');
+    final variableTypes = resolveVariableTypes(
+      'UPDATE demo SET (id, content) = (?, ?)',
+    );
     expect(variableTypes.first, const ResolvedType(type: BasicType.int));
     expect(
-        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
+      variableTypes.elementAt(1),
+      const ResolvedType(type: BasicType.text),
+    );
   });
 
-  test('handles multi column set components in updates with select subquery',
-      () {
-    final variableTypes =
-        resolveVariableTypes('UPDATE demo SET (id, content) = (SELECT ?,?)');
-    expect(variableTypes.first, const ResolvedType(type: BasicType.int));
-    expect(
-        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
-  });
+  test(
+    'handles multi column set components in updates with select subquery',
+    () {
+      final variableTypes = resolveVariableTypes(
+        'UPDATE demo SET (id, content) = (SELECT ?,?)',
+      );
+      expect(variableTypes.first, const ResolvedType(type: BasicType.int));
+      expect(
+        variableTypes.elementAt(1),
+        const ResolvedType(type: BasicType.text),
+      );
+    },
+  );
 
-  test('handles multi column set components in updates with values subquery',
-      () {
-    final variableTypes =
-        resolveVariableTypes('UPDATE demo SET (id, content) = (VALUES(?,?))');
-    expect(variableTypes.first, const ResolvedType(type: BasicType.int));
-    expect(
-        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
-  });
+  test(
+    'handles multi column set components in updates with values subquery',
+    () {
+      final variableTypes = resolveVariableTypes(
+        'UPDATE demo SET (id, content) = (VALUES(?,?))',
+      );
+      expect(variableTypes.first, const ResolvedType(type: BasicType.int));
+      expect(
+        variableTypes.elementAt(1),
+        const ResolvedType(type: BasicType.text),
+      );
+    },
+  );
 
   test('infers offsets in frame specs', () {
     final type = resolveFirstVariable('SELECT SUM(id) OVER (ROWS ? PRECEDING)');
@@ -407,10 +473,14 @@ WITH RECURSIVE
     final columns = stmt.resolvedColumns!;
 
     expect(session.typeOf(columns[0]), const ResolvedType(type: BasicType.int));
-    expect(session.typeOf(columns[1]),
-        const ResolvedType(type: BasicType.int, nullable: true));
-    expect(session.typeOf(columns[2]),
-        const ResolvedType(type: BasicType.int, nullable: true));
+    expect(
+      session.typeOf(columns[1]),
+      const ResolvedType(type: BasicType.int, nullable: true),
+    );
+    expect(
+      session.typeOf(columns[2]),
+      const ResolvedType(type: BasicType.int, nullable: true),
+    );
   });
 
   test('analyzes nested columns', () {
@@ -434,7 +504,9 @@ WITH RECURSIVE
     final columns = stmt.resolvedColumns!;
 
     expect(columns, hasLength(1));
-    expect(session.typeOf(columns[0]),
-        const ResolvedType(type: BasicType.int, nullable: false));
+    expect(
+      session.typeOf(columns[0]),
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
   });
 }

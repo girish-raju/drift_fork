@@ -37,17 +37,17 @@ class SelectStatement extends BaseSelectStatement
   @override
   Queryable? get table => from;
 
-  SelectStatement(
-      {WithClause? withClause,
-      this.distinct = false,
-      required this.columns,
-      this.from,
-      this.where,
-      this.groupBy,
-      this.windowDeclarations = const [],
-      this.orderBy,
-      this.limit})
-      : super._(withClause);
+  SelectStatement({
+    WithClause? withClause,
+    this.distinct = false,
+    required this.columns,
+    this.from,
+    this.where,
+    this.groupBy,
+    this.windowDeclarations = const [],
+    this.orderBy,
+    this.limit,
+  }) : super._(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -61,8 +61,11 @@ class SelectStatement extends BaseSelectStatement
     from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
     groupBy = transformer.transformNullableChild(groupBy, this, arg);
-    windowDeclarations =
-        transformer.transformChildren(windowDeclarations, this, arg);
+    windowDeclarations = transformer.transformChildren(
+      windowDeclarations,
+      this,
+      arg,
+    );
     limit = transformer.transformNullableChild(limit, this, arg);
     orderBy = transformer.transformNullableChild(orderBy, this, arg);
   }
@@ -70,14 +73,14 @@ class SelectStatement extends BaseSelectStatement
   @override
   Iterable<AstNode> get childNodes {
     return [
-      if (withClause != null) withClause!,
+      ?withClause,
       ...columns,
-      if (from != null) from!,
-      if (where != null) where!,
-      if (groupBy != null) groupBy!,
+      ?from,
+      ?where,
+      ?groupBy,
       ...windowDeclarations,
-      if (limit != null) limit!,
-      if (orderBy != null) orderBy!,
+      ?limit,
+      ?orderBy,
     ];
   }
 }
@@ -98,7 +101,7 @@ class CompoundSelectStatement extends BaseSelectStatement {
 
   @override
   Iterable<AstNode> get childNodes {
-    return [if (withClause != null) withClause!, base, ...additional];
+    return [?withClause, base, ...additional];
   }
 
   @override
@@ -120,7 +123,7 @@ class ValuesSelectStatement extends BaseSelectStatement
   List<Tuple> values;
 
   ValuesSelectStatement(this.values, {WithClause? withClause})
-      : super._(withClause);
+    : super._(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -186,11 +189,7 @@ class ExpressionResultColumn extends ResultColumn
   bool get visibleToChildren => false;
 
   @override
-  Iterable<AstNode> get childNodes => [
-        expression,
-        if (mappedBy != null) mappedBy!,
-        if (as case final alias?) alias,
-      ];
+  Iterable<AstNode> get childNodes => [expression, ?mappedBy, ?as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
@@ -224,15 +223,10 @@ class GroupBy extends AstNode {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [...by, if (having != null) having!];
+  Iterable<AstNode> get childNodes => [...by, ?having];
 }
 
-enum CompoundSelectMode {
-  union,
-  unionAll,
-  intersect,
-  except,
-}
+enum CompoundSelectMode { union, unionAll, intersect, except }
 
 class CompoundSelectPart extends AstNode {
   final CompoundSelectMode mode;

@@ -12,10 +12,7 @@ class TestDriftProject {
 
   TestDriftProject(this.root);
 
-  Future<void> runDriftCli(
-    Iterable<String> args, {
-    bool dropPrints = true,
-  }) {
+  Future<void> runDriftCli(Iterable<String> args, {bool dropPrints = true}) {
     return IOOverrides.runZoned(
       () => runZoned(
         () => DriftDevCli().run(args),
@@ -47,7 +44,8 @@ class TestDriftProject {
     final appRoot = p.join(d.sandbox, 'app');
 
     if (!hasPubspec) {
-      actualContents.add(d.file('pubspec.yaml', '''
+      actualContents.add(
+        d.file('pubspec.yaml', '''
 name: app
 
 environment:
@@ -57,29 +55,38 @@ dependencies:
   drift:
 dev_dependencies:
   drift_dev:
-'''));
+'''),
+      );
     }
 
     // Instead of running `pub get` for each test, we just copy the package
     // config used by drift_dev over.
     final uri = await Isolate.packageConfig;
-    final config =
-        PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
+    final config = PackageConfig.parseBytes(
+      await File.fromUri(uri!).readAsBytes(),
+      uri,
+    );
 
     final appUri = '${File(appRoot).absolute.uri}/';
     final newConfig = PackageConfig([
       // Include all packages in the drift monorepo, outside of examples/
-      ...config.packages
-          .where((pkg) => !pkg.root.toFilePath().contains('examples')),
-      Package('app', Uri.parse(appUri),
-          packageUriRoot: Uri.parse('${appUri}lib/')),
+      ...config.packages.where(
+        (pkg) => !pkg.root.toFilePath().contains('examples'),
+      ),
+      Package(
+        'app',
+        Uri.parse(appUri),
+        packageUriRoot: Uri.parse('${appUri}lib/'),
+      ),
     ]);
     final configBuffer = StringBuffer();
     PackageConfig.writeString(newConfig, configBuffer);
 
-    actualContents.add(d.dir('.dart_tool', [
-      d.file('package_config.json', configBuffer.toString()),
-    ]));
+    actualContents.add(
+      d.dir('.dart_tool', [
+        d.file('package_config.json', configBuffer.toString()),
+      ]),
+    );
 
     await d.dir('app', actualContents).create();
 

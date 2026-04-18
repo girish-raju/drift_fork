@@ -41,11 +41,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   /// When [considerChildren] is true (the default), it also considers child
   /// nodes, thus enforcing deep equality.
   EqualityEnforcingVisitor(this._current, {bool considerChildren = true})
-      : _considerChildren = considerChildren;
+    : _considerChildren = considerChildren;
 
   @override
   void visitAggregateFunctionInvocation(
-      AggregateFunctionInvocation e, void arg) {
+    AggregateFunctionInvocation e,
+    void arg,
+  ) {
     final current = _currentAs<AggregateFunctionInvocation>(e);
     _assert(current.schemaName == e.schemaName && current.name == e.name, e);
     _checkChildren(e);
@@ -114,19 +116,21 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
       _assert(current is NotNull && current.onConflict == e.onConflict, e);
     } else if (e is PrimaryKeyColumn) {
       _assert(
-          current is PrimaryKeyColumn &&
-              current.autoIncrement == e.autoIncrement &&
-              current.mode == e.mode &&
-              current.onConflict == e.onConflict,
-          e);
+        current is PrimaryKeyColumn &&
+            current.autoIncrement == e.autoIncrement &&
+            current.mode == e.mode &&
+            current.onConflict == e.onConflict,
+        e,
+      );
     } else if (e is UniqueColumn) {
       _assert(current is UniqueColumn && current.onConflict == e.onConflict, e);
     } else if (e is CheckColumn) {
       _assert(current is CheckColumn, e);
     } else if (e is MappedBy) {
       _assert(
-          current is MappedBy && current.mapper.dartCode == e.mapper.dartCode,
-          e);
+        current is MappedBy && current.mapper.dartCode == e.mapper.dartCode,
+        e,
+      );
     } else if (e is JsonKey) {
       _assert(current is JsonKey && current.jsonKey == e.jsonKey, e);
     } else if (e is GeneratedAs) {
@@ -142,8 +146,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitColumnDefinition(ColumnDefinition e, void arg) {
     final current = _currentAs<ColumnDefinition>(e);
     _assert(
-        current.columnName == e.columnName && current.typeName == e.typeName,
-        e);
+      current.columnName == e.columnName && current.typeName == e.typeName,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -159,8 +164,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _assert(current.cteTableName == e.cteTableName, e);
     _assert(current.materializationHint == e.materializationHint, e);
     _assert(
-        const ListEquality().equals(current.columnNames, current.columnNames),
-        e);
+      const ListEquality().equals(current.columnNames, current.columnNames),
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -181,10 +187,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitCreateIndexStatement(CreateIndexStatement e, void arg) {
     final current = _currentAs<CreateIndexStatement>(e);
     _assert(
-        current.indexName == e.indexName &&
-            current.unique == e.unique &&
-            current.ifNotExists == e.ifNotExists,
-        e);
+      current.indexName == e.indexName &&
+          current.unique == e.unique &&
+          current.ifNotExists == e.ifNotExists,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -192,11 +199,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final current = _currentAs<CreateTableStatement>(e);
     _assert(
-        current.ifNotExists == e.ifNotExists &&
-            current.tableName == e.tableName &&
-            current.withoutRowId == e.withoutRowId &&
-            current.isStrict == e.isStrict,
-        e);
+      current.ifNotExists == e.ifNotExists &&
+          current.tableName == e.tableName &&
+          current.withoutRowId == e.withoutRowId &&
+          current.isStrict == e.isStrict,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -204,10 +212,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
     final current = _currentAs<CreateTriggerStatement>(e);
     _assert(
-        current.ifNotExists == e.ifNotExists &&
-            current.triggerName == e.triggerName &&
-            current.mode == e.mode,
-        e);
+      current.ifNotExists == e.ifNotExists &&
+          current.triggerName == e.triggerName &&
+          current.mode == e.mode,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -215,24 +224,30 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitCreateViewStatement(CreateViewStatement e, void arg) {
     final current = _currentAs<CreateViewStatement>(e);
     _assert(
-        current.ifNotExists == e.ifNotExists &&
-            current.viewName == e.viewName &&
-            const ListEquality().equals(current.columns, e.columns),
-        e);
+      current.ifNotExists == e.ifNotExists &&
+          current.viewName == e.viewName &&
+          const ListEquality().equals(current.columns, e.columns),
+      e,
+    );
     _checkChildren(e);
   }
 
   @override
   void visitCreateVirtualTableStatement(
-      CreateVirtualTableStatement e, void arg) {
+    CreateVirtualTableStatement e,
+    void arg,
+  ) {
     final current = _currentAs<CreateVirtualTableStatement>(e);
     _assert(
-        current.ifNotExists == e.ifNotExists &&
-            current.tableName == e.tableName &&
-            current.moduleName == e.moduleName &&
-            const ListEquality()
-                .equals(current.argumentContent, e.argumentContent),
-        e);
+      current.ifNotExists == e.ifNotExists &&
+          current.tableName == e.tableName &&
+          current.moduleName == e.moduleName &&
+          const ListEquality().equals(
+            current.argumentContent,
+            e.argumentContent,
+          ),
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -240,20 +255,22 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitDropStatement(DropStatement e, void arg) {
     final current = _currentAs<DropStatement>(e);
     _assert(
-        current.type == e.type &&
-            current.ifExists == e.ifExists &&
-            current.schemaName == e.schemaName &&
-            current.elementName == e.elementName,
-        e);
+      current.type == e.type &&
+          current.ifExists == e.ifExists &&
+          current.schemaName == e.schemaName &&
+          current.elementName == e.elementName,
+      e,
+    );
   }
 
   @override
   void visitReindexStatement(ReindexStatement e, void arg) {
     final current = _currentAs<ReindexStatement>(e);
     _assert(
-        current.schemaName == e.schemaName &&
-            current.elementName == e.elementName,
-        e);
+      current.schemaName == e.schemaName &&
+          current.elementName == e.elementName,
+      e,
+    );
   }
 
   @override
@@ -278,31 +295,36 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitAnalyzeStatement(AnalyzeStatement e, void arg) {
     final current = _currentAs<AnalyzeStatement>(e);
     _assert(
-        current.schemaName == e.schemaName &&
-            current.elementName == e.elementName,
-        e);
+      current.schemaName == e.schemaName &&
+          current.elementName == e.elementName,
+      e,
+    );
   }
 
   @override
   void visitPragmaCommand(PragmaCommand e, void arg) {
     final current = _currentAs<PragmaCommand>(e);
     _assert(
-        current.schemaName == e.schemaName &&
-            current.pragmaName == e.pragmaName,
-        e);
+      current.schemaName == e.schemaName && current.pragmaName == e.pragmaName,
+      e,
+    );
     _checkChildren(e);
   }
 
   @override
   void visitSavepointStatement(SavepointStatement e, void arg) {
     _assert(
-        _currentAs<SavepointStatement>(e).savepointName == e.savepointName, e);
+      _currentAs<SavepointStatement>(e).savepointName == e.savepointName,
+      e,
+    );
   }
 
   @override
   void visitReleaseStatement(ReleaseStatement e, void arg) {
     _assert(
-        _currentAs<ReleaseStatement>(e).savepointName == e.savepointName, e);
+      _currentAs<ReleaseStatement>(e).savepointName == e.savepointName,
+      e,
+    );
   }
 
   @override
@@ -326,9 +348,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitDeferrableClause(DeferrableClause e, void arg) {
     final current = _currentAs<DeferrableClause>(e);
     _assert(
-        current.not == e.not &&
-            current.declaredInitially == e.declaredInitially,
-        e);
+      current.not == e.not && current.declaredInitially == e.declaredInitially,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -379,7 +401,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitForeignKeyClause(ForeignKeyClause e, void arg) {
     final current = _currentAs<ForeignKeyClause>(e);
     _assert(
-        current.onDelete == e.onDelete && current.onUpdate == e.onUpdate, e);
+      current.onDelete == e.onDelete && current.onUpdate == e.onUpdate,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -387,11 +411,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitFrameSpec(FrameSpec e, void arg) {
     final current = _currentAs<FrameSpec>(e);
     _assert(
-        current.type == e.type &&
-            current.excludeMode == e.excludeMode &&
-            current.start == e.start &&
-            e.end == e.end,
-        e);
+      current.type == e.type &&
+          current.excludeMode == e.excludeMode &&
+          current.start == e.start &&
+          e.end == e.end,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -470,9 +495,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
       final typedOther = e.constraint as UsingConstraint;
 
       _assert(
-          const ListEquality()
-              .equals(constraint.columnNames, typedOther.columnNames),
-          e);
+        const ListEquality().equals(
+          constraint.columnNames,
+          typedOther.columnNames,
+        ),
+        e,
+      );
     }
 
     _checkChildren(e);
@@ -483,10 +511,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     final current = _currentAs<JoinOperator>(e);
 
     _assert(
-        e.natural == current.natural &&
-            e.outer == current.outer &&
-            e.operator == current.operator,
-        e);
+      e.natural == current.natural &&
+          e.outer == current.outer &&
+          e.operator == current.operator,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -555,10 +584,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     if (e is VariableTypeHint) {
       final current = _currentAs<VariableTypeHint>(e);
       _assert(
-          current.typeName == e.typeName &&
-              current.orNull == e.orNull &&
-              current.isRequired == e.isRequired,
-          e);
+        current.typeName == e.typeName &&
+            current.orNull == e.orNull &&
+            current.isRequired == e.isRequired,
+        e,
+      );
     } else if (e is DartPlaceholderDefaultValue) {
       final current = _currentAs<DartPlaceholderDefaultValue>(e);
       _assert(current.variableName == e.variableName, e);
@@ -570,10 +600,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitDriftTableName(DriftTableName e, void arg) {
     final current = _currentAs<DriftTableName>(e);
     _assert(
-        current.overriddenDataClassName == e.overriddenDataClassName &&
-            current.constructorName == e.constructorName &&
-            current.useExistingDartClass == e.useExistingDartClass,
-        e);
+      current.overriddenDataClassName == e.overriddenDataClassName &&
+          current.constructorName == e.constructorName &&
+          current.useExistingDartClass == e.useExistingDartClass,
+      e,
+    );
   }
 
   @override
@@ -613,7 +644,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitOrderingTerm(OrderingTerm e, void arg) {
     final current = _currentAs<OrderingTerm>(e);
     _assert(
-        current.orderingMode == e.orderingMode && current.nulls == e.nulls, e);
+      current.orderingMode == e.orderingMode && current.nulls == e.nulls,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -638,10 +671,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitReference(Reference e, void arg) {
     final current = _currentAs<Reference>(e);
     _assert(
-        current.schemaName == e.schemaName &&
-            current.entityName == e.entityName &&
-            current.columnName == e.columnName,
-        e);
+      current.schemaName == e.schemaName &&
+          current.entityName == e.entityName &&
+          current.columnName == e.columnName,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -679,7 +713,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
   @override
   void visitSemicolonSeparatedStatements(
-      SemicolonSeparatedStatements e, void arg) {
+    SemicolonSeparatedStatements e,
+    void arg,
+  ) {
     _currentAs<SemicolonSeparatedStatements>(e);
     _checkChildren(e);
   }
@@ -740,8 +776,9 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitTableReference(TableReference e, void arg) {
     final current = _currentAs<TableReference>(e);
     _assert(
-        current.schemaName == e.schemaName && current.tableName == e.tableName,
-        e);
+      current.schemaName == e.schemaName && current.tableName == e.tableName,
+      e,
+    );
     _checkChildren(e);
   }
 
@@ -903,14 +940,16 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
       } else {
         // Current has more elements than other
         throw NotEqualException(
-            "$_current and $other don't have an equal amount of children");
+          "$_current and $other don't have an equal amount of children",
+        );
       }
     }
 
     if (otherChildren.moveNext()) {
       // Other has more elements than current
       throw NotEqualException(
-          "$_current and $other don't have an equal amount of children (${_current.childNodes.length} and ${other.childNodes.length})");
+        "$_current and $other don't have an equal amount of children (${_current.childNodes.length} and ${other.childNodes.length})",
+      );
     }
   }
 

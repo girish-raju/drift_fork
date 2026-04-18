@@ -27,7 +27,9 @@ abstract class QueryExecutor {
   /// Runs a select statement with the given variables and returns the raw
   /// results.
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args);
+    String statement,
+    List<Object?> args,
+  );
 
   /// Runs an insert statement with the given variables. Returns the row id or
   /// the auto_increment id of the inserted row.

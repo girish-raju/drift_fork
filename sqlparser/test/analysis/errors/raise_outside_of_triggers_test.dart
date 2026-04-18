@@ -24,8 +24,11 @@ void main() {
     expect(result.errors, hasLength(1));
     expect(
       result.errors.single,
-      isA<AnalysisError>()
-          .having((e) => e.type, 'type', AnalysisErrorType.raiseMisuse),
+      isA<AnalysisError>().having(
+        (e) => e.type,
+        'type',
+        AnalysisErrorType.raiseMisuse,
+      ),
     );
   });
 }

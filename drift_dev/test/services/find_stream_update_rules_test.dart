@@ -28,7 +28,7 @@ import 'package:drift/drift.dart';
 
 @DriftDatabase(include: {'a.drift'})
 class MyDatabase {}
-      '''
+      ''',
     });
 
     final file = await state.analyze('package:a/main.dart');
@@ -43,12 +43,16 @@ class MyDatabase {}
       rules.rules.single,
       isA<WritePropagation>()
           .having(
-              (e) => e.on,
-              'on',
-              const TableUpdateQuery.onTableName('users',
-                  limitUpdateKind: UpdateKind.insert))
-          .having((e) => e.result, 'result',
-              {const TableUpdate('users', kind: UpdateKind.insert)}),
+            (e) => e.on,
+            'on',
+            const TableUpdateQuery.onTableName(
+              'users',
+              limitUpdateKind: UpdateKind.insert,
+            ),
+          )
+          .having((e) => e.result, 'result', {
+            const TableUpdate('users', kind: UpdateKind.insert),
+          }),
     );
   });
 
@@ -85,7 +89,7 @@ import 'package:drift/drift.dart';
 
 @DriftDatabase(include: {'a.drift'})
 class MyDatabase {}
-      '''
+      ''',
     });
 
     final file = await state.analyze('package:a/main.dart');
@@ -94,10 +98,14 @@ class MyDatabase {}
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
     final rules = FindStreamUpdateRules(db).identifyRules();
 
-    const updateA =
-        TableUpdateQuery.onTableName('a', limitUpdateKind: UpdateKind.update);
-    const deleteA =
-        TableUpdateQuery.onTableName('a', limitUpdateKind: UpdateKind.delete);
+    const updateA = TableUpdateQuery.onTableName(
+      'a',
+      limitUpdateKind: UpdateKind.update,
+    );
+    const deleteA = TableUpdateQuery.onTableName(
+      'a',
+      limitUpdateKind: UpdateKind.delete,
+    );
 
     TableUpdate update(String table) {
       return TableUpdate(table, kind: UpdateKind.update);
@@ -115,22 +123,11 @@ class MyDatabase {}
 
     expect(
       rules.rules,
-      containsAll(
-        [
-          writePropagation(
-            deleteA,
-            delete('will_delete_on_delete'),
-          ),
-          writePropagation(
-            deleteA,
-            update('will_update_on_delete'),
-          ),
-          writePropagation(
-            updateA,
-            update('will_update_on_update'),
-          ),
-        ],
-      ),
+      containsAll([
+        writePropagation(deleteA, delete('will_delete_on_delete')),
+        writePropagation(deleteA, update('will_update_on_delete')),
+        writePropagation(updateA, update('will_update_on_update')),
+      ]),
     );
     expect(rules.rules, hasLength(3));
   });

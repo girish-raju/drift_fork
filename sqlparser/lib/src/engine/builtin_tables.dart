@@ -12,10 +12,14 @@ Table get sqliteSequence {
 Table get sqliteMaster {
   final type = TableColumn('type', const ResolvedType(type: BasicType.text));
   final name = TableColumn('name', const ResolvedType(type: BasicType.text));
-  final tblName =
-      TableColumn('tbl_name', const ResolvedType(type: BasicType.text));
-  final rootPage =
-      TableColumn('rootpage', const ResolvedType(type: BasicType.int));
+  final tblName = TableColumn(
+    'tbl_name',
+    const ResolvedType(type: BasicType.text),
+  );
+  final rootPage = TableColumn(
+    'rootpage',
+    const ResolvedType(type: BasicType.int),
+  );
   final sql = TableColumn('sql', const ResolvedType(type: BasicType.text));
 
   return Table(

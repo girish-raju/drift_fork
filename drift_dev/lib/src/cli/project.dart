@@ -22,7 +22,7 @@ class DriftProject {
   Version? _languageVersion;
 
   DriftProject(this.buildConfig, this.directory)
-      : options = readOptionsFromConfig(buildConfig);
+    : options = readOptionsFromConfig(buildConfig);
 
   Stream<File> get sourceFiles {
     const topLevelDirs = {'lib', 'test', 'bin', 'example', 'web'};
@@ -55,7 +55,8 @@ class DriftProject {
     }
 
     final package = config.packageOf(Uri.file(p.join(directory.path, 'lib')));
-    return _languageVersion = package?.languageVersion?.asPubSemver ??
+    return _languageVersion =
+        package?.languageVersion?.asPubSemver ??
         DartFormatter.latestLanguageVersion;
   }
 

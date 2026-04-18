@@ -64,7 +64,8 @@ const Set<String> _addsSqlConstraint = {
   _methodCheck,
 };
 
-const String _errorMessage = 'This getter does not create a valid column that '
+const String _errorMessage =
+    'This getter does not create a valid column that '
     'can be parsed by drift. Please refer to the readme from drift to see how '
     'columns are formed. If you have any questions, feel free to raise an '
     'issue.';
@@ -109,11 +110,15 @@ class ColumnParser {
   /// allows the writer to reconstruct them properly.
   AnnotatedDartCode _ast(AstNode node) {
     return AnnotatedDartCode.build(
-        (b) => b.addAstNode(node, taggedElements: _columnsInSameTable));
+      (b) => b.addAstNode(node, taggedElements: _columnsInSameTable),
+    );
   }
 
   ColumnType? _tryExtractingStartMethod(
-      MethodInvocation call, Element element, KnownDriftTypes helper) {
+    MethodInvocation call,
+    Element element,
+    KnownDriftTypes helper,
+  ) {
     final calledMethod = call.methodName;
     final methodName = calledMethod.name;
 
@@ -136,8 +141,9 @@ class ColumnParser {
             // error int that case.
             : ColumnType.drift(DriftSqlType.string);
       } else {
-        columnType =
-            ColumnType.drift(_startMethodToBuiltinColumnType(methodName));
+        columnType = ColumnType.drift(
+          _startMethodToBuiltinColumnType(methodName),
+        );
       }
 
       return columnType;
@@ -153,32 +159,41 @@ class ColumnParser {
           continue;
         }
 
-        if (helper.checkDriftColumnDeclarationBuilder!
-            .isAssignableFromType(value.type!)) {
+        if (helper.checkDriftColumnDeclarationBuilder!.isAssignableFromType(
+          value.type!,
+        )) {
           final builtin = value.getField('builtin');
           final custom = value.getField('custom');
 
           if (builtin != null && !builtin.isNull) {
-            return ColumnType.drift(DriftSqlType.values
-                .byName(builtin.getField('name')!.toStringValue()!));
+            return ColumnType.drift(
+              DriftSqlType.values.byName(
+                builtin.getField('name')!.toStringValue()!,
+              ),
+            );
           } else if (custom != null && !custom.isNull) {
             final element = custom.toFunctionValue()!;
             final customType = helper.asUserDefinedType(element.returnType)!;
 
-            return ColumnType.custom(CustomColumnType(
-              AnnotatedDartCode.build((b) {
-                // element is either a static or a top-level function.
-                if (element.enclosingElement is LibraryElement) {
-                  b.addTopLevelElement(element);
-                } else {
-                  b.addTopLevelElement(
-                      element.enclosingElement as ClassElement);
-                  b.addText('.${element.name!.isEmpty ? 'new' : element.name}');
-                }
-                b.addText('()');
-              }),
-              customType.typeArguments[0],
-            ));
+            return ColumnType.custom(
+              CustomColumnType(
+                AnnotatedDartCode.build((b) {
+                  // element is either a static or a top-level function.
+                  if (element.enclosingElement is LibraryElement) {
+                    b.addTopLevelElement(element);
+                  } else {
+                    b.addTopLevelElement(
+                      element.enclosingElement as ClassElement,
+                    );
+                    b.addText(
+                      '.${element.name!.isEmpty ? 'new' : element.name}',
+                    );
+                  }
+                  b.addText('()');
+                }),
+                customType.typeArguments[0],
+              ),
+            );
           }
         }
       }
@@ -188,7 +203,9 @@ class ColumnParser {
   }
 
   Future<PendingColumnInformation?> parse(
-      ColumnDeclaration columnDeclaration, Element element) async {
+    ColumnDeclaration columnDeclaration,
+    Element element,
+  ) async {
     final expr = columnDeclaration.expression;
 
     // In drift < v3, columns were declared like this: text()(). In drift v3,
@@ -204,7 +221,8 @@ class ColumnParser {
 
     if (fullColumnBuilder == null) {
       _resolver.reportError(
-          DriftAnalysisError.forDartElement(element, _errorMessage));
+        DriftAnalysisError.forDartElement(element, _errorMessage),
+      );
       return null;
     }
     var remainingExpr = fullColumnBuilder;
@@ -251,14 +269,18 @@ class ColumnParser {
             );
           }
 
-          foundExplicitName =
-              readStringLiteral(remainingExpr.argumentList.arguments.first);
+          foundExplicitName = readStringLiteral(
+            remainingExpr.argumentList.arguments.first,
+          );
           if (foundExplicitName == null) {
-            _resolver.reportError(DriftAnalysisError.inDartAst(
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
                 element,
                 remainingExpr.argumentList,
                 'This table name is cannot be resolved! Please only use '
-                'a constant string as parameter for .named().'));
+                'a constant string as parameter for .named().',
+              ),
+            );
           }
           break;
         case _methodReferences:
@@ -272,34 +294,41 @@ class ColumnParser {
           };
 
           if (resolvedTableClass == null) {
-            _resolver.reportError(DriftAnalysisError.inDartAst(
-              element,
-              first,
-              'This parameter should be a simple class name',
-            ));
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                first,
+                'This parameter should be a simple class name',
+              ),
+            );
             break;
           }
           if (resolvedTableClass is! ClassElement) {
-            _resolver.reportError(DriftAnalysisError.inDartAst(
-              element,
-              first,
-              'Expected a class here.',
-            ));
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                first,
+                'Expected a class here.',
+              ),
+            );
             break;
           }
 
           final columnNameNode = args[1];
           if (columnNameNode is! SymbolLiteral) {
-            _resolver.reportError(DriftAnalysisError.inDartAst(
-              element,
-              columnNameNode,
-              'This should be a symbol literal (`#columnName`)',
-            ));
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                columnNameNode,
+                'This should be a symbol literal (`#columnName`)',
+              ),
+            );
             break;
           }
 
-          final columnName =
-              columnNameNode.components.map((token) => token.lexeme).join('.');
+          final columnName = columnNameNode.components
+              .map((token) => token.lexeme)
+              .join('.');
 
           ReferenceAction? onUpdate, onDelete;
           bool initiallyDeferred = false;
@@ -311,8 +340,13 @@ class ColumnParser {
             } else if (expr is DotShorthandPropertyAccess) {
               name = expr.propertyName.name;
             } else {
-              _resolver.reportError(DriftAnalysisError.inDartAst(element, expr,
-                  'Should be a direct enum reference (`KeyAction.cascade`)'));
+              _resolver.reportError(
+                DriftAnalysisError.inDartAst(
+                  element,
+                  expr,
+                  'Should be a direct enum reference (`KeyAction.cascade`)',
+                ),
+              );
               return null;
             }
 
@@ -338,49 +372,70 @@ class ColumnParser {
               if (value case BooleanLiteral(:final value)) {
                 initiallyDeferred = value;
               } else {
-                _resolver.reportError(DriftAnalysisError.inDartAst(
-                  element,
-                  expr,
-                  'Must either be `true` or `false` literal.',
-                ));
+                _resolver.reportError(
+                  DriftAnalysisError.inDartAst(
+                    element,
+                    expr,
+                    'Must either be `true` or `false` literal.',
+                  ),
+                );
               }
             }
           }
 
           final referencedTable = await _resolver.resolver.resolveDartReference(
-              _resolver.discovered.ownId, resolvedTableClass);
+            _resolver.discovered.ownId,
+            resolvedTableClass,
+          );
 
           if (referencedTable is ReferencesItself) {
             // "Foreign" key to a column in the same table.
-            foundConstraints.add(ForeignKeyReference.unresolved(
-                onUpdate, onDelete, initiallyDeferred));
+            foundConstraints.add(
+              ForeignKeyReference.unresolved(
+                onUpdate,
+                onDelete,
+                initiallyDeferred,
+              ),
+            );
             referencesColumnInSameTable = columnName;
           } else if (referencedTable is ResolvedReferenceFound) {
             final driftElement = referencedTable.element;
 
             if (driftElement is DriftTable) {
               final column = driftElement.columns.firstWhereOrNull(
-                  (element) => element.nameInDart == columnName);
+                (element) => element.nameInDart == columnName,
+              );
 
               if (column == null) {
-                _resolver.reportError(DriftAnalysisError.inDartAst(
-                  element,
-                  columnNameNode,
-                  'The referenced table `${driftElement.schemaName}` has no '
-                  'column named `$columnName` in Dart.',
-                ));
+                _resolver.reportError(
+                  DriftAnalysisError.inDartAst(
+                    element,
+                    columnNameNode,
+                    'The referenced table `${driftElement.schemaName}` has no '
+                    'column named `$columnName` in Dart.',
+                  ),
+                );
               } else {
-                foundConstraints.add(ForeignKeyReference(
-                    column, onUpdate, onDelete, initiallyDeferred));
+                foundConstraints.add(
+                  ForeignKeyReference(
+                    column,
+                    onUpdate,
+                    onDelete,
+                    initiallyDeferred,
+                  ),
+                );
               }
             } else {
               _resolver.reportError(
-                  DriftAnalysisError.inDartAst(element, first, 'Not a table'));
+                DriftAnalysisError.inDartAst(element, first, 'Not a table'),
+              );
             }
           } else {
             // Could not resolve foreign table, emit warning
-            _resolver.reportErrorForUnresolvedReference(referencedTable,
-                (msg) => DriftAnalysisError.inDartAst(element, first, msg));
+            _resolver.reportErrorForUnresolvedReference(
+              referencedTable,
+              (msg) => DriftAnalysisError.inDartAst(element, first, msg),
+            );
           }
 
           break;
@@ -389,10 +444,12 @@ class ColumnParser {
           final minArg = findNamedArgument(args, 'min');
           final maxArg = findNamedArgument(args, 'max');
 
-          foundConstraints.add(LimitingTextLength(
-            minLength: minArg != null ? readIntLiteral(minArg) : null,
-            maxLength: maxArg != null ? readIntLiteral(maxArg) : null,
-          ));
+          foundConstraints.add(
+            LimitingTextLength(
+              minLength: minArg != null ? readIntLiteral(minArg) : null,
+              maxLength: maxArg != null ? readIntLiteral(maxArg) : null,
+            ),
+          );
           break;
         case _methodAutoIncrement:
           foundConstraints.add(PrimaryKeyColumn(true));
@@ -420,11 +477,13 @@ class ColumnParser {
           foundCustomConstraint = readStringLiteral(stringLiteral);
 
           if (foundCustomConstraint == null) {
-            _resolver.reportError(DriftAnalysisError.forDartElement(
-              element,
-              'This constraint is cannot be resolved! Please only use '
-              'a constant string as parameter for .customConstraint().',
-            ));
+            _resolver.reportError(
+              DriftAnalysisError.forDartElement(
+                element,
+                'This constraint is cannot be resolved! Please only use '
+                'a constant string as parameter for .customConstraint().',
+              ),
+            );
           }
           break;
         case _methodDefault:
@@ -433,8 +492,9 @@ class ColumnParser {
           foundDefaultExpression = _ast(expression);
           break;
         case _methodClientDefault:
-          clientDefaultExpression =
-              _ast(remainingExpr.argumentList.arguments.single);
+          clientDefaultExpression = _ast(
+            remainingExpr.argumentList.arguments.single,
+          );
           break;
         case _methodMap:
           final args = remainingExpr.argumentList;
@@ -450,8 +510,13 @@ class ColumnParser {
               if (storedValue is BooleanLiteral) {
                 stored = storedValue.value;
               } else {
-                _resolver.reportError(DriftAnalysisError.inDartAst(
-                    element, expr, 'Must be a boolean literal'));
+                _resolver.reportError(
+                  DriftAnalysisError.inDartAst(
+                    element,
+                    expr,
+                    'Must be a boolean literal',
+                  ),
+                );
               }
             } else {
               generatedExpression = expr;
@@ -475,9 +540,11 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    final sqlName = foundExplicitName ??
-        _resolver.resolver.driver.options.caseFromDartToSql
-            .apply(columnDeclaration.lexemeName);
+    final sqlName =
+        foundExplicitName ??
+        _resolver.resolver.driver.options.caseFromDartToSql.apply(
+          columnDeclaration.lexemeName,
+        );
 
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
@@ -487,41 +554,56 @@ class ColumnParser {
         columnType,
         nullable,
         (message) => _resolver.reportError(
-            DriftAnalysisError.inDartAst(element, mappedAs!, message)),
+          DriftAnalysisError.inDartAst(element, mappedAs!, message),
+        ),
         helper,
       );
     }
 
     if (foundStartMethod == _startIntEnum) {
       if (converter != null) {
-        _resolver.reportError(DriftAnalysisError.forDartElement(
-          element,
-          'Using $_startIntEnum will apply a custom converter by default, '
-          "so you can't add an additional converter",
-        ));
+        _resolver.reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'Using $_startIntEnum will apply a custom converter by default, '
+            "so you can't add an additional converter",
+          ),
+        );
       }
 
       final enumType = remainingExpr.typeArgumentTypes!.first;
       converter = readEnumConverter(
-        (msg) => _resolver.reportError(DriftAnalysisError.inDartAst(element,
-            remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
+        (msg) => _resolver.reportError(
+          DriftAnalysisError.inDartAst(
+            element,
+            remainingExpr.typeArguments ?? remainingExpr.methodName,
+            msg,
+          ),
+        ),
         enumType,
         EnumType.intEnum,
         helper,
       );
     } else if (foundStartMethod == _startTextEnum) {
       if (converter != null) {
-        _resolver.reportError(DriftAnalysisError.forDartElement(
-          element,
-          'Using $_startTextEnum will apply a custom converter by default, '
-          "so you can't add an additional converter",
-        ));
+        _resolver.reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'Using $_startTextEnum will apply a custom converter by default, '
+            "so you can't add an additional converter",
+          ),
+        );
       }
 
       final enumType = remainingExpr.typeArgumentTypes!.first;
       converter = readEnumConverter(
-        (msg) => _resolver.reportError(DriftAnalysisError.inDartAst(element,
-            remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
+        (msg) => _resolver.reportError(
+          DriftAnalysisError.inDartAst(
+            element,
+            remainingExpr.typeArguments ?? remainingExpr.methodName,
+            msg,
+          ),
+        ),
         enumType,
         EnumType.textEnum,
         helper,
@@ -565,12 +647,14 @@ class ColumnParser {
         .map((t) => t.toString())
         .join('\n');
 
-    foundConstraints.addAll(await _driftConstraintsFromCustomConstraints(
-      isNullable: nullable,
-      customConstraints: foundCustomConstraint,
-      sourceForCustomConstraints: customConstraintSource,
-      setDefault: (arg) => foundDefaultExpression = arg,
-    ));
+    foundConstraints.addAll(
+      await _driftConstraintsFromCustomConstraints(
+        isNullable: nullable,
+        customConstraints: foundCustomConstraint,
+        sourceForCustomConstraints: customConstraintSource,
+        setDefault: (arg) => foundDefaultExpression = arg,
+      ),
+    );
     return PendingColumnInformation(
       DriftColumn(
         sqlType: columnType,
@@ -652,38 +736,50 @@ class ColumnParser {
     /// improves errors when passing string literals to `customConstraint`.
     FileSpan translateSpan(FileSpan sql) {
       final defaultSpan = DriftAnalysisError.dartAstSpan(
-          _resolver.discovered.dartElement, sourceForCustomConstraints!);
+        _resolver.discovered.dartElement,
+        sourceForCustomConstraints!,
+      );
 
       return switch (sourceForCustomConstraints) {
         SingleStringLiteral(:final contentsOffset) => defaultSpan.file.span(
-            contentsOffset + sql.start.offset, contentsOffset + sql.end.offset),
+          contentsOffset + sql.start.offset,
+          contentsOffset + sql.end.offset,
+        ),
         _ => defaultSpan,
       };
     }
 
     final engine = _resolver.resolver.driver.newSqlEngine();
-    final parseResult =
-        engine.parse(ParserEntrypoint.columnConstraints, customConstraints);
+    final parseResult = engine.parse(
+      ParserEntrypoint.columnConstraints,
+      customConstraints,
+    );
     final constraints = parseResult.rootNode.constraints;
 
     for (final error in parseResult.errors) {
-      _resolver.reportError(DriftAnalysisError(translateSpan(error.token.span),
-          'Parse error in customConstraint(): ${error.message}'));
+      _resolver.reportError(
+        DriftAnalysisError(
+          translateSpan(error.token.span),
+          'Parse error in customConstraint(): ${error.message}',
+        ),
+      );
     }
 
     // Constraints override all constraints that drift will add. So if the
     // column is non-nullable, there should be a `NON NULL` constraint.
     if (!isNullable && !constraints.any((e) => e is sql.NotNull)) {
-      _resolver.reportError(DriftAnalysisError.inDartAst(
-        _resolver.discovered.dartElement,
-        sourceForCustomConstraints!,
-        "This column is not declared to be `.nullable()`, but also doesn't "
-        'have `NOT NULL` in its custom constraints. Since custom constraints '
-        'override the default, there will be no `NOT NULL` constraint in the '
-        'database.\n'
-        'To fix this, either add a `NOT NULL` constraint here or declare the '
-        'column with `nullable()`',
-      ));
+      _resolver.reportError(
+        DriftAnalysisError.inDartAst(
+          _resolver.discovered.dartElement,
+          sourceForCustomConstraints!,
+          "This column is not declared to be `.nullable()`, but also doesn't "
+          'have `NOT NULL` in its custom constraints. Since custom constraints '
+          'override the default, there will be no `NOT NULL` constraint in the '
+          'database.\n'
+          'To fix this, either add a `NOT NULL` constraint here or declare the '
+          'column with `nullable()`',
+        ),
+      );
     }
 
     final parsedConstraints = <DriftColumnConstraint>[];
@@ -698,14 +794,11 @@ class ColumnParser {
       } else if (constraint is sql.ForeignKeyColumnConstraint) {
         final clause = constraint.clause;
 
-        final table =
-            await _resolver.resolveSqlReferenceOrReportError<DriftTable>(
-          clause.foreignTable.tableName,
-          (msg) => DriftAnalysisError(
-            translateSpan(clause.span!),
-            msg,
-          ),
-        );
+        final table = await _resolver
+            .resolveSqlReferenceOrReportError<DriftTable>(
+              clause.foreignTable.tableName,
+              (msg) => DriftAnalysisError(translateSpan(clause.span!), msg),
+            );
 
         if (table != null) {
           final columnName = clause.columnNames.first;
@@ -713,19 +806,23 @@ class ColumnParser {
               table.columnBySqlName[clause.columnNames.first.columnName];
 
           if (column == null) {
-            _resolver.reportError(DriftAnalysisError.inDartAst(
-              _resolver.discovered.dartElement,
-              sourceForCustomConstraints!,
-              'The referenced table has no column named `$columnName`',
-            ));
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                _resolver.discovered.dartElement,
+                sourceForCustomConstraints!,
+                'The referenced table has no column named `$columnName`',
+              ),
+            );
           } else {
-            parsedConstraints.add(ForeignKeyReference(
-              column,
-              constraint.clause.onUpdate,
-              constraint.clause.onDelete,
-              constraint.clause.effectiveDeferrableMode ==
-                  InitialDeferrableMode.deferred,
-            ));
+            parsedConstraints.add(
+              ForeignKeyReference(
+                column,
+                constraint.clause.onUpdate,
+                constraint.clause.onDelete,
+                constraint.clause.effectiveDeferrableMode ==
+                    InitialDeferrableMode.deferred,
+              ),
+            );
           }
         }
       } else if (constraint is sql.Default) {

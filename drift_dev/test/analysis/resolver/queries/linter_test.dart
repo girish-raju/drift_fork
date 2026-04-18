@@ -8,8 +8,9 @@ void main() {
   test('warns when a result column is unresolved', () async {
     final result = await TestBackend.analyzeSingle('a: SELECT ?;');
 
-    expect(result.allErrors,
-        [isDriftError(contains('unknown type')).withSpan('?')]);
+    expect(result.allErrors, [
+      isDriftError(contains('unknown type')).withSpan('?'),
+    ]);
   });
 
   test('warns for skipped variable index', () async {
@@ -21,11 +22,11 @@ q3: SELECT ?1 = ?3 OR ?2;
 
     expect(result.allErrors, [
       isDriftError(
-              'Illegal variable index 2 because no variable at index 1 exists.')
-          .withSpan('?2'),
+        'Illegal variable index 2 because no variable at index 1 exists.',
+      ).withSpan('?2'),
       isDriftError(
-              'Illegal variable index 3 because no variable at index 2 exists.')
-          .withSpan('?3'),
+        'Illegal variable index 3 because no variable at index 2 exists.',
+      ).withSpan('?3'),
     ]);
   });
 
@@ -59,18 +60,17 @@ CREATE TABLE t (i INTEGER PRIMARY KEY);
 q: SELECT * FROM t WHERE i IN ?1;
 ''');
 
-    expect(
-      result.allErrors,
-      [
-        isDriftError('Cannot use an array variable with an explicit index')
-            .withSpan('?1'),
-      ],
-    );
+    expect(result.allErrors, [
+      isDriftError(
+        'Cannot use an array variable with an explicit index',
+      ).withSpan('?1'),
+    ]);
   });
 
   test('no warning for Dart placeholder in column', () async {
-    final result =
-        await TestBackend.analyzeSingle(r"a: SELECT 'string' = $expr;");
+    final result = await TestBackend.analyzeSingle(
+      r"a: SELECT 'string' = $expr;",
+    );
 
     expect(result.allErrors, isEmpty);
   });
@@ -115,11 +115,9 @@ in: INSERT INTO foo (id) $placeholder;
     );
   });
 
-  test(
-    'warns when nested results appear in compound statements',
-    () async {
-      final state = await TestBackend.inTest({
-        'foo|lib/a.drift': '''
+  test('warns when nested results appear in compound statements', () async {
+    final state = await TestBackend.inTest({
+      'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
   content VARCHAR
@@ -127,23 +125,21 @@ CREATE TABLE foo (
 
 all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
       ''',
-      });
+    });
 
-      final result = await state.analyze('package:foo/a.drift');
+    final result = await state.analyze('package:foo/a.drift');
 
-      expect(
-        result.allErrors,
-        contains(isDriftError(
-            contains('columns may only appear in a top-level select'))),
-      );
-    },
-  );
+    expect(
+      result.allErrors,
+      contains(
+        isDriftError(contains('columns may only appear in a top-level select')),
+      ),
+    );
+  });
 
-  test(
-    'warns when nested query appear in nested query',
-    () async {
-      final state = await TestBackend.inTest({
-        'foo|lib/a.drift': '''
+  test('warns when nested query appear in nested query', () async {
+    final state = await TestBackend.inTest({
+      'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
   content VARCHAR
@@ -151,17 +147,17 @@ CREATE TABLE foo (
 
 all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
       ''',
-      });
+    });
 
-      final result = await state.analyze('package:foo/a.drift');
+    final result = await state.analyze('package:foo/a.drift');
 
-      expect(
-        result.allErrors,
-        contains(isDriftError(
-            contains('query may only appear in a top-level select'))),
-      );
-    },
-  );
+    expect(
+      result.allErrors,
+      contains(
+        isDriftError(contains('query may only appear in a top-level select')),
+      ),
+    );
+  });
 
   group('warns about insert column count mismatch', () {
     TestBackend? state;
@@ -222,8 +218,9 @@ CREATE TABLE foo (
   group('warning about comparing textual date times', () {
     Future<FileState> handle(String sql, {bool dateTimesAreText = true}) async {
       final state = await TestBackend.analyzeSingle(
-        options:
-            DriftOptions.defaults(storeDateTimeValuesAsText: dateTimesAreText),
+        options: DriftOptions.defaults(
+          storeDateTimeValuesAsText: dateTimesAreText,
+        ),
         '''
 CREATE TABLE t (
   a DATETIME, b DATETIME, c DATETIME
@@ -241,9 +238,11 @@ q: $sql;
 
       expect(
         state.allErrors,
-        contains(isDriftError(
-          contains('This compares two date time values lexicographically'),
-        )),
+        contains(
+          isDriftError(
+            contains('This compares two date time values lexicographically'),
+          ),
+        ),
       );
     });
 
@@ -271,9 +270,7 @@ q: $sql;
           state.allErrors,
           contains(
             isDriftError(
-              contains(
-                'This compares two date time values lexicographically',
-              ),
+              contains('This compares two date time values lexicographically'),
             ).withSpan(operator),
           ),
         );
@@ -282,18 +279,26 @@ q: $sql;
 
     test('does not trigger for unix timestamps', () async {
       expect(
-          (await handle('SELECT a = b FROM t', dateTimesAreText: false))
-              .allErrors,
-          isEmpty);
+        (await handle(
+          'SELECT a = b FROM t',
+          dateTimesAreText: false,
+        )).allErrors,
+        isEmpty,
+      );
       expect(
-          (await handle('SELECT a BETWEEN b AND c FROM t',
-                  dateTimesAreText: false))
-              .allErrors,
-          isEmpty);
+        (await handle(
+          'SELECT a BETWEEN b AND c FROM t',
+          dateTimesAreText: false,
+        )).allErrors,
+        isEmpty,
+      );
       expect(
-          (await handle('SELECT a <= c FROM t', dateTimesAreText: false))
-              .allErrors,
-          isEmpty);
+        (await handle(
+          'SELECT a <= c FROM t',
+          dateTimesAreText: false,
+        )).allErrors,
+        isEmpty,
+      );
     });
   });
 }

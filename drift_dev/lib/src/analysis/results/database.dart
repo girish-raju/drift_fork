@@ -39,10 +39,10 @@ abstract class BaseDriftAccessor extends DriftElement {
 
   @override
   Iterable<DriftElement> get references => [
-        // todo: Track dependencies on includes somehow
-        ...declaredTables,
-        ...declaredViews,
-      ];
+    // todo: Track dependencies on includes somehow
+    ...declaredTables,
+    ...declaredViews,
+  ];
 }
 
 /// A database, declared via a `DriftDatabase` annotation on a Dart class.

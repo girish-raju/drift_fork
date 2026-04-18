@@ -9,12 +9,21 @@ void main() {
       stmt.errors,
       contains(
         isA<AnalysisError>()
-            .having((e) => e.type, 'type',
-                AnalysisErrorType.valuesSelectCountMismatch)
-            .having((e) => e.message, 'message',
-                allOf(contains('1'), contains('2')))
             .having(
-                (e) => e.source!.span!.text, 'relevantNode.span.text', '(3)'),
+              (e) => e.type,
+              'type',
+              AnalysisErrorType.valuesSelectCountMismatch,
+            )
+            .having(
+              (e) => e.message,
+              'message',
+              allOf(contains('1'), contains('2')),
+            )
+            .having(
+              (e) => e.source!.span!.text,
+              'relevantNode.span.text',
+              '(3)',
+            ),
       ),
     );
   });

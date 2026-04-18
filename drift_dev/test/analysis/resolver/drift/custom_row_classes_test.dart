@@ -47,17 +47,25 @@ class ExistingForView {
 
     expect(existing.nameOfRowClass, 'ExistingRowClass');
     expect(
-        existing.existingRowClass!.targetClass.toString(), 'ExistingRowClass');
+      existing.existingRowClass!.targetClass.toString(),
+      'ExistingRowClass',
+    );
 
     expect(existingView.nameOfRowClass, 'ExistingForView');
     expect(
-        existingView.existingRowClass,
-        isA<ExistingRowClass>()
-            .having((e) => e.targetClass.toString(), 'targetClass',
-                'ExistingForView')
-            .having((e) => e.constructor, 'constructor', 'named'));
-    expect(existingView.existingRowClass!.targetClass.toString(),
-        'ExistingForView');
+      existingView.existingRowClass,
+      isA<ExistingRowClass>()
+          .having(
+            (e) => e.targetClass.toString(),
+            'targetClass',
+            'ExistingForView',
+          )
+          .having((e) => e.constructor, 'constructor', 'named'),
+    );
+    expect(
+      existingView.existingRowClass!.targetClass.toString(),
+      'ExistingForView',
+    );
     expect(
       existingView.source,
       isA<SqlViewSource>().having(
@@ -101,14 +109,22 @@ CREATE TABLE drift_ints (
     final ints = file.analysis[file.id('drift_ints')]!.result! as DriftTable;
 
     expect(
-        strings.existingRowClass,
-        isA<ExistingRowClass>().having((e) => e.targetType.toString(),
-            'targetType', 'GenericRow<String>'));
+      strings.existingRowClass,
+      isA<ExistingRowClass>().having(
+        (e) => e.targetType.toString(),
+        'targetType',
+        'GenericRow<String>',
+      ),
+    );
 
     expect(
-        ints.existingRowClass,
-        isA<ExistingRowClass>().having(
-            (e) => e.targetType.toString(), 'targetType', 'GenericRow<int>'));
+      ints.existingRowClass,
+      isA<ExistingRowClass>().having(
+        (e) => e.targetType.toString(),
+        'targetType',
+        'GenericRow<int>',
+      ),
+    );
   });
 
   group('can use records', () {
@@ -136,8 +152,11 @@ typedef MyRecord = ({String foo, int? bar});
         isA<ExistingRowClass>()
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
-            .having((e) => e.targetType.toString(), 'targetType',
-                '({int? bar, String foo})'),
+            .having(
+              (e) => e.targetType.toString(),
+              'targetType',
+              '({int? bar, String foo})',
+            ),
       );
       expect(table.nameOfRowClass, 'FooData');
     });
@@ -161,8 +180,11 @@ CREATE TABLE foo (
         isA<ExistingRowClass>()
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
-            .having((e) => e.targetType.toString(), 'targetType',
-                '({int? bar, String foo})'),
+            .having(
+              (e) => e.targetType.toString(),
+              'targetType',
+              '({int? bar, String foo})',
+            ),
       );
       expect(table.nameOfRowClass, 'FooData');
     }, skip: requireDart('3.0.0-dev'));

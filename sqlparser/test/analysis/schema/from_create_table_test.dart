@@ -41,32 +41,45 @@ void main() {
 
     test('affinity', () {
       _affinityTests.forEach((key, value) {
-        expect(resolver.columnAffinity(key), equals(value),
-            reason: '$key should have $value affinity');
+        expect(
+          resolver.columnAffinity(key),
+          equals(value),
+          reason: '$key should have $value affinity',
+        );
       });
     });
 
     test('any in a non-strict table', () {
-      expect(resolver.resolveColumnType('ANY', isStrict: false).type,
-          BasicType.real);
+      expect(
+        resolver.resolveColumnType('ANY', isStrict: false).type,
+        BasicType.real,
+      );
     });
 
     test('any in a strict table', () {
-      expect(resolver.resolveColumnType('ANY', isStrict: true).type,
-          BasicType.any);
+      expect(
+        resolver.resolveColumnType('ANY', isStrict: true).type,
+        BasicType.any,
+      );
     });
   });
 
   test('export table structure', () {
     final engine = SqlEngine();
-    final stmt =
-        engine.parse(ParserEntrypoint.statement, createTableStmt).rootNode;
+    final stmt = engine
+        .parse(ParserEntrypoint.statement, createTableStmt)
+        .rootNode;
 
-    final table =
-        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
+    final table = const SchemaFromCreateTable().read(
+      stmt as CreateTableStatement,
+    );
 
-    expect(table.resolvedColumns.map((c) => c.name),
-        ['id', 'email', 'score', 'display_name']);
+    expect(table.resolvedColumns.map((c) => c.name), [
+      'id',
+      'email',
+      'score',
+      'display_name',
+    ]);
     expect(table.resolvedColumns.map((c) => c.type), const [
       ResolvedType(type: BasicType.int),
       ResolvedType(type: BasicType.text),
@@ -86,8 +99,9 @@ void main() {
       );
     ''').rootNode;
 
-    final table =
-        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
+    final table = const SchemaFromCreateTable().read(
+      stmt as CreateTableStatement,
+    );
 
     expect(
       table.findColumn('a'),
@@ -100,16 +114,18 @@ void main() {
   });
 
   test('supports booleans when drift extensions are enabled', () {
-    final engine =
-        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
+    final engine = SqlEngine(
+      EngineOptions(driftOptions: const DriftSqlOptions()),
+    );
     final stmt = engine.parse(ParserEntrypoint.statement, '''
     CREATE TABLE foo (
       a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL, e INT64
     )
     ''').rootNode;
 
-    final table = const SchemaFromCreateTable(driftExtensions: true)
-        .read(stmt as CreateTableStatement);
+    final table = const SchemaFromCreateTable(
+      driftExtensions: true,
+    ).read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.map((c) => c.type), const [
       ResolvedType(type: BasicType.int, hints: [IsBoolean()], nullable: true),
       ResolvedType(type: BasicType.int, hints: [IsDateTime()], nullable: true),
@@ -134,23 +150,26 @@ void main() {
 
       expect(view.name, 'my_view');
       expect(view.resolvedColumns.map((e) => e.name), ['id', 'content']);
-      expect(
-        view.resolvedColumns.map((e) => e.type!.type),
-        [BasicType.int, BasicType.text],
-      );
+      expect(view.resolvedColumns.map((e) => e.type!.type), [
+        BasicType.int,
+        BasicType.text,
+      ]);
     });
 
     test('with custom column names', () {
       final view = readView(
-          'CREATE VIEW another_view (foo, bar) AS SELECT * FROM demo;');
+        'CREATE VIEW another_view (foo, bar) AS SELECT * FROM demo;',
+      );
 
       expect(view.name, 'another_view');
       expect(view.resolvedColumns.map((e) => e.name), ['foo', 'bar']);
     });
 
     test('with WITH clause', () {
-      final view = readView('CREATE VIEW my_view AS '
-          'WITH foo AS (SELECT * FROM demo) SELECT * FROM foo;');
+      final view = readView(
+        'CREATE VIEW my_view AS '
+        'WITH foo AS (SELECT * FROM demo) SELECT * FROM foo;',
+      );
 
       expect(view.name, 'my_view');
       expect(view.resolvedColumns.map((e) => e.name), ['id', 'content']);
@@ -170,13 +189,17 @@ void main() {
   test('aliases to rowid are non-nullable', () {
     final engine = SqlEngine();
     final stmt = engine
-        .parse(ParserEntrypoint.statement,
-            'CREATE TABLE foo (id INTEGER PRIMARY KEY);')
+        .parse(
+          ParserEntrypoint.statement,
+          'CREATE TABLE foo (id INTEGER PRIMARY KEY);',
+        )
         .rootNode;
 
     final table = engine.schemaReader.read(stmt as CreateTableStatement);
-    expect(table.resolvedColumns.single.type,
-        const ResolvedType(type: BasicType.int, nullable: false));
+    expect(
+      table.resolvedColumns.single.type,
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
   });
 
   group('the primary key of a STRICT table is non-nullable', () {
@@ -184,8 +207,10 @@ void main() {
 
     test('when declared on the column', () {
       final stmt = engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE TABLE foo (bar TEXT PRIMARY KEY) STRICT;')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE TABLE foo (bar TEXT PRIMARY KEY) STRICT;',
+          )
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -194,8 +219,10 @@ void main() {
 
     test('when declared on the table', () {
       final stmt = engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE TABLE foo (bar TEXT, PRIMARY KEY (bar)) STRICT;')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE TABLE foo (bar TEXT, PRIMARY KEY (bar)) STRICT;',
+          )
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -204,8 +231,10 @@ void main() {
 
     test('even when it has a NULL constraint', () {
       final stmt = engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE TABLE foo (bar TEXT NULL, PRIMARY KEY (bar)) STRICT;')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE TABLE foo (bar TEXT NULL, PRIMARY KEY (bar)) STRICT;',
+          )
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
@@ -224,8 +253,9 @@ CREATE TABLE foo (
 ) STRICT;
 ''').rootNode;
 
-    final table =
-        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
+    final table = const SchemaFromCreateTable().read(
+      stmt as CreateTableStatement,
+    );
 
     expect(table.resolvedColumns.map((c) => c.name), ['a', 'b', 'c']);
     expect(table.resolvedColumns.map((c) => c.type), const [
@@ -240,8 +270,10 @@ CREATE TABLE foo (
 
     void testWith(String suffix, bool withoutRowid, bool strict) {
       final stmt = engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE TABLE foo (bar TEXT) $suffix;')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE TABLE foo (bar TEXT) $suffix;',
+          )
           .rootNode;
 
       final table = engine.schemaReader.read(stmt as CreateTableStatement);

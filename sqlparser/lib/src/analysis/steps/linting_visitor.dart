@@ -30,11 +30,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     if ((operator == TokenType.dashRangle ||
             operator == TokenType.dashRangleRangle) &&
         options.version < SqliteVersion.v3_38) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message: '`->` and `->>` require sqlite3 version 38',
-        relevantNode: e.operator,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message: '`->` and `->>` require sqlite3 version 38',
+          relevantNode: e.operator,
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -44,11 +46,14 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     if (e.materializationHint != null &&
         options.version < SqliteVersion.v3_35) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message: 'MATERIALIZED / NOT MATERIALIZED requires sqlite3 version 35',
-        relevantNode: e.materialized ?? e,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message:
+              'MATERIALIZED / NOT MATERIALIZED requires sqlite3 version 35',
+          relevantNode: e.materialized ?? e,
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -56,19 +61,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
-    final schemaReader =
-        SchemaFromCreateTable(driftExtensions: options.useDriftExtensions);
+    final schemaReader = SchemaFromCreateTable(
+      driftExtensions: options.useDriftExtensions,
+    );
     var hasNonGeneratedColumn = false;
     var hasPrimaryKeyDeclaration = false;
     var isStrict = false;
 
     if (e.isStrict) {
       if (options.version < SqliteVersion.v3_37) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.notSupportedInDesiredVersion,
-          message: 'STRICT tables are only supported from sqlite3 version 37',
-          relevantNode: e.strict ?? e,
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.notSupportedInDesiredVersion,
+            message: 'STRICT tables are only supported from sqlite3 version 37',
+            relevantNode: e.strict ?? e,
+          ),
+        );
       } else {
         // only report warnings related to STRICT tables if strict tables are
         // supported.
@@ -79,11 +87,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     // Ensure that a table declaration only has one PRIMARY KEY constraint
     void handlePrimaryKeyNode(AstNode node) {
       if (hasPrimaryKeyDeclaration) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.duplicatePrimaryKeyDeclaration,
-          message: 'Duplicate PRIMARY KEY constraint found',
-          relevantNode: node,
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.duplicatePrimaryKeyDeclaration,
+            message: 'Duplicate PRIMARY KEY constraint found',
+            relevantNode: node,
+          ),
+        );
       }
       hasPrimaryKeyDeclaration = true;
     }
@@ -95,17 +105,21 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         if (typeName == null) {
           // Columns in strict tables must have a type name, even if it's
           // `ANY`.
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.noTypeNameInStrictTable,
-            message: 'In `STRICT` tables, columns must have a type name!',
-            relevantNode: column.nameToken ?? column,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.noTypeNameInStrictTable,
+              message: 'In `STRICT` tables, columns must have a type name!',
+              relevantNode: column.nameToken ?? column,
+            ),
+          );
         } else if (!schemaReader.isValidTypeNameForStrictTable(typeName)) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.invalidTypeNameInStrictTable,
-            message: 'Invalid type name for a `STRICT` table.',
-            relevantNode: column.typeNames?.toSingleEntity ?? column,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.invalidTypeNameInStrictTable,
+              message: 'Invalid type name for a `STRICT` table.',
+              relevantNode: column.typeNames?.toSingleEntity ?? column,
+            ),
+          );
         }
       }
 
@@ -160,17 +174,21 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     if (e.onTable.resultSet?.unalias() case final on?) {
       if (on is View && !e.mode.isSupportedOnViews) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.invalidTriggerMode,
-          relevantNode: e.onTable,
-          message: 'Only `INSTEAD OF` triggers are allowed for views.',
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.invalidTriggerMode,
+            relevantNode: e.onTable,
+            message: 'Only `INSTEAD OF` triggers are allowed for views.',
+          ),
+        );
       } else if (on is Table && !e.mode.isSupportedOnTables) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.invalidTriggerMode,
-          relevantNode: e.onTable,
-          message: '`INSTEAD OF` triggers are only allowed on views.',
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.invalidTriggerMode,
+            relevantNode: e.onTable,
+            message: '`INSTEAD OF` triggers are only allowed on views.',
+          ),
+        );
       }
     }
 
@@ -189,12 +207,15 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     final amountOfColumns = resolvedColumns.length;
 
     if (amountOfNames != amountOfColumns) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.viewColumnNamesMismatch,
-        relevantNode: e,
-        message: 'This view declares $amountOfNames column names, but the '
-            'inner select statement returns $amountOfColumns',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.viewColumnNamesMismatch,
+          relevantNode: e,
+          message:
+              'This view declares $amountOfNames column names, but the '
+              'inner select statement returns $amountOfColumns',
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -232,34 +253,43 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
           };
 
           if (expectedColumns != actualColumns) {
-            context.reportError(AnalysisError(
-              type: AnalysisErrorType.other,
-              message: 'Expected $expectedColumns columns in this entry, got '
-                  '$actualColumns',
-              relevantNode: element,
-            ));
+            context.reportError(
+              AnalysisError(
+                type: AnalysisErrorType.other,
+                message:
+                    'Expected $expectedColumns columns in this entry, got '
+                    '$actualColumns',
+                relevantNode: element,
+              ),
+            );
           }
         }
       case SubQuery subquery:
         final columns = subquery.select.resolvedColumns;
         if (columns != null && columns.length != expectedColumns) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'The subquery must return $expectedColumns columns, '
-                'it returns ${columns.length}',
-            relevantNode: subquery,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message:
+                  'The subquery must return $expectedColumns columns, '
+                  'it returns ${columns.length}',
+              relevantNode: subquery,
+            ),
+          );
         }
       case TableOrSubquery table:
         final columns =
             table.availableResultSet?.resultSet.resultSet?.resolvedColumns;
         if (columns != null && columns.length != expectedColumns) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'To be used in this `IN` expression, this table must '
-                'have $expectedColumns columns (it has ${columns.length}).',
-            relevantNode: table,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message:
+                  'To be used in this `IN` expression, this table must '
+                  'have $expectedColumns columns (it has ${columns.length}).',
+              relevantNode: table,
+            ),
+          );
         }
     }
 
@@ -275,12 +305,14 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
           ? [e.distinct!, e.from!].toSingleEntity
           : e;
 
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message:
-            '`DISTINCT FROM` requires sqlite 3.39, try using `$alternative`',
-        relevantNode: source,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message:
+              '`DISTINCT FROM` requires sqlite 3.39, try using `$alternative`',
+          relevantNode: source,
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -294,7 +326,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         context.reportError(
           AnalysisError(
             type: AnalysisErrorType.writeToGeneratedColumn,
-            message: "This column is generated, and generated columns can't "
+            message:
+                "This column is generated, and generated columns can't "
                 'be inserted.',
             relevantNode: target,
           ),
@@ -308,11 +341,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitExpressionFunctionParameters(ExprFunctionParameters e, void arg) {
     if (e.distinct && e.parameters.length != 1) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.distinctAggregateWithWrongParameterCount,
-        message: 'A `DISTINCT` aggregate must have exactly one argument',
-        relevantNode: e.distinctKeyword ?? e,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.distinctAggregateWithWrongParameterCount,
+          message: 'A `DISTINCT` aggregate must have exactly one argument',
+          relevantNode: e.distinctKeyword ?? e,
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -332,7 +367,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         context.reportError(
           AnalysisError(
             type: AnalysisErrorType.hint,
-            message: '`printf` was renamed to `format()`, consider using '
+            message:
+                '`printf` was renamed to `format()`, consider using '
                 'that function instead.',
             relevantNode: e,
           ),
@@ -384,11 +420,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitRaiseExpression(RaiseExpression e, void arg) {
     if (!_isInTopLevelTriggerStatement) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.raiseMisuse,
-        relevantNode: e,
-        message: 'RAISE can only be used in a trigger.',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.raiseMisuse,
+          relevantNode: e,
+          message: 'RAISE can only be used in a trigger.',
+        ),
+      );
     }
   }
 
@@ -396,11 +434,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitReturning(Returning e, void arg) {
     // RETURNING was added in sqlite version 3.35.0
     if (context.engineOptions.version < SqliteVersion.v3_35) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message: 'RETURNING requires sqlite version 3.35 or later',
-        relevantNode: e,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message: 'RETURNING requires sqlite version 3.35 or later',
+          relevantNode: e,
+        ),
+      );
 
       return;
     }
@@ -408,11 +448,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     // https://www.sqlite.org/lang_returning.html#limitations_and_caveats
     // Returning is not allowed in triggers
     if (_isInTopLevelTriggerStatement) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.illegalUseOfReturning,
-        message: 'RETURNING is not allowed in triggers',
-        relevantNode: e,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.illegalUseOfReturning,
+          message: 'RETURNING is not allowed in triggers',
+          relevantNode: e,
+        ),
+      );
     }
 
     // Returning is not allowed against virtual tables
@@ -422,11 +464,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       if (source is TableReference) {
         final referenced = source.resultSet?.unalias();
         if (referenced is Table && referenced.isVirtual) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.illegalUseOfReturning,
-            message: 'RETURNING is not allowed against virtual tables',
-            relevantNode: e,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.illegalUseOfReturning,
+              message: 'RETURNING is not allowed against virtual tables',
+              relevantNode: e,
+            ),
+          );
         }
       }
     }
@@ -435,11 +479,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       // Table wildcards are not currently allowed, see
       // https://www.sqlite.org/src/info/132994c8b1063bfb
       if (column is StarResultColumn && column.tableName != null) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.synctactic,
-          message: 'Columns in RETURNING may not use the TABLE.* syntax',
-          relevantNode: column,
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.synctactic,
+            message: 'Columns in RETURNING may not use the TABLE.* syntax',
+            relevantNode: column,
+          ),
+        );
       } else if (column is ExpressionResultColumn) {
         // While we're at it, window expressions aren't allowed either
         if (column.expression is WindowFunctionInvocation) {
@@ -464,7 +510,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       context.reportError(
         AnalysisError(
           type: AnalysisErrorType.writeToGeneratedColumn,
-          message: 'This column is generated, and generated columns cannot be '
+          message:
+              'This column is generated, and generated columns cannot be '
               'updated explicitly.',
           relevantNode: column,
         ),
@@ -517,11 +564,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       for (final column in e.columns) {
         final expr = column.expression;
         if (expr is! Reference || expr.entityName != null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.synctactic,
-            message: 'Only column names can be used in a PRIMARY KEY clause',
-            relevantNode: expr,
-          ));
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.synctactic,
+              message: 'Only column names can be used in a PRIMARY KEY clause',
+              relevantNode: expr,
+            ),
+          );
         }
       }
     }
@@ -536,12 +585,14 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       // The source of a `INSERT`, `UPDATE` or `DELETE` statement must not have
       // an alias in `CREATE TRIGGER` statements.
       if (_isInTopLevelTriggerStatement && e.as != null) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.synctactic,
-          message:
-              'The source must not have an `AS` alias when used in a trigger.',
-          relevantNode: e,
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.synctactic,
+            message:
+                'The source must not have an `AS` alias when used in a trigger.',
+            relevantNode: e,
+          ),
+        );
       }
     }
 
@@ -589,7 +640,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       } else {
         final comparisons = <Expression?>[
           parent.base,
-          for (final branch in parent.whens) branch.when
+          for (final branch in parent.whens) branch.when,
         ];
 
         isAllowed = !comparisons.any((e) => !isRowValue(e));
@@ -603,11 +654,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     if (!isAllowed) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.rowValueMisuse,
-        relevantNode: e,
-        message: 'Row values can only be used as expressions in comparisons',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.rowValueMisuse,
+          relevantNode: e,
+          message: 'Row values can only be used as expressions in comparisons',
+        ),
+      );
     }
   }
 
@@ -616,12 +669,14 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     final hasMultipleClauses = e.entries.length > 1;
 
     if (hasMultipleClauses && options.version < SqliteVersion.v3_35) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        relevantNode: e,
-        message:
-            'Multiple on conflict clauses require sqlite version 3.35 or later',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          relevantNode: e,
+          message:
+              'Multiple on conflict clauses require sqlite version 3.35 or later',
+        ),
+      );
     }
 
     visitChildren(e, arg);
@@ -635,12 +690,15 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       final elementsInTuple = tuple.expressions.length;
 
       if (elementsInTuple != expectedColumns) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.valuesSelectCountMismatch,
-          relevantNode: tuple,
-          message: 'The surrounding VALUES clause has $expectedColumns '
-              'columns, but this tuple only has $elementsInTuple',
-        ));
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.valuesSelectCountMismatch,
+            relevantNode: tuple,
+            message:
+                'The surrounding VALUES clause has $expectedColumns '
+                'columns, but this tuple only has $elementsInTuple',
+          ),
+        );
       }
     }
 
@@ -650,11 +708,13 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitWithClause(WithClause e, void arg) {
     if (_isInTopLevelTriggerStatement) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.synctactic,
-        relevantNode: e.withToken ?? e,
-        message: 'WITH clauses cannot appear in triggers.',
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          relevantNode: e.withToken ?? e,
+          message: 'WITH clauses cannot appear in triggers.',
+        ),
+      );
     }
 
     visitChildren(e, arg);

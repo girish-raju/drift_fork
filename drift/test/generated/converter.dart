@@ -27,11 +27,7 @@ class CustomTextType implements CustomSqlType<String> {
   }
 }
 
-enum SyncType {
-  locallyCreated,
-  locallyUpdated,
-  synchronized,
-}
+enum SyncType { locallyCreated, locallyUpdated, synchronized }
 
 class SyncTypeConverter extends TypeConverter<SyncType, int> {
   const SyncTypeConverter();

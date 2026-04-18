@@ -31,6 +31,6 @@ class Limit extends AstNode implements LimitBase {
     }
 
     // If using a comma, the count is followed by an optional offset
-    return [count, if (offset != null) offset!];
+    return [count, ?offset];
   }
 }

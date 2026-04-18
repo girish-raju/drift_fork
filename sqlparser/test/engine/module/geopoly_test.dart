@@ -2,9 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 final _geopolyOptions = EngineOptions(
-  enabledExtensions: const [
-    GeopolyExtension(),
-  ],
+  enabledExtensions: const [GeopolyExtension()],
 );
 
 void main() {
@@ -13,10 +11,12 @@ void main() {
 
     test('can create geopoly table', () {
       final result = engine.analyze(
-          '''CREATE VIRTUAL TABLE geo USING geopoly(a integer not null, b integer, c);''');
+        '''CREATE VIRTUAL TABLE geo USING geopoly(a integer not null, b integer, c);''',
+      );
 
-      final table = const SchemaFromCreateTable()
-          .read(result.root as TableInducingStatement);
+      final table = const SchemaFromCreateTable().read(
+        result.root as TableInducingStatement,
+      );
 
       expect(table.name, 'geo');
       final columns = table.resultColumns;

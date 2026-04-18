@@ -21,8 +21,9 @@ class AutoCompleteEngine {
   UnmodifiableListView<Hint> get foundHints => _hintsView;
   // hints are always sorted by their offset
   final List<Hint> _hints = [];
-  late final UnmodifiableListView<Hint> _hintsView =
-      UnmodifiableListView(_hints);
+  late final UnmodifiableListView<Hint> _hintsView = UnmodifiableListView(
+    _hints,
+  );
 
   late final List<Token> _tokens;
   final SqlEngine _engine;
@@ -37,8 +38,9 @@ class AutoCompleteEngine {
 
       // if we already have a hint at this position, merge them together
       if (hintBefore.before == hint.before) {
-        hintBefore.description =
-            hintBefore.description.mergeWith(hint.description);
+        hintBefore.description = hintBefore.description.mergeWith(
+          hint.description,
+        );
       } else {
         _hints.insert(position + 1, hint);
       }
@@ -52,22 +54,26 @@ class AutoCompleteEngine {
   /// If the caller knows that autocomplete is requested in a CRUD statement
   /// that has been analyzed, providing the surrounding [context] can yield
   /// better results (for instance when completing column names).
-  ComputedSuggestions suggestCompletions(int offset,
-      [AnalysisContext? context]) {
+  ComputedSuggestions suggestCompletions(
+    int offset, [
+    AnalysisContext? context,
+  ]) {
     if (_hints.isEmpty) {
       return ComputedSuggestions(-1, -1, []);
     }
 
     final hint = foundHints[_lastHintBefore(offset)];
 
-    final suggestions =
-        hint.description.suggest(CalculationRequest(_engine, context)).toList();
+    final suggestions = hint.description
+        .suggest(CalculationRequest(_engine, context))
+        .toList();
 
     // when calculating the offset, respect whitespace that comes after the
     // last hint.
     final lastToken = hint.before;
-    final nextToken =
-        lastToken != null ? _tokens[lastToken.index + 1] : _tokens.first;
+    final nextToken = lastToken != null
+        ? _tokens[lastToken.index + 1]
+        : _tokens.first;
 
     final hintOffset = nextToken.span.start.offset;
     final length = offset - hintOffset;

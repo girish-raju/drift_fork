@@ -14,13 +14,14 @@ class CreateIndexStatement extends Statement
   @override
   Expression? where;
 
-  CreateIndexStatement(
-      {required this.indexName,
-      this.unique = false,
-      this.ifNotExists = false,
-      required this.on,
-      required this.columns,
-      this.where});
+  CreateIndexStatement({
+    required this.indexName,
+    this.unique = false,
+    this.ifNotExists = false,
+    required this.on,
+    required this.columns,
+    this.where,
+  });
 
   @override
   String get createdName => indexName;
@@ -38,8 +39,7 @@ class CreateIndexStatement extends Statement
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [on, ...columns, if (where != null) where!];
+  Iterable<AstNode> get childNodes => [on, ...columns, ?where];
 }
 
 /// Note that this class matches the productions listed at https://www.sqlite.org/syntax/indexed-column.html

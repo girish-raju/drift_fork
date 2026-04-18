@@ -8,10 +8,12 @@ void main() {
 
   late _EmptyDatabase db;
   setUp(() {
-    db = _EmptyDatabase(DatabaseConnection(
-      NativeDatabase.memory(),
-      closeStreamsSynchronously: true,
-    ));
+    db = _EmptyDatabase(
+      DatabaseConnection(
+        NativeDatabase.memory(),
+        closeStreamsSynchronously: true,
+      ),
+    );
   });
   tearDown(() {
     db.close();

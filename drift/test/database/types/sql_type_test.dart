@@ -7,8 +7,11 @@ void main() {
     expect(mapping.mapToSqlVariable(null), isNull);
 
     for (final type in DriftSqlType.values) {
-      expect(mapping.read(type, null), isNull,
-          reason: '$type should map null response to null value');
+      expect(
+        mapping.read(type, null),
+        isNull,
+        reason: '$type should map null response to null value',
+      );
     }
   });
 

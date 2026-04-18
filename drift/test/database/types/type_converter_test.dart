@@ -27,7 +27,7 @@ void main() {
     const values = {
       _MyEnum.one: '"one"',
       _MyEnum.two: '"two"',
-      _MyEnum.three: '"three"'
+      _MyEnum.three: '"three"',
     };
 
     values.forEach((key, value) {
@@ -103,7 +103,7 @@ void main() {
     const values = {
       _MyEnum.one: 'one',
       _MyEnum.two: 'two',
-      _MyEnum.three: 'three'
+      _MyEnum.three: 'three',
     };
 
     group('encodes', () {
@@ -148,7 +148,9 @@ void main() {
       const value = SyncType.synchronized;
       expect(typeConverter.fromSql(typeConverter.toSql(value)), value);
       expect(
-          typeConverter.toSql(typeConverter.fromSql(value.index)), value.index);
+        typeConverter.toSql(typeConverter.fromSql(value.index)),
+        value.index,
+      );
     });
 
     test('test invalid value in null aware type converters', () {
@@ -158,8 +160,9 @@ void main() {
     });
 
     test('can wrap existing type converter', () {
-      const converter =
-          NullAwareTypeConverter.wrap(EnumIndexConverter(_MyEnum.values));
+      const converter = NullAwareTypeConverter.wrap(
+        EnumIndexConverter(_MyEnum.values),
+      );
 
       expect(converter.fromSql(null), null);
       expect(converter.toSql(null), null);

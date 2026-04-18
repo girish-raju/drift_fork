@@ -36,8 +36,10 @@ void main() {
     });
 
     test('jsonExtract', () {
-      expect(column.jsonExtract(r'$.c'),
-          generates(r'json_extract(col, ?)', [r'$.c']));
+      expect(
+        column.jsonExtract(r'$.c'),
+        generates(r'json_extract(col, ?)', [r'$.c']),
+      );
     });
 
     test('aggregates', () {
@@ -89,8 +91,10 @@ void main() {
     });
 
     test('jsonExtract', () {
-      expect(binary.jsonExtract(r'$.c'),
-          generates(r'json_extract(bin, ?)', [r'$.c']));
+      expect(
+        binary.jsonExtract(r'$.c'),
+        generates(r'json_extract(bin, ?)', [r'$.c']),
+      );
     });
 
     test('aggregates', () {

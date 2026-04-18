@@ -21,29 +21,41 @@ void main() {
   tearDown(() => db.close());
 
   test('manager - selectable tests', () async {
-    final stores = await _storeData.mapAsyncAndAwait((p0) => db.managers.store
-        .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))));
+    final stores = await _storeData.mapAsyncAndAwait(
+      (p0) => db.managers.store.createReturning(
+        (o) => o(name: Value(p0.name), id: Value(p0.id)),
+      ),
+    );
 
     final departments = await _departmentData.mapAsyncAndAwait(
-      (p0) => db.managers.department
-          .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))),
+      (p0) => db.managers.department.createReturning(
+        (o) => o(name: Value(p0.name), id: Value(p0.id)),
+      ),
     );
 
     final products = await _productData.mapAsyncAndAwait(
       (p0) => db.managers.product.createReturning(
-          (o) => o(name: p0.name, department: p0.department, sku: p0.sku)),
+        (o) => o(name: p0.name, department: p0.department, sku: p0.sku),
+      ),
     );
 
     final listings = await _listingsData.mapAsyncAndAwait(
-      (p0) => db.managers.listing.createReturning((o) => o(
-          product: p0.product, store: Value(p0.store), price: Value(p0.price))),
+      (p0) => db.managers.listing.createReturning(
+        (o) => o(
+          product: p0.product,
+          store: Value(p0.store),
+          price: Value(p0.price),
+        ),
+      ),
     );
 
     final getAllStores = db.managers.store;
-    final getAllStoresWithFilter =
-        db.managers.store.filter((f) => f.id.not(10));
-    final getAllStoresWithOrdering =
-        db.managers.store.orderBy((f) => f.id.asc());
+    final getAllStoresWithFilter = db.managers.store.filter(
+      (f) => f.id.not(10),
+    );
+    final getAllStoresWithOrdering = db.managers.store.orderBy(
+      (f) => f.id.asc(),
+    );
     final getAllStoresWithFilterAndOrdering = db.managers.store
         .filter((f) => f.id.not(10))
         .orderBy((f) => f.id.asc());
@@ -53,9 +65,21 @@ void main() {
         .withReferences();
 
     Future testManager<T, M>(
-        BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic,
-                dynamic, dynamic, M, T, dynamic>
-            selectable) async {
+      BaseTableManager<
+        dynamic,
+        dynamic,
+        T,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        M,
+        T,
+        dynamic
+      >
+      selectable,
+    ) async {
       expect(await selectable.get(), hasLength(3));
       expect(await selectable.get(limit: 1), hasLength(1));
       expect(await selectable.get(offset: 1, limit: 2), hasLength(2));
@@ -91,7 +115,7 @@ final _productData = [
   (
     name: Value("Cell Phone"),
     department: Value(_departmentData[0].id),
-    sku: "2"
+    sku: "2",
   ),
   (name: Value("Charger"), department: Value(_departmentData[0].id), sku: "3"),
   (name: Value("Cereal"), department: Value(_departmentData[1].id), sku: "4"),

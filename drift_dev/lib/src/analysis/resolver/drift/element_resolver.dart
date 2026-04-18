@@ -18,10 +18,15 @@ import 'sqlparser/mapping.dart';
 abstract class DriftElementResolver<T extends DiscoveredElement>
     extends LocalElementResolver<T> {
   DriftElementResolver(
-      super.file, super.discovered, super.resolver, super.state);
+    super.file,
+    super.discovered,
+    super.resolver,
+    super.state,
+  );
 
   Future<CustomColumnType?> resolveCustomColumnType(
-      InlineDartToken type) async {
+    InlineDartToken type,
+  ) async {
     dart.Expression expression;
     try {
       expression = await resolver.driver.backend.resolveExpression(
@@ -45,7 +50,10 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   }
 
   Future<AppliedTypeConverter?> typeConverterFromMappedBy(
-      ColumnType sqlType, bool nullable, MappedBy mapper) async {
+    ColumnType sqlType,
+    bool nullable,
+    MappedBy mapper,
+  ) async {
     final code = mapper.mapper.dartCode;
 
     dart.Expression expression;
@@ -91,8 +99,11 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
         // are available.
         .followedBy([AnnotatedDartCode.dartCore]);
 
-    return await resolver.driver.backend
-        .resolveTopLevelElement(file.ownUri, identifier, dartImports);
+    return await resolver.driver.backend.resolveTopLevelElement(
+      file.ownUri,
+      identifier,
+      dartImports,
+    );
   }
 
   /// Resolves [identifier] to a Dart element declaring a type, or reports an
@@ -100,29 +111,39 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   ///
   /// The [syntacticSource] will be the base for the error's span.
   Future<DartType?> findDartTypeOrReportError(
-      String identifier, SyntacticEntity syntacticSource) async {
+    String identifier,
+    SyntacticEntity syntacticSource,
+  ) async {
     final element = await _findInDart(identifier);
 
     if (element == null) {
       reportError(
-        DriftAnalysisError.inDriftFile(syntacticSource,
-            'Could not find `$identifier`, are you missing an import?'),
+        DriftAnalysisError.inDriftFile(
+          syntacticSource,
+          'Could not find `$identifier`, are you missing an import?',
+        ),
       );
       return null;
     } else if (element is InterfaceElement) {
       final library = element.library;
       return library.typeSystem.instantiateInterfaceToBounds(
-          element: element, nullabilitySuffix: NullabilitySuffix.none);
+        element: element,
+        nullabilitySuffix: NullabilitySuffix.none,
+      );
     } else if (element is TypeAliasElement) {
       final library = element.library;
       return library.typeSystem.instantiateTypeAliasToBounds(
-          element: element, nullabilitySuffix: NullabilitySuffix.none);
+        element: element,
+        nullabilitySuffix: NullabilitySuffix.none,
+      );
     } else {
-      reportError(DriftAnalysisError.inDriftFile(
-        syntacticSource,
-        '`$identifier` does not refer to anything defining a type. Expected '
-        'a class, a mixin, an interface or a typedef.',
-      ));
+      reportError(
+        DriftAnalysisError.inDriftFile(
+          syntacticSource,
+          '`$identifier` does not refer to anything defining a type. Expected '
+          'a class, a mixin, an interface or a typedef.',
+        ),
+      );
       return null;
     }
   }
@@ -130,7 +151,9 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   /// Attempts to find a matching [ExistingRowClass] for a [DriftTableName]
   /// annotation.
   Future<ExistingRowClass?> resolveExistingRowClass(
-      List<DriftColumn> columns, DriftTableName source) async {
+    List<DriftColumn> columns,
+    DriftTableName source,
+  ) async {
     assert(source.useExistingDartClass);
 
     final dataClassName = source.overriddenDataClassName;
@@ -145,8 +168,10 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       // Resolve type alias to a class, or use record if we have one.
       final innerType = element.aliasedType;
       if (innerType is InterfaceType) {
-        foundDartClass =
-            FoundDartClass(innerType.element, innerType.typeArguments);
+        foundDartClass = FoundDartClass(
+          innerType.element,
+          innerType.typeArguments,
+        );
       } else if (innerType is RecordType) {
         return validateRowClassFromRecordType(
           element,
@@ -160,15 +185,23 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     }
 
     if (foundDartClass == null) {
-      reportError(DriftAnalysisError.inDriftFile(
-        source,
-        'Existing Dart class $dataClassName was not found, are '
-        'you missing an import?',
-      ));
+      reportError(
+        DriftAnalysisError.inDriftFile(
+          source,
+          'Existing Dart class $dataClassName was not found, are '
+          'you missing an import?',
+        ),
+      );
       return null;
     } else {
-      return validateExistingClass(columns, foundDartClass,
-          source.constructorName ?? 'new', false, this, knownTypes);
+      return validateExistingClass(
+        columns,
+        foundDartClass,
+        source.constructorName ?? 'new',
+        false,
+        this,
+        knownTypes,
+      );
     }
   }
 
@@ -219,6 +252,8 @@ class FoundReferencesInSql {
     this.dartTypes = const {},
   });
 
-  static final RegExp enumRegex =
-      RegExp(r'^enum(name)?\((\w+)\)$', caseSensitive: false);
+  static final RegExp enumRegex = RegExp(
+    r'^enum(name)?\((\w+)\)$',
+    caseSensitive: false,
+  );
 }

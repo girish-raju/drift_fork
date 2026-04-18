@@ -67,15 +67,21 @@ CREATE TABLE users (
     expect(foo.nameInSql, 'foo');
     expect(
       foo.typeConverter,
-      isA<AppliedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
-          'alsoAppliesToJsonConversion', isFalse),
+      isA<AppliedTypeConverter>().having(
+        (e) => e.alsoAppliesToJsonConversion,
+        'alsoAppliesToJsonConversion',
+        isFalse,
+      ),
     );
 
     expect(bar.nameInSql, 'bar');
     expect(
       bar.typeConverter,
-      isA<AppliedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
-          'alsoAppliesToJsonConversion', isTrue),
+      isA<AppliedTypeConverter>().having(
+        (e) => e.alsoAppliesToJsonConversion,
+        'alsoAppliesToJsonConversion',
+        isTrue,
+      ),
     );
   }
 
@@ -84,48 +90,50 @@ CREATE TABLE users (
   });
 
   test('warns about type issues around json converters', () async {
-    final result = await state.driver
-        .fullyAnalyze(Uri.parse('package:a/json_nullability.dart'));
+    final result = await state.driver.fullyAnalyze(
+      Uri.parse('package:a/json_nullability.dart'),
+    );
     final table = result.analyzedElements.whereType<DriftTable>().single;
 
-    expect(
-      result.allErrors,
-      [
-        isDriftError(contains('must accept String')).withSpan('tc<int, int>()'),
-        isDriftError(contains('has a type converter with a nullable SQL type'))
-            .withSpan('tc<String, String?>()'),
-        isDriftError(allOf([
+    expect(result.allErrors, [
+      isDriftError(contains('must accept String')).withSpan('tc<int, int>()'),
+      isDriftError(
+        contains('has a type converter with a nullable SQL type'),
+      ).withSpan('tc<String, String?>()'),
+      isDriftError(
+        allOf([
           contains('This column is nullable'),
           contains(
             'Try wrapping the converter in `JsonTypeConverter2.asNullable`',
-          )
-        ])).withSpan('tc<String?, String>()'),
-      ],
-    );
+          ),
+        ]),
+      ).withSpan('tc<String?, String>()'),
+    ]);
 
     final implicitlyNullAware = table.columns[3];
     expect(implicitlyNullAware.typeConverter?.canBeSkippedForNulls, isTrue);
   });
 
   test('warns about type issues around converters', () async {
-    final result = await state.driver
-        .fullyAnalyze(Uri.parse('package:a/nullability.dart'));
+    final result = await state.driver.fullyAnalyze(
+      Uri.parse('package:a/nullability.dart'),
+    );
     final table = result.analyzedElements.whereType<DriftTable>().single;
 
-    expect(
-      result.allErrors,
-      [
-        isDriftError(contains('must accept String')).withSpan('tc<int, int>()'),
-        isDriftError(contains('has a type converter with a nullable SQL type'))
-            .withSpan('tc<String, String?>()'),
-        isDriftError(allOf([
+    expect(result.allErrors, [
+      isDriftError(contains('must accept String')).withSpan('tc<int, int>()'),
+      isDriftError(
+        contains('has a type converter with a nullable SQL type'),
+      ).withSpan('tc<String, String?>()'),
+      isDriftError(
+        allOf([
           contains('This column is nullable'),
           contains(
             'Try wrapping the converter in `NullAwareTypeConverter.wrap`',
-          )
-        ])).withSpan('tc<String?, String>()'),
-      ],
-    );
+          ),
+        ]),
+      ).withSpan('tc<String?, String>()'),
+    ]);
 
     final implicitlyNullAware = table.columns[3];
     expect(implicitlyNullAware.typeConverter?.canBeSkippedForNulls, isTrue);

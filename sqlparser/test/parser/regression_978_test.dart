@@ -22,9 +22,7 @@ void main() {
           ColumnDefinition(
             columnName: 'sample',
             typeName: 'VARCHAR',
-            constraints: [
-              NullColumnConstraint(null),
-            ],
+            constraints: [NullColumnConstraint(null)],
           ),
         ],
       ),

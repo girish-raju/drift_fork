@@ -32,14 +32,11 @@ void main() {
     });
 
     test('element access', () async {
-      final array = Variable(
-        [
-          {'foo': 'bar'},
-          'test',
-          2,
-        ],
-        PgTypes.jsonbArray,
-      );
+      final array = Variable([
+        {'foo': 'bar'},
+        'test',
+        2,
+      ], PgTypes.jsonbArray);
       final element = array[Constant(3)];
       expect(element.driftSqlType, PgTypes.jsonb);
       expect(await eval(element), 2);
@@ -49,8 +46,14 @@ void main() {
       final firstArray = Constant(['a', 'b', 'c'], PgTypes.textArray);
       final secondArray = Variable(['d', 'e', 'f'], PgTypes.textArray);
 
-      expect(
-          await eval(firstArray + secondArray), ['a', 'b', 'c', 'd', 'e', 'f']);
+      expect(await eval(firstArray + secondArray), [
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+      ]);
     });
   });
 

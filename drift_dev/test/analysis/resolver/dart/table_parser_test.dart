@@ -131,9 +131,9 @@ void main() {
   Future<DriftTable?> parse(String name) async {
     final result = state = await backend.analyze('package:a/main.dart');
 
-    return result.analyzedElements
-        .whereType<DriftTable>()
-        .firstWhereOrNull((e) => e.baseDartName == name);
+    return result.analyzedElements.whereType<DriftTable>().firstWhereOrNull(
+      (e) => e.baseDartName == name,
+    );
   }
 
   group('table names', () {
@@ -157,8 +157,9 @@ void main() {
   group('Columns', () {
     test('should use field name if no name has been set explicitly', () async {
       final table = await parse('Users');
-      final idColumn =
-          table!.columns.singleWhere((col) => col.nameInSql == 'id');
+      final idColumn = table!.columns.singleWhere(
+        (col) => col.nameInSql == 'id',
+      );
 
       expect(
         idColumn.declaration,
@@ -173,20 +174,26 @@ void main() {
 
     test('should parse min and max length for text columns', () async {
       final table = await parse('Users');
-      final idColumn =
-          table!.columns.singleWhere((col) => col.nameInSql == 'user_name');
+      final idColumn = table!.columns.singleWhere(
+        (col) => col.nameInSql == 'user_name',
+      );
 
-      expect(idColumn.constraints,
-          contains(LimitingTextLength(minLength: 6, maxLength: 32)));
+      expect(
+        idColumn.constraints,
+        contains(LimitingTextLength(minLength: 6, maxLength: 32)),
+      );
     });
 
     test('should only parse max length when relevant', () async {
       final table = await parse('Users');
-      final idColumn =
-          table!.columns.singleWhere((col) => col.nameInDart == 'onlyMax');
+      final idColumn = table!.columns.singleWhere(
+        (col) => col.nameInDart == 'onlyMax',
+      );
 
       expect(
-          idColumn.constraints, contains(LimitingTextLength(maxLength: 100)));
+        idColumn.constraints,
+        contains(LimitingTextLength(maxLength: 100)),
+      );
     });
 
     test('parses custom constraints', () async {
@@ -201,19 +208,22 @@ void main() {
 
     test('parsed default values', () async {
       final table = await parse('Users');
-      final defaultsColumn =
-          table!.columns.singleWhere((c) => c.nameInSql == 'defaults');
+      final defaultsColumn = table!.columns.singleWhere(
+        (c) => c.nameInSql == 'defaults',
+      );
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });
 
     test('parses documentation comments', () async {
       final table = await parse('Users');
-      final idColumn =
-          table!.columns.singleWhere((col) => col.nameInSql == 'id');
+      final idColumn = table!.columns.singleWhere(
+        (col) => col.nameInSql == 'id',
+      );
 
-      final usernameColumn =
-          table.columns.singleWhere((col) => col.nameInSql == 'user_name');
+      final usernameColumn = table.columns.singleWhere(
+        (col) => col.nameInSql == 'user_name',
+      );
 
       expect(idColumn.documentationComment, '/// The user id');
       expect(
@@ -229,7 +239,8 @@ void main() {
     expect(table!.fullPrimaryKey, containsAll(table.columns));
     expect(
       table.columns.any(
-          (column) => column.constraints.any((e) => e is PrimaryKeyColumn)),
+        (column) => column.constraints.any((e) => e is PrimaryKeyColumn),
+      ),
       isFalse,
     );
   });
@@ -239,8 +250,9 @@ void main() {
 
     expect(
       state.allErrors,
-      contains(isDriftError(
-          contains('override primaryKey and use autoIncrement()'))),
+      contains(
+        isDriftError(contains('override primaryKey and use autoIncrement()')),
+      ),
     );
   });
 
@@ -257,7 +269,9 @@ void main() {
 
       expect(table!.columns, hasLength(2));
       expect(
-          table.columns.map((c) => c.nameInSql), containsAll(['id', 'name']));
+        table.columns.map((c) => c.nameInSql),
+        containsAll(['id', 'name']),
+      );
     });
 
     test('from regular classes', () async {
@@ -268,8 +282,12 @@ void main() {
       expect(socks.columns.map((c) => c.nameInSql), ['name', 'id']);
 
       expect(archivedSocks!.columns, hasLength(4));
-      expect(archivedSocks.columns.map((c) => c.nameInSql),
-          ['name', 'id', 'archived_by', 'archived_on']);
+      expect(archivedSocks.columns.map((c) => c.nameInSql), [
+        'name',
+        'id',
+        'archived_by',
+        'archived_on',
+      ]);
       expect(archivedSocks.fullPrimaryKey.map((e) => e.nameInSql), ['id']);
     });
   });
@@ -282,7 +300,8 @@ void main() {
       file.allErrors,
       contains(
         isDriftError(
-            "Tables can't override primaryKey and use autoIncrement()"),
+          "Tables can't override primaryKey and use autoIncrement()",
+        ),
       ),
     );
   });
@@ -294,14 +313,18 @@ void main() {
     expect(
       file.allErrors,
       containsAll([
-        isDriftError(allOf(
-          contains('Could not read tables from @DriftDatabase annotation!'),
-          contains('Please make sure that all table classes exist.'),
-        )),
-        isDriftError(allOf(
-          contains('Could not read views from @DriftAccessor annotation!'),
-          contains('Please make sure that all table classes exist.'),
-        )),
+        isDriftError(
+          allOf(
+            contains('Could not read tables from @DriftDatabase annotation!'),
+            contains('Please make sure that all table classes exist.'),
+          ),
+        ),
+        isDriftError(
+          allOf(
+            contains('Could not read views from @DriftAccessor annotation!'),
+            contains('Please make sure that all table classes exist.'),
+          ),
+        ),
       ]),
     );
   });
@@ -316,7 +339,8 @@ void main() {
         isDriftError(
           allOf(
             contains(
-                'This column definition is using both drift-defined constraints'),
+              'This column definition is using both drift-defined constraints',
+            ),
             contains('and a customConstraint()'),
           ),
         ).withSpan('a'),
@@ -338,12 +362,13 @@ class MyAwesomeTable extends Table {
   TextColumn get description => text()();
   IntColumn get sortOrder => integer().autoIncrement()();
 }
-'''
+''',
     });
 
     final file = await backend.analyze('package:a/a.dart');
 
-    expect(file.allErrors,
-        [isDriftError(contains('More than one column uses autoIncrement()'))]);
+    expect(file.allErrors, [
+      isDriftError(contains('More than one column uses autoIncrement()')),
+    ]);
   });
 }

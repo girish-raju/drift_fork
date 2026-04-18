@@ -7,8 +7,10 @@ import '../../test_utils/test_utils.dart';
 void main() {
   final db = TodoDb();
 
-  const innerExpression =
-      CustomExpression<String>('name', precedence: Precedence.primary);
+  const innerExpression = CustomExpression<String>(
+    'name',
+    precedence: Precedence.primary,
+  );
   group('values', () {
     test('in expressions are generated', () {
       final isInExpression = innerExpression.isIn(['Max', 'Tobias']);
@@ -45,13 +47,16 @@ void main() {
 
   group('subquery', () {
     test('in expressions are generated', () {
-      final isInExpression = innerExpression
-          .isInQuery(db.selectOnly(db.users)..addColumns([db.users.name]));
+      final isInExpression = innerExpression.isInQuery(
+        db.selectOnly(db.users)..addColumns([db.users.name]),
+      );
 
       expect(
-          isInExpression,
-          generates(
-              'name IN (SELECT "users"."name" AS "users.name" FROM "users")'));
+        isInExpression,
+        generates(
+          'name IN (SELECT "users"."name" AS "users.name" FROM "users")',
+        ),
+      );
 
       final ctx = stubContext();
       isInExpression.writeInto(ctx);
@@ -59,13 +64,16 @@ void main() {
     });
 
     test('not in expressions are generated', () {
-      final isInExpression = innerExpression
-          .isNotInQuery(db.selectOnly(db.users)..addColumns([db.users.name]));
+      final isInExpression = innerExpression.isNotInQuery(
+        db.selectOnly(db.users)..addColumns([db.users.name]),
+      );
 
       expect(
-          isInExpression,
-          generates(
-              'name NOT IN (SELECT "users"."name" AS "users.name" FROM "users")'));
+        isInExpression,
+        generates(
+          'name NOT IN (SELECT "users"."name" AS "users.name" FROM "users")',
+        ),
+      );
     });
 
     test('avoids generating empty tuples', () {

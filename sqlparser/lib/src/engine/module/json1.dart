@@ -10,17 +10,21 @@ class Json1Extension implements Extension {
     engine
       ..registerFunctionHandler(_Json1Functions(supportsJsonb))
       ..registerTableValuedFunctionHandler(
-          const _JsonTableValuedFunction('json_each'))
+        const _JsonTableValuedFunction('json_each'),
+      )
       ..registerTableValuedFunctionHandler(
-          const _JsonTableValuedFunction('json_tree'));
+        const _JsonTableValuedFunction('json_tree'),
+      );
 
     if (engine.options.version >= SqliteVersion.v3_51) {
       // These have been added in 3.51.
       engine
         ..registerTableValuedFunctionHandler(
-            const _JsonTableValuedFunction('jsonb_each'))
+          const _JsonTableValuedFunction('jsonb_each'),
+        )
         ..registerTableValuedFunctionHandler(
-            const _JsonTableValuedFunction('jsonb_tree'));
+          const _JsonTableValuedFunction('jsonb_tree'),
+        );
     }
   }
 }
@@ -62,24 +66,30 @@ class _Json1Functions implements FunctionHandler {
 
   @override
   Set<String> get functionNames => {
-        ..._returnStrings,
-        if (_supportBinaryJson) ..._returnBlobs,
-        'json_type',
-        'json_valid',
-        'json_extract',
-        if (_supportBinaryJson) 'jsonb_extract',
-        'json_array_length',
-      };
+    ..._returnStrings,
+    if (_supportBinaryJson) ..._returnBlobs,
+    'json_type',
+    'json_valid',
+    'json_extract',
+    if (_supportBinaryJson) 'jsonb_extract',
+    'json_array_length',
+  };
 
   @override
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument) {
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  ) {
     return const ResolveResult.unknown();
   }
 
   @override
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  ) {
     final name = call.name.toLowerCase();
 
     if (_returnStrings.contains(name)) {
@@ -90,7 +100,8 @@ class _Json1Functions implements FunctionHandler {
       switch (name) {
         case 'json_type':
           return const ResolveResult(
-              ResolvedType(type: BasicType.text, nullable: true));
+            ResolvedType(type: BasicType.text, nullable: true),
+          );
         case 'json_valid':
           return const ResolveResult(ResolvedType.bool());
         case 'json_extract':
@@ -116,12 +127,14 @@ class _Json1Functions implements FunctionHandler {
     if (minVersion == null) return;
 
     if (context.engineOptions.version < minVersion) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.notSupportedInDesiredVersion,
-        message:
-            'This requires sqlite ${minVersion.major}.${minVersion.minor}.${minVersion.patch} or later.',
-        relevantNode: call.nameToken ?? call,
-      ));
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message:
+              'This requires sqlite ${minVersion.major}.${minVersion.minor}.${minVersion.patch} or later.',
+          relevantNode: call.nameToken ?? call,
+        ),
+      );
     }
   }
 }
@@ -136,7 +149,9 @@ final _jsonFunctionResultSet = CustomResultSet([
   TableColumn('type', const ResolvedType(type: BasicType.text)),
   TableColumn('id', const ResolvedType(type: BasicType.int)),
   TableColumn(
-      'parent', const ResolvedType(type: BasicType.int, nullable: true)),
+    'parent',
+    const ResolvedType(type: BasicType.int, nullable: true),
+  ),
   TableColumn('fullkey', const ResolvedType(type: BasicType.text)),
 ]);
 
@@ -148,7 +163,9 @@ final class _JsonTableValuedFunction implements TableValuedFunctionHandler {
 
   @override
   ResultSet resolveTableValued(
-      AnalysisContext context, TableValuedFunction call) {
+    AnalysisContext context,
+    TableValuedFunction call,
+  ) {
     return _jsonFunctionResultSet;
   }
 }

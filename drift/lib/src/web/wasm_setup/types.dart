@@ -256,5 +256,8 @@ final class WasmDatabaseResult {
 
   /// Default constructor from the invidiual fields.
   const WasmDatabaseResult(
-      this.resolvedExecutor, this.chosenImplementation, this.missingFeatures);
+    this.resolvedExecutor,
+    this.chosenImplementation,
+    this.missingFeatures,
+  );
 }

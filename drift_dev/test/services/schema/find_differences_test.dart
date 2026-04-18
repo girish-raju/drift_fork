@@ -85,7 +85,8 @@ void main() {
         expect(
           result.describe(),
           contains(
-              'Not equal: `PRIMARY KEY NOT NULL` (expected) and `` (actual)'),
+            'Not equal: `PRIMARY KEY NOT NULL` (expected) and `` (actual)',
+          ),
         );
       });
 
@@ -107,10 +108,7 @@ void main() {
       );
 
       expect(result, hasChanges);
-      expect(
-        result.describe(),
-        contains('Expected a table, but got a index.'),
-      );
+      expect(result.describe(), contains('Expected a table, but got a index.'));
     });
   });
 }
@@ -127,6 +125,9 @@ Matcher hasChanges = _matchChanges(false);
 Matcher hasNoChanges = _matchChanges(true);
 
 Matcher _matchChanges(bool expectNoChanges) {
-  return isA<CompareResult>()
-      .having((e) => e.noChanges, 'noChanges', expectNoChanges);
+  return isA<CompareResult>().having(
+    (e) => e.noChanges,
+    'noChanges',
+    expectNoChanges,
+  );
 }

@@ -22,9 +22,9 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
     DriftTable? target;
 
     if (onTable is Table) {
-      target = references
-          .whereType<DriftTable>()
-          .firstWhere((e) => e.schemaName == onTable.name);
+      target = references.whereType<DriftTable>().firstWhere(
+        (e) => e.schemaName == onTable.name,
+      );
     }
 
     return DriftIndex(

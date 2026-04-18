@@ -16,7 +16,8 @@ void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   Future<void> runTest(EmptyDb db) async {
-    String slowQuery(int i) => '''
+    String slowQuery(int i) =>
+        '''
       with recursive slow(x) as (values(increment_counter()) union all select x+1 from slow where x < 1000000)
       select $i from slow;
     '''; //   ^ to get different `StreamKey`s
@@ -27,7 +28,9 @@ void main() {
     await db.doWhenOpened((e) {});
 
     final subscriptions = List.generate(
-        4, (i) => db.customSelect(slowQuery(i)).watch().listen(null));
+      4,
+      (i) => db.customSelect(slowQuery(i)).watch().listen(null),
+    );
     await pumpEventQueue();
     await Future.wait(subscriptions.map((e) => e.cancel()));
 
@@ -41,25 +44,31 @@ void main() {
     expect(amountOfSlowQueries, isNot(4));
   }
 
-  group('stream queries are aborted on cancellations', () {
-    test('on a background isolate', () async {
-      final isolate = await DriftIsolate.spawn(createConnection);
-      addTearDown(isolate.shutdownAll);
+  group(
+    'stream queries are aborted on cancellations',
+    () {
+      test('on a background isolate', () async {
+        final isolate = await DriftIsolate.spawn(createConnection);
+        addTearDown(isolate.shutdownAll);
 
-      final db = EmptyDb(await isolate.connect());
-      await runTest(db);
-    });
-  }, skip: 'todo: Cancellations are currently broken on Dart 2.15');
+        final db = EmptyDb(await isolate.connect());
+        await runTest(db);
+      });
+    },
+    skip: 'todo: Cancellations are currently broken on Dart 2.15',
+  );
 
   test('can cancel streams synchronously', () async {
     final createdTimers = <Timer>[];
 
     await runZoned(
       () async {
-        final database = TodoDb(DatabaseConnection(
-          NativeDatabase.memory(),
-          closeStreamsSynchronously: true,
-        ));
+        final database = TodoDb(
+          DatabaseConnection(
+            NativeDatabase.memory(),
+            closeStreamsSynchronously: true,
+          ),
+        );
 
         await database.todosTable.all().watch().first;
         // This cancels a stream subscription - drift would usually set up a
@@ -75,8 +84,8 @@ void main() {
     );
 
     expect(
-        createdTimers,
-        everyElement(
-            isA<Timer>().having((e) => e.isActive, 'isActive', isFalse)));
+      createdTimers,
+      everyElement(isA<Timer>().having((e) => e.isActive, 'isActive', isFalse)),
+    );
   });
 }

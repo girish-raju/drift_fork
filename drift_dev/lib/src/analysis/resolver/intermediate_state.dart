@@ -42,11 +42,7 @@ class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
   /// this table with a `@TableIndex` annotation on the table class.
   final List<DriftElementId> attachedIndices;
 
-  DiscoveredDartTable(
-    super.ownId,
-    super.dartElement,
-    this.attachedIndices,
-  );
+  DiscoveredDartTable(super.ownId, super.dartElement, this.attachedIndices);
 }
 
 class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {
@@ -71,7 +67,11 @@ class DiscoveredDartIndex extends DiscoveredDartElement<ClassElement> {
   String? get dartElementName => null;
 
   DiscoveredDartIndex(
-      super.ownId, super.dartElement, this.onTable, this.annotation);
+    super.ownId,
+    super.dartElement,
+    this.onTable,
+    this.annotation,
+  );
 }
 
 class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
@@ -86,5 +86,9 @@ class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
   bool get isAccessor => !isDatabase;
 
   DiscoveredBaseAccessor(
-      super.ownId, super.dartElement, this.annotation, this.isDatabase);
+    super.ownId,
+    super.dartElement,
+    this.annotation,
+    this.isDatabase,
+  );
 }

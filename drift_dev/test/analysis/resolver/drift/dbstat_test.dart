@@ -9,7 +9,7 @@ void main() {
     final state = await TestBackend.inTest({
       'a|lib/main.drift': '''
 a: SELECT * FROM dbstat;
-'''
+''',
     }, options: DriftOptions.defaults(modules: [SqlModule.dbstat]));
 
     final file = await state.analyze('package:a/main.drift');

@@ -11,8 +11,11 @@ extension on TestDriftProject {
   }
 }
 
-Future<TestDriftProject> _setup2(Iterable<d.Descriptor> lib,
-    {String? pubspec, Iterable<d.Descriptor>? additional}) {
+Future<TestDriftProject> _setup2(
+  Iterable<d.Descriptor> lib, {
+  String? pubspec,
+  Iterable<d.Descriptor>? additional,
+}) {
   return TestDriftProject.create([
     d.dir('lib', lib),
     if (pubspec != null) d.file('pubspec.yaml', pubspec),
@@ -29,10 +32,12 @@ void main() {
 
     await project.migrateToDrift();
 
-    await project.validate(d.dir('lib', [
-      d.file('a.drift', "import 'b.drift';"),
-      d.file('b.drift', 'CREATE TABLE foo (x TEXT);'),
-    ]));
+    await project.validate(
+      d.dir('lib', [
+        d.file('a.drift', "import 'b.drift';"),
+        d.file('b.drift', 'CREATE TABLE foo (x TEXT);'),
+      ]),
+    );
   });
 
   test('patches moor imports', () async {
@@ -49,8 +54,9 @@ export 'package:moor/fFI.dart';
 
     await project.migrateToDrift();
 
-    await project.validate(d.dir('lib', [
-      d.file('a.dart', '''
+    await project.validate(
+      d.dir('lib', [
+        d.file('a.dart', '''
 import 'package:drift/drift.dart' as moor;
 import 'package:drift/extensions/native.dart';
 import 'package:drift/src/some/internal/file.dart';
@@ -58,7 +64,8 @@ import 'package:drift/src/some/internal/file.dart';
 export 'package:drift/web.dart';
 export 'package:drift/native.dart';
 '''),
-    ]));
+      ]),
+    );
   });
 
   test('updates identifier names', () async {
@@ -97,8 +104,9 @@ void main() {
 
     await project.migrateToDrift();
 
-    await project.validate(d.dir('lib', [
-      d.file('a.dart', '''
+    await project.validate(
+      d.dir('lib', [
+        d.file('a.dart', '''
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart' as ffi;
 import 'package:drift/isolate.dart' as isolate;
@@ -128,7 +136,8 @@ void main() {
   }
 }
 '''),
-    ]));
+      ]),
+    );
   });
 
   test('patches include args from @UseMoor and @UseDao', () async {
@@ -146,8 +155,9 @@ class MyDao {}
 
     await project.migrateToDrift();
 
-    await project.validate(d.dir('lib', [
-      d.file('a.dart', '''
+    await project.validate(
+      d.dir('lib', [
+        d.file('a.dart', '''
 import 'package:drift/drift.dart';
 
 @DriftDatabase(include: {'foo/bar.drift'}, tables: [Foo, Bar])
@@ -156,7 +166,8 @@ class MyDatabase {}
 @DriftAccessor(include: {'package:x/y.drift'})
 class MyDao {}
 '''),
-    ]));
+      ]),
+    );
   });
 
   test('patches `.moor.dart` part statements', () async {
@@ -177,8 +188,9 @@ class FooDao with _$FooDaoMixin {}
 
     await project.migrateToDrift();
 
-    await project.validate(d.dir('lib', [
-      d.file('a.dart', r'''
+    await project.validate(
+      d.dir('lib', [
+        d.file('a.dart', r'''
 import 'package:drift/drift.dart';
 
 part 'a.drift.dart';
@@ -188,11 +200,14 @@ part 'a.drift.dart';
 )
 class FooDao with _$FooDaoMixin {}
 '''),
-    ]));
+      ]),
+    );
   });
 
   test('updates pubspec.yaml', () async {
-    final project = await _setup2(const [], pubspec: '''
+    final project = await _setup2(
+      const [],
+      pubspec: '''
 name: app
 
 environment:
@@ -213,11 +228,13 @@ dependency_overrides:
   moor_generator:
     hosted: foo
     version: ^1.2.3
-''');
+''',
+    );
 
     await project.migrateToDrift();
 
-    await project.validate(d.file('pubspec.yaml', '''
+    await project.validate(
+      d.file('pubspec.yaml', '''
 name: app
 
 environment:
@@ -238,7 +255,8 @@ dependency_overrides:
   drift_dev:
     hosted: foo
     version: ^1.2.3
-'''));
+'''),
+    );
   });
 
   test('transforms build configuration files', () async {
@@ -262,13 +280,14 @@ targets:
       moor_generator|moor_generator_not_shared:
         options:
           another: option
-''')
+'''),
       ],
     );
 
     await project.migrateToDrift();
 
-    await project.validate(d.file('build.yaml', r'''
+    await project.validate(
+      d.file('build.yaml', r'''
 targets:
   $default:
     builders:
@@ -285,7 +304,8 @@ targets:
       drift_dev|not_shared:
         options:
           another: option
-'''));
+'''),
+    );
   });
 
   test('transforms analysis option files', () async {
@@ -299,20 +319,22 @@ analyzer:
     # comment 2
     - moor # another
     # another
-''')
+'''),
       ],
     );
 
     await project.migrateToDrift();
 
-    await project.validate(d.file('analysis_options.yaml', r'''
+    await project.validate(
+      d.file('analysis_options.yaml', r'''
 # a comment
 analyzer:
   plugins:
     # comment 2
     - drift # another
     # another
-'''));
+'''),
+    );
   });
 
   test('transforms moor_flutter usages', () async {
@@ -351,9 +373,8 @@ dev_dependencies:
 
     await project.migrateToDrift();
 
-    await project.validateDir(
-      [
-        d.file('pubspec.yaml', '''
+    await project.validateDir([
+      d.file('pubspec.yaml', '''
 name: app
 
 environment:
@@ -365,8 +386,8 @@ dependencies:
 dev_dependencies:
   drift_dev: ^1.0.0
 '''),
-        d.dir('lib', [
-          d.file('a.dart', r'''
+      d.dir('lib', [
+        d.file('a.dart', r'''
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift/drift.dart';
 
@@ -381,8 +402,7 @@ QueryExecutor _executor() {
   return SqfliteQueryExecutor.inDatabaseFolder(path: 'foo');
 }
 '''),
-        ]),
-      ],
-    );
+      ]),
+    ]);
   });
 }

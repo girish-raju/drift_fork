@@ -24,9 +24,7 @@ class VerificationResult {
   const VerificationResult(this.success, this.message);
 
   /// Used internally by drift
-  const VerificationResult.success()
-      : success = true,
-        message = null;
+  const VerificationResult.success() : success = true, message = null;
 
   /// Used internally by drift
   const VerificationResult.failure(this.message) : success = false;
@@ -57,15 +55,17 @@ class VerificationContext {
   /// Used internally by drift
   void missing(VerificationMeta meta) {
     _errors[meta] = const VerificationResult.failure(
-        "This value was required, but isn't present");
+      "This value was required, but isn't present",
+    );
   }
 
   /// Used internally by drift
   void throwIfInvalid(dynamic dataObject) {
     if (dataValid) return;
 
-    final messageBuilder =
-        StringBuffer('Sorry, $dataObject cannot be used for that because: \n');
+    final messageBuilder = StringBuffer(
+      'Sorry, $dataObject cannot be used for that because: \n',
+    );
 
     _errors.forEach((meta, result) {
       messageBuilder.write('• ${meta.dartGetterName}: ${result.message}\n');

@@ -7,10 +7,9 @@ import '../../test_utils.dart';
 
 void main() {
   test(
-      'It should rename the table and column name to its snake case version by default',
-      () async {
-    final state = await TestBackend.inTest(
-      {
+    'It should rename the table and column name to its snake case version by default',
+    () async {
+      final state = await TestBackend.inTest({
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -20,25 +19,26 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-    );
+''',
+      });
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'test_table');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'test_table');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'text_column');
-  });
+      final column = table.columns.single;
+      expect(column.nameInSql, 'text_column');
+    },
+  );
 
-  test('It should rename the table and column name to its snake case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+  test(
+    'It should rename the table and column name to its snake case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class TestTable extends Table {
@@ -47,21 +47,23 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.snake),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.snake,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'test_table');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'test_table');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'text_column');
-  });
+      final column = table.columns.single;
+      expect(column.nameInSql, 'text_column');
+    },
+  );
 
   test('It should not rename the table and column name', () async {
     final state = await TestBackend.inTest(
@@ -75,10 +77,11 @@ class TeStTaBlE extends Table {
 
 @DriftDatabase(tables: [TeStTaBlE])
 class Database {}
-'''
+''',
       },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.preserve),
+      options: DriftOptions.defaults(
+        caseFromDartToSql: CaseFromDartToSql.preserve,
+      ),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -91,11 +94,12 @@ class Database {}
 
     expect(column.nameInSql, 'tExTcOlUmN');
   });
-  test('It should rename the table and column name to its camel case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+  test(
+    'It should rename the table and column name to its camel case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class TestTable extends Table {
@@ -104,27 +108,29 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.camel),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.camel,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'testTable');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'testTable');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'textColumn');
-  });
+      final column = table.columns.single;
+      expect(column.nameInSql, 'textColumn');
+    },
+  );
   test(
-      'It should rename the table and column name to its constant case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+    'It should rename the table and column name to its constant case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class TestTable extends Table {
@@ -133,26 +139,29 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.constant),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.constant,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'TEST_TABLE');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'TEST_TABLE');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'TEXT_COLUMN');
-  });
-  test('It should rename the table and column name to its pascal case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+      final column = table.columns.single;
+      expect(column.nameInSql, 'TEXT_COLUMN');
+    },
+  );
+  test(
+    'It should rename the table and column name to its pascal case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Test_Table extends Table {
@@ -161,26 +170,29 @@ class Test_Table extends Table {
 
 @DriftDatabase(tables: [Test_Table])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.pascal),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.pascal,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'TestTable');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'TestTable');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'TextColumn');
-  });
-  test('It should rename the table and column name to its lower case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+      final column = table.columns.single;
+      expect(column.nameInSql, 'TextColumn');
+    },
+  );
+  test(
+    'It should rename the table and column name to its lower case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class TestTable extends Table {
@@ -189,27 +201,30 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.lower),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.lower,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'testtable');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'testtable');
 
-    final column = table.columns.single;
+      final column = table.columns.single;
 
-    expect(column.nameInSql, 'textcolumn');
-  });
-  test('It should rename the table and column name to its upper case version',
-      () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+      expect(column.nameInSql, 'textcolumn');
+    },
+  );
+  test(
+    'It should rename the table and column name to its upper case version',
+    () async {
+      final state = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class TestTable extends Table {
@@ -218,21 +233,23 @@ class TestTable extends Table {
 
 @DriftDatabase(tables: [TestTable])
 class Database {}
-'''
-      },
-      options:
-          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.upper),
-    );
+''',
+        },
+        options: DriftOptions.defaults(
+          caseFromDartToSql: CaseFromDartToSql.upper,
+        ),
+      );
 
-    final file = await state.analyze('package:a/main.dart');
-    expect(file.allErrors, isEmpty);
+      final file = await state.analyze('package:a/main.dart');
+      expect(file.allErrors, isEmpty);
 
-    final table = file.analyzedElements.whereType<DriftTable>().single;
-    expect(table.schemaName, 'TESTTABLE');
+      final table = file.analyzedElements.whereType<DriftTable>().single;
+      expect(table.schemaName, 'TESTTABLE');
 
-    final column = table.columns.single;
-    expect(column.nameInSql, 'TEXTCOLUMN');
-  });
+      final column = table.columns.single;
+      expect(column.nameInSql, 'TEXTCOLUMN');
+    },
+  );
 
   test('recognizes custom column types', () async {
     final state = await TestBackend.inTest({
@@ -277,9 +294,9 @@ class TestTable extends Table {
 
       final file = await state.analyze('package:a/a.dart');
       expect(file.allErrors, [
-        isDriftError(contains(
-                'Parse error in customConstraint(): Expected a constraint'))
-            .withSpan('invalid', filename: 'a.dart'),
+        isDriftError(
+          contains('Parse error in customConstraint(): Expected a constraint'),
+        ).withSpan('invalid', filename: 'a.dart'),
       ]);
     });
 
@@ -306,10 +323,12 @@ class TestTable extends Table {
       final tableAnalysis = file.analysis[file.id('test_table')]!;
 
       expect(tableAnalysis.errorsDuringAnalysis, [
-        isDriftError('`foo` could not be found in any import.')
-            .withSpan(contains('REFERENCES foo (bar)'), filename: 'a.dart'),
-        isDriftError(contains('has no column named `foo`'))
-            .withSpan(contains('referenced_table (foo)'), filename: 'a.dart'),
+        isDriftError(
+          '`foo` could not be found in any import.',
+        ).withSpan(contains('REFERENCES foo (bar)'), filename: 'a.dart'),
+        isDriftError(
+          contains('has no column named `foo`'),
+        ).withSpan(contains('referenced_table (foo)'), filename: 'a.dart'),
       ]);
 
       final testTable = tableAnalysis.result! as DriftTable;
@@ -318,8 +337,13 @@ class TestTable extends Table {
         isA<DriftColumn>().having(
           (e) => e.constraints,
           'constraints',
-          contains(isA<ForeignKeyReference>().having((e) => e.otherColumn,
-              'otherColumn', referencedTable.columns.single)),
+          contains(
+            isA<ForeignKeyReference>().having(
+              (e) => e.otherColumn,
+              'otherColumn',
+              referencedTable.columns.single,
+            ),
+          ),
         ),
       );
     });
@@ -338,8 +362,8 @@ class TestTable extends Table {
       final file = await state.analyze('package:a/a.dart');
       expect(file.allErrors, [
         isDriftError(
-                contains('This column is not declared to be `.nullable()`'))
-            .withSpan("'UNIQUE'", filename: 'a.dart'),
+          contains('This column is not declared to be `.nullable()`'),
+        ).withSpan("'UNIQUE'", filename: 'a.dart'),
       ]);
     });
 
@@ -420,24 +444,34 @@ class Database {}
     state.expectNoErrors();
     final tables = file.analyzedElements.whereType<DriftTable>();
 
-    final studentTable =
-        tables.where((element) => element.schemaName == 'students').single;
-    final teacherTable =
-        tables.where((element) => element.schemaName == 'teachers').single;
+    final studentTable = tables
+        .where((element) => element.schemaName == 'students')
+        .single;
+    final teacherTable = tables
+        .where((element) => element.schemaName == 'teachers')
+        .single;
     final studentGroupColumn = studentTable.columns.single;
     final teacherGroupColumn = teacherTable.columns.single;
 
     // Ensure that the columns are the same
-    expect(studentGroupColumn.customConstraints,
-        equals(teacherGroupColumn.customConstraints));
     expect(
-        studentGroupColumn.nameInDart, equals(teacherGroupColumn.nameInDart));
+      studentGroupColumn.customConstraints,
+      equals(teacherGroupColumn.customConstraints),
+    );
+    expect(
+      studentGroupColumn.nameInDart,
+      equals(teacherGroupColumn.nameInDart),
+    );
     expect(studentGroupColumn.nameInSql, equals(teacherGroupColumn.nameInSql));
-    expect(studentGroupColumn.sqlType.builtin,
-        equals(teacherGroupColumn.sqlType.builtin));
+    expect(
+      studentGroupColumn.sqlType.builtin,
+      equals(teacherGroupColumn.sqlType.builtin),
+    );
     expect(studentGroupColumn.nullable, equals(teacherGroupColumn.nullable));
-    expect(studentGroupColumn.overriddenJsonName,
-        equals(teacherGroupColumn.overriddenJsonName));
+    expect(
+      studentGroupColumn.overriddenJsonName,
+      equals(teacherGroupColumn.overriddenJsonName),
+    );
 
     // Ensure that the correct reference name is set
     expect(studentGroupColumn.referenceName, equals('students'));
@@ -493,8 +527,10 @@ class Preferences extends Table {
     backend.expectNoErrors();
 
     final table = file.analyzedElements.single as DriftTable;
-    expect(table.columns.map((c) => c.sqlType.builtin),
-        [DriftSqlType.string, DriftSqlType.any]);
+    expect(table.columns.map((c) => c.sqlType.builtin), [
+      DriftSqlType.string,
+      DriftSqlType.any,
+    ]);
     expect(table.strict, isTrue);
   });
 }

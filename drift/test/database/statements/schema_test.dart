@@ -20,16 +20,20 @@ void main() {
       await db.beforeOpen(mockExecutor, const OpeningDetails(null, 1));
 
       // should create todos, categories, users and shared_todos table
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "todos" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, '
           '"content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, '
           '"category" INTEGER NULL REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED, '
           '"status" TEXT NULL, '
           'UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "categories" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"desc" TEXT NOT NULL UNIQUE, '
@@ -37,9 +41,12 @@ void main() {
           '"description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS '
           '(UPPER("desc")) VIRTUAL'
           ');',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "users" ('
           '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"name" TEXT NOT NULL UNIQUE, '
@@ -49,9 +56,12 @@ void main() {
           "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK("creation_time" > -631152000)'
           ');',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "shared_todos" ('
           '"todo" INTEGER NOT NULL, '
           '"user" INTEGER NOT NULL, '
@@ -59,9 +69,12 @@ void main() {
           'FOREIGN KEY (todo) REFERENCES todos(id), '
           'FOREIGN KEY (user) REFERENCES users(id)'
           ');',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS '
           '"table_without_p_k" ('
           '"not_really_an_id" INTEGER NOT NULL, '
@@ -69,9 +82,12 @@ void main() {
           '"web_safe_int" INTEGER NULL, '
           '"custom" TEXT NOT NULL'
           ');',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
           '("category_id", "description", "item_count") AS SELECT '
           '"t1"."id" AS "category_id", '
@@ -81,9 +97,12 @@ void main() {
           'INNER JOIN "todos" "t0" '
           'ON "t0"."category" = "t1"."id" '
           'GROUP BY "t1"."id"',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS "todo_with_category_view" '
           '("title", "desc") AS SELECT '
           '"t0"."title" AS "title", '
@@ -91,18 +110,23 @@ void main() {
           'FROM "todos" "t0" '
           'INNER JOIN "categories" "t1" '
           'ON "t1"."id" = "t0"."category"',
-          []));
+          [],
+        ),
+      );
 
-      verify(mockExecutor.runCustom(
-        'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
-        [],
-      ));
+      verify(
+        mockExecutor.runCustom(
+          'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+          [],
+        ),
+      );
     });
 
     test('creates individual tables', () async {
       await db.createMigrator().createTable(db.users);
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "users" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"name" TEXT NOT NULL UNIQUE, '
@@ -112,24 +136,32 @@ void main() {
           "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK("creation_time" > -631152000)'
           ');',
-          []));
+          [],
+        ),
+      );
     });
 
     group('creates tables with custom types', () {
       test('sqlite3', () async {
         await db.createMigrator().createTable(db.withCustomType);
 
-        verify(mockExecutor.runCustom(
+        verify(
+          mockExecutor.runCustom(
             'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" text NOT NULL);',
-            []));
+            [],
+          ),
+        );
       });
 
       test('postgres', () async {
         when(mockExecutor.dialect).thenReturn(SqlDialect.postgres);
         await db.createMigrator().createTable(db.withCustomType);
-        verify(mockExecutor.runCustom(
+        verify(
+          mockExecutor.runCustom(
             'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" uuid NOT NULL);',
-            []));
+            [],
+          ),
+        );
       });
     });
 
@@ -138,7 +170,8 @@ void main() {
     test('creates views through create()', () async {
       await db.createMigrator().create(db.categoryTodoCountView);
 
-      verify(mockExecutor.runCustom(
+      verify(
+        mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
           '("category_id", "description", "item_count") AS SELECT '
           '"t1"."id" AS "category_id", '
@@ -148,7 +181,9 @@ void main() {
           'INNER JOIN "todos" "t0" '
           'ON "t0"."category" = "t1"."id" '
           'GROUP BY "t1"."id"',
-          []));
+          [],
+        ),
+      );
     });
 
     test('drops tables', () async {
@@ -172,18 +207,27 @@ void main() {
     test('adds columns', () async {
       await db.createMigrator().addColumn(db.users, db.users.isAwesome);
 
-      verify(mockExecutor.runCustom('ALTER TABLE "users" ADD COLUMN '
+      verify(
+        mockExecutor.runCustom(
+          'ALTER TABLE "users" ADD COLUMN '
           '"is_awesome" INTEGER NOT NULL DEFAULT 1 '
-          'CHECK ("is_awesome" IN (0, 1));'));
+          'CHECK ("is_awesome" IN (0, 1));',
+        ),
+      );
     });
 
     test('renames columns', () async {
-      await db
-          .createMigrator()
-          .renameColumn(db.users, 'my name', db.users.name);
+      await db.createMigrator().renameColumn(
+        db.users,
+        'my name',
+        db.users.name,
+      );
 
-      verify(mockExecutor
-          .runCustom('ALTER TABLE "users" RENAME COLUMN "my name" TO "name";'));
+      verify(
+        mockExecutor.runCustom(
+          'ALTER TABLE "users" RENAME COLUMN "my name" TO "name";',
+        ),
+      );
     });
   });
 
@@ -204,11 +248,13 @@ void main() {
     final executor = MockExecutor();
     late TodoDb db;
     db = TodoDb(executor)
-      ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {
-        await db.transaction(() async {
-          await m.createTable(db.users);
-        });
-      });
+      ..migration = MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          await db.transaction(() async {
+            await m.createTable(db.users);
+          });
+        },
+      );
 
     await db.beforeOpen(executor, const OpeningDetails(2, 3));
 
@@ -257,17 +303,18 @@ void main() {
       await defaultMigrator.createAll();
       verifyNever(executor.runCustom(any));
 
-      final fixedMigrator =
-          Migrator(db, _FakeSchemaVersion(database: db, version: 2));
+      final fixedMigrator = Migrator(
+        db,
+        _FakeSchemaVersion(database: db, version: 2),
+      );
       await fixedMigrator.createAll();
-      verify(executor.runCustom(
-        'CREATE TABLE IF NOT EXISTS "my_table" ("foo" INTEGER NOT NULL);',
-        [],
-      ));
-      verify(executor.runCustom(
-        'CREATE VIEW my_view AS SELECT 2',
-        [],
-      ));
+      verify(
+        executor.runCustom(
+          'CREATE TABLE IF NOT EXISTS "my_table" ("foo" INTEGER NOT NULL);',
+          [],
+        ),
+      );
+      verify(executor.runCustom('CREATE VIEW my_view AS SELECT 2', []));
     });
 
     test('in recreateViews', () async {
@@ -275,14 +322,13 @@ void main() {
       await defaultMigrator.recreateAllViews();
       verifyNever(executor.runCustom(any));
 
-      final fixedMigrator =
-          Migrator(db, _FakeSchemaVersion(database: db, version: 2));
+      final fixedMigrator = Migrator(
+        db,
+        _FakeSchemaVersion(database: db, version: 2),
+      );
       await fixedMigrator.recreateAllViews();
 
-      verify(executor.runCustom(
-        'CREATE VIEW my_view AS SELECT 2',
-        [],
-      ));
+      verify(executor.runCustom('CREATE VIEW my_view AS SELECT 2', []));
     });
   });
 
@@ -318,24 +364,24 @@ final class _FakeSchemaVersion extends VersionedSchema {
 
   @override
   Iterable<DatabaseSchemaEntity> get entities => [
-        VersionedTable(
-          entityName: 'my_table',
-          attachedDatabase: database,
-          columns: [
-            (name) => GeneratedColumn<int>('foo', name, false,
-                type: DriftSqlType.int),
-          ],
-          tableConstraints: [],
-          isStrict: false,
-          withoutRowId: false,
-        ),
-        VersionedView(
-          entityName: 'my_view',
-          attachedDatabase: database,
-          createViewStmt: 'CREATE VIEW my_view AS SELECT $version',
-          columns: [],
-        ),
-      ];
+    VersionedTable(
+      entityName: 'my_table',
+      attachedDatabase: database,
+      columns: [
+        (name) =>
+            GeneratedColumn<int>('foo', name, false, type: DriftSqlType.int),
+      ],
+      tableConstraints: [],
+      isStrict: false,
+      withoutRowId: false,
+    ),
+    VersionedView(
+      entityName: 'my_view',
+      attachedDatabase: database,
+      createViewStmt: 'CREATE VIEW my_view AS SELECT $version',
+      columns: [],
+    ),
+  ];
 }
 
 class _DefaultDb extends GeneratedDatabase {

@@ -104,18 +104,24 @@ class WasmDatabaseOpener {
       missingFeatures.add(MissingBrowserFeature.workerError);
     }
 
-    return _ProbeResult(availableImplementations, existingDatabases.toList(),
-        missingFeatures, this);
+    return _ProbeResult(
+      availableImplementations,
+      existingDatabases.toList(),
+      missingFeatures,
+      this,
+    );
   }
 
   Future<void> _probeDedicated() async {
     if (supportsWorkers) {
-      final dedicatedWorker = _dedicatedWorker =
-          _DriftWorker.dedicated(web.Worker(driftWorkerUri.toString().toJS));
+      final dedicatedWorker = _dedicatedWorker = _DriftWorker.dedicated(
+        web.Worker(driftWorkerUri.toString().toJS),
+      );
       _createCompatibilityCheck().sendTo(dedicatedWorker.send);
 
-      final status = await dedicatedWorker.workerMessages.nextNoError
-          as DedicatedWorkerCompatibilityResult;
+      final status =
+          await dedicatedWorker.workerMessages.nextNoError
+              as DedicatedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(status);
       dedicatedWorker.version = status.version;
@@ -136,15 +142,18 @@ class WasmDatabaseOpener {
 
   Future<void> _probeShared() async {
     if (supportsSharedWorkers) {
-      final sharedWorker =
-          web.SharedWorker(driftWorkerUri.toString().toJS, 'drift worker'.toJS);
+      final sharedWorker = web.SharedWorker(
+        driftWorkerUri.toString().toJS,
+        'drift worker'.toJS,
+      );
       final port = sharedWorker.port;
       final shared = _sharedWorker = _DriftWorker.shared(sharedWorker, port);
 
       // First, the shared worker will tell us which features it supports.
       _createCompatibilityCheck().sendToPort(port);
-      final sharedFeatures = await shared.workerMessages.nextNoError
-          as SharedWorkerCompatibilityResult;
+      final sharedFeatures =
+          await shared.workerMessages.nextNoError
+              as SharedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(sharedFeatures);
       shared.version = sharedFeatures.version;
@@ -175,11 +184,11 @@ final class _DriftWorker {
   final StreamQueue<WasmInitializationMessage> workerMessages;
 
   _DriftWorker.dedicated(web.Worker this.worker)
-      : portForShared = null,
-        workerMessages = StreamQueue(_readMessages(worker, worker));
+    : portForShared = null,
+      workerMessages = StreamQueue(_readMessages(worker, worker));
 
   _DriftWorker.shared(web.SharedWorker this.worker, this.portForShared)
-      : workerMessages = StreamQueue(_readMessages(worker.port, worker)) {
+    : workerMessages = StreamQueue(_readMessages(worker.port, worker)) {
     (worker as web.SharedWorker).port.start();
   }
 
@@ -271,24 +280,30 @@ final class _ProbeResult implements WasmProbeResult {
           // Workers seem to be broken, but we don't need them with this storage
           // mode.
           return _hostDatabaseLocally(
-              implementation,
-              await IndexedDbFileSystem.open(dbName: name),
-              initializeDatabase,
-              localSetup,
-              enableMigrations);
+            implementation,
+            await IndexedDbFileSystem.open(dbName: name),
+            initializeDatabase,
+            localSetup,
+            enableMigrations,
+          );
         }
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
-        return _hostDatabaseLocally(implementation, InMemoryFileSystem(),
-            initializeDatabase, localSetup, enableMigrations);
+        return _hostDatabaseLocally(
+          implementation,
+          InMemoryFileSystem(),
+          initializeDatabase,
+          localSetup,
+          enableMigrations,
+        );
     }
 
     if (initChannel != null) {
       initChannel.port1.start();
-      web.EventStreamProviders.messageEvent
-          .forTarget(initChannel.port1)
-          .listen((event) async {
+      web.EventStreamProviders.messageEvent.forTarget(initChannel.port1).listen((
+        event,
+      ) async {
         // The worker hosting the database is asking for the initial blob because
         // the database doesn't exist.
         Uint8List? result;
@@ -297,7 +312,9 @@ final class _ProbeResult implements WasmProbeResult {
         } finally {
           initChannel.port1
             ..postMessage(
-                result?.toJS, [if (result != null) result.buffer.toJS].toJS)
+              result?.toJS,
+              [if (result != null) result.buffer.toJS].toJS,
+            )
             ..close();
         }
       });
@@ -309,8 +326,10 @@ final class _ProbeResult implements WasmProbeResult {
       nativeSerializionVersion: message.protocolVersion.versionCode,
     );
 
-    var connection = await connectToRemoteAndInitialize(local,
-        serialize: !message.newSerialization);
+    var connection = await connectToRemoteAndInitialize(
+      local,
+      serialize: !message.newSerialization,
+    );
     if (implementation == WasmStorageImplementation.opfsLocks) {
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of
@@ -363,7 +382,8 @@ final class _ProbeResult implements WasmProbeResult {
           await dedicated.workerMessages.nextNoError;
         } else {
           throw StateError(
-              'No dedicated worker available to delete OPFS database');
+            'No dedicated worker available to delete OPFS database',
+          );
         }
     }
   }
@@ -374,8 +394,10 @@ final class _ProbeResult implements WasmProbeResult {
       case WebStorageApi.indexedDb:
         final vfs = await IndexedDbFileSystem.open(dbName: database.$2);
         if (vfs.xAccess('/database', 0) != 0) {
-          final (file: file, outFlags: _) =
-              vfs.xOpen(Sqlite3Filename('/database'), 0);
+          final (file: file, outFlags: _) = vfs.xOpen(
+            Sqlite3Filename('/database'),
+            0,
+          );
           final buffer = Uint8List(file.xFileSize());
           file.xRead(buffer, 0);
           file.xClose();
@@ -410,8 +432,9 @@ Stream<WasmInitializationMessage> _readMessages(
   web.EventTarget messageTarget,
   web.EventTarget errorTarget,
 ) {
-  final messages =
-      web.EventStreamProviders.messageEvent.forTarget(messageTarget);
+  final messages = web.EventStreamProviders.messageEvent.forTarget(
+    messageTarget,
+  );
   final errors = web.EventStreamProviders.errorEvent.forTarget(errorTarget);
 
   final mappedMessages = messages.map(WasmInitializationMessage.read);
@@ -432,8 +455,9 @@ Stream<WasmInitializationMessage> _readMessages(
 
     errors.first.then((value) {
       if (subscription != null) {
-        listener
-            .addSync(WorkerError('Worker emitted an error through onError.'));
+        listener.addSync(
+          WorkerError('Worker emitted an error through onError.'),
+        );
       }
     });
 

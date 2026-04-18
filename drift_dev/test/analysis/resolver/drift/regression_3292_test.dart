@@ -37,7 +37,7 @@ song_fulltext_search(:match_string AS TEXT):
       query.resultSet.columns.map(
         (e) => (
           e.dartGetterName(const []),
-          (e as ScalarResultColumn).sqlType.builtin
+          (e as ScalarResultColumn).sqlType.builtin,
         ),
       ),
       [

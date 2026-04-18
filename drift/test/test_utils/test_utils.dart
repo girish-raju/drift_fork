@@ -26,10 +26,13 @@ class CustomQueryExecutorUser extends QueryExecutorUser {
     QueryExecutorUser self,
     QueryExecutor executor,
     OpeningDetails details,
-  ) beforeOpenCallback;
+  )
+  beforeOpenCallback;
 
-  CustomQueryExecutorUser(
-      {required this.schemaVersion, required this.beforeOpenCallback});
+  CustomQueryExecutorUser({
+    required this.schemaVersion,
+    required this.beforeOpenCallback,
+  });
 
   @override
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
@@ -37,10 +40,14 @@ class CustomQueryExecutorUser extends QueryExecutorUser {
   }
 }
 
-DatabaseConnection createConnection(QueryExecutor executor,
-    [StreamQueryStore? streams]) {
-  return DatabaseConnection(executor,
-      streamQueries: streams ?? StreamQueryStore());
+DatabaseConnection createConnection(
+  QueryExecutor executor, [
+  StreamQueryStore? streams,
+]) {
+  return DatabaseConnection(
+    executor,
+    streamQueries: streams ?? StreamQueryStore(),
+  );
 }
 
 GenerationContext stubContext({
@@ -81,8 +88,12 @@ class CustomTable extends Table with TableInfo<CustomTable, void> {
   final List<GeneratedColumn<Object>> columns;
   final String? _alias;
 
-  CustomTable(this.actualTableName, this.attachedDatabase, this.columns,
-      [this._alias]);
+  CustomTable(
+    this.actualTableName,
+    this.attachedDatabase,
+    this.columns, [
+    this._alias,
+  ]);
 
   @override
   List<GeneratedColumn<Object>> get $columns => columns;

@@ -40,8 +40,12 @@ class DataClassWriter {
   }
 
   String _converter(DriftColumn column) {
-    return _emitter.dartCode(_emitter.writer
-        .readConverter(column.typeConverter!, forNullable: column.nullable));
+    return _emitter.dartCode(
+      _emitter.writer.readConverter(
+        column.typeConverter!,
+        forNullable: column.nullable,
+      ),
+    );
   }
 
   void write() {
@@ -72,8 +76,9 @@ class DataClassWriter {
         _buffer.write(', ');
       }
 
-      _buffer
-          .write(table.interfacesForRowClass.map(_emitter.dartCode).join(', '));
+      _buffer.write(
+        table.interfacesForRowClass.map(_emitter.dartCode).join(', '),
+      );
     }
 
     _buffer.writeln('{'); // start of clas
@@ -99,17 +104,21 @@ class DataClassWriter {
     _emitter
       ..write(table.nameOfRowClass)
       ..write('({')
-      ..write(columns.map((column) {
-        final nullableDartType = column.typeConverter != null
-            ? column.typeConverter!.mapsToNullableDart(column.nullable)
-            : column.nullable;
+      ..write(
+        columns
+            .map((column) {
+              final nullableDartType = column.typeConverter != null
+                  ? column.typeConverter!.mapsToNullableDart(column.nullable)
+                  : column.nullable;
 
-        if (nullableDartType && !allRequired) {
-          return 'this.${column.nameInDart}';
-        } else {
-          return 'required this.${column.nameInDart}';
-        }
-      }).join(', '))
+              if (nullableDartType && !allRequired) {
+                return 'this.${column.nameInDart}';
+              } else {
+                return 'required this.${column.nameInDart}';
+              }
+            })
+            .join(', '),
+      )
       ..write('});');
 
     if (isInsertable) {
@@ -140,8 +149,9 @@ class DataClassWriter {
     _writeHashCode();
 
     overrideEquals(
-      columns
-          .map((c) => EqualityField(c.nameInDart, isList: c.isUint8ListInDart)),
+      columns.map(
+        (c) => EqualityField(c.nameInDart, isList: c.isUint8ListInDart),
+      ),
       _emitter.dartCode(_emitter.writer.rowClass(table)),
       _emitter,
     );
@@ -154,11 +164,15 @@ class DataClassWriter {
     final dataClassName = table.nameOfRowClass;
 
     _buffer
-      ..write('factory $dataClassName.fromJson('
-          'Map<String, dynamic> json, {$serializerType serializer}'
-          ') {\n')
-      ..write('serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
-          '.defaultSerializer;\n')
+      ..write(
+        'factory $dataClassName.fromJson('
+        'Map<String, dynamic> json, {$serializerType serializer}'
+        ') {\n',
+      )
+      ..write(
+        'serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
+        '.defaultSerializer;\n',
+      )
       ..write('return $dataClassName(');
 
     for (final column in columns) {
@@ -168,8 +182,9 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        var type =
-            _emitter.dartCode(AnnotatedDartCode.type(typeConverter.jsonType!));
+        var type = _emitter.dartCode(
+          AnnotatedDartCode.type(typeConverter.jsonType!),
+        );
         if (column.nullable &&
             typeConverter.canBeSkippedForNulls &&
             !typeConverter.jsonTypeIsNullable) {
@@ -194,20 +209,24 @@ class DataClassWriter {
     if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
       final dataClassType = _emitter.drift('DataClass');
-      _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
-          '{$serializerType serializer}) => '
-          '$dataClassName.fromJson('
-          '$dataClassType.parseJson(encodedJson) as Map<String, dynamic>, '
-          'serializer: serializer);');
+      _buffer.write(
+        'factory $dataClassName.fromJsonString(String encodedJson, '
+        '{$serializerType serializer}) => '
+        '$dataClassName.fromJson('
+        '$dataClassType.parseJson(encodedJson) as Map<String, dynamic>, '
+        'serializer: serializer);',
+      );
     }
   }
 
   void _writeToJson() {
-    _buffer.write('@override Map<String, dynamic> toJson('
-        '{$serializerType serializer}) {\n'
-        'serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
-        '.defaultSerializer;\n'
-        'return <String, dynamic>{\n');
+    _buffer.write(
+      '@override Map<String, dynamic> toJson('
+      '{$serializerType serializer}) {\n'
+      'serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
+      '.defaultSerializer;\n'
+      'return <String, dynamic>{\n',
+    );
 
     for (final column in columns) {
       final nameLiteral = asDartLiteral(column.getJsonKey(scope.options));
@@ -268,8 +287,9 @@ class DataClassWriter {
       final getter = column.nameInDart;
 
       if (wrapNullableInValue && column.nullableInDart) {
-        _buffer
-            .write('$getter: $getter.present ? $getter.value : this.$getter,');
+        _buffer.write(
+          '$getter: $getter.present ? $getter.value : this.$getter,',
+        );
       } else {
         _buffer.write('$getter: $getter ?? this.$getter,');
       }
@@ -292,8 +312,9 @@ class DataClassWriter {
       // Generated columns do not appear in companions.
       assert(!column.isGenerated);
       final name = column.nameInDart;
-      _buffer
-          .write('$name: data.$name.present ? data.$name.value : this.$name,');
+      _buffer.write(
+        '$name: data.$name.present ? data.$name.value : this.$name,',
+      );
     }
 
     _buffer
@@ -325,8 +346,10 @@ class DataClassWriter {
       if (needsNullCheck) {
         _buffer
           ..write(dartName)
-          ..write(' == null && nullToAbsent ? '
-              'const ${_emitter.drift('Value')}.absent() : ');
+          ..write(
+            ' == null && nullToAbsent ? '
+            'const ${_emitter.drift('Value')}.absent() : ',
+          );
         // We'll write the non-null case afterwards
       }
 
@@ -341,11 +364,9 @@ class DataClassWriter {
   }
 
   void _writeToString() {
-    overrideToString(
-      table.nameOfRowClass,
-      [for (final column in columns) column.nameInDart],
-      _buffer,
-    );
+    overrideToString(table.nameOfRowClass, [
+      for (final column in columns) column.nameInDart,
+    ], _buffer);
   }
 
   void _writeHashCode() {
@@ -420,8 +441,10 @@ class RowMappingWriter {
       // result.
       if (column.typeConverter != null) {
         // stored as a static field
-        final code = writer.readConverter(column.typeConverter!,
-            forNullable: column.nullable);
+        final code = writer.readConverter(
+          column.typeConverter!,
+          forNullable: column.nullable,
+        );
         final writtenCode = writer.dartCode(code);
         loadType = '$writtenCode.fromSql($loadType)';
       }
@@ -451,8 +474,10 @@ extension WriteToColumns on TextEmitter {
     final expression = drift('Expression');
 
     this
-      ..write('@override\nMap<String, $expression> toColumns'
-          '(bool nullToAbsent) {\n')
+      ..write(
+        '@override\nMap<String, $expression> toColumns'
+        '(bool nullToAbsent) {\n',
+      )
       ..write('final map = <String, $expression> {};');
 
     for (final column in columns) {
@@ -472,7 +497,8 @@ extension WriteToColumns on TextEmitter {
 
       write('map[${asDartLiteral(column.nameInSql)}] = ');
       writeDart(
-          wrapInVariable(column, AnnotatedDartCode.text(column.nameInDart)));
+        wrapInVariable(column, AnnotatedDartCode.text(column.nameInDart)),
+      );
       writeln(';');
 
       // This one closes the optional if from before.

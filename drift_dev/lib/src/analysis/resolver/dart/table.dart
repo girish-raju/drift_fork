@@ -25,18 +25,23 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     final primaryKey = await _readPrimaryKey(element, columns);
     final uniqueKeys = await _readUniqueKeys(element, columns);
 
-    final dataClassInfo =
-        await DataClassInformation.resolve(this, columns, element);
+    final dataClassInfo = await DataClassInformation.resolve(
+      this,
+      columns,
+      element,
+    );
 
     final references = <DriftElement>{};
 
     // Resolve local foreign key references in pending columns
     for (final column in pendingColumns) {
       if (column.referencesColumnInSameTable != null) {
-        final ref =
-            column.column.constraints.whereType<ForeignKeyReference>().first;
+        final ref = column.column.constraints
+            .whereType<ForeignKeyReference>()
+            .first;
         final referencedColumn = columns.firstWhere(
-            (e) => e.nameInDart == column.referencesColumnInSameTable);
+          (e) => e.nameInDart == column.referencesColumnInSameTable,
+        );
 
         ref.otherColumn = referencedColumn;
       } else {
@@ -48,15 +53,19 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       }
     }
 
-    final tableConstraints =
-        await _readCustomConstraints(references, columns, element);
+    final tableConstraints = await _readCustomConstraints(
+      references,
+      columns,
+      element,
+    );
 
     final table = DriftTable(
       discovered.ownId,
       DriftDeclaration.dartElement(element),
       columns: columns,
       references: references.toList(),
-      nameOfRowClass: dataClassInfo.enforcedName ??
+      nameOfRowClass:
+          dataClassInfo.enforcedName ??
           dataClassNameForClassName(element.name!),
       interfacesForRowClass: dataClassInfo.interfaces,
       nameOfCompanionClass: dataClassInfo.companionName,
@@ -71,70 +80,85 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       overrideTableConstraints: tableConstraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
       strict: await _isStrict(element) ?? false,
-      attachedIndices: [
-        for (final id in discovered.attachedIndices) id.name,
-      ],
+      attachedIndices: [for (final id in discovered.attachedIndices) id.name],
     );
 
     final columnsWithPrimaryKeyConstraint = columns
         .where((c) => c.constraints.any((e) => e is PrimaryKeyColumn))
         .length;
     if (primaryKey != null && columnsWithPrimaryKeyConstraint > 0) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        "Tables can't override primaryKey and use autoIncrement()",
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          "Tables can't override primaryKey and use autoIncrement()",
+        ),
+      );
     }
 
     if (columnsWithPrimaryKeyConstraint > 1) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'More than one column uses autoIncrement(). This would require '
-        'multiple primary keys, which is not supported.',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'More than one column uses autoIncrement(). This would require '
+          'multiple primary keys, which is not supported.',
+        ),
+      );
     }
 
     if (primaryKey != null &&
         primaryKey.length == 1 &&
         primaryKey.first.constraints.contains(const UniqueColumn())) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'Primary key column cannot have UNIQUE constraint',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'Primary key column cannot have UNIQUE constraint',
+        ),
+      );
     }
 
     if (uniqueKeys != null &&
-        uniqueKeys.any((key) =>
-            uniqueKeys.length == 1 &&
-            key.first.constraints.contains(const UniqueColumn()))) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'Column provided in a single-column uniqueKey set already has a '
-        'column-level UNIQUE constraint',
-      ));
+        uniqueKeys.any(
+          (key) =>
+              uniqueKeys.length == 1 &&
+              key.first.constraints.contains(const UniqueColumn()),
+        )) {
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'Column provided in a single-column uniqueKey set already has a '
+          'column-level UNIQUE constraint',
+        ),
+      );
     }
 
     if (uniqueKeys != null &&
         primaryKey != null &&
-        uniqueKeys
-            .any((unique) => const SetEquality().equals(unique, primaryKey))) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'The uniqueKeys override contains the primary key, which is '
-        'already unique by default.',
-      ));
+        uniqueKeys.any(
+          (unique) => const SetEquality().equals(unique, primaryKey),
+        )) {
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'The uniqueKeys override contains the primary key, which is '
+          'already unique by default.',
+        ),
+      );
     }
 
     if (!table.strict &&
-        table.columns.any((c) => switch (c.sqlType) {
-              ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
-              ColumnCustomType() => false,
-            })) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'The `ANY` type is only meaningful for `STRICT` tables. '
-        'Override `bool get isStrict => true;` to use the `ANY` type.',
-      ));
+        table.columns.any(
+          (c) => switch (c.sqlType) {
+            ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
+            ColumnCustomType() => false,
+          },
+        )) {
+      reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'The `ANY` type is only meaningful for `STRICT` tables. '
+          'Override `bool get isStrict => true;` to use the `ANY` type.',
+        ),
+      );
     }
 
     return table;
@@ -155,12 +179,17 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       return null;
     }
 
-    final ast = await resolver.driver.backend
-        .loadElementDeclaration(primaryKeyGetter) as MethodDeclaration;
+    final ast =
+        await resolver.driver.backend.loadElementDeclaration(primaryKeyGetter)
+            as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      reportError(DriftAnalysisError.forDartElement(primaryKeyGetter,
-          'This must return a set literal using the => syntax!'));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          primaryKeyGetter,
+          'This must return a set literal using the => syntax!',
+        ),
+      );
       return null;
     }
     final expression = body.expression;
@@ -169,12 +198,16 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     if (expression is SetOrMapLiteral) {
       for (final entry in expression.elements) {
         if (entry is Identifier) {
-          final column = columns
-              .singleWhereOrNull((column) => column.nameInDart == entry.name);
+          final column = columns.singleWhereOrNull(
+            (column) => column.nameInDart == entry.name,
+          );
           if (column == null) {
             reportError(
               DriftAnalysisError.inDartAst(
-                  primaryKeyGetter, entry, 'Column not found in this table'),
+                primaryKeyGetter,
+                entry,
+                'Column not found in this table',
+              ),
             );
           } else {
             parsedPrimaryKey.add(column);
@@ -184,10 +217,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         }
       }
     } else {
-      reportError(DriftAnalysisError.forDartElement(
-        primaryKeyGetter,
-        'This must return a set literal!',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          primaryKeyGetter,
+          'This must return a set literal!',
+        ),
+      );
     }
 
     return parsedPrimaryKey;
@@ -208,12 +243,17 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       return null;
     }
 
-    final ast = await resolver.driver.backend
-        .loadElementDeclaration(uniqueKeyGetter) as MethodDeclaration;
+    final ast =
+        await resolver.driver.backend.loadElementDeclaration(uniqueKeyGetter)
+            as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      reportError(DriftAnalysisError.forDartElement(uniqueKeyGetter,
-          'This must return a list of set literal using the => syntax!'));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          uniqueKeyGetter,
+          'This must return a list of set literal using the => syntax!',
+        ),
+      );
       return null;
     }
     final expression = body.expression;
@@ -226,7 +266,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           for (final entry in keySet.elements) {
             if (entry is Identifier) {
               final column = columns.singleWhereOrNull(
-                  (column) => column.nameInDart == entry.name);
+                (column) => column.nameInDart == entry.name,
+              );
               if (column == null) {
                 reportError(
                   DriftAnalysisError.inDartAst(
@@ -244,33 +285,35 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           }
           parsedUniqueKeys.add(uniqueKey);
         } else {
-          reportError(DriftAnalysisError.forDartElement(
-            uniqueKeyGetter,
-            'This must return a set list literal!',
-          ));
+          reportError(
+            DriftAnalysisError.forDartElement(
+              uniqueKeyGetter,
+              'This must return a set list literal!',
+            ),
+          );
         }
       }
     } else {
-      reportError(DriftAnalysisError.forDartElement(
-        uniqueKeyGetter,
-        'This must return a set list literal!',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          uniqueKeyGetter,
+          'This must return a set list literal!',
+        ),
+      );
     }
 
     return parsedUniqueKeys;
   }
 
   Future<bool?> _booleanGetter(ClassElement element, String name) async {
-    final getter = element.lookUpGetter(
-      name: name,
-      library: element.library,
-    );
+    final getter = element.lookUpGetter(name: name, library: element.library);
 
     // Was the getter overridden at all?
     if (getter == null || getter.isFromDefaultTable) return null;
 
-    final ast = await resolver.driver.backend.loadElementDeclaration(getter)
-        as MethodDeclaration;
+    final ast =
+        await resolver.driver.backend.loadElementDeclaration(getter)
+            as MethodDeclaration;
     final expr = returnExpressionOfMethod(ast);
 
     if (expr == null) return null;
@@ -278,10 +321,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     if (expr is BooleanLiteral) {
       return expr.value;
     } else {
-      reportError(DriftAnalysisError.forDartElement(
-        getter,
-        'This must directly return a boolean literal.',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          getter,
+          'This must directly return a boolean literal.',
+        ),
+      );
     }
 
     return null;
@@ -296,7 +341,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(
-      ClassElement element) async {
+    ClassElement element,
+  ) async {
     // Returns true if the given field is a column defined as a getter
     bool isGetterColumn(FieldElement e) {
       return isColumn(e.type) && e.getter != null;
@@ -317,23 +363,30 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           // We should warn the user about this.
           // To print a detailed error message we will resolve the element to
           // get the entire field declaration.
-          final declaration = (await resolver.driver.backend
-              .loadElementDeclaration(e.baseElement) as VariableDeclaration);
-          reportError(DriftAnalysisError.inDartAst(
-            declaration.declaredFragment!.element,
-            declaration.endToken,
-            '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
-            'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
-          ));
+          final declaration =
+              (await resolver.driver.backend.loadElementDeclaration(
+                    e.baseElement,
+                  )
+                  as VariableDeclaration);
+          reportError(
+            DriftAnalysisError.inDartAst(
+              declaration.declaredFragment!.element,
+              declaration.endToken,
+              '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
+              'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
+            ),
+          );
         }
         return false;
       }
     }
 
     final Set<String> columnNames = {};
-    for (final element in element.allSupertypes
-        .map((t) => t.element)
-        .followedBy([element]).expand((e) => e.fields)) {
+    for (final element
+        in element.allSupertypes
+            .map((t) => t.element)
+            .followedBy([element])
+            .expand((e) => e.fields)) {
       if (isGetterColumn(element) || await isLateFinalColumn(element)) {
         columnNames.add(element.name!);
       }
@@ -341,14 +394,16 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     final fields = columnNames
         .map((name) {
-          final getter =
-              element.lookUpGetter(name: name, library: element.library);
+          final getter = element.lookUpGetter(
+            name: name,
+            library: element.library,
+          );
           return getter!.variable;
         })
         .nonNulls
         .toList();
     final all = <Element, String>{
-      for (final entry in fields) entry.getter ?? entry: entry.name!
+      for (final entry in fields) entry.getter ?? entry: entry.name!,
     };
 
     final results = <PendingColumnInformation>[];
@@ -357,16 +412,19 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       final PendingColumnInformation? column;
       if (field.getter!.isOriginVariable) {
         node = ColumnDeclaration(
-            await resolver.driver.backend
-                    .loadElementDeclaration(field.baseElement)
-                as VariableDeclaration,
-            null);
+          await resolver.driver.backend.loadElementDeclaration(
+                field.baseElement,
+              )
+              as VariableDeclaration,
+          null,
+        );
         column = await _parseColumn(node, field.baseElement, all);
       } else {
         node = ColumnDeclaration(
-            null,
-            await resolver.driver.backend.loadElementDeclaration(field.getter!)
-                as MethodDeclaration);
+          null,
+          await resolver.driver.backend.loadElementDeclaration(field.getter!)
+              as MethodDeclaration,
+        );
 
         column = await _parseColumn(node, field.getter!, all);
       }
@@ -402,15 +460,17 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       return const [];
     }
 
-    final ast = await resolver.driver.backend.loadElementDeclaration(
-      customConstraints,
-    ) as MethodDeclaration;
+    final ast =
+        await resolver.driver.backend.loadElementDeclaration(customConstraints)
+            as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      reportError(DriftAnalysisError.forDartElement(
-        customConstraints,
-        'This must return a list literal with the => syntax',
-      ));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          customConstraints,
+          'This must return a list literal with the => syntax',
+        ),
+      );
       return const [];
     }
     final expression = body.expression;
@@ -423,13 +483,22 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           foundConstraints.add(stringValue);
           foundConstraintSources.add(entry);
         } else {
-          reportError(DriftAnalysisError.inDartAst(element, entry,
-              'Drift can only verify custom constraints set as constant string literals.'));
+          reportError(
+            DriftAnalysisError.inDartAst(
+              element,
+              entry,
+              'Drift can only verify custom constraints set as constant string literals.',
+            ),
+          );
         }
       }
     } else {
-      reportError(DriftAnalysisError.forDartElement(
-          customConstraints, 'This must return a list literal!'));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          customConstraints,
+          'This must return a list literal!',
+        ),
+      );
     }
 
     // Try to parse these constraints and emit warnings
@@ -440,29 +509,36 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           .rootNode;
 
       if (parsed is sql.InvalidStatement) {
-        reportError(DriftAnalysisError.inDartAst(
+        reportError(
+          DriftAnalysisError.inDartAst(
             customConstraints,
             foundConstraintSources[i],
-            'Could not parse this table constraint'));
+            'Could not parse this table constraint',
+          ),
+        );
       } else if (parsed is sql.ForeignKeyTableConstraint) {
         final source = foundConstraintSources[i];
 
         // Check that the columns exist locally
         final missingLocals = parsed.columns.where(
-            (e) => localColumns.every((l) => !l.hasEqualSqlName(e.columnName)));
+          (e) => localColumns.every((l) => !l.hasEqualSqlName(e.columnName)),
+        );
         if (missingLocals.isNotEmpty) {
-          reportError(DriftAnalysisError.inDartAst(
-            element,
-            source,
-            'Columns ${missingLocals.join(', ')} don\'t exist locally.',
-          ));
+          reportError(
+            DriftAnalysisError.inDartAst(
+              element,
+              source,
+              'Columns ${missingLocals.join(', ')} don\'t exist locally.',
+            ),
+          );
         }
 
         // Also see if we can resolve the referenced table.
         final clause = parsed.clause;
         final table = await resolveSqlReferenceOrReportError<DriftTable>(
-            clause.foreignTable.tableName,
-            (msg) => DriftAnalysisError.inDartAst(element, source, msg));
+          clause.foreignTable.tableName,
+          (msg) => DriftAnalysisError.inDartAst(element, source, msg),
+        );
 
         if (table != null) {
           references.add(table);
@@ -471,11 +547,13 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
               .where((e) => !table.columnBySqlName.containsKey(e));
 
           if (missingColumns.isNotEmpty) {
-            reportError(DriftAnalysisError.inDartAst(
-              element,
-              source,
-              'Columns ${missingColumns.join(', ')} not found in table `${table.schemaName}`.',
-            ));
+            reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                source,
+                'Columns ${missingColumns.join(', ')} not found in table `${table.schemaName}`.',
+              ),
+            );
           }
         }
       }
@@ -507,7 +585,7 @@ class ColumnDeclaration {
   final MethodDeclaration? method;
 
   ColumnDeclaration(this.variable, this.method)
-      : assert(variable != null || method != null);
+    : assert(variable != null || method != null);
 
   Expression? get expression {
     if (method != null) {

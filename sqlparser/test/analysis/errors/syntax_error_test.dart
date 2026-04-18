@@ -10,14 +10,19 @@ void main() {
   group('DO UPDATE clause without conflict target', () {
     test('is forbidden on older sqlite versions', () {
       final engine = SqlEngine()..registerTable(demoTable);
-      final result = engine.analyze('INSERT INTO demo VALUES (?, ?)  '
-          'ON CONFLICT DO UPDATE SET id = 3;');
+      final result = engine.analyze(
+        'INSERT INTO demo VALUES (?, ?)  '
+        'ON CONFLICT DO UPDATE SET id = 3;',
+      );
 
       expect(result.errors, [
         const TypeMatcher<AnalysisError>()
             .having((e) => e.type, 'type', AnalysisErrorType.synctactic)
-            .having((e) => e.message, 'message',
-                contains('Expected a conflict clause'))
+            .having(
+              (e) => e.message,
+              'message',
+              contains('Expected a conflict clause'),
+            ),
       ]);
     });
 
@@ -26,8 +31,10 @@ void main() {
         ..registerTable(demoTable);
       expect(
         engine
-            .analyze('INSERT INTO demo VALUES (?, ?)  '
-                'ON CONFLICT DO UPDATE SET id = 3;')
+            .analyze(
+              'INSERT INTO demo VALUES (?, ?)  '
+              'ON CONFLICT DO UPDATE SET id = 3;',
+            )
             .errors,
         isEmpty,
       );
@@ -38,9 +45,11 @@ void main() {
         ..registerTable(demoTable);
       expect(
         engine
-            .analyze('INSERT INTO demo VALUES (?, ?)  '
-                'ON CONFLICT DO UPDATE SET id = 3'
-                'ON CONFLICT DO NOTHING;')
+            .analyze(
+              'INSERT INTO demo VALUES (?, ?)  '
+              'ON CONFLICT DO UPDATE SET id = 3'
+              'ON CONFLICT DO NOTHING;',
+            )
             .errors,
         hasLength(1),
       );
@@ -56,15 +65,21 @@ void main() {
         PRIMARY KEY (foo DESC, bar || 'test')
       );
     ''');
-    engine.registerTable(const SchemaFromCreateTable()
-        .read(parseResult.rootNode as CreateTableStatement));
+    engine.registerTable(
+      const SchemaFromCreateTable().read(
+        parseResult.rootNode as CreateTableStatement,
+      ),
+    );
     final analyzeResult = engine.analyzeParsed(parseResult);
 
     expect(analyzeResult.errors, [
       const TypeMatcher<AnalysisError>()
           .having((e) => e.type, 'type', AnalysisErrorType.synctactic)
-          .having((e) => e.message, 'message',
-              contains('Only column names can be used in a PRIMARY KEY clause'))
+          .having(
+            (e) => e.message,
+            'message',
+            contains('Only column names can be used in a PRIMARY KEY clause'),
+          ),
     ]);
   });
 
@@ -74,9 +89,11 @@ void main() {
     test('DEFAULT VALUES', () {
       engine.analyze('INSERT INTO demo DEFAULT VALUES').expectNoError();
       engine
-          .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
-              'INSERT INTO demo DEFAULT VALUES;'
-              'END;')
+          .analyze(
+            'CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+            'INSERT INTO demo DEFAULT VALUES;'
+            'END;',
+          )
           .expectError('DEFAULT VALUES', type: AnalysisErrorType.synctactic);
     });
 
@@ -84,38 +101,46 @@ void main() {
       // https://sqlite.org/lang_with.html#limitations_and_caveats
       engine.analyze('WITH x AS (SELECT 1) SELECT 2').expectNoError();
 
-      engine.analyze('''
+      engine
+          .analyze('''
 CREATE TRIGGER tgr AFTER INSERT ON demo BEGIN
   WITH x AS (SELECT 1) SELECT 2;
 END;
-''').expectError('WITH', type: AnalysisErrorType.synctactic);
+''')
+          .expectError('WITH', type: AnalysisErrorType.synctactic);
     });
 
     group('aliased source tables', () {
       test('insert', () {
         engine.analyze('INSERT INTO demo AS d VALUES (?, ?)').expectNoError();
         engine
-            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
-                'INSERT INTO demo AS d VALUES (?, ?);'
-                'END;')
+            .analyze(
+              'CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+              'INSERT INTO demo AS d VALUES (?, ?);'
+              'END;',
+            )
             .expectError('demo AS d', type: AnalysisErrorType.synctactic);
       });
 
       test('update', () {
         engine.analyze('UPDATE demo AS d SET id = id + 1;').expectNoError();
         engine
-            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
-                'UPDATE demo AS d SET id = id + 1;'
-                'END;')
+            .analyze(
+              'CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+              'UPDATE demo AS d SET id = id + 1;'
+              'END;',
+            )
             .expectError('demo AS d', type: AnalysisErrorType.synctactic);
       });
 
       test('delete', () {
         engine.analyze('DELETE FROM demo d;').expectNoError();
         engine
-            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
-                'DELETE FROM demo d;'
-                'END;')
+            .analyze(
+              'CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+              'DELETE FROM demo d;'
+              'END;',
+            )
             .expectError('demo d', type: AnalysisErrorType.synctactic);
       });
 
@@ -134,8 +159,10 @@ END;
       ..registerTable(demoTable);
 
     engine
-        .analyze('SELECT group_concat(content ORDER BY id DESC) '
-            'OVER (ROWS UNBOUNDED PRECEDING) FROM demo;')
+        .analyze(
+          'SELECT group_concat(content ORDER BY id DESC) '
+          'OVER (ROWS UNBOUNDED PRECEDING) FROM demo;',
+        )
         .expectError('ORDER BY id DESC');
   });
 }

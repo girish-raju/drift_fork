@@ -1,8 +1,9 @@
 part of '../query_builder.dart';
 
 const VerificationResult _invalidNull = VerificationResult.failure(
-    "This column is not nullable and doesn't have a default value. "
-    "Null fields thus can't be inserted.");
+  "This column is not nullable and doesn't have a default value. "
+  "Null fields thus can't be inserted.",
+);
 
 /// Implementation for a [Column] declared on a table.
 class GeneratedColumn<T extends Object> extends Column<T> {
@@ -94,7 +95,8 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   ///
   /// This is mainly used by the generator.
   GeneratedColumnWithTypeConverter<D, T> withConverter<D>(
-      TypeConverter<D, T?> converter) {
+    TypeConverter<D, T?> converter,
+  ) {
     return GeneratedColumnWithTypeConverter._(
       converter,
       $name,
@@ -181,8 +183,9 @@ class GeneratedColumn<T extends Object> extends Column<T> {
           ..write(context.identifier(tableName))
           ..write('.');
       }
-      context.buffer
-          .write(ignoreEscape ? $name : escapedNameFor(context.dialect));
+      context.buffer.write(
+        ignoreEscape ? $name : escapedNameFor(context.dialect),
+      );
     }
   }
 
@@ -206,7 +209,9 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// The default implementation will not perform any check if [value] is not
   /// a [Variable].
   VerificationResult isAcceptableOrUnknown(
-      Expression value, VerificationMeta meta) {
+    Expression value,
+    VerificationMeta meta,
+  ) {
     if (value is Variable) {
       return isAcceptableValue(value.value as T?, meta);
     } else {
@@ -233,19 +238,21 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// A value for [additionalChecks] validating allowed text lengths.
   ///
   /// Used by generated code.
-  static VerificationResult Function(String?, VerificationMeta) checkTextLength(
-      {int? minTextLength, int? maxTextLength}) {
+  static VerificationResult Function(String?, VerificationMeta)
+  checkTextLength({int? minTextLength, int? maxTextLength}) {
     return (value, meta) {
       if (value == null) return const VerificationResult.success();
 
       final length = value.length;
       if (minTextLength != null && minTextLength > length) {
         return VerificationResult.failure(
-            'Must at least be $minTextLength characters long.');
+          'Must at least be $minTextLength characters long.',
+        );
       }
       if (maxTextLength != null && maxTextLength < length) {
         return VerificationResult.failure(
-            'Must at most be $maxTextLength characters long.');
+          'Must at most be $maxTextLength characters long.',
+        );
       }
 
       return const VerificationResult.success();
@@ -257,7 +264,8 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   ///
   /// Used by generated code.
   static void Function(GenerationContext) constraintIsAlways(
-          String constraint) =>
+    String constraint,
+  ) =>
       (context) => context.buffer
         ..write(' ')
         ..write(constraint);
@@ -268,18 +276,17 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// Used by generated code.
   static void Function(GenerationContext) constraintsDependsOnDialect(
     Map<SqlDialect, String> constraints,
-  ) =>
-      (context) {
-        final constraint = constraints[context.dialect];
+  ) => (context) {
+    final constraint = constraints[context.dialect];
 
-        if (constraint == null || constraint.isEmpty) {
-          return;
-        }
+    if (constraint == null || constraint.isEmpty) {
+      return;
+    }
 
-        context.buffer
-          ..write(' ')
-          ..write(constraint);
-      };
+    context.buffer
+      ..write(' ')
+      ..write(constraint);
+  };
 }
 
 /// A [GeneratedColumn] with a type converter attached to it.
@@ -307,20 +314,20 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
     Expression<bool> Function()? check,
     bool hasAutoIncrement,
   ) : super(
-          name,
-          tableName,
-          nullable,
-          clientDefault: clientDefault,
-          type: type,
-          defaultConstraints: defaultConstraints,
-          $customConstraints: customConstraints,
-          defaultValue: defaultValue,
-          additionalChecks: additionalChecks,
-          requiredDuringInsert: requiredDuringInsert,
-          generatedAs: generatedAs,
-          check: check,
-          hasAutoIncrement: hasAutoIncrement,
-        );
+        name,
+        tableName,
+        nullable,
+        clientDefault: clientDefault,
+        type: type,
+        defaultConstraints: defaultConstraints,
+        $customConstraints: customConstraints,
+        defaultValue: defaultValue,
+        additionalChecks: additionalChecks,
+        requiredDuringInsert: requiredDuringInsert,
+        generatedAs: generatedAs,
+        check: check,
+        hasAutoIncrement: hasAutoIncrement,
+      );
 
   S? _mapDartValue(D? dartValue) {
     S? mappedValue;
@@ -332,7 +339,9 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
     } else {
       if (dartValue == null) {
         throw ArgumentError(
-            "This non-nullable column can't be equal to `null`.", 'dartValue');
+          "This non-nullable column can't be equal to `null`.",
+          'dartValue',
+        );
       }
 
       mappedValue = converter.toSql(dartValue);
@@ -340,7 +349,9 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
 
     if (!$nullable && dartValue == null) {
       throw ArgumentError(
-          "This non-nullable column can't be equal to `null`.", 'dartValue');
+        "This non-nullable column can't be equal to `null`.",
+        'dartValue',
+      );
     }
 
     return mappedValue;

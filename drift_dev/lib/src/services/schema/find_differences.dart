@@ -25,11 +25,13 @@ class FindSchemaDifferences {
   final ValidationOptions options;
 
   final SqlEngine _engine = SqlEngine(
-    EngineOptions(enabledExtensions: const [
-      DriftNativeExtension(),
-      Json1Extension(),
-      Fts5Extension(),
-    ]),
+    EngineOptions(
+      enabledExtensions: const [
+        DriftNativeExtension(),
+        Json1Extension(),
+        Fts5Extension(),
+      ],
+    ),
   );
 
   FindSchemaDifferences(this.referenceSchema, this.actualSchema, this.options);
@@ -52,19 +54,16 @@ class FindSchemaDifferences {
     bool validateActualInReference = true,
   }) {
     final results = <String, CompareResult>{};
-    final referenceByName = {
-      for (final ref in reference) name(ref): ref,
-    };
-    final actualByName = {
-      for (final ref in actual) name(ref): ref,
-    };
+    final referenceByName = {for (final ref in reference) name(ref): ref};
+    final actualByName = {for (final ref in actual) name(ref): ref};
 
     final referenceToActual = <T, T>{};
 
     for (final inReference in referenceByName.keys) {
       if (!actualByName.containsKey(inReference)) {
         results['comparing $inReference'] = FoundDifference(
-            'The actual schema does not contain anything with this name.');
+          'The actual schema does not contain anything with this name.',
+        );
       } else {
         referenceToActual[referenceByName[inReference]!] =
             actualByName[inReference]!;
@@ -78,8 +77,10 @@ class FindSchemaDifferences {
         ..removeAll(referenceByName.keys);
 
       if (additional.isNotEmpty) {
-        results['additional'] = FoundDifference('Contains the following '
-            'unexpected entries: ${additional.join(', ')}');
+        results['additional'] = FoundDifference(
+          'Contains the following '
+          'unexpected entries: ${additional.join(', ')}',
+        );
       }
     }
 
@@ -91,25 +92,33 @@ class FindSchemaDifferences {
   }
 
   CompareResult _compareInput(Input reference, Input actual) {
-    final parsedReference =
-        _engine.parse(ParserEntrypoint.statement, reference.create);
-    final parsedActual =
-        _engine.parse(ParserEntrypoint.statement, actual.create);
+    final parsedReference = _engine.parse(
+      ParserEntrypoint.statement,
+      reference.create,
+    );
+    final parsedActual = _engine.parse(
+      ParserEntrypoint.statement,
+      actual.create,
+    );
 
     if (parsedReference.errors.isNotEmpty) {
       return FoundDifference(
-          'Internal error: Could not parse ${reference.create}');
+        'Internal error: Could not parse ${reference.create}',
+      );
     } else if (parsedActual.errors.isNotEmpty) {
       return FoundDifference(
-          'Internal error: Could not parse ${actual.create}');
+        'Internal error: Could not parse ${actual.create}',
+      );
     }
 
     final referenceStmt = parsedReference.rootNode;
     final actualStmt = parsedActual.rootNode;
 
     if (referenceStmt.runtimeType != actualStmt.runtimeType) {
-      return FoundDifference('Expected a ${_kindOf(referenceStmt)}, but '
-          'got a ${_kindOf(actualStmt)}.');
+      return FoundDifference(
+        'Expected a ${_kindOf(referenceStmt)}, but '
+        'got a ${_kindOf(actualStmt)}.',
+      );
     }
 
     // We have a special comparison for tables that ignores the order of column
@@ -122,7 +131,9 @@ class FindSchemaDifferences {
   }
 
   CompareResult _compareTables(
-      CreateTableStatement ref, CreateTableStatement act) {
+    CreateTableStatement ref,
+    CreateTableStatement act,
+  ) {
     final results = <String, CompareResult>{};
 
     results['columns'] = _compareColumns(ref.columns, act.columns);
@@ -130,8 +141,9 @@ class FindSchemaDifferences {
     // We're currently comparing table constraints by their exact order.
     if (ref.tableConstraints.length != act.tableConstraints.length) {
       results['constraints'] = FoundDifference(
-          'Expected the table to have ${ref.tableConstraints.length} table '
-          'constraints, it actually has ${act.tableConstraints.length}.');
+        'Expected the table to have ${ref.tableConstraints.length} table '
+        'constraints, it actually has ${act.tableConstraints.length}.',
+      );
     } else {
       for (var i = 0; i < ref.tableConstraints.length; i++) {
         final refConstraint = ref.tableConstraints[i];
@@ -143,16 +155,20 @@ class FindSchemaDifferences {
 
     if (ref.withoutRowId != act.withoutRowId) {
       final expectedWithout = ref.withoutRowId;
-      results['rowid'] = FoundDifference(expectedWithout
-          ? 'Expected the table to have a WITHOUT ROWID clause'
-          : 'Did not expect the table to have a WITHOUT ROWID clause.');
+      results['rowid'] = FoundDifference(
+        expectedWithout
+            ? 'Expected the table to have a WITHOUT ROWID clause'
+            : 'Did not expect the table to have a WITHOUT ROWID clause.',
+      );
     }
 
     return MultiResult(results);
   }
 
   CompareResult _compareColumns(
-      List<ColumnDefinition> ref, List<ColumnDefinition> act) {
+    List<ColumnDefinition> ref,
+    List<ColumnDefinition> act,
+  ) {
     return _compareNamed<ColumnDefinition>(
       reference: ref,
       actual: act,
@@ -167,7 +183,8 @@ class FindSchemaDifferences {
 
     if (refType != actType) {
       return FoundDifference(
-          'Different types: Expected ${ref.typeName}, got ${act.typeName}');
+        'Different types: Expected ${ref.typeName}, got ${act.typeName}',
+      );
     }
 
     if (options.validateColumnConstraints) {
@@ -177,7 +194,8 @@ class FindSchemaDifferences {
         final firstSpan = ref.constraints.spanOrNull?.text ?? '';
         final secondSpan = act.constraints.spanOrNull?.text ?? '';
         return FoundDifference(
-            'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)');
+          'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)',
+        );
       }
     }
 
@@ -189,8 +207,10 @@ class FindSchemaDifferences {
       enforceEqual(reference, actual);
       return const Success();
     } catch (e) {
-      return FoundDifference('Not equal: Expected `${reference.span?.text}`, '
-          'got `${actual.span?.text}`');
+      return FoundDifference(
+        'Not equal: Expected `${reference.span?.text}`, '
+        'got `${actual.span?.text}`',
+      );
     }
   }
 

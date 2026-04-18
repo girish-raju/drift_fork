@@ -34,7 +34,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitAggregateFunctionInvocation(
-      AggregateFunctionInvocation e, void arg) {
+    AggregateFunctionInvocation e,
+    void arg,
+  ) {
     symbol(e.name, spaceBefore: true);
 
     symbol('(');
@@ -439,7 +441,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitCreateVirtualTableStatement(
-      CreateVirtualTableStatement e, void arg) {
+    CreateVirtualTableStatement e,
+    void arg,
+  ) {
     keyword(TokenType.create);
     keyword(TokenType.virtual);
     keyword(TokenType.table);
@@ -787,11 +791,13 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       }
     }
 
-    keyword(const {
-      FrameType.range: TokenType.range,
-      FrameType.rows: TokenType.rows,
-      FrameType.groups: TokenType.groups,
-    }[e.type!]!);
+    keyword(
+      const {
+        FrameType.range: TokenType.range,
+        FrameType.rows: TokenType.rows,
+        FrameType.groups: TokenType.groups,
+      }[e.type!]!,
+    );
 
     keyword(TokenType.between);
     frameBoundary(e.start);
@@ -822,8 +828,11 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitFunction(FunctionExpression e, void arg) {
     if (e.schemaName != null) {
-      identifier(e.schemaName!,
-          fromToken: e.schemaNameToken, spaceAfter: false);
+      identifier(
+        e.schemaName!,
+        fromToken: e.schemaNameToken,
+        spaceAfter: false,
+      );
       symbol('.');
     }
     identifier(e.name);
@@ -876,13 +885,15 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       keyword(TokenType.insert);
       keyword(TokenType.or);
 
-      keyword(const {
-        InsertMode.insertOrReplace: TokenType.replace,
-        InsertMode.insertOrRollback: TokenType.rollback,
-        InsertMode.insertOrAbort: TokenType.abort,
-        InsertMode.insertOrFail: TokenType.fail,
-        InsertMode.insertOrIgnore: TokenType.ignore,
-      }[mode]!);
+      keyword(
+        const {
+          InsertMode.insertOrReplace: TokenType.replace,
+          InsertMode.insertOrRollback: TokenType.rollback,
+          InsertMode.insertOrAbort: TokenType.abort,
+          InsertMode.insertOrFail: TokenType.fail,
+          InsertMode.insertOrIgnore: TokenType.ignore,
+        }[mode]!,
+      );
     }
 
     keyword(TokenType.into);
@@ -907,7 +918,8 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitInvalidStatement(InvalidStatement e, void arg) {
     throw UnsupportedError(
-        'InvalidStatement does not have a textual representation');
+      'InvalidStatement does not have a textual representation',
+    );
   }
 
   @override
@@ -1044,10 +1056,12 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.nulls != null) {
       keyword(TokenType.nulls);
 
-      keyword(const {
-        OrderingBehaviorForNulls.first: TokenType.first,
-        OrderingBehaviorForNulls.last: TokenType.last,
-      }[e.nulls!]!);
+      keyword(
+        const {
+          OrderingBehaviorForNulls.first: TokenType.first,
+          OrderingBehaviorForNulls.last: TokenType.last,
+        }[e.nulls!]!,
+      );
     }
   }
 
@@ -1062,12 +1076,14 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitRaiseExpression(RaiseExpression e, void arg) {
     keyword(TokenType.raise);
     symbol('(', spaceBefore: true);
-    keyword(const {
-      RaiseKind.ignore: TokenType.ignore,
-      RaiseKind.rollback: TokenType.rollback,
-      RaiseKind.abort: TokenType.abort,
-      RaiseKind.fail: TokenType.fail,
-    }[e.raiseKind]!);
+    keyword(
+      const {
+        RaiseKind.ignore: TokenType.ignore,
+        RaiseKind.rollback: TokenType.rollback,
+        RaiseKind.abort: TokenType.abort,
+        RaiseKind.fail: TokenType.fail,
+      }[e.raiseKind]!,
+    );
 
     if (e.errorMessage != null) {
       symbol(',', spaceAfter: true);
@@ -1081,24 +1097,31 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     var didWriteSpaceBefore = false;
 
     if (e.schemaName != null) {
-      identifier(e.schemaName!,
-          fromToken: e.schemaNameToken, spaceAfter: false);
+      identifier(
+        e.schemaName!,
+        fromToken: e.schemaNameToken,
+        spaceAfter: false,
+      );
       symbol('.');
       didWriteSpaceBefore = true;
     }
     if (e.entityName != null) {
-      identifier(e.entityName!,
-          spaceAfter: false,
-          fromToken: e.entityNameToken,
-          spaceBefore: !didWriteSpaceBefore);
+      identifier(
+        e.entityName!,
+        spaceAfter: false,
+        fromToken: e.entityNameToken,
+        spaceBefore: !didWriteSpaceBefore,
+      );
       symbol('.');
       didWriteSpaceBefore = true;
     }
 
-    identifier(e.columnName,
-        fromToken: e.columnNameToken,
-        spaceAfter: true,
-        spaceBefore: !didWriteSpaceBefore);
+    identifier(
+      e.columnName,
+      fromToken: e.columnNameToken,
+      spaceAfter: true,
+      spaceBefore: !didWriteSpaceBefore,
+    );
   }
 
   @override
@@ -1150,7 +1173,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitSemicolonSeparatedStatements(
-      SemicolonSeparatedStatements e, void arg) {
+    SemicolonSeparatedStatements e,
+    void arg,
+  ) {
     for (final stmt in e.statements) {
       visit(stmt, arg);
       buffer.writeln(';');
@@ -1257,12 +1282,18 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitTableReference(TableReference e, void arg) {
     if (e.schemaName != null) {
-      identifier(e.schemaName!,
-          fromToken: e.schemaNameToken, spaceAfter: false);
+      identifier(
+        e.schemaName!,
+        fromToken: e.schemaNameToken,
+        spaceAfter: false,
+      );
       symbol('.');
     }
-    identifier(e.tableName,
-        fromToken: e.tableNameToken, spaceBefore: e.schemaName == null);
+    identifier(
+      e.tableName,
+      fromToken: e.tableNameToken,
+      spaceBefore: e.schemaName == null,
+    );
     visitNullable(e.as, arg);
   }
 
@@ -1327,13 +1358,15 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.or != null) {
       keyword(TokenType.or);
 
-      keyword(const {
-        FailureMode.rollback: TokenType.rollback,
-        FailureMode.abort: TokenType.abort,
-        FailureMode.replace: TokenType.replace,
-        FailureMode.fail: TokenType.fail,
-        FailureMode.ignore: TokenType.ignore,
-      }[e.or!]!);
+      keyword(
+        const {
+          FailureMode.rollback: TokenType.rollback,
+          FailureMode.abort: TokenType.abort,
+          FailureMode.replace: TokenType.replace,
+          FailureMode.fail: TokenType.fail,
+          FailureMode.ignore: TokenType.ignore,
+        }[e.or!]!,
+      );
     }
 
     visit(e.table, arg);
@@ -1472,13 +1505,15 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       keyword(TokenType.on);
       keyword(TokenType.conflict);
 
-      keyword(const {
-        ConflictClause.rollback: TokenType.rollback,
-        ConflictClause.abort: TokenType.abort,
-        ConflictClause.fail: TokenType.fail,
-        ConflictClause.ignore: TokenType.ignore,
-        ConflictClause.replace: TokenType.replace,
-      }[clause]!);
+      keyword(
+        const {
+          ConflictClause.rollback: TokenType.rollback,
+          ConflictClause.abort: TokenType.abort,
+          ConflictClause.fail: TokenType.fail,
+          ConflictClause.ignore: TokenType.ignore,
+          ConflictClause.replace: TokenType.replace,
+        }[clause]!,
+      );
     }
   }
 
@@ -1503,8 +1538,11 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
   }
 
-  void dartCode(String code,
-      {bool spaceBefore = true, bool spaceAfter = true}) {
+  void dartCode(
+    String code, {
+    bool spaceBefore = true,
+    bool spaceAfter = true,
+  }) {
     symbol('`$code`', spaceBefore: spaceBefore, spaceAfter: spaceAfter);
   }
 
@@ -1535,10 +1573,12 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   void _orderingMode(OrderingMode? mode) {
     if (mode != null) {
-      keyword(const {
-        OrderingMode.ascending: TokenType.asc,
-        OrderingMode.descending: TokenType.desc,
-      }[mode]!);
+      keyword(
+        const {
+          OrderingMode.ascending: TokenType.asc,
+          OrderingMode.descending: TokenType.desc,
+        }[mode]!,
+      );
     }
   }
 
@@ -1550,8 +1590,11 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   /// Writes the [lexeme], unchanged.
-  void symbol(String lexeme,
-      {bool spaceBefore = false, bool spaceAfter = false}) {
+  void symbol(
+    String lexeme, {
+    bool spaceBefore = false,
+    bool spaceAfter = false,
+  }) {
     if (needsSpace && spaceBefore) {
       _space();
     }

@@ -65,8 +65,12 @@ class _GeneratesSqlMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (matchState.containsKey('wrong_type')) {
       mismatchDescription = mismatchDescription.add('is not of type component');
     }
@@ -75,15 +79,24 @@ class _GeneratesSqlMatcher extends Matcher {
 
       mismatchDescription = mismatchDescription.add('generated $sql, which ');
       mismatchDescription = _matchSql.describeMismatch(
-          sql, mismatchDescription, matchState['sql_match'] as Map, verbose);
+        sql,
+        mismatchDescription,
+        matchState['sql_match'] as Map,
+        verbose,
+      );
     }
     if (matchState.containsKey('vars')) {
       final vars = matchState['vars'] as List;
 
-      mismatchDescription =
-          mismatchDescription.add('generated variables $vars, which ');
+      mismatchDescription = mismatchDescription.add(
+        'generated variables $vars, which ',
+      );
       mismatchDescription = _matchVariables!.describeMismatch(
-          vars, mismatchDescription, matchState['vars_match'] as Map, verbose);
+        vars,
+        mismatchDescription,
+        matchState['vars_match'] as Map,
+        verbose,
+      );
     }
     return mismatchDescription;
   }

@@ -12,17 +12,25 @@ class $TodoCategoriesTable extends TodoCategories
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -31,8 +39,10 @@ class $TodoCategoriesTable extends TodoCategories
   String get actualTableName => $name;
   static const String $name = 'todo_categories';
   @override
-  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TodoCategory> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -40,7 +50,9 @@ class $TodoCategoriesTable extends TodoCategories
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
@@ -53,10 +65,14 @@ class $TodoCategoriesTable extends TodoCategories
   TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategory(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
     );
   }
 
@@ -79,25 +95,26 @@ class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   }
 
   TodoCategoriesCompanion toCompanion(bool nullToAbsent) {
-    return TodoCategoriesCompanion(
-      id: Value(id),
-      name: Value(name),
-    );
+    return TodoCategoriesCompanion(id: Value(id), name: Value(name));
   }
 
-  factory TodoCategory.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TodoCategory.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoCategory(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
     );
   }
-  factory TodoCategory.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TodoCategory.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory TodoCategory.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => TodoCategory.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -107,10 +124,8 @@ class TodoCategory extends DataClass implements Insertable<TodoCategory> {
     };
   }
 
-  TodoCategory copyWith({int? id, String? name}) => TodoCategory(
-        id: id ?? this.id,
-        name: name ?? this.name,
-      );
+  TodoCategory copyWith({int? id, String? name}) =>
+      TodoCategory(id: id ?? this.id, name: name ?? this.name);
   TodoCategory copyWithCompanion(TodoCategoriesCompanion data) {
     return TodoCategory(
       id: data.id.present ? data.id.value : this.id,
@@ -157,10 +172,7 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
   }
 
   TodoCategoriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return TodoCategoriesCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+    return TodoCategoriesCompanion(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
@@ -194,52 +206,83 @@ class $TodoItemsTable extends TodoItems
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _categoryIdMeta =
-      const VerificationMeta('categoryId');
+    'content',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
   @override
   late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
-      'category_id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES todo_categories (id)'));
-  static const VerificationMeta _generatedTextMeta =
-      const VerificationMeta('generatedText');
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES todo_categories (id)',
+    ),
+  );
+  static const VerificationMeta _generatedTextMeta = const VerificationMeta(
+    'generatedText',
+  );
   @override
   late final GeneratedColumn<String> generatedText = GeneratedColumn<String>(
-      'generated_text', aliasedName, true,
-      generatedAs: GeneratedAs(
-          title + const Constant(' (') + content + const Constant(')'), false),
-      type: DriftSqlType.string,
-      requiredDuringInsert: false);
+    'generated_text',
+    aliasedName,
+    true,
+    generatedAs: GeneratedAs(
+      title + const Constant(' (') + content + const Constant(')'),
+      false,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, categoryId, generatedText];
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    content,
+    categoryId,
+    generatedText,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'todo_items';
   @override
-  VerificationContext validateIntegrity(Insertable<TodoItem> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TodoItem> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -247,27 +290,34 @@ class $TodoItemsTable extends TodoItems
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
     }
     if (data.containsKey('category_id')) {
       context.handle(
-          _categoryIdMeta,
-          categoryId.isAcceptableOrUnknown(
-              data['category_id']!, _categoryIdMeta));
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
     }
     if (data.containsKey('generated_text')) {
       context.handle(
+        _generatedTextMeta,
+        generatedText.isAcceptableOrUnknown(
+          data['generated_text']!,
           _generatedTextMeta,
-          generatedText.isAcceptableOrUnknown(
-              data['generated_text']!, _generatedTextMeta));
+        ),
+      );
     }
     return context;
   }
@@ -278,16 +328,26 @@ class $TodoItemsTable extends TodoItems
   TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItem(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content']),
-      categoryId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
-      generatedText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      )!,
+      generatedText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generated_text'],
+      ),
     );
   }
 
@@ -303,12 +363,13 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   final String? content;
   final int categoryId;
   final String? generatedText;
-  const TodoItem(
-      {required this.id,
-      required this.title,
-      this.content,
-      required this.categoryId,
-      this.generatedText});
+  const TodoItem({
+    required this.id,
+    required this.title,
+    this.content,
+    required this.categoryId,
+    this.generatedText,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -332,8 +393,10 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
     );
   }
 
-  factory TodoItem.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TodoItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoItem(
       id: serializer.fromJson<int>(json['id']),
@@ -343,11 +406,13 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       generatedText: serializer.fromJson<String?>(json['generatedText']),
     );
   }
-  factory TodoItem.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TodoItem.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory TodoItem.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => TodoItem.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -360,20 +425,21 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
     };
   }
 
-  TodoItem copyWith(
-          {int? id,
-          String? title,
-          Value<String?> content = const Value.absent(),
-          int? categoryId,
-          Value<String?> generatedText = const Value.absent()}) =>
-      TodoItem(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        content: content.present ? content.value : this.content,
-        categoryId: categoryId ?? this.categoryId,
-        generatedText:
-            generatedText.present ? generatedText.value : this.generatedText,
-      );
+  TodoItem copyWith({
+    int? id,
+    String? title,
+    Value<String?> content = const Value.absent(),
+    int? categoryId,
+    Value<String?> generatedText = const Value.absent(),
+  }) => TodoItem(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    content: content.present ? content.value : this.content,
+    categoryId: categoryId ?? this.categoryId,
+    generatedText: generatedText.present
+        ? generatedText.value
+        : this.generatedText,
+  );
   @override
   String toString() {
     return (StringBuffer('TodoItem(')
@@ -416,8 +482,8 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
     required String title,
     this.content = const Value.absent(),
     required int categoryId,
-  })  : title = Value(title),
-        categoryId = Value(categoryId);
+  }) : title = Value(title),
+       categoryId = Value(categoryId);
   static Insertable<TodoItem> custom({
     Expression<int>? id,
     Expression<String>? title,
@@ -432,11 +498,12 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
     });
   }
 
-  TodoItemsCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? title,
-      Value<String?>? content,
-      Value<int>? categoryId}) {
+  TodoItemsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String?>? content,
+    Value<int>? categoryId,
+  }) {
     return TodoItemsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -479,19 +546,23 @@ class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int? itemCount;
   const TodoCategoryItemCountData({required this.name, this.itemCount});
-  factory TodoCategoryItemCountData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TodoCategoryItemCountData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoCategoryItemCountData(
       name: serializer.fromJson<String>(json['name']),
       itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
   }
-  factory TodoCategoryItemCountData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TodoCategoryItemCountData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory TodoCategoryItemCountData.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => TodoCategoryItemCountData.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -501,12 +572,13 @@ class TodoCategoryItemCountData extends DataClass {
     };
   }
 
-  TodoCategoryItemCountData copyWith(
-          {String? name, Value<int?> itemCount = const Value.absent()}) =>
-      TodoCategoryItemCountData(
-        name: name ?? this.name,
-        itemCount: itemCount.present ? itemCount.value : this.itemCount,
-      );
+  TodoCategoryItemCountData copyWith({
+    String? name,
+    Value<int?> itemCount = const Value.absent(),
+  }) => TodoCategoryItemCountData(
+    name: name ?? this.name,
+    itemCount: itemCount.present ? itemCount.value : this.itemCount,
+  );
   @override
   String toString() {
     return (StringBuffer('TodoCategoryItemCountData(')
@@ -547,25 +619,37 @@ class $TodoCategoryItemCountView
   @override
   $TodoCategoryItemCountView get asDslTable => this;
   @override
-  TodoCategoryItemCountData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  TodoCategoryItemCountData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategoryItemCountData(
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      itemCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      itemCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}item_count'],
+      ),
     );
   }
 
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      generatedAs: GeneratedAs(todoCategories.name, false),
-      type: DriftSqlType.string);
+    'name',
+    aliasedName,
+    false,
+    generatedAs: GeneratedAs(todoCategories.name, false),
+    type: DriftSqlType.string,
+  );
   late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
-      'item_count', aliasedName, true,
-      generatedAs: GeneratedAs(BaseAggregate(todoItems.id).count(), false),
-      type: DriftSqlType.int);
+    'item_count',
+    aliasedName,
+    true,
+    generatedAs: GeneratedAs(BaseAggregate(todoItems.id).count(), false),
+    type: DriftSqlType.int,
+  );
   @override
   $TodoCategoryItemCountView createAlias(String alias) {
     return $TodoCategoryItemCountView(attachedDatabase, alias);
@@ -574,7 +658,7 @@ class $TodoCategoryItemCountView
   @override
   Query? get query =>
       (attachedDatabase.selectOnly(todoCategories)..addColumns($columns)).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id)),
       ]);
   @override
   Set<String> get readTables => const {'todo_items', 'todo_categories'};
@@ -584,19 +668,23 @@ class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
   final String? title;
   const TodoItemWithCategoryNameViewData({required this.id, this.title});
-  factory TodoItemWithCategoryNameViewData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TodoItemWithCategoryNameViewData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoItemWithCategoryNameViewData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String?>(json['title']),
     );
   }
-  factory TodoItemWithCategoryNameViewData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TodoItemWithCategoryNameViewData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
+  factory TodoItemWithCategoryNameViewData.fromJsonString(
+    String encodedJson, {
+    ValueSerializer? serializer,
+  }) => TodoItemWithCategoryNameViewData.fromJson(
+    DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+    serializer: serializer,
+  );
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -606,12 +694,13 @@ class TodoItemWithCategoryNameViewData extends DataClass {
     };
   }
 
-  TodoItemWithCategoryNameViewData copyWith(
-          {int? id, Value<String?> title = const Value.absent()}) =>
-      TodoItemWithCategoryNameViewData(
-        id: id ?? this.id,
-        title: title.present ? title.value : this.title,
-      );
+  TodoItemWithCategoryNameViewData copyWith({
+    int? id,
+    Value<String?> title = const Value.absent(),
+  }) => TodoItemWithCategoryNameViewData(
+    id: id ?? this.id,
+    title: title.present ? title.value : this.title,
+  );
   @override
   String toString() {
     return (StringBuffer('TodoItemWithCategoryNameViewData(')
@@ -631,9 +720,13 @@ class TodoItemWithCategoryNameViewData extends DataClass {
           other.title == this.title);
 }
 
-class $TodoItemWithCategoryNameViewView extends ViewInfo<
-    $TodoItemWithCategoryNameViewView,
-    TodoItemWithCategoryNameViewData> implements HasResultSet {
+class $TodoItemWithCategoryNameViewView
+    extends
+        ViewInfo<
+          $TodoItemWithCategoryNameViewView,
+          TodoItemWithCategoryNameViewData
+        >
+    implements HasResultSet {
   final String? _alias;
   @override
   final _$Database attachedDatabase;
@@ -652,29 +745,43 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   @override
   $TodoItemWithCategoryNameViewView get asDslTable => this;
   @override
-  TodoItemWithCategoryNameViewData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  TodoItemWithCategoryNameViewData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItemWithCategoryNameViewData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
     );
   }
 
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      generatedAs: GeneratedAs(todoItems.id, false), type: DriftSqlType.int);
+    'id',
+    aliasedName,
+    false,
+    generatedAs: GeneratedAs(todoItems.id, false),
+    type: DriftSqlType.int,
+  );
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, true,
-      generatedAs: GeneratedAs(
-          todoItems.title +
-              const Constant('(') +
-              todoCategories.name +
-              const Constant(')'),
-          false),
-      type: DriftSqlType.string);
+    'title',
+    aliasedName,
+    true,
+    generatedAs: GeneratedAs(
+      todoItems.title +
+          const Constant('(') +
+          todoCategories.name +
+          const Constant(')'),
+      false,
+    ),
+    type: DriftSqlType.string,
+  );
   @override
   $TodoItemWithCategoryNameViewView createAlias(String alias) {
     return $TodoItemWithCategoryNameViewView(attachedDatabase, alias);
@@ -684,7 +791,9 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   Query? get query =>
       (attachedDatabase.selectOnly(todoItems)..addColumns($columns)).join([
         innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
+          todoCategories,
+          todoCategories.id.equalsExp(todoItems.categoryId),
+        ),
       ]);
   @override
   Set<String> get readTables => const {'todo_items', 'todo_categories'};
@@ -708,43 +817,46 @@ abstract class _$Database extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-        todoCategories,
-        todoItems,
-        todoCategoryItemCount,
-        customViewName,
-        itemTitle
-      ];
+    todoCategories,
+    todoItems,
+    todoCategoryItemCount,
+    customViewName,
+    itemTitle,
+  ];
 }
 
-typedef $$TodoCategoriesTableCreateCompanionBuilder = TodoCategoriesCompanion
-    Function({
-  Value<int> id,
-  required String name,
-});
-typedef $$TodoCategoriesTableUpdateCompanionBuilder = TodoCategoriesCompanion
-    Function({
-  Value<int> id,
-  Value<String> name,
-});
+typedef $$TodoCategoriesTableCreateCompanionBuilder =
+    TodoCategoriesCompanion Function({Value<int> id, required String name});
+typedef $$TodoCategoriesTableUpdateCompanionBuilder =
+    TodoCategoriesCompanion Function({Value<int> id, Value<String> name});
 
 final class $$TodoCategoriesTableReferences
     extends BaseReferences<_$Database, $TodoCategoriesTable, TodoCategory> {
   $$TodoCategoriesTableReferences(
-      super.$_db, super.$_table, super.$_typedResult);
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
 
   static MultiTypedResultKey<$TodoItemsTable, List<TodoItem>>
-      _todoItemsRefsTable(_$Database db) =>
-          MultiTypedResultKey.fromTable(db.todoItems,
-              aliasName: $_aliasNameGenerator(
-                  db.todoCategories.id, db.todoItems.categoryId));
+  _todoItemsRefsTable(_$Database db) => MultiTypedResultKey.fromTable(
+    db.todoItems,
+    aliasName: $_aliasNameGenerator(
+      db.todoCategories.id,
+      db.todoItems.categoryId,
+    ),
+  );
 
   $$TodoItemsTableProcessedTableManager get todoItemsRefs {
-    final manager = $$TodoItemsTableTableManager($_db, $_db.todoItems)
-        .filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager = $$TodoItemsTableTableManager(
+      $_db,
+      $_db.todoItems,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_todoItemsRefsTable($_db));
     return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
+      manager.$state.copyWith(prefetchedData: cache),
+    );
   }
 }
 
@@ -758,29 +870,37 @@ class $$TodoCategoriesTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
 
   Expression<bool> todoItemsRefs(
-      Expression<bool> Function($$TodoItemsTableFilterComposer f) f) {
+    Expression<bool> Function($$TodoItemsTableFilterComposer f) f,
+  ) {
     final $$TodoItemsTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.todoItems,
-        getReferencedColumn: (t) => t.categoryId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$TodoItemsTableFilterComposer(
-              $db: $db,
-              $table: $db.todoItems,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todoItems,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.todoItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 }
@@ -795,10 +915,14 @@ class $$TodoCategoriesTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TodoCategoriesTableAnnotationComposer
@@ -817,41 +941,49 @@ class $$TodoCategoriesTableAnnotationComposer
       $composableBuilder(column: $table.name, builder: (column) => column);
 
   Expression<T> todoItemsRefs<T extends Object>(
-      Expression<T> Function($$TodoItemsTableAnnotationComposer a) f) {
+    Expression<T> Function($$TodoItemsTableAnnotationComposer a) f,
+  ) {
     final $$TodoItemsTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.todoItems,
-        getReferencedColumn: (t) => t.categoryId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$TodoItemsTableAnnotationComposer(
-              $db: $db,
-              $table: $db.todoItems,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todoItems,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todoItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 }
 
-class $$TodoCategoriesTableTableManager extends RootTableManager<
-    _$Database,
-    $TodoCategoriesTable,
-    TodoCategory,
-    $$TodoCategoriesTableFilterComposer,
-    $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableAnnotationComposer,
-    $$TodoCategoriesTableCreateCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder,
-    (TodoCategory, $$TodoCategoriesTableReferences),
-    TodoCategory,
-    PrefetchHooks Function({bool todoItemsRefs})> {
+class $$TodoCategoriesTableTableManager
+    extends
+        RootTableManager<
+          _$Database,
+          $TodoCategoriesTable,
+          TodoCategory,
+          $$TodoCategoriesTableFilterComposer,
+          $$TodoCategoriesTableOrderingComposer,
+          $$TodoCategoriesTableAnnotationComposer,
+          $$TodoCategoriesTableCreateCompanionBuilder,
+          $$TodoCategoriesTableUpdateCompanionBuilder,
+          (TodoCategory, $$TodoCategoriesTableReferences),
+          TodoCategory,
+          PrefetchHooks Function({bool todoItemsRefs})
+        > {
   $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -860,27 +992,21 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               $$TodoCategoriesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$TodoCategoriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) =>
-              TodoCategoriesCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) =>
-              TodoCategoriesCompanion.insert(
-            id: id,
-            name: name,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+              }) => TodoCategoriesCompanion(id: id, name: name),
+          createCompanionCallback:
+              ({Value<int> id = const Value.absent(), required String name}) =>
+                  TodoCategoriesCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$TodoCategoriesTableReferences(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TodoCategoriesTableReferences(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: ({todoItemsRefs = false}) {
             return PrefetchHooks(
@@ -890,49 +1016,60 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todoItemsRefs)
-                    await $_getPrefetchedData<TodoCategory,
-                            $TodoCategoriesTable, TodoItem>(
-                        currentTable: table,
-                        referencedTable: $$TodoCategoriesTableReferences
-                            ._todoItemsRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$TodoCategoriesTableReferences(db, table, p0)
-                                .todoItemsRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.categoryId == item.id),
-                        typedResults: items)
+                    await $_getPrefetchedData<
+                      TodoCategory,
+                      $TodoCategoriesTable,
+                      TodoItem
+                    >(
+                      currentTable: table,
+                      referencedTable: $$TodoCategoriesTableReferences
+                          ._todoItemsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$TodoCategoriesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).todoItemsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.categoryId == item.id),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
           },
-        ));
+        ),
+      );
 }
 
-typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $TodoCategoriesTable,
-    TodoCategory,
-    $$TodoCategoriesTableFilterComposer,
-    $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableAnnotationComposer,
-    $$TodoCategoriesTableCreateCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder,
-    (TodoCategory, $$TodoCategoriesTableReferences),
-    TodoCategory,
-    PrefetchHooks Function({bool todoItemsRefs})>;
-typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
-  Value<int> id,
-  required String title,
-  Value<String?> content,
-  required int categoryId,
-});
-typedef $$TodoItemsTableUpdateCompanionBuilder = TodoItemsCompanion Function({
-  Value<int> id,
-  Value<String> title,
-  Value<String?> content,
-  Value<int> categoryId,
-});
+typedef $$TodoCategoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Database,
+      $TodoCategoriesTable,
+      TodoCategory,
+      $$TodoCategoriesTableFilterComposer,
+      $$TodoCategoriesTableOrderingComposer,
+      $$TodoCategoriesTableAnnotationComposer,
+      $$TodoCategoriesTableCreateCompanionBuilder,
+      $$TodoCategoriesTableUpdateCompanionBuilder,
+      (TodoCategory, $$TodoCategoriesTableReferences),
+      TodoCategory,
+      PrefetchHooks Function({bool todoItemsRefs})
+    >;
+typedef $$TodoItemsTableCreateCompanionBuilder =
+    TodoItemsCompanion Function({
+      Value<int> id,
+      required String title,
+      Value<String?> content,
+      required int categoryId,
+    });
+typedef $$TodoItemsTableUpdateCompanionBuilder =
+    TodoItemsCompanion Function({
+      Value<int> id,
+      Value<String> title,
+      Value<String?> content,
+      Value<int> categoryId,
+    });
 
 final class $$TodoItemsTableReferences
     extends BaseReferences<_$Database, $TodoItemsTable, TodoItem> {
@@ -940,17 +1077,21 @@ final class $$TodoItemsTableReferences
 
   static $TodoCategoriesTable _categoryIdTable(_$Database db) =>
       db.todoCategories.createAlias(
-          $_aliasNameGenerator(db.todoItems.categoryId, db.todoCategories.id));
+        $_aliasNameGenerator(db.todoItems.categoryId, db.todoCategories.id),
+      );
 
   $$TodoCategoriesTableProcessedTableManager get categoryId {
     final $_column = $_itemColumn<int>('category_id')!;
 
-    final manager = $$TodoCategoriesTableTableManager($_db, $_db.todoCategories)
-        .filter((f) => f.id.sqlEquals($_column));
+    final manager = $$TodoCategoriesTableTableManager(
+      $_db,
+      $_db.todoCategories,
+    ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 }
 
@@ -964,34 +1105,45 @@ class $$TodoItemsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnFilters(column));
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get generatedText => $composableBuilder(
-      column: $table.generatedText, builder: (column) => ColumnFilters(column));
+    column: $table.generatedText,
+    builder: (column) => ColumnFilters(column),
+  );
 
   $$TodoCategoriesTableFilterComposer get categoryId {
     final $$TodoCategoriesTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.categoryId,
-        referencedTable: $db.todoCategories,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$TodoCategoriesTableFilterComposer(
-              $db: $db,
-              $table: $db.todoCategories,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.todoCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoCategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.todoCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -1006,35 +1158,45 @@ class $$TodoItemsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnOrderings(column));
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get generatedText => $composableBuilder(
-      column: $table.generatedText,
-      builder: (column) => ColumnOrderings(column));
+    column: $table.generatedText,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   $$TodoCategoriesTableOrderingComposer get categoryId {
     final $$TodoCategoriesTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.categoryId,
-        referencedTable: $db.todoCategories,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$TodoCategoriesTableOrderingComposer(
-              $db: $db,
-              $table: $db.todoCategories,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.todoCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoCategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.todoCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -1058,43 +1220,52 @@ class $$TodoItemsTableAnnotationComposer
       $composableBuilder(column: $table.content, builder: (column) => column);
 
   GeneratedColumn<String> get generatedText => $composableBuilder(
-      column: $table.generatedText, builder: (column) => column);
+    column: $table.generatedText,
+    builder: (column) => column,
+  );
 
   $$TodoCategoriesTableAnnotationComposer get categoryId {
     final $$TodoCategoriesTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.categoryId,
-        referencedTable: $db.todoCategories,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$TodoCategoriesTableAnnotationComposer(
-              $db: $db,
-              $table: $db.todoCategories,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.todoCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoCategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todoCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
 
-class $$TodoItemsTableTableManager extends RootTableManager<
-    _$Database,
-    $TodoItemsTable,
-    TodoItem,
-    $$TodoItemsTableFilterComposer,
-    $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableAnnotationComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder,
-    (TodoItem, $$TodoItemsTableReferences),
-    TodoItem,
-    PrefetchHooks Function({bool categoryId})> {
+class $$TodoItemsTableTableManager
+    extends
+        RootTableManager<
+          _$Database,
+          $TodoItemsTable,
+          TodoItem,
+          $$TodoItemsTableFilterComposer,
+          $$TodoItemsTableOrderingComposer,
+          $$TodoItemsTableAnnotationComposer,
+          $$TodoItemsTableCreateCompanionBuilder,
+          $$TodoItemsTableUpdateCompanionBuilder,
+          (TodoItem, $$TodoItemsTableReferences),
+          TodoItem,
+          PrefetchHooks Function({bool categoryId})
+        > {
   $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1103,42 +1274,45 @@ class $$TodoItemsTableTableManager extends RootTableManager<
               $$TodoItemsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$TodoItemsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String?> content = const Value.absent(),
-            Value<int> categoryId = const Value.absent(),
-          }) =>
-              TodoItemsCompanion(
-            id: id,
-            title: title,
-            content: content,
-            categoryId: categoryId,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String title,
-            Value<String?> content = const Value.absent(),
-            required int categoryId,
-          }) =>
-              TodoItemsCompanion.insert(
-            id: id,
-            title: title,
-            content: content,
-            categoryId: categoryId,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> content = const Value.absent(),
+                Value<int> categoryId = const Value.absent(),
+              }) => TodoItemsCompanion(
+                id: id,
+                title: title,
+                content: content,
+                categoryId: categoryId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<String?> content = const Value.absent(),
+                required int categoryId,
+              }) => TodoItemsCompanion.insert(
+                id: id,
+                title: title,
+                content: content,
+                categoryId: categoryId,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$TodoItemsTableReferences(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TodoItemsTableReferences(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: ({categoryId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends TableManagerState<
+              addJoins:
+                  <
+                    T extends TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -1149,40 +1323,48 @@ class $$TodoItemsTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic,
-                      dynamic>>(state) {
-                if (categoryId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.categoryId,
-                    referencedTable:
-                        $$TodoItemsTableReferences._categoryIdTable(db),
-                    referencedColumn:
-                        $$TodoItemsTableReferences._categoryIdTable(db).id,
-                  ) as T;
-                }
+                      dynamic
+                    >
+                  >(state) {
+                    if (categoryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.categoryId,
+                                referencedTable: $$TodoItemsTableReferences
+                                    ._categoryIdTable(db),
+                                referencedColumn: $$TodoItemsTableReferences
+                                    ._categoryIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
           },
-        ));
+        ),
+      );
 }
 
-typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $TodoItemsTable,
-    TodoItem,
-    $$TodoItemsTableFilterComposer,
-    $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableAnnotationComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder,
-    (TodoItem, $$TodoItemsTableReferences),
-    TodoItem,
-    PrefetchHooks Function({bool categoryId})>;
+typedef $$TodoItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Database,
+      $TodoItemsTable,
+      TodoItem,
+      $$TodoItemsTableFilterComposer,
+      $$TodoItemsTableOrderingComposer,
+      $$TodoItemsTableAnnotationComposer,
+      $$TodoItemsTableCreateCompanionBuilder,
+      $$TodoItemsTableUpdateCompanionBuilder,
+      (TodoItem, $$TodoItemsTableReferences),
+      TodoItem,
+      PrefetchHooks Function({bool categoryId})
+    >;
 
 class $DatabaseManager {
   final _$Database _db;

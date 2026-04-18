@@ -29,17 +29,20 @@ class _CustomFunctions extends FunctionHandler {
   final Map<String, KnownSqliteFunction> _functions;
 
   _CustomFunctions(Map<String, KnownSqliteFunction> functions)
-      : _functions = {
-          for (final function in functions.entries)
-            function.key.toLowerCase(): function.value,
-        };
+    : _functions = {
+        for (final function in functions.entries)
+          function.key.toLowerCase(): function.value,
+      };
 
   @override
   late final Set<String> functionNames = _functions.keys.toSet();
 
   @override
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument) {
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  ) {
     final types = _functions[call.name.toLowerCase()]?.argumentTypes;
     if (types == null) {
       return const ResolveResult.unknown();
@@ -58,8 +61,11 @@ class _CustomFunctions extends FunctionHandler {
   }
 
   @override
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  ) {
     final type = _functions[call.name.toLowerCase()]?.returnType;
 
     return type != null ? ResolveResult(type) : const ResolveResult.unknown();

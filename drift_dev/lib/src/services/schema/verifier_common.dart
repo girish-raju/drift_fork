@@ -19,10 +19,16 @@ bool isInternalElement(String name, List<String> virtualTables) {
   return false;
 }
 
-void verify(List<Input> referenceSchema, List<Input> actualSchema,
-    ValidationOptions options) {
-  final result =
-      FindSchemaDifferences(referenceSchema, actualSchema, options).compare();
+void verify(
+  List<Input> referenceSchema,
+  List<Input> actualSchema,
+  ValidationOptions options,
+) {
+  final result = FindSchemaDifferences(
+    referenceSchema,
+    actualSchema,
+    options,
+  ).compare();
 
   if (!result.noChanges) {
     throw SchemaMismatch(result.describe());
@@ -51,7 +57,8 @@ Future<void> verifyDatabase(
     // Collect the schema how it would be if we just called `createAll` on a
     // clean database.
     final referenceDb = _GenerateFromScratch(db, open());
-    referenceSchema = expectedSchema[db] ??
+    referenceSchema =
+        expectedSchema[db] ??
         await referenceDb.collectSchemaInput(virtualTables);
     await referenceDb.close();
   }
@@ -100,8 +107,9 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     // Open a connection to instantiate and extract the reference schema.
     final otherConnection = await startAt(expectedVersion);
     await otherConnection.executor.ensureOpen(_DelegatingUser(expectedVersion));
-    final referenceSchema =
-        await otherConnection.executor.collectSchemaInput(virtualTables);
+    final referenceSchema = await otherConnection.executor.collectSchemaInput(
+      virtualTables,
+    );
     await otherConnection.executor.close();
 
     // Attach the reference schema to the database so that VerifySelf.validateDatabaseSchema
@@ -149,7 +157,8 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
 
     return InitializedSchema(rawDb, () {
       return DatabaseConnection(
-          wrapOpened(rawDb, closeUnderlyingOnClose: false));
+        wrapOpened(rawDb, closeUnderlyingOnClose: false),
+      );
     });
   }
 
@@ -159,8 +168,10 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
   }
 
   @override
-  Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
-      NewDatabase extends GeneratedDatabase>({
+  Future<void> testWithDataIntegrity<
+    OldDatabase extends GeneratedDatabase,
+    NewDatabase extends GeneratedDatabase
+  >({
     required OldDatabase Function(QueryExecutor p1) createOld,
     required NewDatabase Function(QueryExecutor p1) createNew,
     required GeneratedDatabase Function(QueryExecutor p1) openTestedDatabase,
@@ -187,7 +198,9 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
 }
 
 Input? _parseInputFromSchemaRow(
-    Map<String, Object?> row, List<String> virtualTables) {
+  Map<String, Object?> row,
+  List<String> virtualTables,
+) {
   final name = row['name'] as String;
   if (isInternalElement(name, virtualTables)) {
     return null;
@@ -245,7 +258,7 @@ class _GenerateFromScratch extends GeneratedDatabase {
   final GeneratedDatabase reference;
 
   _GenerateFromScratch(this.reference, QueryExecutor executor)
-      : super(executor);
+    : super(executor);
 
   @override
   DriftDatabaseOptions get options => reference.options;

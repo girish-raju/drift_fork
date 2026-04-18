@@ -26,8 +26,9 @@ class DriftClient {
   /// can avoid forwarding stream query updaten notifications.
   final bool _singleClientMode;
 
-  late final _RemoteStreamQueryStore _streamStore =
-      _RemoteStreamQueryStore(this);
+  late final _RemoteStreamQueryStore _streamStore = _RemoteStreamQueryStore(
+    this,
+  );
 
   /// The resulting database connection. Operations on this connection are
   /// relayed through the remote communication channel.
@@ -44,8 +45,11 @@ class DriftClient {
     bool debugLog,
     bool serialize,
     this._singleClientMode,
-  ) : _channel = DriftCommunication(channel,
-            debugLog: debugLog, serialize: serialize) {
+  ) : _channel = DriftCommunication(
+        channel,
+        debugLog: debugLog,
+        serialize: serialize,
+      ) {
     _channel.setRequestHandler(_handleRequest);
   }
 
@@ -80,12 +84,16 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   @override
   Future<void> runBatched(BatchedStatements statements) {
-    return client._channel
-        .request(ExecuteBatchedStatement(statements, _executorId));
+    return client._channel.request(
+      ExecuteBatchedStatement(statements, _executorId),
+    );
   }
 
   Future<T> _runRequest<T>(
-      StatementMethod method, String sql, List<Object?>? args) {
+    StatementMethod method,
+    String sql,
+    List<Object?>? args,
+  ) {
     // fast path: If the operation has already been cancelled, don't bother
     // sending a request in the first place
     checkIfCancelled();
@@ -93,7 +101,7 @@ abstract class _BaseExecutor extends QueryExecutor {
     final id = client._channel.newRequestId();
     // otherwise, send the request now and cancel it later, if that's desired
     doOnCancellation(() {
-      client._channel.request<void>(RequestCancellation(id)).onError((_, __) {
+      client._channel.request<void>(RequestCancellation(id)).onError((_, _) {
         // Couldn't be cancelled. Ok then.
       });
     });
@@ -105,19 +113,21 @@ abstract class _BaseExecutor extends QueryExecutor {
   }
 
   Future<int> _intRequest(
-      StatementMethod method, String sql, List<Object?>? args) async {
-    final response =
-        await _runRequest<PrimitiveResponsePayload>(method, sql, args);
+    StatementMethod method,
+    String sql,
+    List<Object?>? args,
+  ) async {
+    final response = await _runRequest<PrimitiveResponsePayload>(
+      method,
+      sql,
+      args,
+    );
     return response.message as int;
   }
 
   @override
   Future<void> runCustom(String statement, [List<Object?>? args]) {
-    return _runRequest(
-      StatementMethod.custom,
-      statement,
-      args,
-    );
+    return _runRequest(StatementMethod.custom, statement, args);
   }
 
   @override
@@ -137,9 +147,14 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) async {
+    String statement,
+    List<Object?> args,
+  ) async {
     final result = await _runRequest<SelectResult>(
-        StatementMethod.select, statement, args);
+      StatementMethod.select,
+      statement,
+      args,
+    );
 
     return result.rows;
   }
@@ -171,7 +186,8 @@ class _RemoteQueryExecutor extends _BaseExecutor {
 
     return _serverIsOpen ??= client._channel
         .request<PrimitiveResponsePayload>(
-            EnsureOpen(user.schemaVersion, _executorId))
+          EnsureOpen(user.schemaVersion, _executorId),
+        )
         .then((payload) => payload.message as bool);
   }
 
@@ -228,15 +244,19 @@ class _RemoteTransactionExecutor extends _BaseExecutor
 
   Future<bool> _openAtServer() async {
     final response = await client._channel.request<PrimitiveResponsePayload>(
-        RunNestedExecutorControl(
-            NestedExecutorControl.beginTransaction, _outerExecutorId));
+      RunNestedExecutorControl(
+        NestedExecutorControl.beginTransaction,
+        _outerExecutorId,
+      ),
+    );
     _executorId = response.message as int;
     return true;
   }
 
   Future<void> _sendAction(NestedExecutorControl action) {
-    return client._channel
-        .request(RunNestedExecutorControl(action, _executorId));
+    return client._channel.request(
+      RunNestedExecutorControl(action, _executorId),
+    );
   }
 
   @override
@@ -272,8 +292,11 @@ final class _RemoteExclusiveExecutor extends _BaseExecutor {
 
   Future<bool> _openAtServer() async {
     final response = await client._channel.request<PrimitiveResponsePayload>(
-        RunNestedExecutorControl(
-            NestedExecutorControl.startExclusive, parentExecutorId));
+      RunNestedExecutorControl(
+        NestedExecutorControl.startExclusive,
+        parentExecutorId,
+      ),
+    );
 
     _executorId = response.message as int;
     return true;
@@ -285,8 +308,9 @@ final class _RemoteExclusiveExecutor extends _BaseExecutor {
     if (_pendingOpen == null) return;
 
     await _pendingOpen!.future;
-    await client._channel.request<void>(RunNestedExecutorControl(
-        NestedExecutorControl.endExclusive, _executorId));
+    await client._channel.request<void>(
+      RunNestedExecutorControl(NestedExecutorControl.endExclusive, _executorId),
+    );
   }
 }
 
@@ -297,8 +321,10 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
   _RemoteStreamQueryStore(this._client);
 
   @override
-  void handleTableUpdates(Set<TableUpdate> updates,
-      [bool comesFromServer = false]) {
+  void handleTableUpdates(
+    Set<TableUpdate> updates, [
+    bool comesFromServer = false,
+  ]) {
     super.handleTableUpdates(updates);
 
     if (!comesFromServer && !_client._singleClientMode) {
@@ -310,14 +336,17 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
       _awaitingUpdates.add(completer);
 
       completer.complete(
-          _client._channel.request(NotifyTablesUpdated(updates.toList())));
+        _client._channel.request(NotifyTablesUpdated(updates.toList())),
+      );
 
-      completer.future.catchError((_) {
-        // we don't care about errors if the connection is closed before the
-        // update is dispatched. Why?
-      }, test: (e) => e is ConnectionClosedException).whenComplete(() {
-        _awaitingUpdates.remove(completer);
-      });
+      completer.future
+          .catchError((_) {
+            // we don't care about errors if the connection is closed before the
+            // update is dispatched. Why?
+          }, test: (e) => e is ConnectionClosedException)
+          .whenComplete(() {
+            _awaitingUpdates.remove(completer);
+          });
     }
   }
 

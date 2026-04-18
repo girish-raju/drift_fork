@@ -16,13 +16,20 @@ void main() {
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);
 
-    expect(context.sql,
-        equals('"foo" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT'));
+    expect(
+      context.sql,
+      equals('"foo" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT'),
+    );
   });
 
   test('int column writes PRIMARY KEY constraint', () {
-    final column = GeneratedColumn<int>('foo', 'tbl', false,
-        type: DriftSqlType.int, $customConstraints: 'NOT NULL PRIMARY KEY');
+    final column = GeneratedColumn<int>(
+      'foo',
+      'tbl',
+      false,
+      type: DriftSqlType.int,
+      $customConstraints: 'NOT NULL PRIMARY KEY',
+    );
 
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);

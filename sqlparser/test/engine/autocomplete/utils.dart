@@ -6,11 +6,14 @@ import '../../parser/utils.dart';
 
 /// Parses the [driftFile] and computes available autocomplete suggestions at
 /// the position of a `^` character in the source.
-ComputedSuggestions completionsFor(String driftFile,
-    {void Function(SqlEngine)? setup}) {
+ComputedSuggestions completionsFor(
+  String driftFile, {
+  void Function(SqlEngine)? setup,
+}) {
   final position = driftFile.indexOf('^');
-  final engine =
-      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
+  final engine = SqlEngine(
+    EngineOptions(driftOptions: const DriftSqlOptions()),
+  );
   setup?.call(engine);
 
   final result = engine.parseSpan(
@@ -45,7 +48,7 @@ class _SuggestionWithCode extends Matcher {
 
 class _SuggestsMatcher extends CustomMatcher {
   _SuggestsMatcher(Object? matcher)
-      : super('Suggestions containing', 'suggestions', matcher);
+    : super('Suggestions containing', 'suggestions', matcher);
 
   @override
   List<Suggestion>? featureValueOf(dynamic actual) {

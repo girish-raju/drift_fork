@@ -5,27 +5,31 @@ import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression =
-      CustomExpression<int>('col', precedence: Precedence.primary);
+  const expression = CustomExpression<int>(
+    'col',
+    precedence: Precedence.primary,
+  );
   final db = TodoDb();
 
   final comparisons = {
     expression.isSmallerThan: '<',
     expression.isSmallerOrEqual: '<=',
     expression.isBiggerOrEqual: '>=',
-    expression.isBiggerThan: '>'
+    expression.isBiggerThan: '>',
   };
 
   final comparisonsVal = {
     expression.isSmallerThanValue: '<',
     expression.isSmallerOrEqualValue: '<=',
     expression.isBiggerOrEqualValue: '>=',
-    expression.isBiggerThanValue: '>'
+    expression.isBiggerThanValue: '>',
   };
 
   group('can compare with other expressions', () {
-    const compare =
-        CustomExpression<int>('compare', precedence: Precedence.primary);
+    const compare = CustomExpression<int>(
+      'compare',
+      precedence: Precedence.primary,
+    );
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
@@ -56,8 +60,10 @@ void main() {
   group('between', () {
     test('other expressions', () {
       const low = CustomExpression<int>('low', precedence: Precedence.primary);
-      const high =
-          CustomExpression<int>('high', precedence: Precedence.primary);
+      const high = CustomExpression<int>(
+        'high',
+        precedence: Precedence.primary,
+      );
 
       final ctx = GenerationContext.fromDb(db);
       expression.isBetween(low, high).writeInto(ctx);
@@ -89,19 +95,20 @@ void main() {
       const options = DriftDatabaseOptions(storeDateTimeAsText: true);
 
       expect(
-          a.isSmallerThan(b),
-          generatesWithOptions('JULIANDAY(a) < JULIANDAY(b)',
-              options: options));
+        a.isSmallerThan(b),
+        generatesWithOptions('JULIANDAY(a) < JULIANDAY(b)', options: options),
+      );
       expect(
-          a.isBiggerOrEqual(b),
-          generatesWithOptions('JULIANDAY(a) >= JULIANDAY(b)',
-              options: options));
+        a.isBiggerOrEqual(b),
+        generatesWithOptions('JULIANDAY(a) >= JULIANDAY(b)', options: options),
+      );
       expect(
-          a.isBetween(b, c),
-          generatesWithOptions(
-            'JULIANDAY(a) BETWEEN JULIANDAY(b) AND JULIANDAY(c)',
-            options: options,
-          ));
+        a.isBetween(b, c),
+        generatesWithOptions(
+          'JULIANDAY(a) BETWEEN JULIANDAY(b) AND JULIANDAY(c)',
+          options: options,
+        ),
+      );
     });
   });
 }

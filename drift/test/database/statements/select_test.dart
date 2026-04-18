@@ -12,7 +12,7 @@ final _dataOfTodoEntry = {
   'id': 10,
   'title': 'A todo title',
   'content': 'Content',
-  'category': 3
+  'category': 3,
 };
 
 const _todoEntry = TodoEntry(
@@ -34,96 +34,116 @@ void main() {
   group('SELECT statements are generated', () {
     test('for simple statements', () async {
       await db.select(db.users, distinct: true).get();
-      verify(executor.runSelect(
-          'SELECT DISTINCT * FROM "users";', argThat(isEmpty)));
+      verify(
+        executor.runSelect('SELECT DISTINCT * FROM "users";', argThat(isEmpty)),
+      );
     });
 
     test('with limit statements', () async {
       await (db.select(db.users)..limit(10, offset: 0)).get();
-      verify(executor.runSelect(
-          'SELECT * FROM "users" LIMIT 10 OFFSET 0;', argThat(isEmpty)));
+      verify(
+        executor.runSelect(
+          'SELECT * FROM "users" LIMIT 10 OFFSET 0;',
+          argThat(isEmpty),
+        ),
+      );
     });
 
     test('with simple limits', () async {
       await (db.select(db.users)..limit(10)).get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" LIMIT 10;', argThat(isEmpty)));
+      verify(
+        executor.runSelect('SELECT * FROM "users" LIMIT 10;', argThat(isEmpty)),
+      );
     });
 
     test('with like expressions', () async {
       await (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
-      verify(executor
-          .runSelect('SELECT * FROM "users" WHERE "name" LIKE ?;', ['Dash%']));
+      verify(
+        executor.runSelect('SELECT * FROM "users" WHERE "name" LIKE ?;', [
+          'Dash%',
+        ]),
+      );
     });
 
     test('with order-by clauses', () async {
-      await (db.select(db.users)
-            ..orderBy([
-              (u) => OrderingTerm.desc(u.isAwesome),
-              (u) => OrderingTerm.asc(u.id)
-            ]))
+      await (db.select(db.users)..orderBy([
+            (u) => OrderingTerm.desc(u.isAwesome),
+            (u) => OrderingTerm.asc(u.id),
+          ]))
           .get();
 
-      verify(executor.runSelect(
+      verify(
+        executor.runSelect(
           'SELECT * FROM "users" ORDER BY '
           '"is_awesome" DESC, "id" ASC;',
-          argThat(isEmpty)));
+          argThat(isEmpty),
+        ),
+      );
     });
 
     test('with random order by clause', () async {
-      await (db.select(db.users)..orderBy([(u) => OrderingTerm.random()]))
-          .get();
+      await (db.select(
+        db.users,
+      )..orderBy([(u) => OrderingTerm.random()])).get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" ORDER BY random() ASC;', argThat(isEmpty)));
+      verify(
+        executor.runSelect(
+          'SELECT * FROM "users" ORDER BY random() ASC;',
+          argThat(isEmpty),
+        ),
+      );
     });
 
     test('with complex predicates', () async {
-      await (db.select(db.users)
-            ..where((u) =>
-                u.name.equals('Dash').not() & u.id.isBiggerThanValue(12)))
+      await (db.select(db.users)..where(
+            (u) => u.name.equals('Dash').not() & u.id.isBiggerThanValue(12),
+          ))
           .get();
 
-      verify(executor.runSelect(
+      verify(
+        executor.runSelect(
           'SELECT * FROM "users" WHERE NOT ("name" = ?) AND "id" > ?;',
-          ['Dash', 12]));
+          ['Dash', 12],
+        ),
+      );
     });
 
     test('with expressions from boolean columns', () async {
       await (db.select(db.users)..where((u) => u.isAwesome)).get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" WHERE "is_awesome";', argThat(isEmpty)));
+      verify(
+        executor.runSelect(
+          'SELECT * FROM "users" WHERE "is_awesome";',
+          argThat(isEmpty),
+        ),
+      );
     });
 
     test('with aliased tables', () async {
       final users = db.alias(db.users, 'u');
-      await (db.select(users)
-            ..where((u) => u.id.isSmallerThan(const Constant(5))))
-          .get();
+      await (db.select(
+        users,
+      )..where((u) => u.id.isSmallerThan(const Constant(5)))).get();
 
       verify(
-          executor.runSelect('SELECT * FROM "users" "u" WHERE "id" < 5;', []));
+        executor.runSelect('SELECT * FROM "users" "u" WHERE "id" < 5;', []),
+      );
     });
   });
 
   group('SELECT results are parsed', () {
     test('when all fields are non-null', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
+      when(
+        executor.runSelect('SELECT * FROM "todos";', any),
+      ).thenAnswer((_) => Future.value([_dataOfTodoEntry]));
 
       expect(db.select(db.todosTable).get(), completion([_todoEntry]));
     });
 
     test('when some fields are null', () {
       final data = [
-        {
-          'id': 10,
-          'title': null,
-          'content': 'Content',
-          'category': null,
-        }
+        {'id': 10, 'title': null, 'content': 'Content', 'category': null},
       ];
       const resolved = TodoEntry(
         id: RowId(10),
@@ -132,8 +152,9 @@ void main() {
         category: null,
       );
 
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value(data));
+      when(
+        executor.runSelect('SELECT * FROM "todos";', any),
+      ).thenAnswer((_) => Future.value(data));
 
       expect(db.select(db.todosTable).get(), completion([resolved]));
     });
@@ -141,14 +162,16 @@ void main() {
 
   group('queries for a single row', () {
     test('get once', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
+      when(
+        executor.runSelect('SELECT * FROM "todos";', any),
+      ).thenAnswer((_) => Future.value([_dataOfTodoEntry]));
       expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
     });
 
     test('get once without rows', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([]));
+      when(
+        executor.runSelect('SELECT * FROM "todos";', any),
+      ).thenAnswer((_) => Future.value([]));
 
       expect(db.select(db.todosTable).getSingle(), throwsA(anything));
       expect(db.select(db.todosTable).getSingleOrNull(), completion(isNull));
@@ -167,11 +190,13 @@ void main() {
       });
 
       expectLater(
-          db.select(db.todosTable).watchSingle(),
-          emitsInOrder(
-              [_todoEntry, emitsError(anything), emitsError(anything)]));
-      expectLater(db.select(db.todosTable).watchSingleOrNull(),
-          emitsInOrder([_todoEntry, isNull, emitsError(anything)]));
+        db.select(db.todosTable).watchSingle(),
+        emitsInOrder([_todoEntry, emitsError(anything), emitsError(anything)]),
+      );
+      expectLater(
+        db.select(db.todosTable).watchSingleOrNull(),
+        emitsInOrder([_todoEntry, isNull, emitsError(anything)]),
+      );
 
       await pumpEventQueue(); // First select as listeners attach
       db.markTablesUpdated({db.todosTable});
@@ -189,7 +214,7 @@ void main() {
           'desc': 'description',
           'description_in_upper_case': 'DESCRIPTION',
           'priority': 2,
-        }
+        },
       ]);
     });
 
@@ -218,12 +243,7 @@ void main() {
 
   test('select from subquery', () async {
     final data = [
-      {
-        'id': 10,
-        'title': null,
-        'content': 'Content',
-        'category': null,
-      }
+      {'id': 10, 'title': null, 'content': 'Content', 'category': null},
     ];
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value(data));
 
@@ -231,12 +251,7 @@ void main() {
     final rows = await db.select(subquery).get();
 
     expect(rows, [
-      TodoEntry(
-        id: RowId(10),
-        title: null,
-        content: 'Content',
-        category: null,
-      )
+      TodoEntry(id: RowId(10), title: null, content: 'Content', category: null),
     ]);
 
     verify(executor.runSelect('SELECT * FROM (SELECT * FROM "todos") s;', []));
@@ -245,57 +260,73 @@ void main() {
   test('select from table-valued function', () async {
     final each = db.todosTable.content.jsonEach(db, r'$.foo');
 
-    final query = db
-        .select(db.todosTable)
-        .join([innerJoin(each, each.atom.isNotNull(), useColumns: false)]);
+    final query = db.select(db.todosTable).join([
+      innerJoin(each, each.atom.isNotNull(), useColumns: false),
+    ]);
 
     await query.get();
 
-    verify(executor.runSelect(
-      'SELECT "todos"."id" AS "todos.id", "todos"."title" AS "todos.title", "todos"."content" AS "todos.content", "todos"."target_date" AS "todos.target_date", "todos"."category" AS "todos.category", "todos"."status" AS "todos.status" FROM "todos" INNER JOIN json_each("todos"."content", ?) ON "json_each"."atom" IS NOT NULL;',
-      [r'$.foo'],
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT "todos"."id" AS "todos.id", "todos"."title" AS "todos.title", "todos"."content" AS "todos.content", "todos"."target_date" AS "todos.target_date", "todos"."category" AS "todos.category", "todos"."status" AS "todos.status" FROM "todos" INNER JOIN json_each("todos"."content", ?) ON "json_each"."atom" IS NOT NULL;',
+        [r'$.foo'],
+      ),
+    );
   });
 
   group('count', () {
     test('all', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) async => [
-            {'c0': 3}
-          ]);
+      when(executor.runSelect(any, any)).thenAnswer(
+        (_) async => [
+          {'c0': 3},
+        ],
+      );
 
       final result = await db.todosTable.count().getSingle();
       expect(result, 3);
 
-      verify(executor.runSelect(
-          'SELECT COUNT(*) AS "c0" FROM "todos";', argThat(isEmpty)));
+      verify(
+        executor.runSelect(
+          'SELECT COUNT(*) AS "c0" FROM "todos";',
+          argThat(isEmpty),
+        ),
+      );
     });
 
     test('with filter', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) async => [
-            {'c0': 2}
-          ]);
+      when(executor.runSelect(any, any)).thenAnswer(
+        (_) async => [
+          {'c0': 2},
+        ],
+      );
 
       final result = await db.todosTable
           .count(where: (row) => row.id.isBiggerThanValue(12))
           .getSingle();
       expect(result, 2);
 
-      verify(executor.runSelect(
+      verify(
+        executor.runSelect(
           'SELECT COUNT(*) AS "c0" FROM "todos" WHERE "todos"."id" > ?;',
-          [12]));
+          [12],
+        ),
+      );
     });
   });
 
   test('select expressions', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) async => [
-          {'c0': true}
-        ]);
+    when(executor.runSelect(any, any)).thenAnswer(
+      (_) async => [
+        {'c0': true},
+      ],
+    );
 
     final exists = existsQuery(db.select(db.todosTable));
     final result = await db.selectExpressions([exists]).getSingle();
 
     verify(
-        executor.runSelect('SELECT EXISTS (SELECT * FROM "todos") "c0";', []));
+      executor.runSelect('SELECT EXISTS (SELECT * FROM "todos") "c0";', []),
+    );
     expect(result.read(exists), isTrue);
   });
 }

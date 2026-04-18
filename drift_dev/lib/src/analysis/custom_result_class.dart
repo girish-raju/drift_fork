@@ -36,13 +36,17 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
     // Alright, the query wants a custom result class, but is it allowed to
     // have one?
     if (selectQuery.resultSet.singleColumn) {
-      reportError("The query ${selectQuery.name} can't have a custom name as "
-          'it only returns one column.');
+      reportError(
+        "The query ${selectQuery.name} can't have a custom name as "
+        'it only returns one column.',
+      );
       continue;
     }
     if (selectQuery.resultSet.matchingTable != null) {
-      reportError("The query ${selectQuery.name} can't have a custom name as "
-          'it returns a single table data class.');
+      reportError(
+        "The query ${selectQuery.name} can't have a custom name as "
+        'it returns a single table data class.',
+      );
       continue;
     }
 
@@ -70,8 +74,10 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
     final referenceResult = queries.first.resultSet;
 
     for (final query in queries) {
-      final newResultSet =
-          _makeResultSetsCompatible(query.resultSet, referenceResult);
+      final newResultSet = _makeResultSetsCompatible(
+        query.resultSet,
+        referenceResult,
+      );
       final newQuery = query.replaceResultSet(newResultSet);
       replacements[query] = newQuery;
     }
@@ -81,7 +87,9 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
 }
 
 InferredResultSet _makeResultSetsCompatible(
-    InferredResultSet target, InferredResultSet reference) {
+  InferredResultSet target,
+  InferredResultSet reference,
+) {
   var columns = target.columns;
   Map<ResultColumn, String>? newNames;
 
@@ -92,8 +100,9 @@ InferredResultSet _makeResultSetsCompatible(
     columns = [];
 
     for (final column in reference.columns) {
-      var columnFromThisResultSet =
-          remainingColumns.firstWhere((e) => e.isCompatibleTo(column));
+      var columnFromThisResultSet = remainingColumns.firstWhere(
+        (e) => e.isCompatibleTo(column),
+      );
       remainingColumns.remove(columnFromThisResultSet);
 
       newNames[columnFromThisResultSet] = reference.dartNameFor(column);

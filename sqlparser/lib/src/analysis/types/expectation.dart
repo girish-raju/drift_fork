@@ -79,9 +79,7 @@ class RoughTypeExpectation extends TypeExpectation {
   }
 }
 
-enum _RoughType {
-  numeric,
-}
+enum _RoughType { numeric }
 
 /// Type expectation for result columns in a select statement.
 ///
@@ -100,7 +98,9 @@ extension on TypeExpectation {
       final expectation = this as ExactTypeExpectation;
       if (expectation.type.isArray) {
         return ExactTypeExpectation._(
-            expectation.type.toArray(false), expectation.lax);
+          expectation.type.toArray(false),
+          expectation.lax,
+        );
       }
     }
 

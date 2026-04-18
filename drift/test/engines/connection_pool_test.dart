@@ -30,7 +30,7 @@ void main() {
 
     when(read.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {'foo': 'bar'}
+        {'foo': 'bar'},
       ];
     });
 
@@ -40,7 +40,7 @@ void main() {
     verifyNever(write.runSelect(any, any));
 
     expect(result, [
-      {'foo': 'bar'}
+      {'foo': 'bar'},
     ]);
   });
 
@@ -56,15 +56,16 @@ void main() {
 
     when(read.runSelect(any, any)).thenAnswer((_) {
       return Future.delayed(
-          const Duration(milliseconds: 10),
-          () => [
-                {'foo': 'bar'}
-              ]);
+        const Duration(milliseconds: 10),
+        () => [
+          {'foo': 'bar'},
+        ],
+      );
     });
 
     when(secondRead.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {'bar': 'foo'}
+        {'bar': 'foo'},
       ];
     });
 
@@ -80,13 +81,13 @@ void main() {
     verify(read.runSelect('statement', [1]));
     verifyNever(write.runSelect(any, any));
     expect(firstResult, [
-      {'foo': 'bar'}
+      {'foo': 'bar'},
     ]);
 
     verify(secondRead.runSelect('statement', [2]));
     verifyNever(write.runSelect(any, any));
     expect(secondResult, [
-      {'bar': 'foo'}
+      {'bar': 'foo'},
     ]);
   });
 
@@ -119,8 +120,10 @@ void main() {
   test('select failure does not cause an unhandled exception', () async {
     // https://github.com/simolus3/drift/issues/2323
     final read2 = MockExecutor();
-    final multi =
-        MultiExecutor.withReadPool(reads: [read2, read], write: write);
+    final multi = MultiExecutor.withReadPool(
+      reads: [read2, read],
+      write: write,
+    );
 
     when(read2.runSelect(any, any)).thenThrow('bang!');
 

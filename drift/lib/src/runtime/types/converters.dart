@@ -181,7 +181,7 @@ abstract class TypeConverter<D, S> {
   ///
   /// [extension types]: https://dart.dev/language/extension-types
   static JsonTypeConverter<ExtType, Inner>
-      extensionType<ExtType, Inner extends Object>() {
+  extensionType<ExtType, Inner extends Object>() {
     return _ExtensionTypeConverter();
   }
 }
@@ -211,9 +211,11 @@ mixin JsonTypeConverter2<D, S, J> on TypeConverter<D, S> {
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverter2<D?, S?, J?>
-      asNullable<D, S extends Object, J extends Object>(
-          JsonTypeConverter2<D, S, J?> inner) {
+  static JsonTypeConverter2<D?, S?, J?> asNullable<
+    D,
+    S extends Object,
+    J extends Object
+  >(JsonTypeConverter2<D, S, J?> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
 }
@@ -352,8 +354,11 @@ class _LegacyJsonConverter<D> extends TypeConverter<D, String>
   final dynamic Function(D column) mapToJson;
   final convert.JsonCodec json;
 
-  _LegacyJsonConverter(
-      {required this.mapFromJson, required this.mapToJson, required this.json});
+  _LegacyJsonConverter({
+    required this.mapFromJson,
+    required this.mapToJson,
+    required this.json,
+  });
 
   @override
   D fromSql(String fromDb) {
@@ -372,10 +377,11 @@ class _DefaultJsonConverter<D, S, J> extends TypeConverter<D, S>
   final J Function(D column) mapToJson;
   final convert.Codec<Object?, S> jsonForDb;
 
-  _DefaultJsonConverter(
-      {required this.mapFromJson,
-      required this.mapToJson,
-      required this.jsonForDb});
+  _DefaultJsonConverter({
+    required this.mapFromJson,
+    required this.mapToJson,
+    required this.jsonForDb,
+  });
 
   @override
   D fromSql(S fromDb) {

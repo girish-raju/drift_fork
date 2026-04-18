@@ -66,35 +66,50 @@ final class PgTypes {
   );
 
   /// The `json` type in Postgres.
-  static const CustomSqlType<Object> json =
-      PostgresType(type: pg.Type.json, name: 'json');
+  static const CustomSqlType<Object> json = PostgresType(
+    type: pg.Type.json,
+    name: 'json',
+  );
 
   /// The `jsonb` type in Postgres.
-  static const CustomSqlType<Object> jsonb =
-      PostgresType(type: pg.Type.json, name: 'jsonb');
+  static const CustomSqlType<Object> jsonb = PostgresType(
+    type: pg.Type.json,
+    name: 'jsonb',
+  );
 
   /// The `point` type in Postgres.
   static const CustomSqlType<pg.Point> point = PointType();
 
   /// A postgres array of [bool] values.
-  static const CustomSqlType<List<bool>> booleanArray =
-      ArrayType(type: pg.Type.booleanArray, name: 'boolean[]');
+  static const CustomSqlType<List<bool>> booleanArray = ArrayType(
+    type: pg.Type.booleanArray,
+    name: 'boolean[]',
+  );
 
   /// A postgres array of [int] values, with each element being a 64bit integer.
-  static const CustomSqlType<List<int>> bigIntArray =
-      ArrayType(type: pg.Type.bigIntegerArray, name: 'int8[]');
+  static const CustomSqlType<List<int>> bigIntArray = ArrayType(
+    type: pg.Type.bigIntegerArray,
+    name: 'int8[]',
+  );
 
   /// A postgres array of [String] values.
-  static const CustomSqlType<List<String>> textArray =
-      ArrayType(type: pg.Type.textArray, name: 'text[]');
+  static const CustomSqlType<List<String>> textArray = ArrayType(
+    type: pg.Type.textArray,
+    name: 'text[]',
+  );
 
   /// A postgres array of [double] values.
-  static const CustomSqlType<List<double>> doubleArray =
-      ArrayType(type: pg.Type.doubleArray, name: 'float8[]');
+  static const CustomSqlType<List<double>> doubleArray = ArrayType(
+    type: pg.Type.doubleArray,
+    name: 'float8[]',
+  );
 
   /// A postgres array of JSON values, encoded as binary values.
-  static const CustomSqlType<List<Object?>> jsonbArray =
-      ArrayType(type: pg.Type.jsonbArray, name: 'jsonb[]', innerType: jsonb);
+  static const CustomSqlType<List<Object?>> jsonbArray = ArrayType(
+    type: pg.Type.jsonbArray,
+    name: 'jsonb[]',
+    innerType: jsonb,
+  );
 }
 
 /// A wrapper for values with the Postgres `timestamp without timezone` and
@@ -138,13 +153,13 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
   final DateTime _dateTime;
 
   PgDate({required this.year, required this.month, required this.day})
-      : _dateTime = DateTime(year, month, day);
+    : _dateTime = DateTime(year, month, day);
 
   PgDate.fromDateTime(DateTime dateTime)
-      : _dateTime = dateTime,
-        year = dateTime.year,
-        month = dateTime.month,
-        day = dateTime.day;
+    : _dateTime = dateTime,
+      year = dateTime.year,
+      month = dateTime.month,
+      day = dateTime.day;
 
   @override
   int get hashCode => Object.hash(year, month, day);
@@ -178,14 +193,18 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
 
 /// Calls the `gen_random_uuid` function in postgres.
 Expression<UuidValue> genRandomUuid() {
-  return FunctionCallExpression('gen_random_uuid', [])
-      .dartCast(customType: PgTypes.uuid);
+  return FunctionCallExpression(
+    'gen_random_uuid',
+    [],
+  ).dartCast(customType: PgTypes.uuid);
 }
 
 /// Calls the `NOW()` function in postgres.
 Expression<PgDateTime> now() {
-  return FunctionCallExpression('NOW', [])
-      .dartCast(customType: PgTypes.timestampWithTimezone);
+  return FunctionCallExpression(
+    'NOW',
+    [],
+  ).dartCast(customType: PgTypes.timestampWithTimezone);
 }
 
 /// Exposes expression builders for array types in postgres.
@@ -214,7 +233,8 @@ extension ArrayExpressions<T extends Object> on Expression<List<T?>> {
 
   /// Concatenates `this` and the [other] array into a single array.
   Expression<List<T>> operator +(Expression<List<T>> other) {
-    return (dartCast<String>() + other.dartCast())
-        .dartCast(customType: driftSqlType as CustomSqlType<List<T>>);
+    return (dartCast<String>() + other.dartCast()).dartCast(
+      customType: driftSqlType as CustomSqlType<List<T>>,
+    );
   }
 }

@@ -34,8 +34,10 @@ final _expectedResultsText = <_Extractor, String>{
 };
 
 void main() {
-  const column =
-      CustomExpression<DateTime>('val', precedence: Precedence.primary);
+  const column = CustomExpression<DateTime>(
+    'val',
+    precedence: Precedence.primary,
+  );
 
   for (final useText in [false, true]) {
     final desc = useText ? 'text' : 'timestamp';
@@ -44,8 +46,9 @@ void main() {
       final options = DriftDatabaseOptions(storeDateTimeAsText: useText);
 
       group('extracting information via top-level method', () {
-        final expectedResults =
-            useText ? _expectedResultsText : _expectedResultsTimestamp;
+        final expectedResults = useText
+            ? _expectedResultsText
+            : _expectedResultsTimestamp;
 
         expectedResults.forEach((key, value) {
           test('should extract field', () {
@@ -65,7 +68,8 @@ void main() {
       });
 
       test('plus and minus durations', () {
-        final expr = currentDateAndTime +
+        final expr =
+            currentDateAndTime +
             const Duration(days: 3) -
             const Duration(seconds: 5);
 
@@ -90,8 +94,9 @@ void main() {
           expect(
             expr,
             generates(
-                '(CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER) + ?) - ?',
-                [259200, 5]),
+              '(CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER) + ?) - ?',
+              [259200, 5],
+            ),
           );
         }
       });
@@ -102,23 +107,25 @@ void main() {
 
         if (useText) {
           expect(
-              left.isSmallerThan(right),
-              generatesWithOptions(
-                'JULIANDAY(?) < JULIANDAY(?)',
-                options: options,
-                variables: [
-                  '2022-07-22T00:00:00.000Z',
-                  '2022-07-23T00:00:00.000Z'
-                ],
-              ));
+            left.isSmallerThan(right),
+            generatesWithOptions(
+              'JULIANDAY(?) < JULIANDAY(?)',
+              options: options,
+              variables: [
+                '2022-07-22T00:00:00.000Z',
+                '2022-07-23T00:00:00.000Z',
+              ],
+            ),
+          );
         } else {
           expect(
-              left.isSmallerThan(right),
-              generatesWithOptions(
-                '? < ?',
-                options: options,
-                variables: [1658448000, 1658534400],
-              ));
+            left.isSmallerThan(right),
+            generatesWithOptions(
+              '? < ?',
+              options: options,
+              variables: [1658448000, 1658534400],
+            ),
+          );
         }
       });
 

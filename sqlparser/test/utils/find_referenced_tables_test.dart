@@ -21,8 +21,10 @@ void main() {
 
     View addViewFromStmt(String create) {
       final result = engine.analyze(create);
-      final view =
-          schemaReader.readView(result, result.root as CreateViewStatement);
+      final view = schemaReader.readView(
+        result,
+        result.root as CreateViewStatement,
+      );
 
       engine.registerView(view);
       return view;
@@ -50,8 +52,10 @@ void main() {
   });
 
   test('recognizes read tables', () {
-    final ctx = engine.analyze('SELECT * FROM logins INNER JOIN users u '
-        'ON u.id = logins.user;');
+    final ctx = engine.analyze(
+      'SELECT * FROM logins INNER JOIN users u '
+      'ON u.id = logins.user;',
+    );
     expect(findReferencedTables(ctx.root), {users, logins});
   });
 
@@ -76,22 +80,27 @@ void main() {
 
   group('recognizes written tables', () {
     test('for insert', () {
-      final ctx = engine.analyze('INSERT INTO logins '
-          'SELECT id, CURRENT_TIME FROM users;');
-      expect(
-          findWrittenTables(ctx.root), {TableWrite(logins, UpdateKind.insert)});
+      final ctx = engine.analyze(
+        'INSERT INTO logins '
+        'SELECT id, CURRENT_TIME FROM users;',
+      );
+      expect(findWrittenTables(ctx.root), {
+        TableWrite(logins, UpdateKind.insert),
+      });
     });
 
     test('for deletes', () {
       final ctx = engine.analyze('DELETE FROM users;');
-      expect(
-          findWrittenTables(ctx.root), {TableWrite(users, UpdateKind.delete)});
+      expect(findWrittenTables(ctx.root), {
+        TableWrite(users, UpdateKind.delete),
+      });
     });
 
     test('for views', () {
       final ctx = engine.analyze('UPDATE old_users SET name = ?');
-      expect(findWrittenTables(ctx.root),
-          {TableWrite(oldUsers, UpdateKind.update)});
+      expect(findWrittenTables(ctx.root), {
+        TableWrite(oldUsers, UpdateKind.update),
+      });
     });
   });
 
@@ -108,8 +117,11 @@ void main() {
       expect(result.errors, isEmpty);
 
       final found = engine.findReferencedSchemaTables(result.rootNode);
-      expect(found, references,
-          reason: 'Query `$sql` references `$references`');
+      expect(
+        found,
+        references,
+        reason: 'Query `$sql` references `$references`',
+      );
     }
 
     test('finds references for simple queries', () {

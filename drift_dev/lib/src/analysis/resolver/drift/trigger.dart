@@ -11,7 +11,11 @@ import 'element_resolver.dart';
 class DriftTriggerResolver
     extends DriftElementResolver<DiscoveredDriftTrigger> {
   DriftTriggerResolver(
-      super.file, super.discovered, super.resolver, super.state);
+    super.file,
+    super.discovered,
+    super.resolver,
+    super.state,
+  );
 
   @override
   Future<DriftTrigger> resolve() async {
@@ -37,9 +41,9 @@ class DriftTriggerResolver
           break;
       }
 
-      final table = references
-          .whereType<DriftTable>()
-          .firstWhereOrNull((e) => e.schemaName == parserWrite.table.name);
+      final table = references.whereType<DriftTable>().firstWhereOrNull(
+        (e) => e.schemaName == parserWrite.table.name,
+      );
       if (table != null) {
         return WrittenDriftTable(table, kind);
       } else {
@@ -60,15 +64,15 @@ class DriftTriggerResolver
     return DriftTrigger(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      on: findInResolved(references, stmt.onTable.tableName)
-          as DriftElementWithResultSet?,
+      on:
+          findInResolved(references, stmt.onTable.tableName)
+              as DriftElementWithResultSet?,
       onWrite: onWrite,
       references: references,
       createStmt: stmt.span!.text,
-      writes: findWrittenTables(stmt)
-          .map(mapWrite)
-          .whereType<WrittenDriftTable>()
-          .toList(),
+      writes: findWrittenTables(
+        stmt,
+      ).map(mapWrite).whereType<WrittenDriftTable>().toList(),
     );
   }
 }

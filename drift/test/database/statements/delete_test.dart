@@ -28,13 +28,16 @@ void main() {
     });
 
     test('for complex components', () async {
-      await (db.delete(db.users)
-            ..where((u) => u.isAwesome.not() | u.id.isSmallerThanValue(100)))
-          .go();
+      await (db.delete(
+        db.users,
+      )..where((u) => u.isAwesome.not() | u.id.isSmallerThanValue(100))).go();
 
-      verify(executor.runDelete(
+      verify(
+        executor.runDelete(
           'DELETE FROM "users" WHERE NOT "is_awesome" OR "id" < ?;',
-          const [100]));
+          const [100],
+        ),
+      );
     });
 
     test('to delete an entity via a dataclasss', () async {
@@ -42,17 +45,19 @@ void main() {
           .delete(db.sharedTodos)
           .delete(const SharedTodo(todo: 3, user: 2));
 
-      verify(executor.runDelete(
-        'DELETE FROM "shared_todos" WHERE "todo" = ? AND "user" = ?;',
-        const [3, 2],
-      ));
+      verify(
+        executor.runDelete(
+          'DELETE FROM "shared_todos" WHERE "todo" = ? AND "user" = ?;',
+          const [3, 2],
+        ),
+      );
     });
 
     group('RETURNING', () {
       test('for one row', () async {
         when(executor.runSelect(any, any)).thenAnswer((_) {
           return Future.value([
-            {'id': 10, 'content': 'Content'}
+            {'id': 10, 'content': 'Content'},
           ]);
         });
 
@@ -60,12 +65,21 @@ void main() {
             .delete(db.todosTable)
             .deleteReturning(const TodosTableCompanion(id: Value(RowId(10))));
 
-        verify(executor.runSelect(
-            'DELETE FROM "todos" WHERE "id" = ? RETURNING *;', [10]));
-        verify(streamQueries.handleTableUpdates(
-            {TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete)}));
+        verify(
+          executor.runSelect(
+            'DELETE FROM "todos" WHERE "id" = ? RETURNING *;',
+            [10],
+          ),
+        );
+        verify(
+          streamQueries.handleTableUpdates({
+            TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete),
+          }),
+        );
         expect(
-            returnedValue, const TodoEntry(id: RowId(10), content: 'Content'));
+          returnedValue,
+          const TodoEntry(id: RowId(10), content: 'Content'),
+        );
       });
 
       test('for multiple rows', () async {
@@ -92,8 +106,11 @@ void main() {
 
       await db.delete(db.users).go();
 
-      verify(streamQueries.handleTableUpdates(
-          {const TableUpdate('users', kind: UpdateKind.delete)}));
+      verify(
+        streamQueries.handleTableUpdates({
+          const TableUpdate('users', kind: UpdateKind.delete),
+        }),
+      );
     });
 
     test('are not issued when no data was changed', () async {
@@ -116,14 +133,16 @@ void main() {
       await db.users.deleteOne(const UsersCompanion(id: Value(RowId(3))));
 
       verify(
-          executor.runDelete('DELETE FROM "users" WHERE "id" = ?;', const [3]));
+        executor.runDelete('DELETE FROM "users" WHERE "id" = ?;', const [3]),
+      );
     });
 
     test('deleteWhere', () async {
       await db.users.deleteWhere((tbl) => tbl.id.isSmallerThanValue(3));
 
       verify(
-          executor.runDelete('DELETE FROM "users" WHERE "id" < ?;', const [3]));
+        executor.runDelete('DELETE FROM "users" WHERE "id" < ?;', const [3]),
+      );
     });
 
     test('deleteAll', () async {

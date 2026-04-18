@@ -90,11 +90,13 @@ class StreamQueryStore {
       StreamController.broadcast(sync: true);
 
   StreamQueryStore({bool closeStreamsSynchronously = false})
-      : _closeStreamsSynchronously = closeStreamsSynchronously;
+    : _closeStreamsSynchronously = closeStreamsSynchronously;
 
   /// Creates a new stream from the select statement.
   Stream<T> registerStream<T extends Object>(
-      QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
+    QueryStreamFetcher<T> fetcher,
+    DatabaseConnectionUser database,
+  ) {
     final key = fetcher.key;
 
     if (key != null) {
@@ -206,46 +208,43 @@ class QueryStream<Rows extends Object> {
 
   // We're using a Stream.multi to implement a broadcast-ish stream with per-
   // subscription pauses.
-  late final Stream<Rows> _stream = Stream.multi(
-    (listener) {
-      final queryListener = _QueryStreamListener(listener);
+  late final Stream<Rows> _stream = Stream.multi((listener) {
+    final queryListener = _QueryStreamListener(listener);
 
-      if (_isClosed) {
-        listener.close();
-        return;
+    if (_isClosed) {
+      listener.close();
+      return;
+    }
+
+    // When this callback is called we have a new listener, so invoke the
+    // handler now.
+    _listeners.add(queryListener);
+    _onListenOrResume(queryListener);
+
+    listener
+      ..onPause = () {
+        assert(!queryListener.isPaused);
+        queryListener.isPaused = true;
+        _pausedListeners++;
+
+        _onCancelOrPause();
       }
-
-      // When this callback is called we have a new listener, so invoke the
-      // handler now.
-      _listeners.add(queryListener);
-      _onListenOrResume(queryListener);
-
-      listener
-        ..onPause = () {
-          assert(!queryListener.isPaused);
-          queryListener.isPaused = true;
-          _pausedListeners++;
-
-          _onCancelOrPause();
-        }
-        ..onCancel = () {
-          if (queryListener.isPaused) {
-            _pausedListeners--;
-          }
-
-          _listeners.remove(queryListener);
-          _onCancelOrPause();
-        }
-        ..onResume = () {
-          assert(queryListener.isPaused);
-          queryListener.isPaused = false;
+      ..onCancel = () {
+        if (queryListener.isPaused) {
           _pausedListeners--;
+        }
 
-          _onListenOrResume(queryListener);
-        };
-    },
-    isBroadcast: true,
-  );
+        _listeners.remove(queryListener);
+        _onCancelOrPause();
+      }
+      ..onResume = () {
+        assert(queryListener.isPaused);
+        queryListener.isPaused = false;
+        _pausedListeners--;
+
+        _onListenOrResume(queryListener);
+      };
+  }, isBroadcast: true);
 
   StreamSubscription? _tablesChangedSubscription;
 
@@ -269,24 +268,25 @@ class QueryStream<Rows extends Object> {
       // first listener added, fetch query
       fetchAndEmitData();
 
-      _tablesChangedSubscription =
-          _store.updatesForSync(_fetcher.readsFrom).listen((_) {
-        // table has changed, invalidate cache
-        _lastData = null;
+      _tablesChangedSubscription = _store
+          .updatesForSync(_fetcher.readsFrom)
+          .listen((_) {
+            // table has changed, invalidate cache
+            _lastData = null;
 
-        // If we have in-flight queries right now, we can no longer guarantee
-        // that their results reflect these changes already. So we have to
-        // cancel them and ignore their results.
-        _cancelRunningQueries();
+            // If we have in-flight queries right now, we can no longer guarantee
+            // that their results reflect these changes already. So we have to
+            // cancel them and ignore their results.
+            _cancelRunningQueries();
 
-        // It could be that we have no active, but some paused listeners. In
-        // that case, we still want to invalidate cached data but there's no
-        // point in fetching new data now. We'll load the query again after
-        // a listener unpauses.
-        if (_activeListeners > 0) {
-          fetchAndEmitData();
-        }
-      });
+            // It could be that we have no active, but some paused listeners. In
+            // that case, we still want to invalidate cached data but there's no
+            // point in fetching new data now. We'll load the query again after
+            // a listener unpauses.
+            if (_activeListeners > 0) {
+              fetchAndEmitData();
+            }
+          });
     } else if (_lastData == null) {
       if (_runningOperations.isEmpty) {
         // We have a new listener, no cached data and we're not in the process
@@ -363,8 +363,9 @@ class QueryStream<Rows extends Object> {
   Future<void> close() async {
     _isClosed = true;
 
-    final listenersDone = Future.wait(
-        [for (final listener in _listeners) listener.controller.close()]);
+    final listenersDone = Future.wait([
+      for (final listener in _listeners) listener.controller.close(),
+    ]);
     _listeners.clear();
     await listenersDone;
   }

@@ -26,8 +26,10 @@ void main() {
 
     test('can deserialize non-null values with nullable types', () {
       expect(serializer.fromJson<double?>(3), 3.0);
-      expect(serializer.fromJson<DateTime?>(0),
-          DateTime.fromMillisecondsSinceEpoch(0));
+      expect(
+        serializer.fromJson<DateTime?>(0),
+        DateTime.fromMillisecondsSinceEpoch(0),
+      );
       expect(serializer.fromJson<Uint8List?>(const [0, 1]), const [0, 1]);
     });
 
@@ -42,17 +44,14 @@ void main() {
         category: RowId(3),
         targetDate: DateTime.now(),
       );
-      expect(
-        entry.toJson(),
-        const {
-          'id': 'foo',
-          'title': 'foo',
-          'content': 'foo',
-          'category': 'foo',
-          'target_date': 'foo',
-          'status': 'foo',
-        },
-      );
+      expect(entry.toJson(), const {
+        'id': 'foo',
+        'title': 'foo',
+        'content': 'foo',
+        'category': 'foo',
+        'target_date': 'foo',
+        'status': 'foo',
+      });
 
       driftRuntimeOptions.defaultSerializer = old;
     });
@@ -89,45 +88,62 @@ void main() {
     expect(companion.runtimeType, CategoriesCompanion);
     expect(
       companion,
-      equals(CategoriesCompanion.insert(
-        description: 'description',
-        id: const Value(RowId(3)),
-        priority: const Value(CategoryPriority.low),
-      )),
+      equals(
+        CategoriesCompanion.insert(
+          description: 'description',
+          id: const Value(RowId(3)),
+          priority: const Value(CategoryPriority.low),
+        ),
+      ),
     );
   });
 
   test('data classes can be converted to companions with null to absent', () {
     const entry = PureDefault(txt: null);
 
-    expect(entry.toCompanion(false),
-        const PureDefaultsCompanion(txt: Value(null)));
+    expect(
+      entry.toCompanion(false),
+      const PureDefaultsCompanion(txt: Value(null)),
+    );
     expect(entry.toCompanion(true), const PureDefaultsCompanion());
   });
 
   test('data classes can be copied with changes given by companion', () {
     const nameless = DepartmentData(id: 1);
-    expect(nameless.copyWithCompanion(DepartmentCompanion()),
-        const DepartmentData(id: 1));
-    expect(nameless.copyWithCompanion(DepartmentCompanion(id: Value(2))),
-        const DepartmentData(id: 2));
-    expect(nameless.copyWithCompanion(DepartmentCompanion(name: Value("a"))),
-        const DepartmentData(id: 1, name: "a"));
+    expect(
+      nameless.copyWithCompanion(DepartmentCompanion()),
+      const DepartmentData(id: 1),
+    );
+    expect(
+      nameless.copyWithCompanion(DepartmentCompanion(id: Value(2))),
+      const DepartmentData(id: 2),
+    );
+    expect(
+      nameless.copyWithCompanion(DepartmentCompanion(name: Value("a"))),
+      const DepartmentData(id: 1, name: "a"),
+    );
 
     const named = DepartmentData(id: 2, name: "b");
-    expect(named.copyWithCompanion(DepartmentCompanion()),
-        const DepartmentData(id: 2, name: "b"));
-    expect(named.copyWithCompanion(DepartmentCompanion(name: Value("c"))),
-        const DepartmentData(id: 2, name: "c"));
-    expect(named.copyWithCompanion(DepartmentCompanion(name: Value(null))),
-        const DepartmentData(id: 2));
+    expect(
+      named.copyWithCompanion(DepartmentCompanion()),
+      const DepartmentData(id: 2, name: "b"),
+    );
+    expect(
+      named.copyWithCompanion(DepartmentCompanion(name: Value("c"))),
+      const DepartmentData(id: 2, name: "c"),
+    );
+    expect(
+      named.copyWithCompanion(DepartmentCompanion(name: Value(null))),
+      const DepartmentData(id: 2),
+    );
   });
 
   test('utilities to wrap nullable values', () {
     expect(
-        // ignore: prefer_const_constructors, deprecated_member_use_from_same_package
-        () => Value<int?>.ofNullable(null),
-        throwsA(isA<AssertionError>()));
+      // ignore: prefer_const_constructors, deprecated_member_use_from_same_package
+      () => Value<int?>.ofNullable(null),
+      throwsA(isA<AssertionError>()),
+    );
 
     expect(const Value<int?>.absentIfNull(null).present, isFalse);
     expect(const Value<int>.absentIfNull(null).present, isFalse);

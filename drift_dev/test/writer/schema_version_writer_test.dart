@@ -21,11 +21,7 @@ void main() {
           nullable: false,
           nameInSql: 'foo',
           nameInDart: 'foo',
-          declaration: DriftDeclaration(
-            fakeUri,
-            -1,
-            '',
-          ),
+          declaration: DriftDeclaration(fakeUri, -1, ''),
         ),
       ],
       baseDartName: name,
@@ -57,25 +53,14 @@ void main() {
         .map((t) => '${t.baseDartName}Table')
         .map(buildTable)
         .toList();
-    SchemaVersionWriter(
-      [
-        SchemaVersion(
-          1,
-          [normalTable],
-          const {},
-        ),
-        SchemaVersion(
-          2,
-          [
-            normalTable,
-            ...problemTables,
-            ...secondaryProblemTables,
-          ],
-          const {},
-        ),
-      ],
-      writer.child(),
-    ).write();
+    SchemaVersionWriter([
+      SchemaVersion(1, [normalTable], const {}),
+      SchemaVersion(2, [
+        normalTable,
+        ...problemTables,
+        ...secondaryProblemTables,
+      ], const {}),
+    ], writer.child()).write();
 
     final output = writer.writeGenerated();
 
@@ -86,10 +71,7 @@ void main() {
     // its superclasses should have their names modified and not appear with
     // their original name at all.
     for (final tableName in problemTables.map((t) => t.baseDartName)) {
-      expect(
-        output,
-        isNot(matches(containsTableRegex(tableName))),
-      );
+      expect(output, isNot(matches(containsTableRegex(tableName))));
       expect(output, matches(containsTableRegex(tableName, withSuffix: true)));
     }
 
@@ -135,21 +117,10 @@ class ComplexTable extends Table {
       generationOptions: GenerationOptions(imports: imports),
     );
     imports.linkToWriter(writer);
-    SchemaVersionWriter(
-      [
-        SchemaVersion(
-          1,
-          [table],
-          const {},
-        ),
-        SchemaVersion(
-          2,
-          [table],
-          const {},
-        ),
-      ],
-      writer.child(),
-    ).write();
+    SchemaVersionWriter([
+      SchemaVersion(1, [table], const {}),
+      SchemaVersion(2, [table], const {}),
+    ], writer.child()).write();
 
     final output = writer.writeGenerated();
 
@@ -194,21 +165,10 @@ class MyDatabase {}
       generationOptions: GenerationOptions(imports: imports),
     );
     imports.linkToWriter(writer);
-    SchemaVersionWriter(
-      [
-        SchemaVersion(
-          1,
-          db.availableElements,
-          const {},
-        ),
-        SchemaVersion(
-          2,
-          db.availableElements,
-          const {},
-        ),
-      ],
-      writer.child(),
-    ).write();
+    SchemaVersionWriter([
+      SchemaVersion(1, db.availableElements, const {}),
+      SchemaVersion(2, db.availableElements, const {}),
+    ], writer.child()).write();
 
     final output = writer.writeGenerated();
     expect(output, contains('VALUES (5) ON CONFLICT DO NOTHING'));

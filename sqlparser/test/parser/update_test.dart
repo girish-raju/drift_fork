@@ -15,7 +15,7 @@ final Map<String, AstNode> testCases = {
       SingleColumnSetComponent(
         column: Reference(columnName: 'b'),
         expression: Reference(columnName: 'c'),
-      )
+      ),
     ],
     where: Reference(columnName: 'd'),
   ),
@@ -32,29 +32,35 @@ void main() {
       UPDATE foo
       SET (a, b) = (SELECT b, a FROM bar AS b WHERE b.id=foo.id);
       ''',
-      UpdateStatement(table: TableReference('foo'), set: [
-        MultiColumnSetComponent(
-          columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
-          rowValue: SubQuery(
-            select: SelectStatement(
-              columns: [
-                ExpressionResultColumn(
-                  expression: Reference(columnName: 'b'),
+      UpdateStatement(
+        table: TableReference('foo'),
+        set: [
+          MultiColumnSetComponent(
+            columns: [
+              Reference(columnName: 'a'),
+              Reference(columnName: 'b'),
+            ],
+            rowValue: SubQuery(
+              select: SelectStatement(
+                columns: [
+                  ExpressionResultColumn(
+                    expression: Reference(columnName: 'b'),
+                  ),
+                  ExpressionResultColumn(
+                    expression: Reference(columnName: 'a'),
+                  ),
+                ],
+                from: TableReference('bar', as: AliasClause('b')),
+                where: BinaryExpression(
+                  Reference(entityName: 'b', columnName: 'id'),
+                  token(TokenType.equal),
+                  Reference(entityName: 'foo', columnName: 'id'),
                 ),
-                ExpressionResultColumn(
-                  expression: Reference(columnName: 'a'),
-                ),
-              ],
-              from: TableReference('bar', as: AliasClause('b')),
-              where: BinaryExpression(
-                Reference(entityName: 'b', columnName: 'id'),
-                token(TokenType.equal),
-                Reference(entityName: 'foo', columnName: 'id'),
               ),
             ),
           ),
-        )
-      ]),
+        ],
+      ),
     );
   });
 
@@ -64,16 +70,28 @@ void main() {
       UPDATE foo
       SET (a, b) = (b, 3+4);
       ''',
-      UpdateStatement(table: TableReference('foo'), set: [
-        MultiColumnSetComponent(
-          columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
-          rowValue: Tuple(expressions: [
-            Reference(columnName: "b"),
-            BinaryExpression(
-                NumericLiteral(3), token(TokenType.plus), NumericLiteral(4)),
-          ], usedAsRowValue: true),
-        )
-      ]),
+      UpdateStatement(
+        table: TableReference('foo'),
+        set: [
+          MultiColumnSetComponent(
+            columns: [
+              Reference(columnName: 'a'),
+              Reference(columnName: 'b'),
+            ],
+            rowValue: Tuple(
+              expressions: [
+                Reference(columnName: "b"),
+                BinaryExpression(
+                  NumericLiteral(3),
+                  token(TokenType.plus),
+                  NumericLiteral(4),
+                ),
+              ],
+              usedAsRowValue: true,
+            ),
+          ),
+        ],
+      ),
     );
   });
 
@@ -115,9 +133,7 @@ void main() {
               ),
             ],
             from: TableReference('sales'),
-            groupBy: GroupBy(
-              by: [NumericLiteral(2)],
-            ),
+            groupBy: GroupBy(by: [NumericLiteral(2)]),
           ),
           as: AliasClause('daily'),
         ),

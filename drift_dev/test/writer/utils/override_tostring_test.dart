@@ -9,10 +9,14 @@ void main() {
 
   setUp(() {
     final imports = LibraryImportManager(Uri.parse('drift:test'));
-    final generationOptions =
-        GenerationOptions(imports: imports, isModular: true);
-    writer = Writer(const DriftOptions.defaults(),
-        generationOptions: generationOptions);
+    final generationOptions = GenerationOptions(
+      imports: imports,
+      isModular: true,
+    );
+    writer = Writer(
+      const DriftOptions.defaults(),
+      generationOptions: generationOptions,
+    );
     imports.linkToWriter(writer);
   });
 
@@ -20,10 +24,11 @@ void main() {
     overrideToString(r'$Foo', ['a', 'b'], writer.leaf().buffer);
 
     expect(
-        writer.writeGenerated(),
-        '@override\n'
-        'String toString() {'
-        r"return (StringBuffer('\$Foo(')..write('a: $a, ')..write('b: $b')..write(')')).toString();"
-        '}\n');
+      writer.writeGenerated(),
+      '@override\n'
+      'String toString() {'
+      r"return (StringBuffer('\$Foo(')..write('a: $a, ')..write('b: $b')..write(')')).toString();"
+      '}\n',
+    );
   });
 }

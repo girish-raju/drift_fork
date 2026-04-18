@@ -15,9 +15,13 @@ final class NativeSchemaVerifier extends VerifierImplementation<Database>
   }
 
   @override
-  QueryExecutor wrapOpened(Database db,
-      {required bool closeUnderlyingOnClose}) {
-    return NativeDatabase.opened(db,
-        closeUnderlyingOnClose: closeUnderlyingOnClose);
+  QueryExecutor wrapOpened(
+    Database db, {
+    required bool closeUnderlyingOnClose,
+  }) {
+    return NativeDatabase.opened(
+      db,
+      closeUnderlyingOnClose: closeUnderlyingOnClose,
+    );
   }
 }

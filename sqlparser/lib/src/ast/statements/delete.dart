@@ -15,9 +15,12 @@ class DeleteStatement extends CrudStatement
   @override
   ResultSet? returnedResultSet;
 
-  DeleteStatement(
-      {WithClause? withClause, required this.from, this.where, this.returning})
-      : super(withClause);
+  DeleteStatement({
+    WithClause? withClause,
+    required this.from,
+    this.where,
+    this.returning,
+  }) : super(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -33,10 +36,5 @@ class DeleteStatement extends CrudStatement
   }
 
   @override
-  Iterable<AstNode> get childNodes => [
-        if (withClause != null) withClause!,
-        from,
-        if (where != null) where!,
-        if (returning != null) returning!,
-      ];
+  Iterable<AstNode> get childNodes => [?withClause, from, ?where, ?returning];
 }

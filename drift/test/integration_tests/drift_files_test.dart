@@ -10,21 +10,25 @@ const _createNoIds =
     'CREATE TABLE IF NOT EXISTS "no_ids" ("payload" BLOB NOT NULL PRIMARY KEY) '
     'WITHOUT ROWID, STRICT;';
 
-const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS "with_defaults" ('
+const _createWithDefaults =
+    'CREATE TABLE IF NOT EXISTS "with_defaults" ('
     "\"a\" MY_TEXT DEFAULT 'something', \"b\" INTEGER UNIQUE NULL);";
 
-const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS "with_constraints" ('
+const _createWithConstraints =
+    'CREATE TABLE IF NOT EXISTS "with_constraints" ('
     '"a" TEXT, "b" INTEGER NOT NULL, "c" REAL, '
     'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)'
     ');';
 
-const _createConfig = 'CREATE TABLE IF NOT EXISTS "config" ('
+const _createConfig =
+    'CREATE TABLE IF NOT EXISTS "config" ('
     '"config_key" TEXT NOT NULL PRIMARY KEY, '
     '"config_value" ANY, '
     '"sync_state" INTEGER, '
     '"sync_state_implicit" INTEGER) STRICT;';
 
-const _createMyTable = 'CREATE TABLE IF NOT EXISTS "mytable" ('
+const _createMyTable =
+    'CREATE TABLE IF NOT EXISTS "mytable" ('
     '"someid" INTEGER NOT NULL, '
     '"sometext" TEXT, '
     '"is_inserting" INTEGER, '
@@ -33,7 +37,8 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS "mytable" ('
     'UNIQUE(sometext, is_inserting)'
     ');';
 
-const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS "email" USING '
+const _createEmail =
+    'CREATE VIRTUAL TABLE IF NOT EXISTS "email" USING '
     'fts5(sender, title, body);';
 
 const _createMyTrigger =
@@ -48,7 +53,8 @@ const _createValueIndex =
 const _createMyView =
     'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2';
 
-const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
+const _defaultInsert =
+    'INSERT INTO config (config_key, config_value) '
     "VALUES ('key', 'values')";
 
 void main() {
@@ -103,30 +109,37 @@ void main() {
   });
 
   test('runs queries with arrays and Dart templates', () async {
-    await db.readMultiple(['a', 'b'],
-        clause: (config) =>
-            OrderBy([OrderingTerm(expression: config.configKey)])).get();
-
-    verify(mock.runSelect(
-      'SELECT * FROM config WHERE config_key IN (?1, ?2) '
-      'ORDER BY "config_key" ASC',
+    await db.readMultiple(
       ['a', 'b'],
-    ));
+      clause: (config) => OrderBy([OrderingTerm(expression: config.configKey)]),
+    ).get();
+
+    verify(
+      mock.runSelect(
+        'SELECT * FROM config WHERE config_key IN (?1, ?2) '
+        'ORDER BY "config_key" ASC',
+        ['a', 'b'],
+      ),
+    );
   });
 
   test('runs query with variables from template', () async {
     final mockResponse = {'config_key': 'key', 'config_value': 'value'};
-    when(mock.runSelect(any, any))
-        .thenAnswer((_) => Future.value([mockResponse]));
+    when(
+      mock.runSelect(any, any),
+    ).thenAnswer((_) => Future.value([mockResponse]));
 
     final parsed = await db
         .readDynamic(predicate: (config) => config.configKey.equals('key'))
         .getSingle();
 
-    verify(mock
-        .runSelect('SELECT * FROM config WHERE "config_key" = ?1', ['key']));
+    verify(
+      mock.runSelect('SELECT * FROM config WHERE "config_key" = ?1', ['key']),
+    );
     expect(
-        parsed, const Config(configKey: 'key', configValue: DriftAny('value')));
+      parsed,
+      const Config(configKey: 'key', configValue: DriftAny('value')),
+    );
   });
 
   test('applies default parameter expressions when not set', () async {
@@ -160,7 +173,7 @@ void main() {
     });
 
     final result = await db
-        .multiple(predicate: (_, __) => const Constant(true))
+        .multiple(predicate: (_, _) => const Constant(true))
         .getSingle();
 
     expect(
@@ -188,7 +201,7 @@ void main() {
     });
 
     final result = await db
-        .multiple(predicate: (_, __) => const Constant(true))
+        .multiple(predicate: (_, _) => const Constant(true))
         .getSingle();
 
     expect(
@@ -206,12 +219,7 @@ void main() {
   test('applies column name mapping when needed', () async {
     when(mock.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {
-          'ck': 'key',
-          'cf': 'value',
-          'cs1': 1,
-          'cs2': 1,
-        }
+        {'ck': 'key', 'cf': 'value', 'cs1': 1, 'cs2': 1},
       ];
     });
 
@@ -229,13 +237,18 @@ void main() {
 
   test('applies type converters to variables', () async {
     when(mock.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-    await db.typeConverterVar(SyncType.locallyCreated,
-        [SyncType.locallyUpdated, SyncType.synchronized]).get();
+    await db.typeConverterVar(SyncType.locallyCreated, [
+      SyncType.locallyUpdated,
+      SyncType.synchronized,
+    ]).get();
 
-    verify(mock.runSelect(
+    verify(
+      mock.runSelect(
         'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ?1 '
         'OR sync_state_implicit IN (?2, ?3))',
-        [0, 1, 2]));
+        [0, 1, 2],
+      ),
+    );
   });
 
   test('can pass unconverted type to generated columns', () async {
@@ -243,10 +256,13 @@ void main() {
           ..where((tbl) => tbl.syncState.equalsValue(SyncType.synchronized)))
         .getSingleOrNull();
 
-    verify(mock.runSelect(
+    verify(
+      mock.runSelect(
         'SELECT * FROM "config" WHERE '
         '"sync_state" IS NOT NULL AND "sync_state" = ?;',
-        [ConfigTable.$convertersyncState.toSql(SyncType.synchronized)]));
+        [ConfigTable.$convertersyncState.toSql(SyncType.synchronized)],
+      ),
+    );
   });
 
   test('respects `JSON KEY` option', () {
@@ -258,10 +274,12 @@ void main() {
   });
 
   test('can run insert with rowid', () async {
-    await db.withDefaults
-        .insertOne(WithDefaultsCompanion.insert(rowid: Value(27)));
+    await db.withDefaults.insertOne(
+      WithDefaultsCompanion.insert(rowid: Value(27)),
+    );
 
-    verify(mock
-        .runInsert('INSERT INTO "with_defaults" ("rowid") VALUES (?)', [27]));
+    verify(
+      mock.runInsert('INSERT INTO "with_defaults" ("rowid") VALUES (?)', [27]),
+    );
   });
 }

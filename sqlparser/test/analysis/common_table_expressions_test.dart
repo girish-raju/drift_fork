@@ -17,10 +17,10 @@ void main() {
     final select = context.root as SelectStatement;
 
     expect(select.resolvedColumns!.map((c) => c.name), ['foo', 'bar']);
-    expect(
-      select.resolvedColumns!.map((c) => context.typeOf(c).type),
-      [id.type, content.type],
-    );
+    expect(select.resolvedColumns!.map((c) => context.typeOf(c).type), [
+      id.type,
+      content.type,
+    ]);
   });
 
   test('warns on column count mismatch', () {
@@ -83,34 +83,39 @@ void main() {
     });
 
     test('update statements', () {
-      final result =
-          engine.analyze('WITH x AS (SELECT * FROM demo) UPDATE demo '
-              'SET content = x.content FROM x WHERE demo.id = x.id;');
+      final result = engine.analyze(
+        'WITH x AS (SELECT * FROM demo) UPDATE demo '
+        'SET content = x.content FROM x WHERE demo.id = x.id;',
+      );
       expect(result.errors, isEmpty);
     });
 
     test('update statements with column-name-list', () {
       final result = engine.analyze(
-          'WITH x AS (SELECT * FROM demo) UPDATE demo '
-          'SET (id, content) = (x.id, x.content) FROM x WHERE demo.id = x.id;');
+        'WITH x AS (SELECT * FROM demo) UPDATE demo '
+        'SET (id, content) = (x.id, x.content) FROM x WHERE demo.id = x.id;',
+      );
       expect(result.errors, isEmpty);
     });
 
     test('insert statements', () {
       final result = engine.analyze(
-          'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x;');
+        'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x;',
+      );
       expect(result.errors, isEmpty);
     });
 
     test('insert statements with upsert using column-name-list', () {
       final result = engine.analyze(
-          'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x ON CONFLICT(content) DO UPDATE SET (id, content) = (0, \'hello\');');
+        'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x ON CONFLICT(content) DO UPDATE SET (id, content) = (0, \'hello\');',
+      );
       expect(result.errors, isEmpty);
     });
 
     test('delete statements', () {
       final result = engine.analyze(
-          'WITH x AS (SELECT * FROM demo) DELETE FROM demo WHERE id IN (SELECT id FROM x);');
+        'WITH x AS (SELECT * FROM demo) DELETE FROM demo WHERE id IN (SELECT id FROM x);',
+      );
       expect(result.errors, isEmpty);
     });
   });

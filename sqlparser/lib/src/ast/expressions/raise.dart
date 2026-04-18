@@ -2,12 +2,7 @@ import '../node.dart';
 import '../visitor.dart';
 import 'expressions.dart';
 
-enum RaiseKind {
-  ignore,
-  rollback,
-  abort,
-  fail,
-}
+enum RaiseKind { ignore, rollback, abort, fail }
 
 class RaiseExpression extends Expression {
   final RaiseKind raiseKind;

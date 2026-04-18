@@ -7,7 +7,7 @@ import 'package:drift/src/runtime/api/runtime_api.dart';
 /// Spawns a short-lived isolate to run the [computation] with a drift
 /// database.
 Future<Ret>
-    computeWithDatabaseImplementation<Ret, DB extends GeneratedDatabase>({
+computeWithDatabaseImplementation<Ret, DB extends GeneratedDatabase>({
   required FutureOr<Ret> Function(DB) computation,
   required DB Function(DatabaseConnection) connect,
   required DB database,

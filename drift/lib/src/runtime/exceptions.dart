@@ -64,7 +64,10 @@ class CouldNotRollBackException implements Exception {
   /// Creates a [CouldNotRollBackException] from the [cause], its
   /// [originalStackTrace] and the [exception].
   CouldNotRollBackException(
-      this.cause, this.originalStackTrace, this.exception);
+    this.cause,
+    this.originalStackTrace,
+    this.exception,
+  );
 
   @override
   String toString() {

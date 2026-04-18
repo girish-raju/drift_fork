@@ -12,8 +12,9 @@ import '../query_builder/query_builder.dart';
 /// variables or literals.
 final class SqlTypes {
   // Stolen from DateTime._parseFormat
-  static final RegExp _timeZoneInDateTime =
-      RegExp(r' ?([-+])(\d\d)(?::?(\d\d))?$');
+  static final RegExp _timeZoneInDateTime = RegExp(
+    r' ?([-+])(\d\d)(?::?(\d\d))?$',
+  );
 
   /// Whether these type mappings have been configured to store date time values
   /// as text.
@@ -52,8 +53,11 @@ final class SqlTypes {
           // so if the offset has seconds for some reason we should refuse to
           // store that.
           if (offset.inSeconds - 60 * offset.inMinutes != 0) {
-            throw ArgumentError.value(dartValue, 'dartValue',
-                'Cannot be mapped to SQL: Invalid UTC offset $offset');
+            throw ArgumentError.value(
+              dartValue,
+              'dartValue',
+              'Cannot be mapped to SQL: Invalid UTC offset $offset',
+            );
           }
 
           final hours = offset.inHours.abs();
@@ -63,7 +67,8 @@ final class SqlTypes {
           // format is understood by `DateTime.parse` and date time functions in
           // sqlite.
           final prefix = offset.isNegative ? ' -' : ' +';
-          final formattedOffset = '${hours.toString().padLeft(2, '0')}:'
+          final formattedOffset =
+              '${hours.toString().padLeft(2, '0')}:'
               '${minutes.toString().padLeft(2, '0')}';
 
           return '${dartValue.toIso8601String()}$prefix$formattedOffset';
@@ -130,8 +135,11 @@ final class SqlTypes {
       return mapToSqlLiteral(dart.rawSqlValue);
     }
 
-    throw ArgumentError.value(dart, 'dart',
-        'Must be null, bool, String, int, DateTime, Uint8List or double');
+    throw ArgumentError.value(
+      dart,
+      'dart',
+      'Must be null, bool, String, int, DateTime, Uint8List or double',
+    );
   }
 
   DateTime _readDateTime(Object sqlValue) {
@@ -181,32 +189,33 @@ final class SqlTypes {
     if (sqlValue == null) return null;
 
     return switch (type) {
-      DriftSqlType.bool => (sqlValue != 0 && sqlValue != false),
-      DriftSqlType.string => sqlValue.toString(),
-      DriftSqlType.bigInt => switch (sqlValue) {
-          BigInt() => sqlValue,
-          int() => BigInt.from(sqlValue),
-          _ => BigInt.parse(sqlValue.toString()),
-        },
-      DriftSqlType.int => switch (sqlValue) {
-          int() => sqlValue,
-          BigInt() => sqlValue.toInt(),
-          double() => sqlValue.toInt(),
-          _ => int.parse(sqlValue.toString()),
-        },
-      DriftSqlType.dateTime => _readDateTime(sqlValue),
-      DriftSqlType.blob => switch (sqlValue) {
-          String() => Uint8List.fromList(sqlValue.codeUnits),
-          _ => sqlValue,
-        },
-      DriftSqlType.double => switch (sqlValue) {
-          BigInt() => sqlValue.toDouble(),
-          _ => (sqlValue as num).toDouble(),
-        },
-      DriftSqlType.any => DriftAny(sqlValue),
-      CustomSqlType() => type.read(sqlValue),
-      DialectAwareSqlType() => type.read(this, sqlValue),
-    } as T;
+          DriftSqlType.bool => (sqlValue != 0 && sqlValue != false),
+          DriftSqlType.string => sqlValue.toString(),
+          DriftSqlType.bigInt => switch (sqlValue) {
+            BigInt() => sqlValue,
+            int() => BigInt.from(sqlValue),
+            _ => BigInt.parse(sqlValue.toString()),
+          },
+          DriftSqlType.int => switch (sqlValue) {
+            int() => sqlValue,
+            BigInt() => sqlValue.toInt(),
+            double() => sqlValue.toInt(),
+            _ => int.parse(sqlValue.toString()),
+          },
+          DriftSqlType.dateTime => _readDateTime(sqlValue),
+          DriftSqlType.blob => switch (sqlValue) {
+            String() => Uint8List.fromList(sqlValue.codeUnits),
+            _ => sqlValue,
+          },
+          DriftSqlType.double => switch (sqlValue) {
+            BigInt() => sqlValue.toDouble(),
+            _ => (sqlValue as num).toDouble(),
+          },
+          DriftSqlType.any => DriftAny(sqlValue),
+          CustomSqlType() => type.read(sqlValue),
+          DialectAwareSqlType() => type.read(this, sqlValue),
+        }
+        as T;
   }
 }
 
@@ -285,31 +294,38 @@ sealed class BaseSqlType<T> {
   String sqlTypeName(GenerationContext context);
 
   static T? read<T extends Object>(
-      SqlTypes types, BaseSqlType<T> type, Object fromSql) {
+    SqlTypes types,
+    BaseSqlType<T> type,
+    Object fromSql,
+  ) {
     return types.read(type, fromSql);
   }
 
   static Object? mapToSqlParameter<T extends Object>(
-      GenerationContext context, BaseSqlType<T>? type, T? value) {
+    GenerationContext context,
+    BaseSqlType<T>? type,
+    T? value,
+  ) {
     if (value == null) return null;
 
     return switch (type) {
       null ||
-      DriftSqlType<Object>() =>
-        context.typeMapping.mapToSqlVariable(value),
+      DriftSqlType<Object>() => context.typeMapping.mapToSqlVariable(value),
       CustomSqlType<T>() => type.mapToSqlParameter(value),
       DialectAwareSqlType<T>() => type.mapToSqlParameter(context, value),
     };
   }
 
   static String mapToSqlLiteral<T extends Object>(
-      GenerationContext context, BaseSqlType<T>? type, T? value) {
+    GenerationContext context,
+    BaseSqlType<T>? type,
+    T? value,
+  ) {
     if (value == null) return 'NULL';
 
     return switch (type) {
       null ||
-      DriftSqlType<Object>() =>
-        context.typeMapping.mapToSqlLiteral(value),
+      DriftSqlType<Object>() => context.typeMapping.mapToSqlLiteral(value),
       CustomSqlType<T>() => type.mapToSqlLiteral(value),
       DialectAwareSqlType<T>() => type.mapToSqlLiteral(context, value),
     };
@@ -402,7 +418,9 @@ enum DriftSqlType<T extends Object> implements BaseSqlType<T> {
   }();
 
   static void _addToTypeMap<T>(
-      Map<Type, DriftSqlType> map, DriftSqlType<Object> type) {
+    Map<Type, DriftSqlType> map,
+    DriftSqlType<Object> type,
+  ) {
     map[T] = type;
   }
 
@@ -429,7 +447,8 @@ enum DriftSqlType<T extends Object> implements BaseSqlType<T> {
     // Lookup the type in the map first for faster lookups. Go back to a full
     // typecheck where that doesn't work (which can be the case for complex
     // type like `forNullableType<FutureOr<int?>>`).
-    final type = _dartToDrift[Dart] ??
+    final type =
+        _dartToDrift[Dart] ??
         values.whereType<BaseSqlType<Dart>>().singleOrNull;
 
     if (type == null) {
@@ -524,13 +543,19 @@ final class _ByDialectType<T extends Object> implements DialectAwareSqlType<T> {
   @override
   String mapToSqlLiteral(GenerationContext context, T dartValue) {
     return BaseSqlType.mapToSqlLiteral(
-        context, _selectType(context.typeMapping), dartValue);
+      context,
+      _selectType(context.typeMapping),
+      dartValue,
+    );
   }
 
   @override
   Object mapToSqlParameter(GenerationContext context, T dartValue) {
     return BaseSqlType.mapToSqlParameter(
-        context, _selectType(context.typeMapping), dartValue)!;
+      context,
+      _selectType(context.typeMapping),
+      dartValue,
+    )!;
   }
 
   @override

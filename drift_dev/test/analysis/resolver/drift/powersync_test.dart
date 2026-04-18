@@ -49,7 +49,7 @@ CREATE TRIGGER todo_lists_delete
    BEGIN
       INSERT INTO powersync_crud (op, id, type) VALUES ('DELETE', OLD.id, 'todo_lists');
    END;
-'''
+''',
     }, options: DriftOptions.defaults(modules: [SqlModule.powersync]));
 
     await state.analyze('package:a/main.drift');

@@ -49,8 +49,9 @@ void main() {
       process('CREATE TABLE foo (bar TEXT);');
       expect(processWithErrors('CREATE TABLE foo (bar INTEGER);'), [
         analysisErrorWith(
-            lexeme: 'CREATE TABLE foo (bar INTEGER);',
-            message: 'Already exists')
+          lexeme: 'CREATE TABLE foo (bar INTEGER);',
+          message: 'Already exists',
+        ),
       ]);
     });
 
@@ -58,9 +59,10 @@ void main() {
       process('CREATE TABLE foo (bar TEXT);');
       expect(processWithErrors('CREATE VIEW IF NOT EXISTS foo AS SELECT 1;'), [
         analysisErrorWith(
-            lexeme: 'CREATE VIEW IF NOT EXISTS foo AS SELECT 1;',
-            message:
-                'A schema element of a different type with that name already exists')
+          lexeme: 'CREATE VIEW IF NOT EXISTS foo AS SELECT 1;',
+          message:
+              'A schema element of a different type with that name already exists',
+        ),
       ]);
     });
   });
@@ -74,15 +76,16 @@ void main() {
     test('does not exist', () {
       expect(processWithErrors('DROP TABLE foo;'), [
         analysisErrorWith(
-            lexeme: 'DROP TABLE foo;',
-            message: 'Entity to drop does not exist.')
+          lexeme: 'DROP TABLE foo;',
+          message: 'Entity to drop does not exist.',
+        ),
       ]);
     });
 
     test('wrong type', () {
       process('CREATE TABLE foo (bar TEXT);');
       expect(processWithErrors('DROP INDEX foo;'), [
-        analysisErrorWith(lexeme: 'INDEX', message: 'Wrong type, is table')
+        analysisErrorWith(lexeme: 'INDEX', message: 'Wrong type, is table'),
       ]);
     });
   });
@@ -91,7 +94,9 @@ void main() {
     test('missing table', () {
       expect(processWithErrors('ALTER TABLE foo RENAME TO bar'), [
         analysisErrorWith(
-            lexeme: 'foo', type: AnalysisErrorType.referencedUnknownTable)
+          lexeme: 'foo',
+          type: AnalysisErrorType.referencedUnknownTable,
+        ),
       ]);
     });
 
@@ -100,7 +105,7 @@ void main() {
       process('ALTER TABLE original RENAME TO changed;');
 
       expect(buffer.definitions, {
-        'changed': 'CREATE TABLE changed (a INTEGER) /* comment */ STRICT;'
+        'changed': 'CREATE TABLE changed (a INTEGER) /* comment */ STRICT;',
       });
     });
 
@@ -118,27 +123,30 @@ void main() {
       process('ALTER TABLE original RENAME COLUMN a TO b;');
 
       expect(buffer.definitions, {
-        'original': 'CREATE TABLE original (b INTEGER) /* comment */ STRICT;'
+        'original': 'CREATE TABLE original (b INTEGER) /* comment */ STRICT;',
       });
     });
 
     test("rename column that doesn't exist", () {
       process('CREATE TABLE original (a INTEGER) /* comment */ STRICT;');
-      expect(processWithErrors('ALTER TABLE original RENAME COLUMN c TO b;'),
-          [analysisErrorWith(lexeme: 'c')]);
+      expect(processWithErrors('ALTER TABLE original RENAME COLUMN c TO b;'), [
+        analysisErrorWith(lexeme: 'c'),
+      ]);
     });
 
     test("rename column conflict", () {
       process('CREATE TABLE original (a INTEGER, b INTEGER) STRICT;');
-      expect(processWithErrors('ALTER TABLE original RENAME COLUMN a TO b;'),
-          [analysisErrorWith(lexeme: 'b')]);
+      expect(processWithErrors('ALTER TABLE original RENAME COLUMN a TO b;'), [
+        analysisErrorWith(lexeme: 'b'),
+      ]);
     });
 
     test('add column', () {
       process('CREATE TABLE original (a INTEGER);');
       process('ALTER TABLE original ADD COLUMN b TEXT NOT NULL;');
-      expect(buffer.definitions,
-          {'original': 'CREATE TABLE original (a INTEGER, b TEXT NOT NULL);'});
+      expect(buffer.definitions, {
+        'original': 'CREATE TABLE original (a INTEGER, b TEXT NOT NULL);',
+      });
     });
 
     test('add column with indent', () {
@@ -155,7 +163,7 @@ CREATE TABLE original (
   a INTEGER,
   b TEXT,
   c TEXT NOT NULL
-);'''
+);''',
       });
     });
 
@@ -174,22 +182,24 @@ CREATE TABLE tbl (
         'tbl': '''
 CREATE TABLE tbl (
   a INTEGER NOT NUlL
-) /* this comment should not be removed */;'''
+) /* this comment should not be removed */;''',
       });
     });
 
     test('drop column that does not exist', () {
       process('CREATE TABLE original (a INTEGER, b INTEGER) STRICT;');
-      expect(processWithErrors('ALTER TABLE original DROP COLUMN c;'),
-          [analysisErrorWith(lexeme: 'c')]);
+      expect(processWithErrors('ALTER TABLE original DROP COLUMN c;'), [
+        analysisErrorWith(lexeme: 'c'),
+      ]);
     });
 
     test('drop only column', () {
       process('CREATE TABLE original (a INTEGER);');
       expect(processWithErrors('ALTER TABLE original DROP COLUMN a;'), [
         analysisErrorWith(
-            lexeme: 'DROP COLUMN a',
-            message: "Can't delete only remaining column in table")
+          lexeme: 'DROP COLUMN a',
+          message: "Can't delete only remaining column in table",
+        ),
       ]);
     });
   });

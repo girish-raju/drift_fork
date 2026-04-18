@@ -9,8 +9,10 @@ void expectFullToken(String token, TokenType type) {
   final tokens = SqlEngine().tokenizeString(token);
 
   if (tokens.length != 2 || tokens.last.type != TokenType.eof) {
-    fail('Expected exactly one token when parsing $token, '
-        'got ${tokens.length - 1}');
+    fail(
+      'Expected exactly one token when parsing $token, '
+      'got ${tokens.length - 1}',
+    );
   }
 
   expect(tokens.first.type, type, reason: '$token is a $type');
@@ -61,16 +63,22 @@ void main() {
     expect(tokens, hasLength(2)); // eof token at the end
     expect(
       tokens.first,
-      const TypeMatcher<StringLiteralToken>()
-          .having((token) => token.value, 'value', "what's up"),
+      const TypeMatcher<StringLiteralToken>().having(
+        (token) => token.value,
+        'value',
+        "what's up",
+      ),
     );
     expect(tokens[1].type, TokenType.eof);
   });
 
   group("parse unterminated string literals", () {
     Scanner defaultScanner(FileSpan span) {
-      return Scanner(span,
-          scanDriftTokens: false, scanDoubleColonTokens: false);
+      return Scanner(
+        span,
+        scanDriftTokens: false,
+        scanDoubleColonTokens: false,
+      );
     }
 
     test('issues error', () {
@@ -79,14 +87,22 @@ void main() {
 
       expect(
         scanner.errors,
-        contains(const TypeMatcher<TokenizerError>()
-            .having((e) => e.message, 'message', 'Unterminated string')),
+        contains(
+          const TypeMatcher<TokenizerError>().having(
+            (e) => e.message,
+            'message',
+            'Unterminated string',
+          ),
+        ),
       );
 
       expect(
         token,
-        isA<StringLiteralToken>()
-            .having((e) => e.value, 'value', 'unterminated'),
+        isA<StringLiteralToken>().having(
+          (e) => e.value,
+          'value',
+          'unterminated',
+        ),
       );
       expect(scanner.scanToken().type, TokenType.eof);
     });
@@ -97,8 +113,13 @@ void main() {
 
       expect(
         scanner.errors,
-        contains(const TypeMatcher<TokenizerError>()
-            .having((e) => e.message, 'message', 'Unterminated string')),
+        contains(
+          const TypeMatcher<TokenizerError>().having(
+            (e) => e.message,
+            'message',
+            'Unterminated string',
+          ),
+        ),
       );
     });
   });
@@ -127,8 +148,11 @@ void main() {
       final tokens = SqlEngine().tokenizeString(lexeme);
       final token = tokens.first as NumericToken;
 
-      expect(token.hasSameStructureAs(other), isTrue,
-          reason: '$token should have the same structure as $other');
+      expect(
+        token.hasSameStructureAs(other),
+        isTrue,
+        reason: '$token should have the same structure as $other',
+      );
 
       expect(token.parsedNumber, equals(value));
     }
@@ -136,32 +160,44 @@ void main() {
     test('hexadecimal', () {
       checkLiteral('0x123', NumericToken(defaultSpan, hexDigits: '123'), 0x123);
       checkLiteral(
-          '0x12_34', NumericToken(defaultSpan, hexDigits: '1234'), 0x1234);
+        '0x12_34',
+        NumericToken(defaultSpan, hexDigits: '1234'),
+        0x1234,
+      );
     });
 
     test('integer without exponent', () {
       checkLiteral(
-          '42', NumericToken(defaultSpan, digitsBeforeDecimal: '42'), 42);
+        '42',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42'),
+        42,
+      );
       checkLiteral(
-          '4_2', NumericToken(defaultSpan, digitsBeforeDecimal: '42'), 42);
+        '4_2',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42'),
+        42,
+      );
     });
 
     test('integer, positive exponent', () {
       checkLiteral(
-          '42E1',
-          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: 1),
-          420);
+        '42E1',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: 1),
+        420,
+      );
     });
 
     test('integer, negative exponent', () {
       checkLiteral(
-          '42E-1',
-          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -1),
-          4.2);
+        '42E-1',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -1),
+        4.2,
+      );
       checkLiteral(
-          '42E-1_0',
-          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -10),
-          4.2e-9);
+        '42E-1_0',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -10),
+        4.2e-9,
+      );
     });
 
     test('decimal', () {

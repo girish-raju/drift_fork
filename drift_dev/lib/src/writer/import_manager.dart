@@ -13,8 +13,9 @@ class ImportManagerForPartFiles implements ImportManager {
   final Map<String, Map<String, Element>> _namedImports = {};
 
   ImportManagerForPartFiles(this.mainLibrary) {
-    for (final import
-        in mainLibrary.fragments.expand((f) => f.libraryImports)) {
+    for (final import in mainLibrary.fragments.expand(
+      (f) => f.libraryImports,
+    )) {
       if (import.prefix case final prefix?) {
         // Not using import.namespace here because that contains the prefix
         // everywhere. We want to look up the prefix from the raw name.
@@ -115,8 +116,10 @@ class LibraryImportManager implements ImportManager {
           importedScheme != 'dart' &&
           importedScheme == _outputUri?.scheme) {
         // Not a package nor a dart import, use a relative import instead
-        importLiteral = url.relative(definitionUri.path,
-            from: url.dirname(_outputUri!.path));
+        importLiteral = url.relative(
+          definitionUri.path,
+          from: url.dirname(_outputUri!.path),
+        );
       } else {
         importLiteral = definitionUri.toString();
       }

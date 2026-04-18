@@ -19,10 +19,16 @@ sqlite:
     '''),
       throwsA(
         isA<ParsedYamlException>()
-            .having((e) => e.message, 'message',
-                contains('May not be set when sqlite options are present.'))
-            .having((e) => e.yamlNode?.span.text, 'yamlNode.span.text',
-                '[moor_ffi]'),
+            .having(
+              (e) => e.message,
+              'message',
+              contains('May not be set when sqlite options are present.'),
+            )
+            .having(
+              (e) => e.yamlNode?.span.text,
+              'yamlNode.span.text',
+              '[moor_ffi]',
+            ),
       ),
     );
   });
@@ -33,8 +39,11 @@ sqlite:
 sqlite:
   version: "3.35"
     '''),
-      isA<DriftOptions>().having((e) => e.sqliteVersion, 'sqliteVersion',
-          const SqliteVersion(3, 35, 0)),
+      isA<DriftOptions>().having(
+        (e) => e.sqliteVersion,
+        'sqliteVersion',
+        const SqliteVersion(3, 35, 0),
+      ),
     );
   });
 
@@ -46,10 +55,16 @@ sqlite:
     '''),
       throwsA(
         isA<ParsedYamlException>()
-            .having((e) => e.message, 'message',
-                contains('Version is not supported for analysis (minimum is'))
             .having(
-                (e) => e.yamlNode?.span.text, 'yamlNode.span.text', '"3.17"'),
+              (e) => e.message,
+              'message',
+              contains('Version is not supported for analysis (minimum is'),
+            )
+            .having(
+              (e) => e.yamlNode?.span.text,
+              'yamlNode.span.text',
+              '"3.17"',
+            ),
       ),
     );
   });
@@ -66,10 +81,14 @@ sqlite:
               (e) => e.message,
               'message',
               contains(
-                  'Version is not supported for analysis (current maximum is'),
+                'Version is not supported for analysis (current maximum is',
+              ),
             )
             .having(
-                (e) => e.yamlNode?.span.text, 'yamlNode.span.text', '"3.99"'),
+              (e) => e.yamlNode?.span.text,
+              'yamlNode.span.text',
+              '"3.99"',
+            ),
       ),
     );
   });
@@ -82,8 +101,9 @@ sqlite:
     final file = await backend.analyze('package:a/a.drift');
     expect(file.analyzedElements, isEmpty);
     expect(file.allErrors, [
-      isDriftError(contains('Unknown module "spellfix1", did you register it?'))
-          .withSpan('place_spellfix'),
+      isDriftError(
+        contains('Unknown module "spellfix1", did you register it?'),
+      ).withSpan('place_spellfix'),
     ]);
   });
 
@@ -96,8 +116,8 @@ sqlite:
         isA<ResolvedType>().having((e) => e.type, 'type', BasicType.int),
         isA<ResolvedType>()
             .having((e) => e.type, 'type', BasicType.int)
-            .having((e) => e.hints, 'hints', [IsBoolean()]).having(
-                (e) => e.nullable, 'nullable', true),
+            .having((e) => e.hints, 'hints', [IsBoolean()])
+            .having((e) => e.nullable, 'nullable', true),
       ]);
     });
 

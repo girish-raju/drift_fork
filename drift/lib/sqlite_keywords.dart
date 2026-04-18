@@ -1,6 +1,8 @@
 /// Provides utilities around sql keywords, like optional escaping etc.
-@Deprecated('Drift is no longer using this library and will remove it in the '
-    'next breaking release')
+@Deprecated(
+  'Drift is no longer using this library and will remove it in the '
+  'next breaking release',
+)
 library;
 
 import 'package:drift/drift.dart';

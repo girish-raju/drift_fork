@@ -52,7 +52,10 @@ void writeHashCode(List<EqualityField> fields, TextEmitter into) {
 /// Writes a operator == override for a class consisting of the [fields] into
 /// the buffer provided by [into].
 void overrideEquals(
-    Iterable<EqualityField> fields, String className, TextEmitter into) {
+  Iterable<EqualityField> fields,
+  String className,
+  TextEmitter into,
+) {
   into
     ..writeln('@override')
     ..write('bool operator ==(Object other) => ')
@@ -61,17 +64,21 @@ void overrideEquals(
   if (fields.isNotEmpty) {
     into
       ..write(' && ')
-      ..write(fields.map((field) {
-        final lexeme = field.lexeme;
+      ..write(
+        fields
+            .map((field) {
+              final lexeme = field.lexeme;
 
-        if (field.isList) {
-          final equality = into.drift(r'$driftBlobEquality');
+              if (field.isList) {
+                final equality = into.drift(r'$driftBlobEquality');
 
-          return '$equality.equals(other.$lexeme, this.$lexeme)';
-        } else {
-          return 'other.$lexeme == this.$lexeme';
-        }
-      }).join(' && '));
+                return '$equality.equals(other.$lexeme, this.$lexeme)';
+              } else {
+                return 'other.$lexeme == this.$lexeme';
+              }
+            })
+            .join(' && '),
+      );
   }
 
   into.writeln(');');

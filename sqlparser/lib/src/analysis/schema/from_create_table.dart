@@ -29,8 +29,10 @@ class SchemaFromCreateTable {
       final module = stmt.scope.rootScope.knownModules[stmt.moduleName];
 
       if (module == null) {
-        throw CantReadSchemaException('Unknown module "${stmt.moduleName}", '
-            'did you register it?');
+        throw CantReadSchemaException(
+          'Unknown module "${stmt.moduleName}", '
+          'did you register it?',
+        );
       }
 
       return module.parseTable(stmt);
@@ -84,7 +86,7 @@ class SchemaFromCreateTable {
             def,
             isStrict: stmt.isStrict,
             primaryKeyColumnsInStrictTable: stmt.isStrict ? primaryKey : null,
-          )
+          ),
       ],
       withoutRowId: stmt.withoutRowId,
       isStrict: stmt.isStrict,
@@ -119,14 +121,17 @@ class SchemaFromCreateTable {
     return columnsInPk;
   }
 
-  TableColumn _readColumn(ColumnDefinition definition,
-      {required bool isStrict,
-      required Set<String>? primaryKeyColumnsInStrictTable}) {
+  TableColumn _readColumn(
+    ColumnDefinition definition, {
+    required bool isStrict,
+    required Set<String>? primaryKeyColumnsInStrictTable,
+  }) {
     final type = resolveColumnType(definition.typeName, isStrict: isStrict);
 
     // Column is nullable if it doesn't contain a `NotNull` constraint and it's
     // not part of a PK in a strict table.
-    final nullable = !definition.constraints.any((c) => c is NotNull) &&
+    final nullable =
+        !definition.constraints.any((c) => c is NotNull) &&
         primaryKeyColumnsInStrictTable?.contains(definition.columnName) != true;
 
     final resolvedType = type.withNullable(nullable);

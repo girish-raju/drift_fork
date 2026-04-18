@@ -70,8 +70,10 @@ abstract class SchemaVerifier<DB extends CommonDatabase> {
   /// modify the database schema as expected.
   ///
   /// Foreign key constraints are disabled for this operation.
-  Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
-      NewDatabase extends GeneratedDatabase>({
+  Future<void> testWithDataIntegrity<
+    OldDatabase extends GeneratedDatabase,
+    NewDatabase extends GeneratedDatabase
+  >({
     required OldDatabase Function(QueryExecutor) createOld,
     required NewDatabase Function(QueryExecutor) createNew,
     required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,

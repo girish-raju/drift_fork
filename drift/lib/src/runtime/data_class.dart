@@ -139,15 +139,11 @@ class Value<T> {
   T get value => _value as T;
 
   /// Create a (present) value by wrapping the [value] provided.
-  const Value(T value)
-      : _value = value,
-        present = true;
+  const Value(T value) : _value = value, present = true;
 
   /// Create an absent value that will not be written into the database, the
   /// default value or null will be used instead.
-  const Value.absent()
-      : _value = null,
-        present = false;
+  const Value.absent() : _value = null, present = false;
 
   /// Create a value that is absent if [value] is `null` and [present] if it's
   /// not.
@@ -160,22 +156,20 @@ class Value<T> {
   /// See the overall documentation on [Value] for details.
   @Deprecated('Use Value.absentIfNull instead')
   const Value.ofNullable(T? value)
-      : assert(
-          value != null || null is! T,
-          "Value.ofNullable(null) can't be used for a nullable T, since the "
-          'null value could be both absent and present.',
-        ),
-        _value = value,
-        present = value != null;
+    : assert(
+        value != null || null is! T,
+        "Value.ofNullable(null) can't be used for a nullable T, since the "
+        'null value could be both absent and present.',
+      ),
+      _value = value,
+      present = value != null;
 
   /// Create a value that is absent if [value] is `null` and [present] if it's
   /// not.
   ///
   /// The functionality is equiavalent to the following:
   /// `x != null ? Value(x) : Value.absent()`.
-  const Value.absentIfNull(T? value)
-      : _value = value,
-        present = value != null;
+  const Value.absentIfNull(T? value) : _value = value, present = value != null;
 
   @override
   String toString() => present ? 'Value($value)' : 'Value.absent()';
@@ -207,8 +201,9 @@ abstract class ValueSerializer {
   /// timestamp ([DateTime.millisecondsSinceEpoch]) or a string
   /// ([DateTime.toIso8601String]).
   /// In either case, date time values can be _deserialized_ from both formats.
-  const factory ValueSerializer.defaults(
-      {bool serializeDateTimeValuesAsString}) = _DefaultValueSerializer;
+  const factory ValueSerializer.defaults({
+    bool serializeDateTimeValuesAsString,
+  }) = _DefaultValueSerializer;
 
   /// Converts the [value] to something that can be passed to
   /// [JsonCodec.encode].

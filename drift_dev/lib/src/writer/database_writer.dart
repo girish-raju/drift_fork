@@ -149,8 +149,11 @@ class DatabaseWriter {
     // Also write implicit DAOs for modular imports
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        dbScope.writeGetterForIncludedDriftFile(import, input.driver!,
-            isAccessor: false);
+        dbScope.writeGetterForIncludedDriftFile(
+          import,
+          input.driver!,
+          isAccessor: false,
+        );
       }
     }
 
@@ -192,24 +195,27 @@ class DatabaseWriter {
     schemaScope
       ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
       ..write('=> [')
-      ..write(elements
-          .map((e) {
-            if (e is DefinedSqlQuery &&
-                e.mode == QueryMode.atCreate &&
-                !scope.generationOptions.isModular) {
-              final resolved = input.importedQueries[e]!;
-              return createOnCreate(dbScope, e, resolved);
-            }
+      ..write(
+        elements
+            .map((e) {
+              if (e is DefinedSqlQuery &&
+                  e.mode == QueryMode.atCreate &&
+                  !scope.generationOptions.isModular) {
+                final resolved = input.importedQueries[e]!;
+                return createOnCreate(dbScope, e, resolved);
+              }
 
-            return entityGetters[e];
-          })
-          .whereType<String>()
-          .join(', '))
+              return entityGetters[e];
+            })
+            .whereType<String>()
+            .join(', '),
+      )
       // close list literal and allSchemaEntities getter
       ..write('];\n');
 
-    final updateRules =
-        FindStreamUpdateRules(input.resolvedAccessor).identifyRules();
+    final updateRules = FindStreamUpdateRules(
+      input.resolvedAccessor,
+    ).identifyRules();
     if (updateRules.rules.isNotEmpty) {
       schemaScope
         ..writeln('@override')
@@ -239,8 +245,10 @@ class DatabaseWriter {
 
       schemaScope
         ..writeln('@override')
-        ..writeln('$options get options => '
-            'const $options(storeDateTimeAsText: true);');
+        ..writeln(
+          '$options get options => '
+          'const $options(storeDateTimeAsText: true);',
+        );
     }
 
     // close the class
@@ -251,8 +259,9 @@ class DatabaseWriter {
     final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final trigger = scope.drift('Trigger');
     if (scope.drift3) {
-      final arg =
-          scope.dartCode(scope.customComponent(entity.parsedStatement!));
+      final arg = scope.dartCode(
+        scope.customComponent(entity.parsedStatement!),
+      );
       return '$trigger(${asDartLiteral(entity.schemaName)}, $arg)';
     }
 
@@ -267,8 +276,9 @@ class DatabaseWriter {
     final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final index = scope.drift('Index');
     if (scope.drift3) {
-      final arg =
-          scope.dartCode(scope.customComponent(entity.parsedStatement!));
+      final arg = scope.dartCode(
+        scope.customComponent(entity.parsedStatement!),
+      );
       return '$index(${asDartLiteral(entity.schemaName)}, $arg)';
     }
 
@@ -280,7 +290,10 @@ class DatabaseWriter {
   }
 
   static String createOnCreate(
-      Scope scope, DefinedSqlQuery query, SqlQuery resolved) {
+    Scope scope,
+    DefinedSqlQuery query,
+    SqlQuery resolved,
+  ) {
     final (sql, dialectSpecific) = scope.sqlByDialect(resolved.root!);
     final onCreate = scope.drift('OnCreateQuery');
     if (scope.drift3) {
@@ -303,7 +316,11 @@ class GenerationInput<T extends BaseDriftAccessor> {
   final DriftAnalysisDriver? driver;
 
   GenerationInput(
-      this.accessor, this.resolvedAccessor, this.importedQueries, this.driver);
+    this.accessor,
+    this.resolvedAccessor,
+    this.importedQueries,
+    this.driver,
+  );
 
   /// All locally-defined and imported [SqlQuery] elements that are regular
   /// queries (so no query with [QueryMode.atCreate]).

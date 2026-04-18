@@ -9,5 +9,6 @@ Future<Uint8List> exportDatabase(GeneratedDatabase database) async {
   // We currently only support this for native databases. We should also be able
   // to support web fairly easily after migrating to sqlite3_web.
   throw UnsupportedError(
-      'Exporting databases it not supported on this platform');
+    'Exporting databases it not supported on this platform',
+  );
 }

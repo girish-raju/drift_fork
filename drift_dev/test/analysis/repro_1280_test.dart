@@ -43,8 +43,9 @@ class Persons extends Table {
       ''',
     });
 
-    final file =
-        await state.driver.fullyAnalyze(Uri.parse('package:a/db.dart'));
+    final file = await state.driver.fullyAnalyze(
+      Uri.parse('package:a/db.dart'),
+    );
 
     expect(file.discovery, isA<DiscoveredDartLibrary>());
     state.expectNoErrors();

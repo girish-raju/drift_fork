@@ -62,56 +62,68 @@ abstract class TodoItemWithCategoryNameView extends View {
 ''',
     });
 
-    final result =
-        await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+    final result = await backend.driver.fullyAnalyze(
+      Uri.parse('package:a/main.dart'),
+    );
     expect(result.allErrors, isEmpty);
 
-    final views =
-        result.analysis.values.map((e) => e.result).whereType<DriftView>();
+    final views = result.analysis.values
+        .map((e) => e.result)
+        .whereType<DriftView>();
     expect(views, hasLength(2));
 
     final todoCategoryItemCount = views.singleWhere(
-        (e) => e.definingDartClass.toString() == 'TodoCategoryItemCount');
-    final todoItemWithCategoryName = views.singleWhere((e) =>
-        e.definingDartClass.toString() == 'TodoItemWithCategoryNameView');
+      (e) => e.definingDartClass.toString() == 'TodoCategoryItemCount',
+    );
+    final todoItemWithCategoryName = views.singleWhere(
+      (e) => e.definingDartClass.toString() == 'TodoItemWithCategoryNameView',
+    );
 
     expect(
-        todoCategoryItemCount.source,
-        isA<DartViewSource>().having(
-            (e) => e.dartQuerySource.toString(),
-            'dartQuerySource',
-            '.join([innerJoin(todoItems,todoItems.categoryId.equalsExp(todoCategories.id))])'));
+      todoCategoryItemCount.source,
+      isA<DartViewSource>().having(
+        (e) => e.dartQuerySource.toString(),
+        'dartQuerySource',
+        '.join([innerJoin(todoItems,todoItems.categoryId.equalsExp(todoCategories.id))])',
+      ),
+    );
     expect(
-        todoItemWithCategoryName.source,
-        isA<DartViewSource>().having(
-            (e) => e.dartQuerySource.toString(),
-            'dartQuerySource',
-            '.join([innerJoin(todoCategories,todoCategories.id.equalsExp(todoItems.categoryId))])'));
+      todoItemWithCategoryName.source,
+      isA<DartViewSource>().having(
+        (e) => e.dartQuerySource.toString(),
+        'dartQuerySource',
+        '.join([innerJoin(todoCategories,todoCategories.id.equalsExp(todoItems.categoryId))])',
+      ),
+    );
     expect(todoCategoryItemCount.columns, hasLength(2));
     expect(
-        todoCategoryItemCount.columns[0],
-        isA<DriftColumn>()
-            .having((e) => e.nameInDart, 'nameInDart', 'name')
-            .having((e) => e.nullable, 'nullable', isFalse));
+      todoCategoryItemCount.columns[0],
+      isA<DriftColumn>()
+          .having((e) => e.nameInDart, 'nameInDart', 'name')
+          .having((e) => e.nullable, 'nullable', isFalse),
+    );
     expect(
-        todoCategoryItemCount.columns[1],
-        isA<DriftColumn>()
-            .having((e) => e.nameInDart, 'nameInDart', 'itemCount')
-            .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.int)
-            .having((e) => e.nullable, 'nullable', isTrue));
+      todoCategoryItemCount.columns[1],
+      isA<DriftColumn>()
+          .having((e) => e.nameInDart, 'nameInDart', 'itemCount')
+          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.int)
+          .having((e) => e.nullable, 'nullable', isTrue),
+    );
 
     expect(todoItemWithCategoryName.columns, hasLength(2));
     expect(
-        todoItemWithCategoryName.columns[0],
-        isA<DriftColumn>()
-            .having((e) => e.nameInDart, 'nameInDart', 'id')
-            .having((e) => e.nullable, 'nullable', isFalse));
+      todoItemWithCategoryName.columns[0],
+      isA<DriftColumn>()
+          .having((e) => e.nameInDart, 'nameInDart', 'id')
+          .having((e) => e.nullable, 'nullable', isFalse),
+    );
     expect(
-        todoItemWithCategoryName.columns[1],
-        isA<DriftColumn>()
-            .having((e) => e.nameInDart, 'nameInDart', 'title')
-            .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.string)
-            .having((e) => e.nullable, 'nullable', isTrue));
+      todoItemWithCategoryName.columns[1],
+      isA<DriftColumn>()
+          .having((e) => e.nameInDart, 'nameInDart', 'title')
+          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.string)
+          .having((e) => e.nullable, 'nullable', isTrue),
+    );
   });
 
   test('generates unique column names for conflicts', () async {
@@ -178,15 +190,21 @@ abstract class CommonNames extends View {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'''
   @override
   i0.Query? get query =>
       (attachedDatabase.selectOnly(users)..addColumns($columns))
         ..groupBy([users.id],
             having: i3.ComparableExpr(users.id).isBiggerThanValue(10));
-'''))
-    }, result.dartOutputs, result.writer);
+'''),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('can use views referencing same table multiple times', () async {
@@ -249,14 +267,12 @@ class UsersView extends View {
     test.expectNoErrors();
 
     final view = analyzed.analyzedElements.whereType<DriftView>().single;
-    expect(
-      view.columns.map((e) => e.nameInDart),
-      ['aId', 'bId'],
-    );
+    expect(view.columns.map((e) => e.nameInDart), ['aId', 'bId']);
     expect(
       view.columns,
       everyElement(
-          isA<DriftColumn>().having((e) => e.nullable, 'nullable', isFalse)),
+        isA<DriftColumn>().having((e) => e.nullable, 'nullable', isFalse),
+      ),
     );
   });
 }

@@ -38,13 +38,15 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(FileSpan span,
-      {required this.scanDriftTokens, required this.scanDoubleColonTokens})
-      : _file = span.file,
-        _startOffset = span.start.offset,
-        _currentOffset = span.start.offset,
-        _endOffset = span.end.offset,
-        _charCodes = Uint16List.fromList(span.file.codeUnits);
+  Scanner(
+    FileSpan span, {
+    required this.scanDriftTokens,
+    required this.scanDoubleColonTokens,
+  }) : _file = span.file,
+       _startOffset = span.start.offset,
+       _currentOffset = span.start.offset,
+       _endOffset = span.end.offset,
+       _charCodes = Uint16List.fromList(span.file.codeUnits);
 
   Token scanToken() {
     while (true) {
@@ -83,9 +85,9 @@ class Scanner {
         if (_match($minus)) {
           return _lineComment();
         } else if (_match($rangle)) {
-          return _addToken(_match($rangle)
-              ? TokenType.dashRangleRangle
-              : TokenType.dashRangle);
+          return _addToken(
+            _match($rangle) ? TokenType.dashRangleRangle : TokenType.dashRangle,
+          );
         } else {
           return _addToken(TokenType.minus);
         }
@@ -133,7 +135,8 @@ class Scanner {
         }
       case $equal:
         return _addToken(
-            _match($equal) ? TokenType.doubleEqual : TokenType.equal);
+          _match($equal) ? TokenType.doubleEqual : TokenType.equal,
+        );
       case $tilde:
         return _addToken(TokenType.tilde);
       case $question:
@@ -164,7 +167,9 @@ class Scanner {
         final name = _matchColumnName();
         if (name == null) {
           return TokenizerError(
-              r'Expected identifier after `$`', _currentLocation);
+            r'Expected identifier after `$`',
+            _currentLocation,
+          );
         }
 
         return DollarSignVariableToken(_currentSpan, name);
@@ -172,7 +177,9 @@ class Scanner {
         final name = _matchColumnName();
         if (name == null) {
           return TokenizerError(
-              r'Expected identifier after `@`', _currentLocation);
+            r'Expected identifier after `@`',
+            _currentLocation,
+          );
         }
         return AtSignVariableToken(_currentSpan, name);
       case $semicolon:
@@ -335,8 +342,10 @@ class Scanner {
           digit = digitCode(isHexDigit);
         }
 
-        return NumericToken(_currentSpan,
-            hexDigits: hexDigitsBuffer.toString());
+        return NumericToken(
+          _currentSpan,
+          hexDigits: hexDigitsBuffer.toString(),
+        );
       }
     }
 
@@ -403,9 +412,10 @@ class Scanner {
 
       if (_isAtEnd) {
         return TokenizerError(
-            'Unexpected end of file. '
-            'Expected digits for the scientific notation',
-            _currentLocation);
+          'Unexpected end of file. '
+          'Expected digits for the scientific notation',
+          _currentLocation,
+        );
       }
 
       final char = _nextChar();
@@ -417,8 +427,9 @@ class Scanner {
           requireDigit('Expected digits for the exponent');
           final exponent = consumeDigits();
 
-          parsedExponent =
-              char == $plus ? int.parse(exponent) : -int.parse(exponent);
+          parsedExponent = char == $plus
+              ? int.parse(exponent)
+              : -int.parse(exponent);
         } else {
           return TokenizerError('Expected plus or minus', _currentLocation);
         }
@@ -500,7 +511,8 @@ class Scanner {
     }
 
     final content = String.fromCharCodes(
-        _charCodes.getRange(_currentOffset, nextLineBreak));
+      _charCodes.getRange(_currentOffset, nextLineBreak),
+    );
     if (scanDriftTokens && isInTopLevelDriftFile) {
       // We can parse line comments as import statements or named statements.
       // We currently use fairly crude heuristics for this: The structures we
@@ -537,13 +549,18 @@ class Scanner {
     }
 
     return CommentToken(
-        CommentMode.cStyle, contentBuilder.toString(), _currentSpan);
+      CommentMode.cStyle,
+      contentBuilder.toString(),
+      _currentSpan,
+    );
   }
 
   static final _importComment = RegExp(r'^\s*import.*;', caseSensitive: false);
   // match `foo:` or `myQuery (:variable AS TEXT):`
   // The colon must be at the end of the line to avoid matching regular
   // comments that happen to contain colons (e.g. `-- VIEW : description`).
-  static final _statementMeta =
-      RegExp(r'^\s*\w+\s*(?:\(.*\)\s*)?:\s*$', caseSensitive: false);
+  static final _statementMeta = RegExp(
+    r'^\s*\w+\s*(?:\(.*\)\s*)?:\s*$',
+    caseSensitive: false,
+  );
 }

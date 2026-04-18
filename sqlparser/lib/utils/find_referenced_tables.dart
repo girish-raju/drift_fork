@@ -161,8 +161,13 @@ extension FindReferenceAnalysis on SqlEngine {
     final clone = parseSpan(ParserEntrypoint.statement, sql).rootNode;
 
     final scope = _FakeRootScope();
-    final context = AnalysisContext(clone, sql, scope, EngineOptions(),
-        schemaSupport: schemaReader);
+    final context = AnalysisContext(
+      clone,
+      sql,
+      scope,
+      EngineOptions(),
+      schemaSupport: schemaReader,
+    );
 
     AstPreparingVisitor(context: context).start(clone);
     clone.accept(ColumnResolver(context), const ColumnResolverContext());

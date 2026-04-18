@@ -70,7 +70,9 @@ ExistingRowClass? validateExistingClass(
   } else {
     ctor = desiredClass.getNamedConstructor(constructor);
     instantiation = library.typeSystem.instantiateInterfaceToBounds(
-        element: desiredClass, nullabilitySuffix: NullabilitySuffix.none);
+      element: desiredClass,
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
   }
 
   if (ctor == null) {
@@ -78,26 +80,34 @@ ExistingRowClass? validateExistingClass(
 
     if (fallback != null) {
       if (!fallback.isStatic) {
-        step.reportError(DriftAnalysisError.forDartElement(
-          fallback,
-          'To use this method as a factory for the custom row class, it needs '
-          'to be static.',
-        ));
+        step.reportError(
+          DriftAnalysisError.forDartElement(
+            fallback,
+            'To use this method as a factory for the custom row class, it needs '
+            'to be static.',
+          ),
+        );
       }
 
       // The static factory must return a subtype of `FutureOr<ThatRowClass>`
-      final expectedReturnType =
-          library.typeProvider.futureOrType(instantiation);
-      if (!library.typeSystem
-          .isAssignableTo(fallback.returnType, expectedReturnType)) {
-        step.reportError(DriftAnalysisError.forDartElement(
-          fallback,
-          'To be used as a factory for the custom row class, this method needs '
-          'to return an instance of it.',
-        ));
+      final expectedReturnType = library.typeProvider.futureOrType(
+        instantiation,
+      );
+      if (!library.typeSystem.isAssignableTo(
+        fallback.returnType,
+        expectedReturnType,
+      )) {
+        step.reportError(
+          DriftAnalysisError.forDartElement(
+            fallback,
+            'To be used as a factory for the custom row class, this method needs '
+            'to return an instance of it.',
+          ),
+        );
       }
 
-      isAsyncFactory = library.typeSystem.flatten(fallback.returnType) !=
+      isAsyncFactory =
+          library.typeSystem.flatten(fallback.returnType) !=
           fallback.returnType;
 
       ctor = fallback;
@@ -108,7 +118,7 @@ ExistingRowClass? validateExistingClass(
     final msg = constructor == 'new'
         ? 'The desired data class must have an unnamed constructor'
         : 'The desired data class does not have a constructor named '
-            '$constructor';
+              '$constructor';
 
     step.reportError(DriftAnalysisError.forDartElement(desiredClass, msg));
     return null;
@@ -119,7 +129,7 @@ ExistingRowClass? validateExistingClass(
   // However, when we're supposed to generate an insertable, all columns must
   // appear as getters in the target class.
   final unmatchedColumnsByName = {
-    for (final column in columns) column.nameInDart: column
+    for (final column in columns) column.nameInDart: column,
   };
 
   final positionalColumns = <DriftColumn>[];
@@ -136,10 +146,12 @@ ExistingRowClass? validateExistingClass(
 
       _checkParameterType(parameter, column, step, knownTypes);
     } else if (!parameter.isOptional) {
-      step.reportError(DriftAnalysisError.forDartElement(
-        parameter,
-        'Unexpected parameter ${parameter.name} which has no matching column.',
-      ));
+      step.reportError(
+        DriftAnalysisError.forDartElement(
+          parameter,
+          'Unexpected parameter ${parameter.name} which has no matching column.',
+        ),
+      );
     }
   }
 
@@ -160,12 +172,14 @@ ExistingRowClass? validateExistingClass(
 
   if (generateInsertable) {
     if (missingGetters.isNotEmpty) {
-      step.reportError(DriftAnalysisError.forDartElement(
-        dartClass.classElement,
-        'This class used as a custom row class for which an insertable '
-        'is generated. This means that it must define getters for all '
-        'columns, but some are missing: ${missingGetters.join(', ')}',
-      ));
+      step.reportError(
+        DriftAnalysisError.forDartElement(
+          dartClass.classElement,
+          'This class used as a custom row class for which an insertable '
+          'is generated. This means that it must define getters for all '
+          'columns, but some are missing: ${missingGetters.join(', ')}',
+        ),
+      );
     }
   }
 
@@ -174,7 +188,7 @@ ExistingRowClass? validateExistingClass(
     targetType: instantiation,
     constructor: constructor,
     positionalColumns: [
-      for (final column in positionalColumns) column.nameInSql
+      for (final column in positionalColumns) column.nameInSql,
     ],
     namedColumns: {
       for (final named in namedColumns.entries)
@@ -197,7 +211,7 @@ ExistingRowClass validateRowClassFromRecordType(
   final library = element.library!;
 
   final unmatchedColumnsByName = {
-    for (final column in columns) column.nameInDart: column
+    for (final column in columns) column.nameInDart: column,
   };
 
   final namedColumns = <String, String>{};
@@ -222,10 +236,12 @@ ExistingRowClass validateRowClassFromRecordType(
         },
       );
     } else {
-      step.reportError(DriftAnalysisError.forDartElement(
-        element,
-        'Unexpected parameter ${parameter.name} which has no matching column.',
-      ));
+      step.reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'Unexpected parameter ${parameter.name} which has no matching column.',
+        ),
+      );
     }
   }
 
@@ -233,8 +249,12 @@ ExistingRowClass validateRowClassFromRecordType(
   // will have to come up with another approach to extract information for
   // positional types.
   if (dartType.positionalFields.isNotEmpty) {
-    step.reportError(DriftAnalysisError.forDartElement(element,
-        'Records with positional types are not yet supported as existing types.'));
+    step.reportError(
+      DriftAnalysisError.forDartElement(
+        element,
+        'Records with positional types are not yet supported as existing types.',
+      ),
+    );
   }
 
   return ExistingRowClass.record(
@@ -258,9 +278,9 @@ ExistingRowClass defaultRecordRowClass({
     named: [
       for (final column in columns)
         MapEntry(
-            column.nameInDart,
-            regularColumnType(
-                typeProvider, typeSystem, knownDriftTypes, column)),
+          column.nameInDart,
+          regularColumnType(typeProvider, typeSystem, knownDriftTypes, column),
+        ),
     ],
   );
 
@@ -276,10 +296,7 @@ ExistingRowClass defaultRecordRowClass({
   );
 }
 
-enum EnumType {
-  intEnum,
-  textEnum,
-}
+enum EnumType { intEnum, textEnum }
 
 CustomColumnType? readCustomType(
   Expression dartExpression,
@@ -287,8 +304,9 @@ CustomColumnType? readCustomType(
   void Function(String) reportError,
 ) {
   final staticType = dartExpression.staticType;
-  final asCustomType =
-      staticType != null ? helper.asUserDefinedType(staticType) : null;
+  final asCustomType = staticType != null
+      ? helper.asUserDefinedType(staticType)
+      : null;
 
   if (asCustomType == null) {
     reportError('Not a custom type');
@@ -309,8 +327,9 @@ AppliedTypeConverter? readTypeConverter(
   KnownDriftTypes helper,
 ) {
   final staticType = dartExpression.staticType;
-  final asTypeConverter =
-      staticType != null ? helper.asTypeConverter(staticType) : null;
+  final asTypeConverter = staticType != null
+      ? helper.asTypeConverter(staticType)
+      : null;
 
   if (asTypeConverter == null) {
     reportError('Not a type converter');
@@ -326,7 +345,8 @@ AppliedTypeConverter? readTypeConverter(
 
   final asJsonConverter = helper.asJsonTypeConverter(staticType);
   final appliesToJsonToo = asJsonConverter != null;
-  final jsonTypeNullable = appliesToJsonToo &&
+  final jsonTypeNullable =
+      appliesToJsonToo &&
       typeSystem.isNullable(asJsonConverter.typeArguments[2]);
 
   // Make the type converter support nulls by just mapping null to null if this
@@ -335,23 +355,35 @@ AppliedTypeConverter? readTypeConverter(
 
   if (sqlTypeNullable != columnIsNullable) {
     if (!columnIsNullable) {
-      reportError('This column is non-nullable in the database, but has a '
-          'type converter with a nullable SQL type, meaning that it may '
-          "potentially map to `null` which can't be stored in the database.");
+      reportError(
+        'This column is non-nullable in the database, but has a '
+        'type converter with a nullable SQL type, meaning that it may '
+        "potentially map to `null` which can't be stored in the database.",
+      );
     } else if (!canBeSkippedForNulls) {
       final alternative = appliesToJsonToo
           ? 'JsonTypeConverter2.asNullable'
           : 'NullAwareTypeConverter.wrap';
 
-      reportError('This column is nullable, but the type converter has a non-'
-          "nullable SQL type, meaning that it won't be able to map `null` "
-          'from the database to Dart.\n'
-          'Try wrapping the converter in `$alternative`');
+      reportError(
+        'This column is nullable, but the type converter has a non-'
+        "nullable SQL type, meaning that it won't be able to map `null` "
+        'from the database to Dart.\n'
+        'Try wrapping the converter in `$alternative`',
+      );
     }
   }
 
-  checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
-      library.typeSystem, helper, reportError);
+  checkType(
+    columnType,
+    columnIsNullable,
+    null,
+    sqlType,
+    library.typeProvider,
+    library.typeSystem,
+    helper,
+    reportError,
+  );
 
   return AppliedTypeConverter(
     expression: AnnotatedDartCode.ast(dartExpression),
@@ -405,9 +437,11 @@ AppliedTypeConverter readEnumConverter(
     jsonType: columnEnumType == EnumType.intEnum
         ? typeProvider.intType
         : typeProvider.stringType,
-    sqlType: ColumnType.drift(columnEnumType == EnumType.intEnum
-        ? DriftSqlType.int
-        : DriftSqlType.string),
+    sqlType: ColumnType.drift(
+      columnEnumType == EnumType.intEnum
+          ? DriftSqlType.int
+          : DriftSqlType.string,
+    ),
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
     jsonTypeIsNullable: false,
@@ -462,16 +496,20 @@ bool checkType(
   if (typeConverter != null) {
     expectedDartType = typeConverter.dartType;
     if (typeConverter.canBeSkippedForNulls && columnIsNullable) {
-      expectedDartType =
-          typeProvider.makeNullable(expectedDartType, typeSystem);
+      expectedDartType = typeProvider.makeNullable(
+        expectedDartType,
+        typeSystem,
+      );
     }
   } else {
     expectedDartType = typeProvider.typeFor(columnType, knownTypes);
   }
 
   if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck)) {
-    error('Parameter must accept '
-        '${expectedDartType.getDisplayString()}');
+    error(
+      'Parameter must accept '
+      '${expectedDartType.getDisplayString()}',
+    );
     return false;
   }
 
@@ -510,15 +548,23 @@ extension on TypeProvider {
       case DriftSqlType.int:
         return intType;
       case DriftSqlType.bigInt:
-        return intElement.library.getClass('BigInt')!.instantiate(
-            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
+        return intElement.library
+            .getClass('BigInt')!
+            .instantiate(
+              typeArguments: const [],
+              nullabilitySuffix: NullabilitySuffix.none,
+            );
       case DriftSqlType.string:
         return stringType;
       case DriftSqlType.bool:
         return boolType;
       case DriftSqlType.dateTime:
-        return intElement.library.getClass('DateTime')!.instantiate(
-            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
+        return intElement.library
+            .getClass('DateTime')!
+            .instantiate(
+              typeArguments: const [],
+              nullabilitySuffix: NullabilitySuffix.none,
+            );
       case DriftSqlType.blob:
         return knownTypes.uint8List;
       case DriftSqlType.double:
@@ -543,7 +589,10 @@ extension CreateRecordType on TypeProvider {
       ],
       namedFields: [
         for (final namedEntry in named)
-          RecordTypeNamedFieldImpl(name: namedEntry.key, type: namedEntry.value)
+          RecordTypeNamedFieldImpl(
+            name: namedEntry.key,
+            type: namedEntry.value,
+          ),
       ],
       nullabilitySuffix: nullabilitySuffix,
     );

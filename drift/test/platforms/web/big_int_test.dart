@@ -9,8 +9,10 @@ import 'package:test/test.dart';
 
 void main() async {
   test('supports BigInt if enabled', () async {
-    final db = WebDatabase.withStorage(DriftWebStorage.volatile(),
-        readIntsAsBigInt: true);
+    final db = WebDatabase.withStorage(
+      DriftWebStorage.volatile(),
+      readIntsAsBigInt: true,
+    );
     await db.ensureOpen(_EmptyUser());
     addTearDown(db.close);
 
@@ -24,8 +26,10 @@ void main() async {
   });
 
   test('does not support BigInt if disabled', () async {
-    final db = WebDatabase.withStorage(DriftWebStorage.volatile(),
-        readIntsAsBigInt: false);
+    final db = WebDatabase.withStorage(
+      DriftWebStorage.volatile(),
+      readIntsAsBigInt: false,
+    );
     await db.ensureOpen(_EmptyUser());
     addTearDown(db.close);
 
@@ -33,8 +37,9 @@ void main() async {
     expect(result.single, {'r': 1});
 
     await expectLater(
-        () => db.runSelect('SELECT typeof(?) AS r', [BigInt.zero]),
-        throwsA(isA<AssertionError>()));
+      () => db.runSelect('SELECT typeof(?) AS r', [BigInt.zero]),
+      throwsA(isA<AssertionError>()),
+    );
   });
 }
 

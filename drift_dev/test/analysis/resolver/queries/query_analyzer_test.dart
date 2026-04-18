@@ -24,8 +24,10 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     final resultSet = (query as SqlSelectQuery).resultSet;
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.scalarColumns.map((c) => c.name), ['?', ':foo']);
-    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin),
-        [DriftSqlType.string, DriftSqlType.bool]);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
+      DriftSqlType.string,
+      DriftSqlType.bool,
+    ]);
   });
 
   test('can read from builtin tables', () async {
@@ -57,8 +59,13 @@ bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
       query.variables,
       allOf(
         hasLength(2),
-        everyElement(isA<FoundVariable>()
-            .having((e) => e.isRequired, 'isRequired', isTrue)),
+        everyElement(
+          isA<FoundVariable>().having(
+            (e) => e.isRequired,
+            'isRequired',
+            isTrue,
+          ),
+        ),
       ),
     );
   });
@@ -82,8 +89,11 @@ query: SELECT * FROM my_view;
           .having(
             (e) => e.table,
             'table',
-            isA<DriftView>()
-                .having((e) => e.schemaName, 'schemaName', 'my_view'),
+            isA<DriftView>().having(
+              (e) => e.schemaName,
+              'schemaName',
+              'my_view',
+            ),
           )
           .having((e) => e.effectivelyNoAlias, 'effectivelyNoAlias', isTrue),
     );
@@ -107,8 +117,11 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
 
     final isFromView = isExistingRowType(
       type: 'MyViewData',
-      singleValue: isA<MatchingDriftTable>()
-          .having((e) => e.table.schemaName, 'table.schemaName', 'my_view'),
+      singleValue: isA<MatchingDriftTable>().having(
+        (e) => e.table.schemaName,
+        'table.schemaName',
+        'my_view',
+      ),
     );
 
     expect(
@@ -140,13 +153,12 @@ query: SELECT 1 AS a, b.** FROM (SELECT 2 AS b, 3 AS c) AS b;
         type: 'Row',
         named: {
           'a': scalarColumn('a'),
-          'b': structedFromNested(isExistingRowType(
-            type: 'QueryNestedColumn0',
-            named: {
-              'b': scalarColumn('b'),
-              'c': scalarColumn('c'),
-            },
-          )),
+          'b': structedFromNested(
+            isExistingRowType(
+              type: 'QueryNestedColumn0',
+              named: {'b': scalarColumn('b'), 'c': scalarColumn('c')},
+            ),
+          ),
         },
       ),
     );
@@ -181,22 +193,32 @@ q3: SELECT datetime('now');
       expect(queries, hasLength(3));
 
       final q1 = queries[0];
-      expect(q1.resultSet!.scalarColumns.single.sqlType.builtin,
-          DriftSqlType.dateTime);
+      expect(
+        q1.resultSet!.scalarColumns.single.sqlType.builtin,
+        DriftSqlType.dateTime,
+      );
 
       final q2 = queries[1];
       final q3 = queries[2];
 
       if (dateTimeAsText) {
-        expect(q2.resultSet!.scalarColumns.single.sqlType.builtin,
-            DriftSqlType.int);
-        expect(q3.resultSet!.scalarColumns.single.sqlType.builtin,
-            DriftSqlType.dateTime);
+        expect(
+          q2.resultSet!.scalarColumns.single.sqlType.builtin,
+          DriftSqlType.int,
+        );
+        expect(
+          q3.resultSet!.scalarColumns.single.sqlType.builtin,
+          DriftSqlType.dateTime,
+        );
       } else {
-        expect(q2.resultSet!.scalarColumns.single.sqlType.builtin,
-            DriftSqlType.dateTime);
-        expect(q3.resultSet!.scalarColumns.single.sqlType.builtin,
-            DriftSqlType.string);
+        expect(
+          q2.resultSet!.scalarColumns.single.sqlType.builtin,
+          DriftSqlType.dateTime,
+        );
+        expect(
+          q3.resultSet!.scalarColumns.single.sqlType.builtin,
+          DriftSqlType.string,
+        );
       }
     });
   }
@@ -235,9 +257,9 @@ FROM routes
       ['from', 'to'],
     );
     expect(
-      resultSet.nestedResults
-          .cast<NestedResultTable>()
-          .map((e) => e.innerResultSet.matchingTable!.table.schemaName),
+      resultSet.nestedResults.cast<NestedResultTable>().map(
+        (e) => e.innerResultSet.matchingTable!.table.schemaName,
+      ),
       ['points', 'points'],
     );
   });
@@ -273,47 +295,62 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
     final resultSet = (query as SqlSelectQuery).resultSet;
 
     final nested = resultSet.nestedResults;
-    expect(
-      nested.cast<NestedResultTable>().map((e) => e.name),
-      ['tableA1', 'tableA2', 'tableB1', 'tableB2'],
-    );
-    expect(
-      nested.cast<NestedResultTable>().map((e) => e.isNullable),
-      [false, true, false, true],
-    );
+    expect(nested.cast<NestedResultTable>().map((e) => e.name), [
+      'tableA1',
+      'tableA2',
+      'tableB1',
+      'tableB2',
+    ]);
+    expect(nested.cast<NestedResultTable>().map((e) => e.isNullable), [
+      false,
+      true,
+      false,
+      true,
+    ]);
   });
 
   test('supports custom functions', () async {
-    final withoutOptions =
-        await TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function();'});
+    final withoutOptions = await TestBackend.inTest({
+      'a|lib/a.drift': 'a: SELECT my_function();',
+    });
     var result = await withoutOptions.analyze('package:a/a.drift');
     expect(result.allErrors, [
-      isDriftError('Function my_function could not be found')
-          .withSpan('my_function'),
-      isDriftError(startsWith('Expression has an unknown type'))
-          .withSpan('my_function()'),
+      isDriftError(
+        'Function my_function could not be found',
+      ).withSpan('my_function'),
+      isDriftError(
+        startsWith('Expression has an unknown type'),
+      ).withSpan('my_function()'),
     ]);
 
     final withOptions = await TestBackend.inTest(
-        {'a|lib/a.drift': 'a: SELECT my_function(?, ?);'},
-        options: DriftOptions.defaults(
-          sqliteAnalysisOptions: SqliteAnalysisOptions(knownFunctions: {
-            'my_function': KnownSqliteFunction.fromJson('boolean (int, text)')
-          }),
-        ));
+      {'a|lib/a.drift': 'a: SELECT my_function(?, ?);'},
+      options: DriftOptions.defaults(
+        sqliteAnalysisOptions: SqliteAnalysisOptions(
+          knownFunctions: {
+            'my_function': KnownSqliteFunction.fromJson('boolean (int, text)'),
+          },
+        ),
+      ),
+    );
     result = await withOptions.analyze('package:a/a.drift');
 
     withOptions.expectNoErrors();
 
     final query = result.fileAnalysis!.resolvedQueries.values.single;
     expect(query.resultSet!.columns, [
-      isA<ScalarResultColumn>()
-          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool)
+      isA<ScalarResultColumn>().having(
+        (e) => e.sqlType.builtin,
+        'sqlType',
+        DriftSqlType.bool,
+      ),
     ]);
 
     final args = query.variables;
-    expect(args.map((e) => e.sqlType.builtin),
-        [DriftSqlType.int, DriftSqlType.string]);
+    expect(args.map((e) => e.sqlType.builtin), [
+      DriftSqlType.int,
+      DriftSqlType.string,
+    ]);
   });
 
   test('does not warn about type of raise expressions', () async {
@@ -327,7 +364,7 @@ CREATE TABLE foo (
 CREATE TRIGGER test_trigger BEFORE UPDATE OF bar ON foo BEGIN
     SELECT RAISE(ABORT, 'nope');
 END;
-'''
+''',
     });
     await test.analyze('package:a/a.drift');
     test.expectNoErrors();
@@ -345,10 +382,12 @@ a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
     final resultSet = query.resultSet!;
 
     expect(resultSet.columns, [
-      scalarColumn('a')
-          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool),
-      scalarColumn('b')
-          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.dateTime),
+      scalarColumn(
+        'a',
+      ).having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool),
+      scalarColumn(
+        'b',
+      ).having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.dateTime),
     ]);
   });
 
@@ -376,15 +415,21 @@ enum MyEnum {
     final resultSet = query.resultSet!;
 
     final isEnumConverter = isA<AppliedTypeConverter>().having(
-        (e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter', isTrue);
+      (e) => e.isDriftEnumTypeConverter,
+      'isDriftEnumTypeConverter',
+      isTrue,
+    );
 
     expect(resultSet.columns, [
-      scalarColumn('c1')
-          .having((e) => e.typeConverter, 'typeConverter', isNull),
-      scalarColumn('c2')
-          .having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
-      scalarColumn('c3')
-          .having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
+      scalarColumn(
+        'c1',
+      ).having((e) => e.typeConverter, 'typeConverter', isNull),
+      scalarColumn(
+        'c2',
+      ).having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
+      scalarColumn(
+        'c3',
+      ).having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
     ]);
   });
 }

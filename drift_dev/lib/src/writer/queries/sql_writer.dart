@@ -29,7 +29,9 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 
 extension ToSqlText on AstNode {
   String toSqlWithoutDriftSpecificSyntax(
-      DriftOptions options, SqlDialect dialect) {
+    DriftOptions options,
+    SqlDialect dialect,
+  ) {
     final writer = SqlWriter(options, dialect: dialect, escapeForDart: false);
     return writer.writeSql(this);
   }
@@ -44,10 +46,15 @@ final class SqlWriter extends NodeSqlBuilder {
 
   bool get _isPostgres => dialect == SqlDialect.postgres;
 
-  SqlWriter._(this.query, this.options, this.dialect,
-      this._starColumnToResolved, StringBuffer out, bool escapeForDart)
-      : _out = out,
-        super(escapeForDart ? _DartEscapingSink(out) : out);
+  SqlWriter._(
+    this.query,
+    this.options,
+    this.dialect,
+    this._starColumnToResolved,
+    StringBuffer out,
+    bool escapeForDart,
+  ) : _out = out,
+      super(escapeForDart ? _DartEscapingSink(out) : out);
 
   factory SqlWriter(
     DriftOptions options, {
@@ -63,11 +70,18 @@ final class SqlWriter extends NodeSqlBuilder {
     if (query is SqlSelectQuery) {
       doubleStarColumnToResolvedTable = {
         for (final nestedResult in query.resultSet.nestedResults)
-          if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
+          if (nestedResult is NestedResultTable)
+            nestedResult.from: nestedResult,
       };
     }
-    return SqlWriter._(query, options, dialect, doubleStarColumnToResolvedTable,
-        buffer ?? StringBuffer(), escapeForDart);
+    return SqlWriter._(
+      query,
+      options,
+      dialect,
+      doubleStarColumnToResolvedTable,
+      buffer ?? StringBuffer(),
+      escapeForDart,
+    );
   }
 
   String write() {
@@ -92,8 +106,9 @@ final class SqlWriter extends NodeSqlBuilder {
     return isKeywordLexeme(lexeme) ||
         switch (dialect) {
           SqlDialect.postgres => isPostgresKeywordLexeme(lexeme),
-          SqlDialect.mariadb =>
-            additionalMariaDBKeywords.contains(lexeme.toUpperCase()),
+          SqlDialect.mariadb => additionalMariaDBKeywords.contains(
+            lexeme.toUpperCase(),
+          ),
           _ => false,
         };
   }
@@ -104,8 +119,9 @@ final class SqlWriter extends NodeSqlBuilder {
   }
 
   FoundVariable? _findVariable(Variable target) {
-    return query!.variables
-        .firstWhereOrNull((f) => f.originalIndex == target.resolvedIndex);
+    return query!.variables.firstWhereOrNull(
+      (f) => f.originalIndex == target.resolvedIndex,
+    );
   }
 
   void _writeAnalyzedVariable(FoundVariable variable) {
@@ -113,8 +129,9 @@ final class SqlWriter extends NodeSqlBuilder {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
       final mark = _isPostgres ? '\\\$' : '?';
-      final syntax =
-          dialect.supportsIndexedParameters ? '$mark${variable.index}' : mark;
+      final syntax = dialect.supportsIndexedParameters
+          ? '$mark${variable.index}'
+          : mark;
 
       _writeRawInSpaces(syntax);
     }
@@ -228,12 +245,14 @@ final class SqlWriter extends NodeSqlBuilder {
         }
       }
     } else if (e is DartPlaceholder) {
-      final moorPlaceholder =
-          query!.placeholders.singleWhere((p) => p.astNode == e);
+      final moorPlaceholder = query!.placeholders.singleWhere(
+        (p) => p.astNode == e,
+      );
 
       if (options.drift3Preview) {
         _writeRawInSpaces(
-            '\${${placeholderContextName(moorPlaceholder)}.buffer}');
+          '\${${placeholderContextName(moorPlaceholder)}.buffer}',
+        );
       } else {
         _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
       }

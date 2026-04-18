@@ -36,7 +36,7 @@ class PreprocessBuilder extends Builder {
   @override
   late final Map<String, List<String>> buildExtensions = {
     '.moor': _outputs,
-    '.drift': _outputs
+    '.drift': _outputs,
   };
 
   @override
@@ -47,11 +47,15 @@ class PreprocessBuilder extends Builder {
 
     final tempDartAsset = input.changeExtension('.expr.temp.dart');
     await buildStep.writeAsString(
-        tempDartAsset, preprocessor.temporaryDartFile);
+      tempDartAsset,
+      preprocessor.temporaryDartFile,
+    );
 
     // And the file mapping Dart expressions onto the variable names here
     final outputAsset = input.changeExtension('.drift_prep.json');
     await buildStep.writeAsString(
-        outputAsset, json.encode(preprocessor.result.toJson()));
+      outputAsset,
+      json.encode(preprocessor.result.toJson()),
+    );
   }
 }

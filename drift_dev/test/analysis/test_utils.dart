@@ -43,9 +43,9 @@ class TestBackend extends DriftBackend {
     DriftOptions options = const DriftOptions.defaults(),
     this.analyzerExperiments = const Iterable.empty(),
   }) : sourceContents = {
-          for (final entry in sourceContents.entries)
-            AssetId.parse(entry.key).uri.toString(): entry.value,
-        };
+         for (final entry in sourceContents.entries)
+           AssetId.parse(entry.key).uri.toString(): entry.value,
+       };
 
   static Future<TestBackend> init(
     Map<String, String> sourceContents, {
@@ -79,12 +79,15 @@ class TestBackend extends DriftBackend {
     return backend;
   }
 
-  static Future<FileState> analyzeSingle(String content,
-      {String asset = 'a|lib/a.drift',
-      DriftOptions options = const DriftOptions.defaults()}) async {
+  static Future<FileState> analyzeSingle(
+    String content, {
+    String asset = 'a|lib/a.drift',
+    DriftOptions options = const DriftOptions.defaults(),
+  }) async {
     final assetId = AssetId.parse(asset);
-    final backend =
-        await TestBackend.inTest({asset: content}, options: options);
+    final backend = await TestBackend.inTest({
+      asset: content,
+    }, options: options);
     return backend.driver.fullyAnalyze(assetId.uri);
   }
 
@@ -97,8 +100,10 @@ class TestBackend extends DriftBackend {
   String _pathFor(Uri uri) {
     if (uri.scheme == 'package') {
       final package = uri.pathSegments.first;
-      final path =
-          p.url.joinAll(['/$package/lib', ...uri.pathSegments.skip(1)]);
+      final path = p.url.joinAll([
+        '/$package/lib',
+        ...uri.pathSegments.skip(1),
+      ]);
 
       return path;
     }
@@ -107,14 +112,17 @@ class TestBackend extends DriftBackend {
   }
 
   Future<void> _setupDartAnalyzer() async {
-    final provider = _resourceProvider =
-        OverlayResourceProvider(PhysicalResourceProvider.INSTANCE);
+    final provider = _resourceProvider = OverlayResourceProvider(
+      PhysicalResourceProvider.INSTANCE,
+    );
 
     // Analyze example sources against the drift sources from the current
     // drift_dev test runner.
     final uri = await Isolate.packageConfig;
-    final hostConfig =
-        PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
+    final hostConfig = PackageConfig.parseBytes(
+      await File.fromUri(uri!).readAsBytes(),
+      uri,
+    );
     final testConfig = PackageConfig([
       ...hostConfig.packages,
       Package(
@@ -128,8 +136,11 @@ class TestBackend extends DriftBackend {
     // Write package config used to analyze dummy sources
     final configBuffer = StringBuffer();
     PackageConfig.writeString(testConfig, configBuffer);
-    provider.setOverlay('/a/.dart_tool/package_config.json',
-        content: configBuffer.toString(), modificationStamp: 1);
+    provider.setOverlay(
+      '/a/.dart_tool/package_config.json',
+      content: configBuffer.toString(),
+      modificationStamp: 1,
+    );
 
     // Also put sources into the overlay:
     sourceContents.forEach((key, value) {
@@ -176,7 +187,10 @@ class TestBackend extends DriftBackend {
 
   @override
   Future<dart.Expression> resolveExpression(
-      Uri context, String dartExpression, Iterable<String> imports) async {
+    Uri context,
+    String dartExpression,
+    Iterable<String> imports,
+  ) async {
     final fileContents = StringBuffer();
     for (final import in imports) {
       fileContents.writeln("import '$import';");
@@ -188,12 +202,16 @@ class TestBackend extends DriftBackend {
     final resourceProvider = _resourceProvider!;
     final analysisContext = _dartContext!;
 
-    resourceProvider.setOverlay(path,
-        content: fileContents.toString(), modificationStamp: 1);
+    resourceProvider.setOverlay(
+      path,
+      content: fileContents.toString(),
+      modificationStamp: 1,
+    );
 
     try {
-      final result =
-          await analysisContext.currentSession.getResolvedLibrary(path);
+      final result = await analysisContext.currentSession.getResolvedLibrary(
+        path,
+      );
 
       if (result is ResolvedLibraryResult) {
         final unit = result.units.single.unit;
@@ -211,7 +229,10 @@ class TestBackend extends DriftBackend {
 
   @override
   Future<Element?> resolveTopLevelElement(
-      Uri context, String reference, Iterable<Uri> imports) async {
+    Uri context,
+    String reference,
+    Iterable<Uri> imports,
+  ) async {
     final fileContents = StringBuffer();
     for (final import in imports) {
       fileContents.writeln("import '$import';");
@@ -224,12 +245,16 @@ class TestBackend extends DriftBackend {
     final resourceProvider = _resourceProvider!;
     final analysisContext = _dartContext!;
 
-    resourceProvider.setOverlay(path,
-        content: fileContents.toString(), modificationStamp: 1);
+    resourceProvider.setOverlay(
+      path,
+      content: fileContents.toString(),
+      modificationStamp: 1,
+    );
 
     try {
-      final result =
-          await analysisContext.currentSession.getResolvedLibrary(path);
+      final result = await analysisContext.currentSession.getResolvedLibrary(
+        path,
+      );
 
       if (result is ResolvedLibraryResult) {
         final lookup = result.element.firstFragment.scope.lookup(reference);
@@ -248,8 +273,9 @@ class TestBackend extends DriftBackend {
   @override
   Future<LibraryElement> readDart(Uri uri) async {
     await ensureHasDartAnalyzer();
-    final result =
-        await _dartContext!.currentSession.getLibraryByUri(uri.toString());
+    final result = await _dartContext!.currentSession.getLibraryByUri(
+      uri.toString(),
+    );
 
     return (result as LibraryElementResult).element;
   }
@@ -284,7 +310,9 @@ class TestImportManager implements ImportManager {
   @override
   String? prefixFor(Uri definitionUri, String elementName) {
     return importAliases.putIfAbsent(
-        definitionUri, () => 'i${importAliases.length}');
+      definitionUri,
+      () => 'i${importAliases.length}',
+    );
   }
 }
 
@@ -297,7 +325,7 @@ Matcher returnsColumns(Map<String, DriftSqlType> columns) {
 
 class _HasInferredColumnTypes extends CustomMatcher {
   _HasInferredColumnTypes(dynamic expected)
-      : super('Select query with inferred columns', 'columns', expected);
+    : super('Select query with inferred columns', 'columns', expected);
 
   @override
   Object? featureValueOf(dynamic actual) {
@@ -308,7 +336,7 @@ class _HasInferredColumnTypes extends CustomMatcher {
     final resultSet = actual.resultSet;
     return {
       for (final column in resultSet.scalarColumns)
-        column.name: column.sqlType.builtin
+        column.name: column.sqlType.builtin,
     };
   }
 }
@@ -320,8 +348,9 @@ TypeMatcher<DriftAnalysisError> isDriftError(dynamic message) {
 final _version = RegExp(r'\d\.\d+\.\d+');
 
 String? requireDart(String minimalVersion) {
-  final version =
-      Version.parse(_version.firstMatch(Platform.version)!.group(0)!);
+  final version = Version.parse(
+    _version.firstMatch(Platform.version)!.group(0)!,
+  );
   final minimal = Version.parse(minimalVersion);
 
   if (version < minimal) {
@@ -332,12 +361,17 @@ String? requireDart(String minimalVersion) {
 }
 
 extension DriftErrorMatchers on TypeMatcher<DriftAnalysisError> {
-  TypeMatcher<DriftAnalysisError> withSpan(dynamic lexemeMatcher,
-      {String? filename}) {
+  TypeMatcher<DriftAnalysisError> withSpan(
+    dynamic lexemeMatcher, {
+    String? filename,
+  }) {
     final matcher = having((e) => e.span?.text, 'span.text', lexemeMatcher);
     if (filename != null) {
-      return matcher.having((e) => (e.span as FileSpan).file.url.toString(),
-          'file.url', contains(filename));
+      return matcher.having(
+        (e) => (e.span as FileSpan).file.url.toString(),
+        'file.url',
+        contains(filename),
+      );
     }
 
     return matcher;

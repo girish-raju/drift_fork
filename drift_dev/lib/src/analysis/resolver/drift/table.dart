@@ -32,8 +32,12 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
       );
       table = reader.read(stmt);
     } on CantReadSchemaException catch (e) {
-      reportError(DriftAnalysisError.inDriftFile(stmt.tableNameToken ?? stmt,
-          'Drift was unable to analyze this table: ${e.message}'));
+      reportError(
+        DriftAnalysisError.inDriftFile(
+          stmt.tableNameToken ?? stmt,
+          'Drift was unable to analyze this table: ${e.message}',
+        ),
+      );
       throw const CouldNotResolveElementException();
     }
 
@@ -66,13 +70,16 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
           }
         } else if (enumIndexMatch != null) {
           final dartTypeName = enumIndexMatch.group(2)!;
-          final dartType = await findDartTypeOrReportError(dartTypeName,
-              column.definition?.typeNames?.toSingleEntity ?? stmt);
+          final dartType = await findDartTypeOrReportError(
+            dartTypeName,
+            column.definition?.typeNames?.toSingleEntity ?? stmt,
+          );
 
           if (dartType != null) {
             converter = readEnumConverter(
-              (msg) => reportError(DriftAnalysisError.inDriftFile(
-                  column.definition ?? stmt, msg)),
+              (msg) => reportError(
+                DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg),
+              ),
               dartType,
               type.builtin == DriftSqlType.int
                   ? EnumType.intEnum
@@ -85,8 +92,9 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
 
       // columns from virtual tables don't necessarily have a definition, so we
       // can't read the constraints.
-      final sqlConstraints =
-          column.hasDefinition ? column.constraints : const <Never>[];
+      final sqlConstraints = column.hasDefinition
+          ? column.constraints
+          : const <Never>[];
       final customConstraintsForDrift = StringBuffer();
 
       for (final constraint in sqlConstraints) {
@@ -98,15 +106,21 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
         } else if (constraint is MappedBy) {
           writeIntoTable = false;
           if (converter != null) {
-            reportError(DriftAnalysisError.inDriftFile(
+            reportError(
+              DriftAnalysisError.inDriftFile(
                 constraint,
                 'Multiple type converters applied to this column, ignoring '
-                'this one.'));
+                'this one.',
+              ),
+            );
             continue;
           }
 
-          converter =
-              await typeConverterFromMappedBy(type, nullable, constraint);
+          converter = await typeConverterFromMappedBy(
+            type,
+            nullable,
+            constraint,
+          );
         } else if (constraint is sql.JsonKey) {
           writeIntoTable = false;
           overriddenJsonName = constraint.jsonKey;
@@ -130,17 +144,20 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
             final columnName =
                 constraint.clause.columnNames.firstOrNull?.columnName;
             if (columnName != null) {
-              final targetColumn = referenced.columns
-                  .firstWhereOrNull((c) => c.hasEqualSqlName(columnName));
+              final targetColumn = referenced.columns.firstWhereOrNull(
+                (c) => c.hasEqualSqlName(columnName),
+              );
 
               if (targetColumn != null) {
-                constraints.add(ForeignKeyReference(
-                  targetColumn,
-                  constraint.clause.onUpdate,
-                  constraint.clause.onDelete,
-                  constraint.clause.effectiveDeferrableMode ==
-                      InitialDeferrableMode.deferred,
-                ));
+                constraints.add(
+                  ForeignKeyReference(
+                    targetColumn,
+                    constraint.clause.onUpdate,
+                    constraint.clause.onDelete,
+                    constraint.clause.effectiveDeferrableMode ==
+                        InitialDeferrableMode.deferred,
+                  ),
+                );
               }
             }
           }
@@ -162,25 +179,28 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
         }
       }
 
-      columns.add(DriftColumn(
-        sqlType: type,
-        nullable: nullable,
-        nameInSql: column.name,
-        nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
-        overriddenJsonName: overriddenJsonName,
-        constraints: constraints,
-        typeConverter: converter,
-        defaultArgument: defaultArgument,
-        documentationComment: column.definition?.documentationComment,
-        customConstraints: (customConstraintsForDrift.isEmpty &&
-                resolver.driver.options.drift3Preview)
-            ? null
-            : customConstraintsForDrift.toString(),
-        declaration: DriftDeclaration.driftFile(
-          column.definition?.nameToken ?? stmt,
-          state.ownId.libraryUri,
+      columns.add(
+        DriftColumn(
+          sqlType: type,
+          nullable: nullable,
+          nameInSql: column.name,
+          nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
+          overriddenJsonName: overriddenJsonName,
+          constraints: constraints,
+          typeConverter: converter,
+          defaultArgument: defaultArgument,
+          documentationComment: column.definition?.documentationComment,
+          customConstraints:
+              (customConstraintsForDrift.isEmpty &&
+                  resolver.driver.options.drift3Preview)
+              ? null
+              : customConstraintsForDrift.toString(),
+          declaration: DriftDeclaration.driftFile(
+            column.definition?.nameToken ?? stmt,
+            state.ownId.libraryUri,
+          ),
         ),
-      ));
+      );
     }
 
     VirtualTableData? virtualTableData;
@@ -203,24 +223,28 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
             references.add(otherTable);
             final localColumns = [
               for (final column in constraint.columns)
-                columns.firstWhere((e) => e.nameInSql == column.columnName)
+                columns.firstWhere((e) => e.nameInSql == column.columnName),
             ];
 
             final foreignColumns = [
               for (final column in constraint.clause.columnNames)
-                otherTable.columns
-                    .firstWhere((e) => e.nameInSql == column.columnName)
+                otherTable.columns.firstWhere(
+                  (e) => e.nameInSql == column.columnName,
+                ),
             ];
 
-            tableConstraints.add(ForeignKeyTable(
-              localColumns: localColumns,
-              otherTable: otherTable,
-              otherColumns: foreignColumns,
-              onUpdate: constraint.clause.onUpdate,
-              onDelete: constraint.clause.onDelete,
-              initiallyDeferred: constraint.clause.effectiveDeferrableMode ==
-                  InitialDeferrableMode.deferred,
-            ));
+            tableConstraints.add(
+              ForeignKeyTable(
+                localColumns: localColumns,
+                otherTable: otherTable,
+                otherColumns: foreignColumns,
+                onUpdate: constraint.clause.onUpdate,
+                onDelete: constraint.clause.onDelete,
+                initiallyDeferred:
+                    constraint.clause.effectiveDeferrableMode ==
+                    InitialDeferrableMode.deferred,
+              ),
+            );
           }
         } else if (constraint is KeyClause) {
           final keyColumns = <DriftColumn>{};
@@ -228,8 +252,9 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
           for (final keyColumn in constraint.columns) {
             final expression = keyColumn.expression;
             if (expression is Reference) {
-              keyColumns.add(columns
-                  .firstWhere((e) => e.nameInSql == expression.columnName));
+              keyColumns.add(
+                columns.firstWhere((e) => e.nameInSql == expression.columnName),
+              );
             }
           }
 
@@ -243,15 +268,20 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
     } else if (stmt is CreateVirtualTableStatement) {
       RecognizedVirtualTableModule? recognized;
       if (table is Fts5Table) {
-        final errorLocation = stmt.arguments
-                .firstWhereOrNull((e) => e.text.contains('content')) ??
+        final errorLocation =
+            stmt.arguments.firstWhereOrNull(
+              (e) => e.text.contains('content'),
+            ) ??
             stmt.span;
 
         final contentTable = table.contentTable != null
             ? await resolveSqlReferenceOrReportError<DriftTable>(
                 table.contentTable!,
-                (msg) => DriftAnalysisError(errorLocation,
-                    'Could not find referenced content table: $msg'))
+                (msg) => DriftAnalysisError(
+                  errorLocation,
+                  'Could not find referenced content table: $msg',
+                ),
+              )
             : null;
         DriftColumn? contentRowId;
 
@@ -261,27 +291,37 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
           final rowId = parserContentTable.findColumn(table.contentRowId!);
 
           if (rowId == null) {
-            var location = stmt.arguments
-                .firstWhereOrNull((e) => e.text.contains('content_rowid'));
-            reportError(DriftAnalysisError(
+            var location = stmt.arguments.firstWhereOrNull(
+              (e) => e.text.contains('content_rowid'),
+            );
+            reportError(
+              DriftAnalysisError(
                 location ?? errorLocation,
                 'Invalid content rowid, `${table.contentRowId}` not found '
-                'in `${contentTable.schemaName}`'));
+                'in `${contentTable.schemaName}`',
+              ),
+            );
           } else if (rowId is! RowId) {
             // The referenced rowid of this table is an actual column
-            contentRowId = contentTable.columns
-                .firstWhereOrNull((c) => c.nameInSql == rowId.name);
+            contentRowId = contentTable.columns.firstWhereOrNull(
+              (c) => c.nameInSql == rowId.name,
+            );
           }
 
           // Also, check that all columns referenced in the fts5 table exist in
           // the content table.
           for (final column in columns) {
-            var location = stmt.arguments
-                .firstWhereOrNull((e) => e.text == column.nameInSql);
+            var location = stmt.arguments.firstWhereOrNull(
+              (e) => e.text == column.nameInSql,
+            );
 
             if (parserContentTable.findColumn(column.nameInSql) == null) {
-              reportError(DriftAnalysisError(location ?? errorLocation,
-                  'The content table has no column `${column.nameInSql}`.'));
+              reportError(
+                DriftAnalysisError(
+                  location ?? errorLocation,
+                  'The content table has no column `${column.nameInSql}`.',
+                ),
+              );
             }
           }
         }
@@ -289,8 +329,11 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
         recognized = DriftFts5Table(contentTable, contentRowId);
       }
 
-      virtualTableData =
-          VirtualTableData(stmt.moduleName, stmt.argumentContent, recognized);
+      virtualTableData = VirtualTableData(
+        stmt.moduleName,
+        stmt.argumentContent,
+        recognized,
+      );
     }
 
     String? dartTableName, dataClassName;
@@ -301,8 +344,10 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
       final overriddenNames = driftTableInfo.overriddenDataClassName;
 
       if (driftTableInfo.useExistingDartClass) {
-        existingRowClass =
-            await resolveExistingRowClass(columns, driftTableInfo);
+        existingRowClass = await resolveExistingRowClass(
+          columns,
+          driftTableInfo,
+        );
         final nameFromExisting = existingRowClass?.targetClass?.toString();
         if (nameFromExisting != null) {
           dataClassName = nameFromExisting;
@@ -344,8 +389,10 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
 
     // Run drift-specific lints on the `CREATE TABLE` statement, which requires
     // having the resolved table structure first.
-    final engineForAnalysis =
-        typeMapping.newEngineWithTables([driftTable, ...driftTable.references]);
+    final engineForAnalysis = typeMapping.newEngineWithTables([
+      driftTable,
+      ...driftTable.references,
+    ]);
     final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final context = engineForAnalysis.analyzeNode(stmt, source);
     final linter = DriftSqlLinter(context, references: references)

@@ -12,8 +12,9 @@ part of '../query_builder.dart';
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
 Expression<int> countAll({Expression<bool>? filter}) {
-  return AggregateFunctionExpression('COUNT', const [_StarFunctionParameter()],
-      filter: filter);
+  return AggregateFunctionExpression('COUNT', const [
+    _StarFunctionParameter(),
+  ], filter: filter);
 }
 
 /// Provides aggregate functions that are available for each expression.
@@ -26,8 +27,12 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
   /// counted twice.
   /// {@macro drift_aggregate_filter}
   Expression<int> count({bool distinct = false, Expression<bool>? filter}) {
-    return AggregateFunctionExpression('COUNT', [this],
-        filter: filter, distinct: distinct);
+    return AggregateFunctionExpression(
+      'COUNT',
+      [this],
+      filter: filter,
+      distinct: distinct,
+    );
   }
 
   /// Return the maximum of all non-null values in this group.
@@ -75,14 +80,15 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
     // Distinct aggregates can only have one argument
     if (distinct && separator != sqliteDefaultSeparator) {
       throw ArgumentError(
-          'Cannot use groupConcat with distinct: true and a custom separator');
+        'Cannot use groupConcat with distinct: true and a custom separator',
+      );
     }
 
     return AggregateFunctionExpression(
       'GROUP_CONCAT',
       [
         this,
-        if (separator != sqliteDefaultSeparator) Variable.withString(separator)
+        if (separator != sqliteDefaultSeparator) Variable.withString(separator),
       ],
       distinct: distinct,
       filter: filter,
@@ -269,8 +275,13 @@ final class AggregateFunctionExpression<D extends Object>
 
   @override
   int get hashCode {
-    return Object.hash(functionName, distinct,
-        const ListEquality<Object?>().hash(arguments), orderBy, filter);
+    return Object.hash(
+      functionName,
+      distinct,
+      const ListEquality<Object?>().hash(arguments),
+      orderBy,
+      filter,
+    );
   }
 
   @override

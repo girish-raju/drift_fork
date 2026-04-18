@@ -10,10 +10,12 @@ void main() {
   group('CASE WHEN with base expression', () {
     test('WHEN without ELSE', () {
       expect(
-        x.caseMatch<int>(when: {
-          const Constant('a'): const Constant(1),
-          const Constant('b'): const Constant(2),
-        }),
+        x.caseMatch<int>(
+          when: {
+            const Constant('a'): const Constant(1),
+            const Constant('b'): const Constant(2),
+          },
+        ),
         generates("CASE x WHEN 'a' THEN 1 WHEN 'b' THEN 2 END"),
       );
     });
@@ -21,9 +23,7 @@ void main() {
     test('WHEN with ELSE', () {
       expect(
         x.caseMatch<int>(
-          when: {
-            const Constant('a'): const Constant(1),
-          },
+          when: {const Constant('a'): const Constant(1)},
           orElse: y,
         ),
         generates("CASE x WHEN 'a' THEN 1 ELSE y END"),
@@ -31,18 +31,22 @@ void main() {
     });
 
     test('does not allow empty WHEN map', () {
-      expect(() => x.caseMatch<Object>(when: const {}),
-          throwsA(isA<ArgumentError>()));
+      expect(
+        () => x.caseMatch<Object>(when: const {}),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 
   group('CASE WHEN without base expression', () {
     test('WHEN without ELSE', () {
       expect(
-        CaseWhenExpression<int>(cases: [
-          const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
-          const CaseWhen(CustomExpression("'id' IS 2"), then: Constant(2)),
-        ]),
+        CaseWhenExpression<int>(
+          cases: [
+            const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
+            const CaseWhen(CustomExpression("'id' IS 2"), then: Constant(2)),
+          ],
+        ),
         generates("CASE WHEN 'id' IS 1 THEN 1 WHEN 'id' IS 2 THEN 2 END"),
       );
     });
@@ -60,8 +64,10 @@ void main() {
     });
 
     test('does not allow empty WHEN map', () {
-      expect(() => CaseWhenExpression<Object>(cases: const []),
-          throwsA(isA<ArgumentError>()));
+      expect(
+        () => CaseWhenExpression<Object>(cases: const []),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 

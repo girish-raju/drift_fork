@@ -18,62 +18,70 @@ void main() {
 
   test('isInValues', () async {
     expect(
-      db.select(db.config)
-        ..where((tbl) => tbl.syncState.isInValues([
-              SyncType.synchronized,
-              SyncType.locallyCreated,
-            ])),
+      db.select(db.config)..where(
+        (tbl) => tbl.syncState.isInValues([
+          SyncType.synchronized,
+          SyncType.locallyCreated,
+        ]),
+      ),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) AND "sync_state" IS NOT NULL',
-          [
-            ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
-            ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
-          ]),
+        'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) AND "sync_state" IS NOT NULL',
+        [
+          ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
+          ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
+        ],
+      ),
     );
     expect(
-      db.select(db.config)
-        ..where((tbl) => tbl.syncState.isInValues([
-              SyncType.synchronized,
-              SyncType.locallyCreated,
-              null,
-            ])),
+      db.select(db.config)..where(
+        (tbl) => tbl.syncState.isInValues([
+          SyncType.synchronized,
+          SyncType.locallyCreated,
+          null,
+        ]),
+      ),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) OR "sync_state" IS NULL',
-          [
-            ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
-            ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
-          ]),
+        'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) OR "sync_state" IS NULL',
+        [
+          ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
+          ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
+        ],
+      ),
     );
   });
 
   test('isNotInValues', () async {
     expect(
-      db.select(db.config)
-        ..where((tbl) => tbl.syncState.isNotInValues([
-              SyncType.synchronized,
-              SyncType.locallyCreated,
-            ])),
+      db.select(db.config)..where(
+        (tbl) => tbl.syncState.isNotInValues([
+          SyncType.synchronized,
+          SyncType.locallyCreated,
+        ]),
+      ),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) OR "sync_state" IS NULL',
-          [
-            ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
-            ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
-          ]),
+        'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) OR "sync_state" IS NULL',
+        [
+          ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
+          ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
+        ],
+      ),
     );
 
     expect(
-      db.select(db.config)
-        ..where((tbl) => tbl.syncState.isNotInValues([
-              SyncType.synchronized,
-              SyncType.locallyCreated,
-              null,
-            ])),
+      db.select(db.config)..where(
+        (tbl) => tbl.syncState.isNotInValues([
+          SyncType.synchronized,
+          SyncType.locallyCreated,
+          null,
+        ]),
+      ),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) AND "sync_state" IS NOT NULL',
-          [
-            ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
-            ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
-          ]),
+        'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) AND "sync_state" IS NOT NULL',
+        [
+          ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
+          ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
+        ],
+      ),
     );
   });
 }

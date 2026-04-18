@@ -20,8 +20,9 @@ CREATE TABLE b (
 ''',
       });
 
-      final state =
-          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
+      final state = await backend.driver.resolveElements(
+        Uri.parse('package:a/a.drift'),
+      );
 
       expect(state, hasNoErrors);
       final results = state.analysis.values.toList();
@@ -51,8 +52,9 @@ CREATE TABLE a (
 ''',
       });
 
-      final state =
-          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
+      final state = await backend.driver.resolveElements(
+        Uri.parse('package:a/a.drift'),
+      );
 
       expect(state, hasNoErrors);
 
@@ -77,8 +79,9 @@ CREATE TABLE b (
 ''',
       });
 
-      final stateA =
-          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
+      final stateA = await backend.driver.resolveElements(
+        Uri.parse('package:a/a.drift'),
+      );
       expect(stateA, hasNoErrors);
 
       // Check that `b` has been analyzed and is in cache.
@@ -118,8 +121,11 @@ CREATE TABLE deleted_b (
       final trigger = file.analyzedElements.single as DriftTrigger;
       expect(trigger.references, [
         isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'b'),
-        isA<DriftTable>()
-            .having((e) => e.schemaName, 'schemaName', 'deleted_b'),
+        isA<DriftTable>().having(
+          (e) => e.schemaName,
+          'schemaName',
+          'deleted_b',
+        ),
       ]);
 
       expect(trigger.writes, [
@@ -151,8 +157,11 @@ END;
         trigger.references,
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
-          isA<DriftView>()
-              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+          isA<DriftView>().having(
+            (e) => e.schemaName,
+            'schemaName',
+            'foo_view',
+          ),
         ]),
       );
 
@@ -185,8 +194,11 @@ END;
         trigger.references,
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
-          isA<DriftView>()
-              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+          isA<DriftView>().having(
+            (e) => e.schemaName,
+            'schemaName',
+            'foo_view',
+          ),
         ]),
       );
 
@@ -219,8 +231,11 @@ END;
         trigger.references,
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
-          isA<DriftView>()
-              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+          isA<DriftView>().having(
+            (e) => e.schemaName,
+            'schemaName',
+            'foo_view',
+          ),
         ]),
       );
 
@@ -244,13 +259,15 @@ CREATE TABLE a (
 ''',
         });
 
-        final state = await backend.driver
-            .resolveElements(Uri.parse('package:a/a.drift'));
+        final state = await backend.driver.resolveElements(
+          Uri.parse('package:a/a.drift'),
+        );
         expect(state.errorsDuringDiscovery, isEmpty);
 
         final resultA = state.analysis.values.single;
-        expect(resultA.errorsDuringAnalysis,
-            [isDriftError('`b` could not be found in any import.')]);
+        expect(resultA.errorsDuringAnalysis, [
+          isDriftError('`b` could not be found in any import.'),
+        ]);
       });
       test('in a trigger', () async {
         final backend = await TestBackend.inTest(const {
@@ -265,8 +282,9 @@ END;
         expect(
           file.allErrors,
           contains(
-            isDriftError(contains('`bar` could not be found in any import'))
-                .withSpan('bar'),
+            isDriftError(
+              contains('`bar` could not be found in any import'),
+            ).withSpan('bar'),
           ),
         );
       });
@@ -281,7 +299,8 @@ END;
     final state = await backend.analyze('package:a/a.drift');
     expect(state.errorsDuringDiscovery, [
       isDriftError(
-          contains('The imported file, `package:a/b.drift`, does not exist'))
+        contains('The imported file, `package:a/b.drift`, does not exist'),
+      ),
     ]);
   });
 }

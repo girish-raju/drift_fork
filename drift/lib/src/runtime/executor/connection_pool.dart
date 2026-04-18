@@ -12,8 +12,7 @@ sealed class MultiExecutor extends QueryExecutor {
   factory MultiExecutor({
     required QueryExecutor read,
     required QueryExecutor write,
-  }) =>
-      _MultiExecutorImpl(reads: [read], write: write);
+  }) => _MultiExecutorImpl(reads: [read], write: write);
 
   /// Creates a query executor that will delegate work to different executors.
   ///
@@ -23,13 +22,12 @@ sealed class MultiExecutor extends QueryExecutor {
   factory MultiExecutor.withReadPool({
     required List<QueryExecutor> reads,
     required QueryExecutor write,
-  }) =>
-      _MultiExecutorImpl(reads: reads, write: write);
+  }) => _MultiExecutorImpl(reads: reads, write: write);
 }
 
 class _PendingSelect {
   _PendingSelect(this.statement, this.args)
-      : completer = Completer<List<Map<String, Object?>>>();
+    : completer = Completer<List<Map<String, Object?>>>();
 
   final String statement;
   final List<Object?> args;
@@ -47,7 +45,8 @@ class _QueryExecutorPool {
 
   Future<bool> ensureOpen(QueryExecutorUser user) async {
     final result = await Future.wait(
-        _executors.map((QueryExecutor executor) => executor.ensureOpen(user)));
+      _executors.map((QueryExecutor executor) => executor.ensureOpen(user)),
+    );
     return result.every((element) => element);
   }
 
@@ -55,7 +54,9 @@ class _QueryExecutorPool {
       Future.wait(_executors.map((QueryExecutor executor) => executor.close()));
 
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
+    String statement,
+    List<Object?> args,
+  ) {
     if (_executors.length == 1) {
       return _executors.single.runSelect(statement, args);
     }
@@ -75,15 +76,17 @@ class _QueryExecutorPool {
 
     _running.add(completer);
 
-    completer.completer.complete(Future.sync(() async {
-      try {
-        return await executor.runSelect(completer.statement, completer.args);
-      } finally {
-        _running.remove(completer);
-        _idleExecutors.add(executor);
-        _run();
-      }
-    }));
+    completer.completer.complete(
+      Future.sync(() async {
+        try {
+          return await executor.runSelect(completer.statement, completer.args);
+        } finally {
+          _running.remove(completer);
+          _idleExecutors.add(executor);
+          _run();
+        }
+      }),
+    );
   }
 }
 
@@ -97,8 +100,8 @@ class _MultiExecutorImpl implements MultiExecutor {
   _MultiExecutorImpl({
     required List<QueryExecutor> reads,
     required QueryExecutor write,
-  })  : _queryExecutorPool = _QueryExecutorPool(reads),
-        _write = write;
+  }) : _queryExecutorPool = _QueryExecutorPool(reads),
+       _write = write;
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) async {
@@ -138,7 +141,9 @@ class _MultiExecutorImpl implements MultiExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
+    String statement,
+    List<Object?> args,
+  ) {
     // TODO: This is horrible, fix with https://github.com/simolus3/drift/issues/3107
     if (statement.contains('RETURNING')) {
       return _write.runSelect(statement, args);
@@ -168,7 +173,9 @@ class _NoMigrationsWrapper extends QueryExecutorUser {
 
   @override
   Future<void> beforeOpen(
-      QueryExecutor executor, OpeningDetails details) async {
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {
     // don't run any migrations
   }
 }

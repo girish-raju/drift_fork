@@ -24,7 +24,8 @@ Future<WasmSqlite3> get sqlite3 {
     final port = (await channel.stream.first as num).toInt();
 
     final sqlite = await WasmSqlite3.loadFromUrl(
-        Uri.parse('http://localhost:$port/sqlite3.wasm'));
+      Uri.parse('http://localhost:$port/sqlite3.wasm'),
+    );
     sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
     channel.sink.close();
 
@@ -33,8 +34,10 @@ Future<WasmSqlite3> get sqlite3 {
 }
 
 DatabaseConnection testInMemoryDatabase() {
-  return DatabaseConnection(LazyDatabase(() async {
-    final sqlite = await sqlite3;
-    return WasmDatabase.inMemory(sqlite);
-  }));
+  return DatabaseConnection(
+    LazyDatabase(() async {
+      final sqlite = await sqlite3;
+      return WasmDatabase.inMemory(sqlite);
+    }),
+  );
 }

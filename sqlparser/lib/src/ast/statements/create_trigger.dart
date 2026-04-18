@@ -16,14 +16,15 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
   Expression? when;
   Block action;
 
-  CreateTriggerStatement(
-      {this.ifNotExists = false,
-      required this.triggerName,
-      required this.mode,
-      required this.target,
-      required this.onTable,
-      this.when,
-      required this.action});
+  CreateTriggerStatement({
+    this.ifNotExists = false,
+    required this.triggerName,
+    required this.mode,
+    required this.target,
+    required this.onTable,
+    this.when,
+    required this.action,
+  });
 
   @override
   String get createdName => triggerName;
@@ -42,12 +43,7 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [
-        target,
-        onTable,
-        if (when != null) when!,
-        action,
-      ];
+  Iterable<AstNode> get childNodes => [target, onTable, ?when, action];
 }
 
 enum TriggerMode {

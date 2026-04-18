@@ -5,8 +5,10 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const innerExpression =
-      CustomExpression<int>('name', precedence: Precedence.primary);
+  const innerExpression = CustomExpression<int>(
+    'name',
+    precedence: Precedence.primary,
+  );
 
   test('IS NULL expressions are generated', () {
     // ignore: deprecated_member_use_from_same_package
@@ -44,9 +46,6 @@ void main() {
   });
 
   test('generates NULLIF expressions', () {
-    expect(
-      Constant(3).nullIf(Constant(3)),
-      generates('NULLIF(3, 3)'),
-    );
+    expect(Constant(3).nullIf(Constant(3)), generates('NULLIF(3, 3)'));
   });
 }

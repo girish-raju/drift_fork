@@ -50,8 +50,10 @@ without awaiting every statement in it.''');
     return true;
   }
 
-  Future<T> _synchronized<T>(Future<T> Function() action,
-      {bool abortIfCancelled = true}) {
+  Future<T> _synchronized<T>(
+    Future<T> Function() action, {
+    bool abortIfCancelled = true,
+  }) {
     if (isSequential || _waitingChildExecutors > 0) {
       return _lock.synchronized(() async {
         if (abortIfCancelled) checkIfCancelled();
@@ -71,7 +73,9 @@ without awaiting every statement in it.''');
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) async {
+    String statement,
+    List<Object?> args,
+  ) async {
     final result = await _synchronized(() {
       assert(_debugCheckIsOpen());
       _log(statement, args);
@@ -122,8 +126,9 @@ without awaiting every statement in it.''');
     return _synchronized(() {
       assert(_debugCheckIsOpen());
       if (logStatements) {
-        driftRuntimeOptions
-            .debugPrint('Drift: Executing $statements in a batch');
+        driftRuntimeOptions.debugPrint(
+          'Drift: Executing $statements in a batch',
+        );
       }
       return impl.runBatched(statements);
     });
@@ -153,8 +158,9 @@ abstract class _TransactionExecutor extends _BaseExecutor
 
     if (_closed) {
       throw StateError(
-          "A transaction was used after being closed. Please check that you're "
-          'awaiting all database operations inside a `transaction` block.');
+        "A transaction was used after being closed. Please check that you're "
+        'awaiting all database operations inside a `transaction` block.',
+      );
     }
   }
 
@@ -199,16 +205,19 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
 
   // ignore: no_leading_underscores_for_local_identifiers
   _StatementBasedTransactionExecutor(super._db, this._parent, this._delegate)
-      : _startCommand = _delegate.start,
-        _commitCommand = _delegate.commit,
-        _rollbackCommand = _delegate.rollback,
-        depth = 0;
+    : _startCommand = _delegate.start,
+      _commitCommand = _delegate.commit,
+      _rollbackCommand = _delegate.rollback,
+      depth = 0;
 
   _StatementBasedTransactionExecutor.nested(
-      super._db, this._parent, this._delegate, this.depth)
-      : _startCommand = _delegate.savepoint(depth),
-        _commitCommand = _delegate.release(depth),
-        _rollbackCommand = _delegate.rollbackToSavepoint(depth);
+    super._db,
+    this._parent,
+    this._delegate,
+    this.depth,
+  ) : _startCommand = _delegate.savepoint(depth),
+      _commitCommand = _delegate.release(depth),
+      _rollbackCommand = _delegate.rollbackToSavepoint(depth);
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -222,21 +231,25 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
       final parent = _parent;
       parent._waitingChildExecutors++;
 
-      unawaited(parent._synchronized(abortIfCancelled: false, () async {
-        try {
-          checkIfCancelled();
-          await runCustom(_startCommand);
-          _db.delegate.isInTransaction = true;
-          _opened!.complete(true);
-        } catch (e, s) {
-          _opened!.completeError(e, s);
+      unawaited(
+        parent
+            ._synchronized(abortIfCancelled: false, () async {
+              try {
+                checkIfCancelled();
+                await runCustom(_startCommand);
+                _db.delegate.isInTransaction = true;
+                _opened!.complete(true);
+              } catch (e, s) {
+                _opened!.completeError(e, s);
 
-          _release();
-        }
+                _release();
+              }
 
-        // release the database lock after the transaction completes
-        await _done.future;
-      }).whenComplete(() => parent._waitingChildExecutors--));
+              // release the database lock after the transaction completes
+              await _done.future;
+            })
+            .whenComplete(() => parent._waitingChildExecutors--),
+      );
     }
 
     return opened.future;
@@ -251,7 +264,11 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   @override
   TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
     return _StatementBasedTransactionExecutor.nested(
-        _db, context, _delegate, depth + 1);
+      _db,
+      context,
+      _delegate,
+      depth + 1,
+    );
   }
 
   @override
@@ -291,8 +308,9 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
 }
 
 class _WrappingTransactionExecutor extends _TransactionExecutor {
-  static final _artificialRollback =
-      Exception('artificial exception to rollback the transaction');
+  static final _artificialRollback = Exception(
+    'artificial exception to rollback the transaction',
+  );
 
   @override
   late QueryDelegate impl;
@@ -325,8 +343,11 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
   final Completer<void> _completerForCallback = Completer();
   Completer<void>? _opened, _finished;
 
-  _WrappingTransactionExecutor(super.db, this._delegate,
-      {this.parentTransaction});
+  _WrappingTransactionExecutor(
+    super.db,
+    this._delegate, {
+    this.parentTransaction,
+  });
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -347,9 +368,9 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
           final result = switch (parentTransaction) {
             null => _delegate.startTransaction(transactionCallback),
             final parent => Future(() async {
-                await parent.ensureOpen(user);
-                await _delegate.startNested!(parent.impl, transactionCallback);
-              }),
+              await parent.ensureOpen(user);
+              await _delegate.startNested!(parent.impl, transactionCallback);
+            }),
           };
 
           if (result is Future) {
@@ -359,8 +380,10 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
                 result
                     // Ignore the exception caused by [rollback] which may be
                     // rethrown by startTransaction
-                    .onError<Exception>((error, stackTrace) => null,
-                        test: (e) => e == _artificialRollback)
+                    .onError<Exception>(
+                      (error, stackTrace) => null,
+                      test: (e) => e == _artificialRollback,
+                    )
                     // Consider this transaction closed after the call completes
                     // This may happen without send/rollback being called in
                     // case there's an exception when opening the transaction.
@@ -380,8 +403,10 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
     // The opened completer is never completed if `startTransaction` throws
     // before our callback is invoked (probably becaue `BEGIN` threw an
     // exception). In that case, _finished will complete with that error though.
-    return Future.any([opened.future, if (_finished != null) _finished!.future])
-        .then((value) => true);
+    return Future.any([
+      opened.future,
+      if (_finished != null) _finished!.future,
+    ]).then((value) => true);
   }
 
   @override
@@ -411,8 +436,11 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
   @override
   TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
     if (_delegate.startNested != null) {
-      return _WrappingTransactionExecutor(_db, _delegate,
-          parentTransaction: this);
+      return _WrappingTransactionExecutor(
+        _db,
+        _delegate,
+        parentTransaction: this,
+      );
     } else {
       throw UnsupportedError('Nested transactions');
     }
@@ -444,9 +472,11 @@ class DelegatedDatabase extends _BaseExecutor {
   final Lock _openingLock = Lock();
 
   /// Constructs a delegated database by providing the [delegate].
-  DelegatedDatabase(this.delegate,
-      {bool? logStatements, this.isSequential = false})
-      : logStatements = logStatements ?? false;
+  DelegatedDatabase(
+    this.delegate, {
+    bool? logStatements,
+    this.isSequential = false,
+  }) : logStatements = logStatements ?? false;
 
   /// Returns a [QueryExecutor] delegating calls to another [QueryDelegate].
   ///
@@ -462,9 +492,12 @@ class DelegatedDatabase extends _BaseExecutor {
   Future<bool> ensureOpen(QueryExecutorUser user) {
     return _openingLock.synchronized(() async {
       if (_closed) {
-        return Future.error(StateError(
+        return Future.error(
+          StateError(
             "Can't re-open a database after closing it. Please create a new "
-            'database connection and open that instead.'));
+            'database connection and open that instead.',
+          ),
+        );
       }
 
       // If we have been unable to run migrations, the database is likely in an
@@ -508,8 +541,10 @@ class DelegatedDatabase extends _BaseExecutor {
       oldVersion = await versionDelegate.schemaVersion;
       // Note: We only update the schema version after migrations ran
     } else {
-      throw Exception('Invalid delegate: $delegate. The versionDelegate getter '
-          'must not subclass DBVersionDelegate directly');
+      throw Exception(
+        'Invalid delegate: $delegate. The versionDelegate getter '
+        'must not subclass DBVersionDelegate directly',
+      );
     }
 
     if (oldVersion == 0) {
@@ -536,7 +571,10 @@ class DelegatedDatabase extends _BaseExecutor {
     switch (delegate.transactionDelegate) {
       case NoTransactionDelegate noTransactionDelegate:
         return _StatementBasedTransactionExecutor(
-            this, context, noTransactionDelegate);
+          this,
+          context,
+          noTransactionDelegate,
+        );
       case SupportedTransactionDelegate supported:
         return _WrappingTransactionExecutor(this, supported);
     }
@@ -566,10 +604,7 @@ final class _IndependentExecutor extends _BaseExecutor {
 
   final DelegatedDatabase db;
 
-  _IndependentExecutor({
-    required this.impl,
-    required this.db,
-  });
+  _IndependentExecutor({required this.impl, required this.db});
 
   @override
   SqlDialect get dialect => db.dialect;

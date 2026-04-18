@@ -11,10 +11,11 @@ class ColumnDefinition extends AstNode {
   List<Token>? typeNames;
   Token? nameToken;
 
-  ColumnDefinition(
-      {required this.columnName,
-      required this.typeName,
-      this.constraints = const []});
+  ColumnDefinition({
+    required this.columnName,
+    required this.typeName,
+    this.constraints = const [],
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -125,8 +126,12 @@ class PrimaryKeyColumn extends ColumnConstraint {
   final ConflictClause? onConflict;
   final OrderingMode? mode;
 
-  PrimaryKeyColumn(super.name,
-      {this.autoIncrement = false, this.mode, this.onConflict});
+  PrimaryKeyColumn(
+    super.name, {
+    this.autoIncrement = false,
+    this.mode,
+    this.onConflict,
+  });
 
   @override
   Iterable<AstNode> get childNodes => const [];
@@ -206,7 +211,7 @@ class GeneratedAs extends ColumnConstraint {
   bool stored;
 
   GeneratedAs(this.expression, {this.stored = false, String? name})
-      : super(name);
+    : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];

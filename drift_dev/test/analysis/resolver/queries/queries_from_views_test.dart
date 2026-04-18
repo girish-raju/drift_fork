@@ -38,14 +38,16 @@ SELECT * FROM total_duration_by_artist_view;
 ''',
     });
 
-    final file =
-        await backend.driver.fullyAnalyze(Uri.parse('package:foo/a.drift'));
+    final file = await backend.driver.fullyAnalyze(
+      Uri.parse('package:foo/a.drift'),
+    );
 
     expect(file.allErrors, isEmpty);
 
     final results = file.fileAnalysis!;
-    final query = results.resolvedQueries.values
-        .singleWhere((q) => q.name == 'totalDurationByArtist');
+    final query = results.resolvedQueries.values.singleWhere(
+      (q) => q.name == 'totalDurationByArtist',
+    );
 
     expect(
       query,

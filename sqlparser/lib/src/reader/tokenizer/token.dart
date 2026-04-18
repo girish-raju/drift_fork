@@ -436,10 +436,7 @@ const Map<String, TokenType> driftKeywords = {
 };
 
 /// A set of [TokenType]s that can be parsed as an identifier.
-const Set<TokenType> _identifierKeywords = {
-  TokenType.join,
-  TokenType.rowid,
-};
+const Set<TokenType> _identifierKeywords = {TokenType.join, TokenType.rowid};
 
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
@@ -501,7 +498,7 @@ class StringLiteralToken extends Token {
   final bool binary;
 
   StringLiteralToken(this.value, FileSpan span, {this.binary = false})
-      : super(TokenType.stringLiteral, span);
+    : super(TokenType.stringLiteral, span);
 }
 
 class IdentifierToken extends Token {
@@ -523,7 +520,7 @@ class IdentifierToken extends Token {
   }
 
   IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
-      : super(TokenType.identifier, span);
+    : super(TokenType.identifier, span);
 }
 
 sealed class VariableToken extends Token {
@@ -549,7 +546,7 @@ class QuestionMarkVariableToken extends VariableToken {
   final int? explicitIndex;
 
   QuestionMarkVariableToken(FileSpan span, this.explicitIndex)
-      : super(TokenType.questionMarkVariable, span);
+    : super(TokenType.questionMarkVariable, span);
 }
 
 class ColonVariableToken extends NamedVariableToken {
@@ -557,7 +554,7 @@ class ColonVariableToken extends NamedVariableToken {
   String get prefix => ':';
 
   ColonVariableToken(FileSpan span, String name)
-      : super(name, TokenType.colonVariable, span);
+    : super(name, TokenType.colonVariable, span);
 }
 
 class DollarSignVariableToken extends NamedVariableToken {
@@ -565,7 +562,7 @@ class DollarSignVariableToken extends NamedVariableToken {
   String get prefix => r'$';
 
   DollarSignVariableToken(FileSpan span, String name)
-      : super(name, TokenType.dollarSignVariable, span);
+    : super(name, TokenType.dollarSignVariable, span);
 }
 
 class AtSignVariableToken extends NamedVariableToken {
@@ -573,7 +570,7 @@ class AtSignVariableToken extends NamedVariableToken {
   String get prefix => '@';
 
   AtSignVariableToken(FileSpan span, String name)
-      : super(name, TokenType.atSignVariable, span);
+    : super(name, TokenType.atSignVariable, span);
 }
 
 /// Inline Dart appearing in a create table statement. Only parsed when the
@@ -648,8 +645,9 @@ class NumericToken extends Token {
       return int.parse(hexDigits!, radix: 16);
     }
 
-    final beforeDecimal =
-        digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal!) : 0;
+    final beforeDecimal = digitsBeforeDecimal != null
+        ? int.parse(digitsBeforeDecimal!)
+        : 0;
 
     num number;
 
@@ -719,7 +717,7 @@ class CommentToken extends Token {
   final bool invisibleToParser = true;
 
   CommentToken(this.mode, this.content, FileSpan span)
-      : super(TokenType.comment, span);
+    : super(TokenType.comment, span);
 }
 
 class TokenizerError extends Token {
@@ -727,7 +725,7 @@ class TokenizerError extends Token {
   final FileLocation location;
 
   TokenizerError(this.message, this.location)
-      : super(TokenType.errorToken, location.pointSpan());
+    : super(TokenType.errorToken, location.pointSpan());
 
   @override
   String toString() {
@@ -742,8 +740,9 @@ class CumulatedTokenizerException implements Exception {
 
   @override
   String toString() {
-    final explanation =
-        errors.map((e) => '${e.message} at ${e.location}').join(', ');
+    final explanation = errors
+        .map((e) => '${e.message} at ${e.location}')
+        .join(', ');
     return 'Malformed sql: $explanation';
   }
 }

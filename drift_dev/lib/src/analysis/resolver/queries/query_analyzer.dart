@@ -39,8 +39,8 @@ class _QueryHandlerContext {
     this.requestedResultClass,
     this.requestedResultType,
     this.sourceForFixedName,
-  })  : foundElements = List.unmodifiable(foundElements),
-        elementReferences = List.unmodifiable(elementReferences);
+  }) : foundElements = List.unmodifiable(foundElements),
+       elementReferences = List.unmodifiable(elementReferences);
 }
 
 /// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
@@ -78,9 +78,9 @@ class QueryAnalyzer {
     required List<DriftElement> references,
     this.requiredVariables = RequiredVariables.empty,
   }) : referencesByName = {
-          for (final reference in references)
-            reference.id.name.toLowerCase(): reference,
-        };
+         for (final reference in references)
+           reference.id.name.toLowerCase(): reference,
+       };
 
   E _lookupReference<E extends DriftElement?>(String name) {
     return referencesByName[name.toLowerCase()] as E;
@@ -96,8 +96,10 @@ class QueryAnalyzer {
   /// for a [DefinedSqlQuery.existingDartType] or[DefinedSqlQuery.resultClassName],
   /// respectively. It will improve the highlighted source span in error
   /// messages.
-  Future<SqlQuery> analyze(DriftQueryDeclaration declaration,
-      {DriftTableName? sourceForCustomName}) async {
+  Future<SqlQuery> analyze(
+    DriftQueryDeclaration declaration, {
+    DriftTableName? sourceForCustomName,
+  }) async {
     await _resolveDartTokens(declaration);
 
     final nestedAnalyzer = NestedQueryAnalyzer();
@@ -122,16 +124,18 @@ class QueryAnalyzer {
       requestedResultType = declaration.existingDartType;
     }
 
-    final query = _mapToDrift(_QueryHandlerContext(
-      foundElements: foundElements,
-      elementReferences: references,
-      queryName: declaration.name,
-      requestedResultClass: requestedResultClass,
-      requestedResultType: requestedResultType,
-      root: context.root,
-      nestedScope: nestedScope,
-      sourceForFixedName: sourceForCustomName,
-    ));
+    final query = _mapToDrift(
+      _QueryHandlerContext(
+        foundElements: foundElements,
+        elementReferences: references,
+        queryName: declaration.name,
+        requestedResultClass: requestedResultClass,
+        requestedResultType: requestedResultType,
+        root: context.root,
+        nestedScope: nestedScope,
+        sourceForFixedName: sourceForCustomName,
+      ),
+    );
 
     final linter = DriftSqlLinter(
       context,
@@ -162,10 +166,12 @@ class QueryAnalyzer {
 
           _resolvedExpressions[expression] = resolved;
         } on CannotReadExpressionException catch (e) {
-          lints.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'Could not read expression: ${e.msg}',
-          ));
+          lints.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message: 'Could not read expression: ${e.msg}',
+            ),
+          );
         }
       }
     }
@@ -180,8 +186,9 @@ class QueryAnalyzer {
       return _handleUpdate(queryContext);
     } else {
       throw StateError(
-          'Unexpected sql: Got ${queryContext.root}, expected insert, select, '
-          'update or delete');
+        'Unexpected sql: Got ${queryContext.root}, expected insert, select, '
+        'update or delete',
+      );
     }
   }
 
@@ -217,8 +224,9 @@ class QueryAnalyzer {
       queryContext.elementReferences,
       updatedFinder.writtenTables
           .map((write) {
-            final table =
-                _lookupReference<DriftElementWithResultSet?>(write.table.name);
+            final table = _lookupReference<DriftElementWithResultSet?>(
+              write.table.name,
+            );
             final kind = switch (write.kind) {
               UpdateKind.insert => drift.UpdateKind.insert,
               UpdateKind.update => drift.UpdateKind.update,
@@ -282,8 +290,10 @@ class QueryAnalyzer {
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
-    void handleScalarColumn(Column column,
-        [sql.ExpressionResultColumn? source]) {
+    void handleScalarColumn(
+      Column column, [
+      sql.ExpressionResultColumn? source,
+    ]) {
       final type = context.typeOf(column).type;
       final driftType = typeMapping.sqlTypeToDrift(type);
       final mappedBy = source?.mappedBy;
@@ -311,14 +321,16 @@ class QueryAnalyzer {
         }
       }
 
-      columns.add(ScalarResultColumn(
-        currentColumnIndex++,
-        column.name,
-        driftType,
-        type?.nullable ?? true,
-        typeConverter: converter,
-        sqlParserColumn: column,
-      ));
+      columns.add(
+        ScalarResultColumn(
+          currentColumnIndex++,
+          column.name,
+          driftType,
+          type?.nullable ?? true,
+          typeConverter: converter,
+          sqlParserColumn: column,
+        ),
+      );
 
       final resultSet = _resultSetOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != resultSet);
@@ -337,7 +349,10 @@ class QueryAnalyzer {
 
         if (column is NestedStarResultColumn) {
           final resolved = _resolveNestedResultTable(
-              queryContext, column, currentColumnIndex);
+            queryContext,
+            column,
+            currentColumnIndex,
+          );
 
           if (resolved != null) {
             currentColumnIndex += resolved.innerResultSet.underlyingColumnCount;
@@ -353,8 +368,9 @@ class QueryAnalyzer {
         } else {
           if (resolvedColumns == null) continue;
 
-          final definition =
-              column is sql.ExpressionResultColumn ? column : null;
+          final definition = column is sql.ExpressionResultColumn
+              ? column
+              : null;
 
           // "Regular" column that either is or expands to a list of scalar
           // result columns.
@@ -372,8 +388,9 @@ class QueryAnalyzer {
 
     if (candidatesForSingleTable.length == 1) {
       final table = candidatesForSingleTable.single;
-      final driftTable =
-          _lookupReference<DriftElementWithResultSet?>(table.name);
+      final driftTable = _lookupReference<DriftElementWithResultSet?>(
+        table.name,
+      );
 
       if (driftTable == null) {
         // References a table not declared in any drift api (dart or drift file).
@@ -389,8 +406,9 @@ class QueryAnalyzer {
       for (final column in driftTable.columns) {
         // check if this column from the table is present in the result set
         final tableColumn = table.findColumn(column.nameInSql);
-        final inResultSet =
-            rawColumns.where((t) => _toTableOrViewColumn(t) == tableColumn);
+        final inResultSet = rawColumns.where(
+          (t) => _toTableOrViewColumn(t) == tableColumn,
+        );
 
         if (inResultSet.length == 1) {
           // it is! Remember the correct getter name from the data class for
@@ -428,11 +446,13 @@ class QueryAnalyzer {
 
     if (queryContext.requestedResultType != null) {
       final matcher = MatchExistingTypeForQuery(knownTypes, (message) {
-        lints.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: message,
-          relevantNode: queryContext.sourceForFixedName ?? queryContext.root,
-        ));
+        lints.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message: message,
+            relevantNode: queryContext.sourceForFixedName ?? queryContext.root,
+          ),
+        );
       });
 
       resultSet = matcher.applyTo(resultSet, queryContext.requestedResultType!);
@@ -447,9 +467,10 @@ class QueryAnalyzer {
   /// that this result set should be handled as a nested type in Dart. For an
   /// example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results
   NestedResultTable? _resolveNestedResultTable(
-      _QueryHandlerContext queryContext,
-      NestedStarResultColumn column,
-      int expandedColumnOffset) {
+    _QueryHandlerContext queryContext,
+    NestedStarResultColumn column,
+    int expandedColumnOffset,
+  ) {
     final originalResult = column.resultSet;
     final result = originalResult?.unalias();
     final rawColumns = result?.resolvedColumns;
@@ -495,7 +516,9 @@ class QueryAnalyzer {
   /// exposed as a Dart list.
   /// For an example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#list-subqueries
   NestedResultQuery _resolveNestedResultQuery(
-      _QueryHandlerContext queryContext, NestedQueryColumn column) {
+    _QueryHandlerContext queryContext,
+    NestedQueryColumn column,
+  ) {
     final childScope = queryContext.nestedScope?.nestedQueries[column];
 
     final (foundElements, references) = _extractElements(
@@ -520,14 +543,16 @@ class QueryAnalyzer {
 
     return NestedResultQuery(
       from: column,
-      query: _handleSelect(_QueryHandlerContext(
-        queryName: name,
-        requestedResultClass: resultClassName,
-        root: column.select,
-        foundElements: foundElements,
-        elementReferences: references,
-        nestedScope: childScope,
-      )),
+      query: _handleSelect(
+        _QueryHandlerContext(
+          queryName: name,
+          requestedResultClass: resultClassName,
+          root: column.select,
+          foundElements: foundElements,
+          elementReferences: references,
+          nestedScope: childScope,
+        ),
+      ),
     );
   }
 
@@ -620,8 +645,9 @@ class QueryAnalyzer {
 
         currentIndex = used.resolvedIndex!;
         final name = (used is NamedVariable) ? used.fullName : null;
-        final explicitIndex =
-            (used is NumberedVariable) ? used.explicitIndex : null;
+        final explicitIndex = (used is NumberedVariable)
+            ? used.explicitIndex
+            : null;
         final forCapture = used.meta<CapturedVariable>();
 
         ResolveResult internalType;
@@ -638,8 +664,9 @@ class QueryAnalyzer {
           // the original index used during type inference.
           final originalIndex = nestedScope.originalIndexForVariable[used]!;
           final type = ctx.types2.session.typeOfVariable(originalIndex);
-          internalType =
-              type != null ? ResolveResult(type) : ResolveResult.unknown();
+          internalType = type != null
+              ? ResolveResult(type)
+              : ResolveResult.unknown();
         } else {
           internalType = ctx.typeOf(used);
         }
@@ -647,28 +674,34 @@ class QueryAnalyzer {
         final type = typeMapping.sqlTypeToDrift(internalType.type);
 
         if (forCapture != null) {
-          addNewElement(FoundVariable.nestedQuery(
-            index: currentIndex,
-            name: name,
-            sqlType: type,
-            variable: used,
-            forCaptured: forCapture,
-          ));
+          addNewElement(
+            FoundVariable.nestedQuery(
+              index: currentIndex,
+              name: name,
+              sqlType: type,
+              variable: used,
+              forCaptured: forCapture,
+            ),
+          );
 
           continue;
         }
 
         final isArray = internalType.type?.isArray ?? false;
-        final isRequired = required.requiredNamedVariables.contains(name) ||
+        final isRequired =
+            required.requiredNamedVariables.contains(name) ||
             required.requiredNumberedVariables.contains(used.resolvedIndex);
 
         if (explicitIndex != null && currentIndex >= maxIndex) {
-          lints.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            relevantNode: used,
-            message: 'Cannot have have a variable with an index lower than '
-                'that of an array appearing after an array!',
-          ));
+          lints.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              relevantNode: used,
+              message:
+                  'Cannot have have a variable with an index lower than '
+                  'that of an array appearing after an array!',
+            ),
+          );
         }
 
         AppliedTypeConverter? converter;
@@ -682,25 +715,29 @@ class QueryAnalyzer {
           }
         }
 
-        addNewElement(FoundVariable(
-          index: currentIndex,
-          name: name,
-          sqlType: type,
-          nullable: internalType.type?.nullable ?? false,
-          variable: used,
-          isArray: isArray,
-          typeConverter: converter,
-          isRequired: isRequired,
-        ));
+        addNewElement(
+          FoundVariable(
+            index: currentIndex,
+            name: name,
+            sqlType: type,
+            nullable: internalType.type?.nullable ?? false,
+            variable: used,
+            isArray: isArray,
+            typeConverter: converter,
+            isRequired: isRequired,
+          ),
+        );
 
         // arrays cannot be indexed explicitly because they're expanded into
         // multiple variables when executed
         if (isArray && explicitIndex != null) {
-          lints.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'Cannot use an array variable with an explicit index',
-            relevantNode: used,
-          ));
+          lints.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message: 'Cannot use an array variable with an explicit index',
+              relevantNode: used,
+            ),
+          );
         }
         if (isArray) {
           maxIndex = used.resolvedIndex!;
@@ -716,7 +753,9 @@ class QueryAnalyzer {
   }
 
   FoundDartPlaceholder _extractPlaceholder(
-      AnalysisContext context, DartPlaceholder placeholder) {
+    AnalysisContext context,
+    DartPlaceholder placeholder,
+  ) {
     final name = placeholder.name;
 
     final type = placeholder.when(
@@ -743,7 +782,8 @@ class QueryAnalyzer {
         final table = insert.table.resultSet;
 
         return InsertableDartPlaceholderType(
-            table is Table ? _lookupReference(table.name) as DriftTable : null);
+          table is Table ? _lookupReference(table.name) as DriftTable : null,
+        );
       },
     );
 
@@ -763,16 +803,18 @@ class QueryAnalyzer {
       DriftElementWithResultSet driftEntity;
 
       if (resultSet is Table || resultSet is View) {
-        driftEntity = _lookupReference((resultSet as NamedResultSet).name)
-            as DriftElementWithResultSet;
+        driftEntity =
+            _lookupReference((resultSet as NamedResultSet).name)
+                as DriftElementWithResultSet;
       } else {
         // If this result set is an inner select statement or anything else we
         // can't represent it in Dart.
         continue;
       }
 
-      availableDriftResults
-          .add(AvailableDriftResultSet(name, driftEntity, available));
+      availableDriftResults.add(
+        AvailableDriftResultSet(name, driftEntity, available),
+      );
     }
 
     return FoundDartPlaceholder(type!, name, availableDriftResults)
@@ -781,8 +823,10 @@ class QueryAnalyzer {
 
   /// Merges [vars] and [placeholders] into a list that satisfies the order
   /// described in [_extractElements].
-  List<dynamic /* Variable|DartPlaceholder */ > _mergeVarsAndPlaceholders(
-      List<Variable> vars, List<DartPlaceholder> placeholders) {
+  List<dynamic /* Variable|DartPlaceholder */> _mergeVarsAndPlaceholders(
+    List<Variable> vars,
+    List<DartPlaceholder> placeholders,
+  ) {
     final groupVarsByIndex = <int, List<Variable>>{};
     for (final variable in vars) {
       groupVarsByIndex
@@ -809,8 +853,9 @@ class QueryAnalyzer {
           final placeholderB = b as DartPlaceholder;
           final firstWithSameIndex = groupVarsByIndex[a.resolvedIndex]!.first;
 
-          return firstWithSameIndex.firstPosition
-              .compareTo(placeholderB.firstPosition);
+          return firstWithSameIndex.firstPosition.compareTo(
+            placeholderB.firstPosition,
+          );
         } else {
           return -comparer(b, a);
         }
@@ -873,7 +918,9 @@ class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
 
   @override
   void visitDriftSpecificNode(
-      DriftSpecificNode e, NestedQueriesContainer? arg) {
+    DriftSpecificNode e,
+    NestedQueriesContainer? arg,
+  ) {
     if (e is NestedQueryColumn) {
       // If the node ist a nested query, return to avoid collecting elements
       // inside of it

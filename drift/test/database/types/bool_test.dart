@@ -2,10 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final sqliteTypes =
-      DriftDatabaseOptions().createTypeMapping(SqlDialect.sqlite);
-  final postgresTypes =
-      DriftDatabaseOptions().createTypeMapping(SqlDialect.postgres);
+  final sqliteTypes = DriftDatabaseOptions().createTypeMapping(
+    SqlDialect.sqlite,
+  );
+  final postgresTypes = DriftDatabaseOptions().createTypeMapping(
+    SqlDialect.postgres,
+  );
 
   group('bool type', () {
     test('Can read booleans from sqlite', () {

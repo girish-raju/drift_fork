@@ -37,14 +37,14 @@ abstract class Query<T extends HasResultSet, D> extends Component {
   @visibleForOverriding
   void writeStartPart(GenerationContext ctx);
 
-  void _writeInto(GenerationContext context,
-      {bool withOrderByAndLimit = true}) {
+  void _writeInto(
+    GenerationContext context, {
+    bool withOrderByAndLimit = true,
+  }) {
     // whether we need to insert a space before writing the next component
     var needsWhitespace = false;
 
-    void writeWithSpace(
-      Component? component,
-    ) {
+    void writeWithSpace(Component? component) {
       if (component == null) return;
 
       if (needsWhitespace) context.writeWhitespace();
@@ -307,8 +307,9 @@ class _AsyncMappedSelectable<S, T> extends Selectable<T> {
 
   @override
   Stream<List<T>> watch() {
-    return AsyncMapPerSubscription(_source.watch())
-        .asyncMapPerSubscription(_mapResults);
+    return AsyncMapPerSubscription(
+      _source.watch(),
+    ).asyncMapPerSubscription(_mapResults);
   }
 
   Future<List<T>> _mapResults(List<S> results) async {
@@ -371,34 +372,41 @@ extension QueryTableExtensions<T extends Table, D>
   void whereSamePrimaryKey(Insertable<D> d) {
     final source = _sourceTable;
     assert(
-        source.$primaryKey.isNotEmpty,
-        'When using Query.whereSamePrimaryKey, which is also called from '
-        'DeleteStatement.delete and UpdateStatement.replace, the affected table'
-        'must have a primary key. You can either specify a primary implicitly '
-        'by making an integer() column autoIncrement(), or by explictly '
-        'overriding the primaryKey getter in your table class. You\'ll also '
-        'have to re-run the code generation step.\n'
-        'Alternatively, if you\'re using DeleteStatement.delete or '
-        'UpdateStatement.replace, consider using DeleteStatement.go or '
-        'UpdateStatement.write respectively. In that case, you need to use a '
-        'custom where statement.');
+      source.$primaryKey.isNotEmpty,
+      'When using Query.whereSamePrimaryKey, which is also called from '
+      'DeleteStatement.delete and UpdateStatement.replace, the affected table'
+      'must have a primary key. You can either specify a primary implicitly '
+      'by making an integer() column autoIncrement(), or by explictly '
+      'overriding the primaryKey getter in your table class. You\'ll also '
+      'have to re-run the code generation step.\n'
+      'Alternatively, if you\'re using DeleteStatement.delete or '
+      'UpdateStatement.replace, consider using DeleteStatement.go or '
+      'UpdateStatement.write respectively. In that case, you need to use a '
+      'custom where statement.',
+    );
 
-    final primaryKeyColumns = Map.fromEntries(source.$primaryKey.map((column) {
-      return MapEntry(column.$name, column);
-    }));
+    final primaryKeyColumns = Map.fromEntries(
+      source.$primaryKey.map((column) {
+        return MapEntry(column.$name, column);
+      }),
+    );
 
     final updatedFields = d.toColumns(false);
     // Construct a map of [GeneratedColumn] to [Expression] where each column is
     // a primary key and the associated value was extracted from d.
-    final primaryKeyValues = Map.fromEntries(updatedFields.entries
-            .where((entry) => primaryKeyColumns.containsKey(entry.key)))
-        .map((columnName, value) {
-      return MapEntry(primaryKeyColumns[columnName]!, value);
-    });
+    final primaryKeyValues =
+        Map.fromEntries(
+          updatedFields.entries.where(
+            (entry) => primaryKeyColumns.containsKey(entry.key),
+          ),
+        ).map((columnName, value) {
+          return MapEntry(primaryKeyColumns[columnName]!, value);
+        });
 
     assert(
-      primaryKeyValues.values
-          .every((value) => value is! Variable || value.value != null),
+      primaryKeyValues.values.every(
+        (value) => value is! Variable || value.value != null,
+      ),
       'Tried to find a row with a matching primary key that has a null value, '
       'which is not supported. In sqlite3, `NULL` values in a primary key are '
       'considered distinct from all other values (including other `NULL`s), so '
@@ -408,8 +416,11 @@ extension QueryTableExtensions<T extends Table, D>
 
     Expression<bool>? predicate;
     for (final entry in primaryKeyValues.entries) {
-      final comparison =
-          _Comparison(entry.key, _ComparisonOperator.equal, entry.value);
+      final comparison = _Comparison(
+        entry.key,
+        _ComparisonOperator.equal,
+        entry.value,
+      );
 
       if (predicate == null) {
         predicate = comparison;

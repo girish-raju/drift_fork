@@ -21,7 +21,7 @@ final class SqlEngine {
   SchemaFromCreateTable? _schemaReader;
 
   SqlEngine([EngineOptions? engineOptions])
-      : options = engineOptions ?? EngineOptions() {
+    : options = engineOptions ?? EngineOptions() {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
     }
@@ -45,7 +45,8 @@ final class SqlEngine {
   }
 
   SchemaFromCreateTable _createSchemaReader(
-      AnalyzeStatementOptions? stmtOptions) {
+    AnalyzeStatementOptions? stmtOptions,
+  ) {
     final driftOptions = options.driftOptions;
 
     if (stmtOptions != null) {
@@ -167,7 +168,7 @@ final class SqlEngine {
     final autoCompleteEngine = autoComplete ? AutoCompleteEngine(this) : null;
     final disableDriftExtensions =
         entrypoint == ParserEntrypoint.columnConstraints ||
-            entrypoint == ParserEntrypoint.tableConstraint;
+        entrypoint == ParserEntrypoint.tableConstraint;
 
     final parser = ParserState(
       tokenizer,
@@ -189,12 +190,19 @@ final class SqlEngine {
     }
 
     return ParseResult._(
-        node, tokenizer.tokens, parser.errors, sql, autoCompleteEngine);
+      node,
+      tokenizer.tokens,
+      parser.errors,
+      sql,
+      autoCompleteEngine,
+    );
   }
 
   /// Like [parseSpan], but with a [FileSpan] created from the [sql] string.
   ParseResult<Root> parse<Root extends AstNode>(
-      ParserEntrypoint<Root> entrypoint, String sql) {
+    ParserEntrypoint<Root> entrypoint,
+    String sql,
+  ) {
     return parseSpan(entrypoint, stringSpan(sql));
   }
 
@@ -206,8 +214,10 @@ final class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyzeSpan(FileSpan sql,
-      {AnalyzeStatementOptions? stmtOptions}) {
+  AnalysisContext analyzeSpan(
+    FileSpan sql, {
+    AnalyzeStatementOptions? stmtOptions,
+  }) {
     final result = parseSpan(ParserEntrypoint.statement, sql);
     final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
 
@@ -231,8 +241,10 @@ final class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyzeParsed(ParseResult result,
-      {AnalyzeStatementOptions? stmtOptions}) {
+  AnalysisContext analyzeParsed(
+    ParseResult result, {
+    AnalyzeStatementOptions? stmtOptions,
+  }) {
     final node = result.rootNode;
     return analyzeNode(node, result.sql, stmtOptions: stmtOptions);
   }
@@ -247,19 +259,31 @@ final class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyzeNode(AstNode node, FileSpan file,
-      {AnalyzeStatementOptions? stmtOptions}) {
+  AnalysisContext analyzeNode(
+    AstNode node,
+    FileSpan file, {
+    AnalyzeStatementOptions? stmtOptions,
+  }) {
     final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
     return context;
   }
 
   AnalysisContext _createContext(
-      AstNode node, FileSpan sql, AnalyzeStatementOptions? stmtOptions) {
+    AstNode node,
+    FileSpan sql,
+    AnalyzeStatementOptions? stmtOptions,
+  ) {
     final schemaSupport = _createSchemaReader(stmtOptions);
 
-    return AnalysisContext(node, sql, _constructRootScope(), options,
-        stmtOptions: stmtOptions, schemaSupport: schemaSupport);
+    return AnalysisContext(
+      node,
+      sql,
+      _constructRootScope(),
+      options,
+      stmtOptions: stmtOptions,
+      schemaSupport: schemaSupport,
+    );
   }
 
   void _analyzeContext(AnalysisContext context) {
@@ -372,8 +396,13 @@ final class ParseResult<Root extends AstNode> {
   /// result.
   final AutoCompleteEngine? autoCompleteEngine;
 
-  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql,
-      this.autoCompleteEngine) {
+  ParseResult._(
+    this.rootNode,
+    this.tokens,
+    this.errors,
+    this.sql,
+    this.autoCompleteEngine,
+  ) {
     const SetParentVisitor().startAtRoot(rootNode);
   }
 

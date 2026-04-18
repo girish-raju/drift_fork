@@ -17,19 +17,17 @@ class MatchExistingTypeForQuery {
   final TypeProvider typeProvider;
 
   MatchExistingTypeForQuery(this.knownTypes, this._reportError)
-      : typeSystem = knownTypes.helperLibrary.typeSystem,
-        typeProvider = knownTypes.helperLibrary.typeProvider;
+    : typeSystem = knownTypes.helperLibrary.typeSystem,
+      typeProvider = knownTypes.helperLibrary.typeProvider;
 
   InferredResultSet applyTo(
-      InferredResultSet resultSet, RequestedQueryResultType desiredType) {
+    InferredResultSet resultSet,
+    RequestedQueryResultType desiredType,
+  ) {
     final type = _findRowType(resultSet, desiredType, _reportError);
 
     if (type != null) {
-      return InferredResultSet(
-        null,
-        resultSet.columns,
-        existingRowType: type,
-      );
+      return InferredResultSet(null, resultSet.columns, existingRowType: type);
     } else {
       return resultSet;
     }
@@ -48,8 +46,11 @@ class MatchExistingTypeForQuery {
       desiredType = requestedType.type;
       constructorName = requestedType.constructorName;
     } else {
-      throw ArgumentError.value(requestedType, 'requestedType',
-          'Must be a DartType of a RequestedQueryResultType');
+      throw ArgumentError.value(
+        requestedType,
+        'requestedType',
+        'Must be a DartType of a RequestedQueryResultType',
+      );
     }
 
     final positionalColumns = <ArgumentForQueryRowType>[];
@@ -57,7 +58,7 @@ class MatchExistingTypeForQuery {
 
     final unmatchedColumnsByName = {
       for (final column in resultSet.columns)
-        resultSet.dartNameFor(column): column
+        resultSet.dartNameFor(column): column,
     };
 
     var annotatedTypeCode = AnnotatedDartCode.type(desiredType);
@@ -94,8 +95,11 @@ class MatchExistingTypeForQuery {
         addEntry(name, () => transformedTypeBuilder.addDartType(type));
       }
 
-      void addCheckedType(ArgumentForQueryRowType type, DartType originalType,
-          {String? name}) {
+      void addCheckedType(
+        ArgumentForQueryRowType type,
+        DartType originalType, {
+        String? name,
+      }) {
         if (type is QueryRowType) {
           addEntry(name, () => transformedTypeBuilder.addCode(type.rowType));
         } else if (type is MappedNestedListQuery) {
@@ -112,8 +116,10 @@ class MatchExistingTypeForQuery {
       }
 
       if (amountOfPositionalFields > amountOfColumns) {
-        reportError('The desired record has $amountOfPositionalFields '
-            'positional fields, but there are only $amountOfColumns columns.');
+        reportError(
+          'The desired record has $amountOfPositionalFields '
+          'positional fields, but there are only $amountOfColumns columns.',
+        );
       }
 
       // First, match positional fields to the first columns
@@ -121,7 +127,11 @@ class MatchExistingTypeForQuery {
       for (var i = 0; i < positionalsToCheck; i++) {
         final originalType = desiredType.positionalFields[i].type;
         final verified = _verifyArgument(
-            resultSet.columns[i], originalType, 'Field ${i + 1}', reportError);
+          resultSet.columns[i],
+          originalType,
+          'Field ${i + 1}',
+          reportError,
+        );
         if (verified == null) {
           addOriginalType(originalType);
           continue;
@@ -145,7 +155,11 @@ class MatchExistingTypeForQuery {
 
           if (column != null) {
             final verified = _verifyArgument(
-                column, originalType, 'Field ${parameter.name}', reportError);
+              column,
+              originalType,
+              'Field ${parameter.name}',
+              reportError,
+            );
             if (verified != null) {
               namedColumns[parameter.name] = verified;
               addCheckedType(verified, originalType, name: parameter.name);
@@ -153,7 +167,8 @@ class MatchExistingTypeForQuery {
           } else {
             addOriginalType(originalType, name: parameter.name);
             reportError(
-                'Unexpected field ${parameter.name} has no matching column.');
+              'Unexpected field ${parameter.name} has no matching column.',
+            );
           }
         }
 
@@ -167,8 +182,12 @@ class MatchExistingTypeForQuery {
         // If we only have a single column and the desired result type is
         // compatible with it, just use it directly instead of generating a
         // nested structure.
-        final verified = _verifyArgument(resultSet.scalarColumns.single,
-            desiredType, 'Single column', (ignore) {});
+        final verified = _verifyArgument(
+          resultSet.scalarColumns.single,
+          desiredType,
+          'Single column',
+          (ignore) {},
+        );
         if (verified != null) {
           return QueryRowType(
             rowType: AnnotatedDartCode.type(desiredType),
@@ -180,12 +199,16 @@ class MatchExistingTypeForQuery {
         }
       } else if (resultSet.matchingTable != null) {
         // Same for tables.
-        final verified =
-            _verifyMatchingDriftTable(resultSet.matchingTable!, desiredType);
+        final verified = _verifyMatchingDriftTable(
+          resultSet.matchingTable!,
+          desiredType,
+        );
         if (verified != null) {
           return QueryRowType(
-            rowType: AnnotatedDartCode.build((builder) =>
-                builder.addElementRowType(resultSet.matchingTable!.table)),
+            rowType: AnnotatedDartCode.build(
+              (builder) =>
+                  builder.addElementRowType(resultSet.matchingTable!.table),
+            ),
             singleValue: verified,
             positionalArguments: const [],
             namedArguments: const {},
@@ -199,16 +222,21 @@ class MatchExistingTypeForQuery {
         // into the classes' default constructor.
         final element = desiredType.element;
 
-        final constructor =
-            desiredType.lookUpConstructor(constructorName, element.library);
+        final constructor = desiredType.lookUpConstructor(
+          constructorName,
+          element.library,
+        );
         if (constructor == null) {
           if (constructorName == null) {
             reportError(
-                'The class to use as an existing row type must have an unnamed '
-                'constructor.');
+              'The class to use as an existing row type must have an unnamed '
+              'constructor.',
+            );
           } else {
-            reportError('The class to use as an existing row type must have a '
-                'constructor named `$constructorName`');
+            reportError(
+              'The class to use as an existing row type must have a '
+              'constructor named `$constructorName`',
+            );
           }
 
           return null;
@@ -219,8 +247,12 @@ class MatchExistingTypeForQuery {
           final column = unmatchedColumnsByName.remove(parameter.name);
 
           if (column != null) {
-            final verified = _verifyArgument(column, parameter.type,
-                'Parameter ${parameter.name}', reportError);
+            final verified = _verifyArgument(
+              column,
+              parameter.type,
+              'Parameter ${parameter.name}',
+              reportError,
+            );
             if (verified == null) continue;
 
             if (parameter.isPositional) {
@@ -230,7 +262,8 @@ class MatchExistingTypeForQuery {
             }
           } else if (!parameter.isOptional) {
             reportError(
-                'Unexpected parameter ${parameter.name} has no matching column.');
+              'Unexpected parameter ${parameter.name} has no matching column.',
+            );
           }
         }
       }
@@ -256,7 +289,8 @@ class MatchExistingTypeForQuery {
     if (resultSet.singleColumn) {
       return QueryRowType(
         rowType: AnnotatedDartCode.build(
-            (builder) => builder.addDriftType(resultSet.scalarColumns.single)),
+          (builder) => builder.addDriftType(resultSet.scalarColumns.single),
+        ),
         singleValue: resultSet.scalarColumns.single,
         positionalArguments: const [],
         namedArguments: const {},
@@ -265,7 +299,8 @@ class MatchExistingTypeForQuery {
       final table = resultSet.matchingTable!;
       return QueryRowType(
         rowType: AnnotatedDartCode.build(
-            (builder) => builder.addElementRowType(table.table)),
+          (builder) => builder.addElementRowType(table.table),
+        ),
         singleValue: table,
         positionalArguments: const [],
         namedArguments: const {},
@@ -289,8 +324,10 @@ class MatchExistingTypeForQuery {
         } else if (column is NestedResultTable) {
           final innerRecord = _defaultRecord(column.innerResultSet);
           builder.addCode(innerRecord.rowType);
-          namedArguments[fieldName] =
-              StructuredFromNestedColumn(column, innerRecord);
+          namedArguments[fieldName] = StructuredFromNestedColumn(
+            column,
+            innerRecord,
+          );
         } else if (column is NestedResultQuery) {
           final nestedResultSet = column.query.resultSet;
 
@@ -301,8 +338,10 @@ class MatchExistingTypeForQuery {
             ..addCode(innerRecord.rowType)
             ..addText('>');
 
-          namedArguments[fieldName] =
-              MappedNestedListQuery(column, innerRecord);
+          namedArguments[fieldName] = MappedNestedListQuery(
+            column,
+            innerRecord,
+          );
         }
 
         builder.addText(' $fieldName');
@@ -359,18 +398,22 @@ class MatchExistingTypeForQuery {
     } else if (column is NestedResultQuery) {
       // A nested query has its own type, which we can recursively try to
       // structure in the existing type.
-      final asList =
-          existingTypeForColumn.asInstanceOf(typeProvider.listElement);
+      final asList = existingTypeForColumn.asInstanceOf(
+        typeProvider.listElement,
+      );
       if (asList == null) {
         reportError('$name must be a List');
         return null;
       }
 
       final innerType = asList.typeArguments.first;
-      final innerExistingType =
-          _findRowType(column.query.resultSet, innerType, (msg) {
-        reportError('For $name: $msg');
-      });
+      final innerExistingType = _findRowType(
+        column.query.resultSet,
+        innerType,
+        (msg) {
+          reportError('For $name: $msg');
+        },
+      );
 
       if (innerExistingType != null) {
         return MappedNestedListQuery(column, innerExistingType);
@@ -384,7 +427,9 @@ class MatchExistingTypeForQuery {
   /// the the [existingTypeForColumn] matches the table's type (either the
   /// existing result type or `dynamic` if it's drift-generated).
   ArgumentForQueryRowType? _verifyMatchingDriftTable(
-      MatchingDriftTable match, DartType existingTypeForColumn) {
+    MatchingDriftTable match,
+    DartType existingTypeForColumn,
+  ) {
     final table = match.table;
     if (table.hasExistingRowClass) {
       final existingType = table.existingRowClass!.targetType;
@@ -393,7 +438,9 @@ class MatchExistingTypeForQuery {
         return match;
       }
     } else if (typeSystem.isSubtypeOf(
-        typeProvider.dynamicType, existingTypeForColumn)) {
+      typeProvider.dynamicType,
+      existingTypeForColumn,
+    )) {
       return match;
     }
 

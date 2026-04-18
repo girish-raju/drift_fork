@@ -20,7 +20,8 @@ class TodoItems extends Table {
   IntColumn get categoryId => integer().references(TodoCategories, #id)();
 
   TextColumn get generatedText => text().nullable().generatedAs(
-      title + const Constant(' (') + content + const Constant(')'))();
+    title + const Constant(' (') + content + const Constant(')'),
+  )();
 }
 
 abstract class TodoCategoryItemCount extends View {
@@ -30,11 +31,9 @@ abstract class TodoCategoryItemCount extends View {
   Expression<int> get itemCount => todoItems.id.count();
 
   @override
-  Query as() => select([
-        todoCategories.name,
-        itemCount,
-      ]).from(todoCategories).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
+  Query as() =>
+      select([todoCategories.name, itemCount]).from(todoCategories).join([
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id)),
       ]);
 }
 
@@ -51,18 +50,17 @@ abstract class TodoItemWithCategoryNameView extends View {
 
   @override
   Query as() => select([todoItems.id, title]).from(todoItems).join([
-        innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
-      ]);
+    innerJoin(
+      todoCategories,
+      todoCategories.id.equalsExp(todoItems.categoryId),
+    ),
+  ]);
 }
 
-@DriftDatabase(tables: [
-  TodoItems,
-  TodoCategories,
-], views: [
-  TodoCategoryItemCount,
-  TodoItemWithCategoryNameView,
-])
+@DriftDatabase(
+  tables: [TodoItems, TodoCategories],
+  views: [TodoCategoryItemCount, TodoItemWithCategoryNameView],
+)
 class Database extends _$Database {
   Database(super.e);
 
@@ -81,8 +79,10 @@ class Database extends _$Database {
             TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
-              content: const Value('Drift is a persistence library for Dart '
-                  'and Flutter applications.'),
+              content: const Value(
+                'Drift is a persistence library for Dart '
+                'and Flutter applications.',
+              ),
               categoryId: 0,
             ),
           ]);
@@ -113,12 +113,20 @@ Future<void> main() async {
       .insert(TodoCategoriesCompanion.insert(name: 'Category'));
 
   // Add another entry
-  await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
-      title: 'Another entry added later', categoryId: categoryId));
+  await db
+      .into(db.todoItems)
+      .insert(
+        TodoItemsCompanion.insert(
+          title: 'Another entry added later',
+          categoryId: categoryId,
+        ),
+      );
 
   final query = db.select(db.todoItems).join([
-    innerJoin(db.todoCategories,
-        db.todoCategories.id.equalsExp(db.todoItems.categoryId))
+    innerJoin(
+      db.todoCategories,
+      db.todoCategories.id.equalsExp(db.todoItems.categoryId),
+    ),
   ]);
 
   for (final row in await query.get()) {

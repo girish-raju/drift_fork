@@ -5,25 +5,36 @@ import 'utils.dart';
 
 void main() {
   test('rename', () {
-    testStatement('ALTER TABLE foo RENAME TO bar',
-        AlterTableStatement(TableReference('foo'), RenameTo('bar')));
+    testStatement(
+      'ALTER TABLE foo RENAME TO bar',
+      AlterTableStatement(TableReference('foo'), RenameTo('bar')),
+    );
 
     testStatement(
-        'ALTER TABLE s.foo RENAME TO bar',
-        AlterTableStatement(
-            TableReference(schemaName: 's', 'foo'), RenameTo('bar')));
+      'ALTER TABLE s.foo RENAME TO bar',
+      AlterTableStatement(
+        TableReference(schemaName: 's', 'foo'),
+        RenameTo('bar'),
+      ),
+    );
   });
 
   test('rename column', () {
     testStatement(
-        'ALTER TABLE foo RENAME bar TO baz',
-        AlterTableStatement(TableReference('foo'),
-            RenameColumnTo(Reference(columnName: 'bar'), 'baz')));
+      'ALTER TABLE foo RENAME bar TO baz',
+      AlterTableStatement(
+        TableReference('foo'),
+        RenameColumnTo(Reference(columnName: 'bar'), 'baz'),
+      ),
+    );
 
     testStatement(
-        'ALTER TABLE foo RENAME COLUMN bar TO baz',
-        AlterTableStatement(TableReference('foo'),
-            RenameColumnTo(Reference(columnName: 'bar'), 'baz')));
+      'ALTER TABLE foo RENAME COLUMN bar TO baz',
+      AlterTableStatement(
+        TableReference('foo'),
+        RenameColumnTo(Reference(columnName: 'bar'), 'baz'),
+      ),
+    );
   });
 
   test('add column', () {
@@ -31,9 +42,7 @@ void main() {
       'ALTER TABLE foo ADD COLUMN bar TEXT',
       AlterTableStatement(
         TableReference('foo'),
-        AddColumn(
-          ColumnDefinition(columnName: 'bar', typeName: 'TEXT'),
-        ),
+        AddColumn(ColumnDefinition(columnName: 'bar', typeName: 'TEXT')),
       ),
     );
 
@@ -41,9 +50,7 @@ void main() {
       'ALTER TABLE foo ADD bar TEXT',
       AlterTableStatement(
         TableReference('foo'),
-        AddColumn(
-          ColumnDefinition(columnName: 'bar', typeName: 'TEXT'),
-        ),
+        AddColumn(ColumnDefinition(columnName: 'bar', typeName: 'TEXT')),
       ),
     );
   });

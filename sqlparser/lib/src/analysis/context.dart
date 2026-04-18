@@ -39,9 +39,14 @@ class AnalysisContext {
   late final TypeInferenceResults types2;
 
   /// Constructs a new analysis context from the AST and the source sql.
-  AnalysisContext(this.root, this.sql, this.rootScope, this.engineOptions,
-      {AnalyzeStatementOptions? stmtOptions, required this.schemaSupport})
-      : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions();
+  AnalysisContext(
+    this.root,
+    this.sql,
+    this.rootScope,
+    this.engineOptions, {
+    AnalyzeStatementOptions? stmtOptions,
+    required this.schemaSupport,
+  }) : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions();
 
   /// Reports an analysis error.
   void reportError(AnalysisError error) {

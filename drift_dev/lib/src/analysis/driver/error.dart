@@ -11,20 +11,24 @@ class DriftAnalysisError {
   DriftAnalysisError(this.span, this.message);
 
   factory DriftAnalysisError.forDartElement(
-      dart.Element element, String message) {
-    return DriftAnalysisError(
-      spanForElement(element),
-      message,
-    );
+    dart.Element element,
+    String message,
+  ) {
+    return DriftAnalysisError(spanForElement(element), message);
   }
 
   factory DriftAnalysisError.inDartAst(
-      dart.Element element, dart.SyntacticEntity entity, String message) {
+    dart.Element element,
+    dart.SyntacticEntity entity,
+    String message,
+  ) {
     return DriftAnalysisError(dartAstSpan(element, entity), message);
   }
 
   factory DriftAnalysisError.inDriftFile(
-      sql.SyntacticEntity sql, String message) {
+    sql.SyntacticEntity sql,
+    String message,
+  ) {
     return DriftAnalysisError(sql.span, message);
   }
 
@@ -51,7 +55,9 @@ class DriftAnalysisError {
   }
 
   static FileSpan dartAstSpan(
-      dart.Element element, dart.SyntacticEntity entity) {
+    dart.Element element,
+    dart.SyntacticEntity entity,
+  ) {
     final span = spanForElement(element) as FileSpan;
     return span.file.span(entity.offset, entity.end);
   }

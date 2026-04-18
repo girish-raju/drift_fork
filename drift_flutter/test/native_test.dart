@@ -26,13 +26,13 @@ void main() {
 
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(pathProviderChannel, (call) async {
-    return switch (call.method) {
-      'getTemporaryDirectory' => d.sandbox,
-      'getApplicationDocumentsDirectory' => d.path('applications'),
-      'getApplicationSupportDirectory' => d.path('support'),
-      _ => throw UnsupportedError('Unexpected path provider call: $call')
-    };
-  });
+        return switch (call.method) {
+          'getTemporaryDirectory' => d.sandbox,
+          'getApplicationDocumentsDirectory' => d.path('applications'),
+          'getApplicationSupportDirectory' => d.path('support'),
+          _ => throw UnsupportedError('Unexpected path provider call: $call'),
+        };
+      });
 
   setUp(() => hasConfiguredSqlite = false);
 
@@ -56,12 +56,14 @@ void main() {
   });
 
   test('can use custom database path', () async {
-    final database = SimpleDatabase(driftDatabase(
-      name: 'database',
-      native: DriftNativeOptions(
-        databasePath: () async => d.path('my_dir/custom_file'),
+    final database = SimpleDatabase(
+      driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          databasePath: () async => d.path('my_dir/custom_file'),
+        ),
       ),
-    ));
+    );
     await database.customSelect('SELECT 1').get();
 
     expect(sqlite3.tempDirectory, d.sandbox);
@@ -72,12 +74,14 @@ void main() {
   });
 
   test('can use custom database directory', () async {
-    final database = SimpleDatabase(driftDatabase(
-      name: 'database',
-      native: DriftNativeOptions(
-        databaseDirectory: getApplicationSupportDirectory,
+    final database = SimpleDatabase(
+      driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          databaseDirectory: getApplicationSupportDirectory,
+        ),
       ),
-    ));
+    );
     await database.customSelect('SELECT 1').get();
 
     expect(sqlite3.tempDirectory, d.sandbox);
@@ -89,22 +93,26 @@ void main() {
 
   test('forbids passing custom directory and custom path', () async {
     expect(
-      () => SimpleDatabase(driftDatabase(
-        name: 'database',
-        native: DriftNativeOptions(
-          databasePath: () async => d.path('my_dir/custom_file'),
-          databaseDirectory: getApplicationSupportDirectory,
+      () => SimpleDatabase(
+        driftDatabase(
+          name: 'database',
+          native: DriftNativeOptions(
+            databasePath: () async => d.path('my_dir/custom_file'),
+            databaseDirectory: getApplicationSupportDirectory,
+          ),
         ),
-      )),
+      ),
       throwsAssertionError,
     );
   });
 
   test('can use custom temporary directory', () async {
-    final database = SimpleDatabase(driftDatabase(
-      name: 'database',
-      native: DriftNativeOptions(tempDirectoryPath: () async => '/tmp/'),
-    ));
+    final database = SimpleDatabase(
+      driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(tempDirectoryPath: () async => '/tmp/'),
+      ),
+    );
     await database.customSelect('SELECT 1').get();
 
     expect(sqlite3.tempDirectory, '/tmp/');
@@ -114,12 +122,16 @@ void main() {
   test('isolateSetup', () async {
     final file = d.path('test_isolate_setup');
 
-    final database = SimpleDatabase(driftDatabase(
-      name: 'database',
-      native: DriftNativeOptions(isolateSetup: () {
-        File(file).createSync();
-      }),
-    ));
+    final database = SimpleDatabase(
+      driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          isolateSetup: () {
+            File(file).createSync();
+          },
+        ),
+      ),
+    );
     await database.customSelect('SELECT 1').get();
 
     expect(File(file).existsSync(), isTrue);
@@ -129,8 +141,9 @@ void main() {
     const options = DriftNativeOptions(shareAcrossIsolates: true);
 
     test('synchronizes streams', () async {
-      final database =
-          SimpleDatabase(driftDatabase(name: 'database', native: options));
+      final database = SimpleDatabase(
+        driftDatabase(name: 'database', native: options),
+      );
       final stream = StreamQueue(database.simpleTable.all().watch());
       await expectLater(stream, emits(isEmpty));
 
@@ -142,8 +155,9 @@ void main() {
         // So, skip the setup!
         hasConfiguredSqlite = true;
 
-        final database =
-            SimpleDatabase(driftDatabase(name: 'database', native: options));
+        final database = SimpleDatabase(
+          driftDatabase(name: 'database', native: options),
+        );
         await database.simpleTable.insertOne(RawValuesInsertable({}));
         await database.close();
       });
@@ -155,15 +169,17 @@ void main() {
     });
 
     test('closes database after clients disconnect', () async {
-      final database =
-          SimpleDatabase(driftDatabase(name: 'database', native: options));
+      final database = SimpleDatabase(
+        driftDatabase(name: 'database', native: options),
+      );
       await database.customStatement('SELECT 1'); // make sure it's open
 
       await Isolate.run(() async {
         hasConfiguredSqlite = true;
 
-        final database =
-            SimpleDatabase(driftDatabase(name: 'database', native: options));
+        final database = SimpleDatabase(
+          driftDatabase(name: 'database', native: options),
+        );
         await database.customStatement('SELECT 1'); // make sure it's open
         await database.close();
       });
@@ -177,42 +193,48 @@ void main() {
       }
 
       final raw = SimpleDatabase(
-          NativeDatabase(File(d.path('applications/database.sqlite'))));
+        NativeDatabase(File(d.path('applications/database.sqlite'))),
+      );
       // This wouldn't work if the database is still open, as the exclusive
       // would block the write.
       await raw.simpleTable.insertOne(RawValuesInsertable({}));
     });
 
     test('can use setup', () async {
-      final database = SimpleDatabase(driftDatabase(
-        name: 'database',
-        native: DriftNativeOptions(
-          shareAcrossIsolates: true,
-          setup: (db) => db.createFunction(
-            functionName: 'hello_dart',
-            function: (_) => 'Hello from Dart!',
+      final database = SimpleDatabase(
+        driftDatabase(
+          name: 'database',
+          native: DriftNativeOptions(
+            shareAcrossIsolates: true,
+            setup: (db) => db.createFunction(
+              functionName: 'hello_dart',
+              function: (_) => 'Hello from Dart!',
+            ),
           ),
         ),
-      ));
+      );
       addTearDown(database.close);
 
-      final [row] =
-          await database.customSelect('SELECT hello_dart() as r;').get();
+      final [row] = await database
+          .customSelect('SELECT hello_dart() as r;')
+          .get();
       expect(row.data['r'], 'Hello from Dart!');
     });
 
     test('isolateSetup', () async {
       final file = d.path('test_isolate_setup');
 
-      final database = SimpleDatabase(driftDatabase(
-        name: 'database',
-        native: DriftNativeOptions(
-          shareAcrossIsolates: true,
-          isolateSetup: () {
-            File(file).createSync();
-          },
+      final database = SimpleDatabase(
+        driftDatabase(
+          name: 'database',
+          native: DriftNativeOptions(
+            shareAcrossIsolates: true,
+            isolateSetup: () {
+              File(file).createSync();
+            },
+          ),
         ),
-      ));
+      );
       await database.customSelect('SELECT 1').get();
 
       expect(File(file).existsSync(), isTrue);
@@ -249,19 +271,22 @@ void main() {
   });
 
   test('can use setup', () async {
-    final database = SimpleDatabase(driftDatabase(
-      name: 'database',
-      native: DriftNativeOptions(
-        setup: (db) => db.createFunction(
-          functionName: 'hello_dart',
-          function: (_) => 'Hello from Dart!',
+    final database = SimpleDatabase(
+      driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          setup: (db) => db.createFunction(
+            functionName: 'hello_dart',
+            function: (_) => 'Hello from Dart!',
+          ),
         ),
       ),
-    ));
+    );
     addTearDown(database.close);
 
-    final [row] =
-        await database.customSelect('SELECT hello_dart() as r;').get();
+    final [row] = await database
+        .customSelect('SELECT hello_dart() as r;')
+        .get();
     expect(row.data['r'], 'Hello from Dart!');
   });
 
@@ -310,13 +335,13 @@ class SimpleDatabase extends GeneratedDatabase {
     attachedDatabase: attachedDatabase,
     columns: [
       (name) => GeneratedColumn(
-            'id',
-            name,
-            false,
-            type: DriftSqlType.int,
-            requiredDuringInsert: false,
-            $customConstraints: 'NOT NULL PRIMARY KEY',
-          ),
+        'id',
+        name,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL PRIMARY KEY',
+      ),
     ],
     tableConstraints: const [],
   );

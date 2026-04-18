@@ -57,13 +57,18 @@ abstract class DriftWebStorage {
   ///
   /// However, older browsers might not support IndexedDB.
   @experimental
-  factory DriftWebStorage.indexedDb(String name,
-      {bool migrateFromLocalStorage, bool inWebWorker}) = _IndexedDbStorage;
+  factory DriftWebStorage.indexedDb(
+    String name, {
+    bool migrateFromLocalStorage,
+    bool inWebWorker,
+  }) = _IndexedDbStorage;
 
   /// Uses [DriftWebStorage.indexedDb] if the current browser supports it.
   /// Otherwise, falls back to the local storage based implementation.
-  static Future<DriftWebStorage> indexedDbIfSupported(String name,
-      {bool inWebWorker = false}) async {
+  static Future<DriftWebStorage> indexedDbIfSupported(
+    String name, {
+    bool inWebWorker = false,
+  }) async {
     return await supportsIndexedDb(inWebWorker: inWebWorker)
         ? DriftWebStorage.indexedDb(name, inWebWorker: inWebWorker)
         : DriftWebStorage(name);
@@ -167,8 +172,11 @@ class _IndexedDbStorage implements DriftWebStorage {
 
   late IDBDatabase _database;
 
-  _IndexedDbStorage(this.name,
-      {this.migrateFromLocalStorage = true, this.inWebWorker = false});
+  _IndexedDbStorage(
+    this.name, {
+    this.migrateFromLocalStorage = true,
+    this.inWebWorker = false,
+  });
 
   @override
   Future<void> open() async {
@@ -200,8 +208,10 @@ class _IndexedDbStorage implements DriftWebStorage {
 
   @override
   Future<void> store(Uint8List data) async {
-    final transaction =
-        _database.transaction(_objectStoreName.toJS, 'readwrite');
+    final transaction = _database.transaction(
+      _objectStoreName.toJS,
+      'readwrite',
+    );
     final store = transaction.objectStore(_objectStoreName);
 
     await store.put(Blob([data.toJS].toJS), name.toJS).complete();
@@ -210,8 +220,10 @@ class _IndexedDbStorage implements DriftWebStorage {
 
   @override
   Future<Uint8List?> restore() async {
-    final transaction =
-        _database.transaction(_objectStoreName.toJS, 'readonly');
+    final transaction = _database.transaction(
+      _objectStoreName.toJS,
+      'readonly',
+    );
     final store = transaction.objectStore(_objectStoreName);
 
     final result = await store.get(name.toJS).complete<Blob?>();

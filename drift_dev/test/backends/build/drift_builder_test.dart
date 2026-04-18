@@ -20,8 +20,9 @@ void main() {
       ),
     );
 
-    await emulateDriftBuild(inputs: {
-      'a|lib/a.dart': '''
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
 // @dart = 2.11
 
 import 'package:drift/drift.dart';
@@ -29,12 +30,15 @@ import 'package:drift/drift.dart';
 @DriftDatabase(tables: [])
 class Database {}
         ''',
-    }, logger: logger);
+      },
+      logger: logger,
+    );
   });
 
   test('includes version override in part file mode', () async {
-    final writer = await emulateDriftBuild(inputs: {
-      'a|lib/a.dart': '''
+    final writer = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
 // @dart = 2.13
 
 import 'package:drift/drift.dart';
@@ -42,12 +46,11 @@ import 'package:drift/drift.dart';
 @DriftDatabase(tables: [])
 class Database {}
         ''',
-    });
+      },
+    );
 
     checkOutputs(
-      {
-        'a|lib/a.drift.dart': decodedMatches(contains('// @dart=2.13')),
-      },
+      {'a|lib/a.drift.dart': decodedMatches(contains('// @dart=2.13'))},
       writer.dartOutputs,
       writer.writer,
     );

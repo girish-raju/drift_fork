@@ -36,8 +36,10 @@ void main() {
 
   test('recovers from invalid statements', () {
     const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
-    final statements =
-        SqlEngine().parse(ParserEntrypoint.driftFile, sql).rootNode.statements;
+    final statements = SqlEngine()
+        .parse(ParserEntrypoint.driftFile, sql)
+        .rootNode
+        .statements;
 
     expect(statements, hasLength(1));
     enforceEqual(
@@ -58,9 +60,9 @@ void main() {
     query: SELECT * FROM tbl;
      ''';
 
-    final parseResult =
-        SqlEngine(EngineOptions(driftOptions: DriftSqlOptions()))
-            .parse(ParserEntrypoint.driftFile, sql);
+    final parseResult = SqlEngine(
+      EngineOptions(driftOptions: DriftSqlOptions()),
+    ).parse(ParserEntrypoint.driftFile, sql);
     final statements = parseResult.rootNode.statements;
     final tokens = parseResult.tokens;
 
@@ -104,44 +106,44 @@ void main() {
 
     enforceEqual(
       ast,
-      SemicolonSeparatedStatements(
-        [
-          CreateTableStatement(
-            tableName: 'users',
-            columns: [
-              ColumnDefinition(
-                columnName: 'id',
-                typeName: 'INTEGER',
-                constraints: [PrimaryKeyColumn(null)],
-              ),
-              ColumnDefinition(columnName: 'name', typeName: 'TEXT'),
-              ColumnDefinition(columnName: 'email', typeName: 'TEXT'),
-            ],
-          ),
-          SelectStatement(
-            columns: [StarResultColumn()],
-            from: TableReference('users'),
-            where: BinaryExpression(
-              Reference(columnName: 'id'),
-              token(TokenType.equal),
-              NumericLiteral(1),
+      SemicolonSeparatedStatements([
+        CreateTableStatement(
+          tableName: 'users',
+          columns: [
+            ColumnDefinition(
+              columnName: 'id',
+              typeName: 'INTEGER',
+              constraints: [PrimaryKeyColumn(null)],
             ),
+            ColumnDefinition(columnName: 'name', typeName: 'TEXT'),
+            ColumnDefinition(columnName: 'email', typeName: 'TEXT'),
+          ],
+        ),
+        SelectStatement(
+          columns: [StarResultColumn()],
+          from: TableReference('users'),
+          where: BinaryExpression(
+            Reference(columnName: 'id'),
+            token(TokenType.equal),
+            NumericLiteral(1),
           ),
-          InsertStatement(
-            table: TableReference('users'),
-            targetColumns: [
-              Reference(columnName: 'name'),
-              Reference(columnName: 'email')
-            ],
-            source: ValuesSource([
-              Tuple(expressions: [
+        ),
+        InsertStatement(
+          table: TableReference('users'),
+          targetColumns: [
+            Reference(columnName: 'name'),
+            Reference(columnName: 'email'),
+          ],
+          source: ValuesSource([
+            Tuple(
+              expressions: [
                 StringLiteral('John Doe'),
                 StringLiteral('john@example.com'),
-              ]),
-            ]),
-          ),
-        ],
-      ),
+              ],
+            ),
+          ]),
+        ),
+      ]),
     );
   });
 
@@ -161,18 +163,27 @@ SELECT * FROM users;
 
     expect(
       statements[0],
-      isA<UpdateStatement>()
-          .having((e) => e.span?.text, 'span', 'UPDATE users SET foo = bar;'),
+      isA<UpdateStatement>().having(
+        (e) => e.span?.text,
+        'span',
+        'UPDATE users SET foo = bar;',
+      ),
     );
     expect(
       statements[1],
-      isA<InvalidStatement>().having((e) => e.span?.text, 'span',
-          'ALTER TABLE this syntax is not yet supported;'),
+      isA<InvalidStatement>().having(
+        (e) => e.span?.text,
+        'span',
+        'ALTER TABLE this syntax is not yet supported;',
+      ),
     );
     expect(
       statements[2],
-      isA<SelectStatement>()
-          .having((e) => e.span?.text, 'span', 'SELECT * FROM users;'),
+      isA<SelectStatement>().having(
+        (e) => e.span?.text,
+        'span',
+        'SELECT * FROM users;',
+      ),
     );
   });
 }

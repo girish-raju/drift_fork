@@ -27,7 +27,7 @@ class NestedQueryColumn extends ResultColumn
   NestedQueryColumn({required this.select, this.as});
 
   @override
-  Iterable<AstNode> get childNodes => [select, if (as case final alias?) alias];
+  Iterable<AstNode> get childNodes => [select, ?as];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

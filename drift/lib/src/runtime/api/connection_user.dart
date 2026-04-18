@@ -2,8 +2,8 @@ part of 'runtime_api.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 
-typedef _CustomWriter<T> = Future<T> Function(
-    QueryExecutor e, String sql, List<dynamic> vars);
+typedef _CustomWriter<T> =
+    Future<T> Function(QueryExecutor e, String sql, List<dynamic> vars);
 
 /// Manages a [DatabaseConnection] to send queries to the database.
 abstract class DatabaseConnectionUser {
@@ -42,20 +42,23 @@ abstract class DatabaseConnectionUser {
 
   /// Constructs a database connection user, which is responsible to store query
   /// streams, wrap the underlying executor and perform type mapping.
-  DatabaseConnectionUser(QueryExecutor executor,
-      {StreamQueryStore? streamQueries})
-      : connection = executor is DatabaseConnection
-            ? executor
-            : DatabaseConnection(executor, streamQueries: streamQueries);
+  DatabaseConnectionUser(
+    QueryExecutor executor, {
+    StreamQueryStore? streamQueries,
+  }) : connection = executor is DatabaseConnection
+           ? executor
+           : DatabaseConnection(executor, streamQueries: streamQueries);
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.
-  DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
-      {QueryExecutor? executor, StreamQueryStore? streamQueries})
-      : connection = DatabaseConnection(
-          executor ?? other.connection.executor,
-          streamQueries: streamQueries ?? other.connection.streamQueries,
-        );
+  DatabaseConnectionUser.delegate(
+    DatabaseConnectionUser other, {
+    QueryExecutor? executor,
+    StreamQueryStore? streamQueries,
+  }) : connection = DatabaseConnection(
+         executor ?? other.connection.executor,
+         streamQueries: streamQueries ?? other.connection.streamQueries,
+       );
 
   /// Constructs a [DatabaseConnectionUser] that will use the provided
   /// [DatabaseConnection].
@@ -113,9 +116,9 @@ abstract class DatabaseConnectionUser {
   /// updates. To obtain a [TableInfo], use the corresponding getter on the
   /// database class.
   void markTablesUpdated(Iterable<TableInfo> tables) {
-    notifyUpdates(
-      {for (final table in tables) TableUpdate(table.actualTableName)},
-    );
+    notifyUpdates({
+      for (final table in tables) TableUpdate(table.actualTableName),
+    });
   }
 
   /// Dispatches the set of [updates] to the stream query manager.
@@ -144,20 +147,18 @@ abstract class DatabaseConnectionUser {
   /// When called inside a transaction, the stream will close when the
   /// transaction completes or is rolled back. Otherwise, the stream will
   /// complete as the database is closed.
-  Stream<Set<TableUpdate>> tableUpdates(
-      [TableUpdateQuery query = const TableUpdateQuery.any()]) {
+  Stream<Set<TableUpdate>> tableUpdates([
+    TableUpdateQuery query = const TableUpdateQuery.any(),
+  ]) {
     // The stream should refer to the transaction active when tableUpdates was
     // called, not the one when a listener attaches.
     final engine = resolvedEngine;
 
     // We're wrapping updatesForSync in a stream controller to make it async.
-    return Stream.multi(
-      (controller) {
-        final source = engine.streamQueries.updatesForSync(query);
-        source.pipe(controller);
-      },
-      isBroadcast: true,
-    );
+    return Stream.multi((controller) {
+      final source = engine.streamQueries.updatesForSync(query);
+      source.pipe(controller);
+    }, isBroadcast: true);
   }
 
   /// Performs the async [fn] after this executor is ready, or directly if it's
@@ -182,8 +183,8 @@ abstract class DatabaseConnectionUser {
   /// statement to update individual rows in that table by setting a where
   /// clause on that table and then use [UpdateStatement.write].
   UpdateStatement<Tbl, R> update<Tbl extends Table, R>(
-          TableInfo<Tbl, R> table) =>
-      UpdateStatement(this, table);
+    TableInfo<Tbl, R> table,
+  ) => UpdateStatement(this, table);
 
   /// Starts a query on the given table.
   ///
@@ -210,8 +211,9 @@ abstract class DatabaseConnectionUser {
   /// For more information on queries, see the
   /// [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/).
   SimpleSelectStatement<T, R> select<T extends HasResultSet, R>(
-      ResultSetImplementation<T, R> table,
-      {bool distinct = false}) {
+    ResultSetImplementation<T, R> table, {
+    bool distinct = false,
+  }) {
     return SimpleSelectStatement<T, R>(this, table, distinct: distinct);
   }
 
@@ -246,8 +248,9 @@ abstract class DatabaseConnectionUser {
   ///  - the documentation on [aggregate expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
-      ResultSetImplementation<T, R> table,
-      {bool distinct = false}) {
+    ResultSetImplementation<T, R> table, {
+    bool distinct = false,
+  }) {
     return JoinedSelectStatement<T, R>(this, table, [], distinct, false, false);
   }
 
@@ -269,7 +272,8 @@ abstract class DatabaseConnectionUser {
   /// final databaseTime = row.read(currentDateAndTime)!;
   /// ```
   BaseSelectStatement<TypedResult> selectExpressions(
-      Iterable<Expression> columns) {
+    Iterable<Expression> columns,
+  ) {
     return SelectWithoutTables(this, columns);
   }
 
@@ -295,15 +299,13 @@ abstract class DatabaseConnectionUser {
     Set<ResultSetImplementation>? updates,
     UpdateKind? updateKind,
   }) async {
-    return _customWrite(
-      query,
-      variables,
-      updates,
-      updateKind,
-      (executor, sql, vars) {
-        return executor.runUpdate(sql, vars);
-      },
-    );
+    return _customWrite(query, variables, updates, updateKind, (
+      executor,
+      sql,
+      vars,
+    ) {
+      return executor.runUpdate(sql, vars);
+    });
   }
 
   /// Executes a custom insert statement and returns the last inserted rowid.
@@ -311,18 +313,18 @@ abstract class DatabaseConnectionUser {
   /// You can tell drift which tables your query is going to affect by using the
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
-  Future<int> customInsert(String query,
-      {List<Variable> variables = const [],
-      Set<ResultSetImplementation>? updates}) {
-    return _customWrite(
-      query,
-      variables,
-      updates,
-      UpdateKind.insert,
-      (executor, sql, vars) {
-        return executor.runInsert(sql, vars);
-      },
-    );
+  Future<int> customInsert(
+    String query, {
+    List<Variable> variables = const [],
+    Set<ResultSetImplementation>? updates,
+  }) {
+    return _customWrite(query, variables, updates, UpdateKind.insert, (
+      executor,
+      sql,
+      vars,
+    ) {
+      return executor.runInsert(sql, vars);
+    });
   }
 
   /// Runs a `INSERT`, `UPDATE` or `DELETE` statement returning rows.
@@ -339,8 +341,11 @@ abstract class DatabaseConnectionUser {
     Set<ResultSetImplementation>? updates,
     UpdateKind? updateKind,
   }) {
-    return _customWrite(query, variables, updates, updateKind,
-        (executor, sql, vars) async {
+    return _customWrite(query, variables, updates, updateKind, (
+      executor,
+      sql,
+      vars,
+    ) async {
       final rows = await executor.runSelect(sql, vars);
       return [for (final row in rows) QueryRow(row, attachedDatabase)];
     });
@@ -361,8 +366,9 @@ abstract class DatabaseConnectionUser {
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final result =
-        await engine.doWhenOpened((e) => writer(e, query, mappedArgs));
+    final result = await engine.doWhenOpened(
+      (e) => writer(e, query, mappedArgs),
+    );
 
     if (updates != null) {
       engine.notifyUpdates({
@@ -388,9 +394,11 @@ abstract class DatabaseConnectionUser {
   ///
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
-  Selectable<QueryRow> customSelect(String query,
-      {List<Variable> variables = const [],
-      Set<ResultSetImplementation> readsFrom = const {}}) {
+  Selectable<QueryRow> customSelect(
+    String query, {
+    List<Variable> variables = const [],
+    Set<ResultSetImplementation> readsFrom = const {},
+  }) {
     return CustomSelectStatement(query, variables, readsFrom, this);
   }
 
@@ -404,9 +412,11 @@ abstract class DatabaseConnectionUser {
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
   @Deprecated('Renamed to customSelect')
-  Selectable<QueryRow> customSelectQuery(String query,
-      {List<Variable> variables = const [],
-      Set<ResultSetImplementation> readsFrom = const {}}) {
+  Selectable<QueryRow> customSelectQuery(
+    String query, {
+    List<Variable> variables = const [],
+    Set<ResultSetImplementation> readsFrom = const {},
+  }) {
     return customSelect(query, variables: variables, readsFrom: readsFrom);
   }
 
@@ -475,8 +485,10 @@ abstract class DatabaseConnectionUser {
   ///
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
-  Future<T> transaction<T>(Future<T> Function() action,
-      {bool requireNew = false}) async {
+  Future<T> transaction<T>(
+    Future<T> Function() action, {
+    bool requireNew = false,
+  }) async {
     final resolved = resolvedEngine;
 
     // Are we about to start a nested transaction?
@@ -484,8 +496,10 @@ abstract class DatabaseConnectionUser {
       final executor = resolved.executor as TransactionExecutor;
       if (!executor.supportsNestedTransactions) {
         if (requireNew) {
-          throw UnsupportedError('The current database implementation does '
-              'not support nested transactions.');
+          throw UnsupportedError(
+            'The current database implementation does '
+            'not support nested transactions.',
+          );
         } else {
           // Just run the block in the current transaction zone.
           return action();
@@ -622,11 +636,15 @@ abstract class DatabaseConnectionUser {
   ///
   /// This can be used to, for instance, write a custom statement logger or to
   /// retry failing statements automatically.
-  Future<T> runWithInterceptor<T>(Future<T> Function() action,
-      {required QueryInterceptor interceptor}) async {
+  Future<T> runWithInterceptor<T>(
+    Future<T> Function() action, {
+    required QueryInterceptor interceptor,
+  }) async {
     return await resolvedEngine.doWhenOpened((executor) {
-      final inner = _ExclusiveExecutor(this,
-          executor: executor.interceptWith(interceptor));
+      final inner = _ExclusiveExecutor(
+        this,
+        executor: executor.interceptWith(interceptor),
+      );
       return _runConnectionZoned(inner, action);
     });
   }
@@ -635,15 +653,20 @@ abstract class DatabaseConnectionUser {
   /// to the [user].
   @protected
   Future<T> _runConnectionZoned<T>(
-      DatabaseConnectionUser user, Future<T> Function() calculation) {
+    DatabaseConnectionUser user,
+    Future<T> Function() calculation,
+  ) {
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: user});
   }
 
   /// Will be used by generated code to resolve inline Dart components in sql by
   /// writing the [component].
   @protected
-  GenerationContext $write(Component component,
-      {bool? hasMultipleTables, int? startIndex}) {
+  GenerationContext $write(
+    Component component, {
+    bool? hasMultipleTables,
+    int? startIndex,
+  }) {
     final context = GenerationContext.fromDb(this)
       ..explicitVariableIndex = startIndex
       ..hasMultipleTables = hasMultipleTables ?? false;
@@ -656,14 +679,19 @@ abstract class DatabaseConnectionUser {
   ///
   /// Used by generated code.
   @protected
-  GenerationContext $writeInsertable(TableInfo table, Insertable insertable,
-      {int? startIndex}) {
+  GenerationContext $writeInsertable(
+    TableInfo table,
+    Insertable insertable, {
+    int? startIndex,
+  }) {
     final context = GenerationContext.fromDb(this)
       ..explicitVariableIndex = startIndex;
 
     table.validateIntegrity(insertable, isInserting: true);
-    InsertStatement(this, table)
-        .writeInsertable(context, insertable.toColumns(true));
+    InsertStatement(
+      this,
+      table,
+    ).writeInsertable(context, insertable.toColumns(true));
 
     return context;
   }
@@ -703,7 +731,9 @@ abstract class DatabaseConnectionUser {
 
 extension on TransactionExecutor {
   Future<void> rollbackAfterException(
-      Object exception, StackTrace trace) async {
+    Object exception,
+    StackTrace trace,
+  ) async {
     try {
       await rollback();
     } catch (rollBackException) {
@@ -719,7 +749,9 @@ extension on TransactionExecutor {
 extension InternalConnectionUserApi on DatabaseConnectionUser {
   /// Call the private [_runConnectionZoned] method.
   Future<T> runConnectionZoned<T>(
-      DatabaseConnectionUser user, Future<T> Function() calculation) {
+    DatabaseConnectionUser user,
+    Future<T> Function() calculation,
+  ) {
     return _runConnectionZoned(user, calculation);
   }
 
@@ -736,6 +768,6 @@ class _ExclusiveExecutor extends DatabaseConnectionUser {
   final GeneratedDatabase attachedDatabase;
 
   _ExclusiveExecutor(super.other, {super.executor})
-      : attachedDatabase = other.attachedDatabase,
-        super.delegate();
+    : attachedDatabase = other.attachedDatabase,
+      super.delegate();
 }

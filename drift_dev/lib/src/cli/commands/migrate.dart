@@ -20,8 +20,9 @@ import 'package:yaml/yaml.dart';
 import '../cli.dart';
 
 class MigrateCommand extends DriftCommand {
-  static final RegExp _buildYamlPattern =
-      RegExp('(?:\\w+\\.)?build(?:\\.\\w+)?');
+  static final RegExp _buildYamlPattern = RegExp(
+    '(?:\\w+\\.)?build(?:\\.\\w+)?',
+  );
   static final RegExp _builderKeyPattern = RegExp('(?:(\\w+)[:|])?(\\w+)');
 
   late final AnalysisContext context;
@@ -36,8 +37,9 @@ class MigrateCommand extends DriftCommand {
 
   @override
   Future<void> run() async {
-    final collection =
-        AnalysisContextCollection(includedPaths: [cli.project.directory.path]);
+    final collection = AnalysisContextCollection(
+      includedPaths: [cli.project.directory.path],
+    );
     context = collection.contextFor(cli.project.directory.path);
 
     await for (final file in cli.project.sourceFiles) {
@@ -45,8 +47,9 @@ class MigrateCommand extends DriftCommand {
     }
 
     final isRunningFlutter = Platform.executable == 'flutter';
-    final formatCommand =
-        isRunningFlutter ? 'flutter format .' : 'dart format .';
+    final formatCommand = isRunningFlutter
+        ? 'flutter format .'
+        : 'dart format .';
     final pubGetCommand = 'dart pub get';
     final buildCommand = 'dart run build_runner build -d';
 
@@ -99,8 +102,12 @@ class MigrateCommand extends DriftCommand {
   }
 
   Future<String> _transformMoorFile(File file) async {
-    final engine = SqlEngine(EngineOptions(
-        driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
+    final engine = SqlEngine(
+      EngineOptions(
+        driftOptions: const DriftSqlOptions(),
+        version: SqliteVersion.current,
+      ),
+    );
     final originalContent = await file.readAsString();
     var output = originalContent;
     final result = engine.parse(ParserEntrypoint.driftFile, originalContent);
@@ -196,7 +203,7 @@ class MigrateCommand extends DriftCommand {
     const newPackages = {
       'moor': 'drift',
       'moor_generator': 'drift_dev',
-      'moor_flutter': 'drift_sqflite'
+      'moor_flutter': 'drift_sqflite',
     };
 
     void processBlock(String key) {
@@ -227,10 +234,16 @@ class MigrateCommand extends DriftCommand {
             }
 
             final span = SourceSpan(
-                start, end, content.substring(start.offset, end.offset));
+              start,
+              end,
+              content.substring(start.offset, end.offset),
+            );
 
             writer.replace(
-                span.start.offset, span.length, '$replaceWith: ^1.0.0');
+              span.start.offset,
+              span.length,
+              '$replaceWith: ^1.0.0',
+            );
           } else {
             // Only replace the package name
             writer.replace(dep.span.start.offset, dep.span.length, replaceWith);
@@ -245,7 +258,7 @@ class MigrateCommand extends DriftCommand {
       const blocks = [
         'dependencies',
         'dev_dependencies',
-        'dependency_overrides'
+        'dependency_overrides',
       ];
       if (blocks.contains(key)) {
         processBlock(key as String);
@@ -275,7 +288,10 @@ class MigrateCommand extends DriftCommand {
             if (entry is YamlScalar && entry.value == 'moor') {
               final span = entry.span;
               content = content.replaceRange(
-                  span.start.offset, span.end.offset, 'drift');
+                span.start.offset,
+                span.end.offset,
+                'drift',
+              );
 
               await file.writeAsString(content);
               return;
@@ -295,7 +311,10 @@ class _StringRewriter {
 
   void replace(int start, int originalLength, String newContent) {
     content = content.replaceRange(
-        _skew + start, _skew + start + originalLength, newContent);
+      _skew + start,
+      _skew + start + originalLength,
+      newContent,
+    );
     _skew += newContent.length - originalLength;
   }
 }
@@ -382,15 +401,20 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
       return;
     }
 
-    final withoutExtension =
-        imported.substring(0, imported.length - '.moor.dart'.length);
+    final withoutExtension = imported.substring(
+      0,
+      imported.length - '.moor.dart'.length,
+    );
 
     final newImport = '$withoutExtension.drift.dart';
     _writer.replace(uri.offset, uri.length, asDartLiteral(newImport));
   }
 
   void _transformIdentifier(
-      SyntacticEntity identifier, String name, Element? element) {
+    SyntacticEntity identifier,
+    String name,
+    Element? element,
+  ) {
     String? newIdentifier;
 
     if (name == 'FlutterQueryExecutor') {
@@ -470,7 +494,7 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
     final include = {
       for (final entry in annotation.getField('include')!.toSetValue()!)
-        p.url.setExtension(entry.toStringValue()!, '.drift')
+        p.url.setExtension(entry.toStringValue()!, '.drift'),
     };
 
     final newInclude = StringBuffer('{');
@@ -487,6 +511,9 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     newInclude.write('}');
 
     _writer.replace(
-        includeArg.offset, includeArg.length, newInclude.toString());
+      includeArg.offset,
+      includeArg.length,
+      newInclude.toString(),
+    );
   }
 }

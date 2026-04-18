@@ -28,16 +28,19 @@ final class _PowerSyncFunctionHandler implements FunctionHandler {
 
   @override
   Set<String> get functionNames => {
-        'powersync_diff', // (TEXT, TEXT) -> TEXT
-        'powersync_client_id', // () -> TEXT
-        'powersync_in_sync_operation', // () -> BOOLEAN
-        'gen_random_uuid', // () -> TEXT
-        'uuid', // () -> TEXT
-      };
+    'powersync_diff', // (TEXT, TEXT) -> TEXT
+    'powersync_client_id', // () -> TEXT
+    'powersync_in_sync_operation', // () -> BOOLEAN
+    'gen_random_uuid', // () -> TEXT
+    'uuid', // () -> TEXT
+  };
 
   @override
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument) {
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  ) {
     switch (call.name.toLowerCase()) {
       case 'powersync_diff':
         return ResolveResult(_text);
@@ -47,8 +50,11 @@ final class _PowerSyncFunctionHandler implements FunctionHandler {
   }
 
   @override
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  ) {
     switch (call.name.toLowerCase()) {
       case 'powersync_diff':
       case 'powersync_client_id':
@@ -70,25 +76,33 @@ final class _PowerSyncFunctionHandler implements FunctionHandler {
 ///
 /// Source: https://github.com/powersync-ja/powersync-sqlite-core/blob/637fda0f1d84c46964736a4f8c59fab5ae27e304/crates/core/src/crud_vtab.rs#L26
 Table get _powersyncCrudLegacy {
-  return Table(name: 'powersync_crud', isVirtual: true, resolvedColumns: [
-    TableColumn('data', _text),
-    TableColumn('options', _int, isHidden: true),
-  ]);
+  return Table(
+    name: 'powersync_crud',
+    isVirtual: true,
+    resolvedColumns: [
+      TableColumn('data', _text),
+      TableColumn('options', _int, isHidden: true),
+    ],
+  );
 }
 
 /// `CREATE TABLE powersync_crud(op TEXT, id TEXT, type TEXT, data TEXT, old_values TEXT, metadata TEXT, options INT HIDDEN);`
 ///
 /// Source: https://github.com/powersync-ja/powersync-sqlite-core/blob/637fda0f1d84c46964736a4f8c59fab5ae27e304/crates/core/src/crud_vtab.rs#L27C6-L27C126
 Table get _powersyncCrud {
-  return Table(name: 'powersync_crud', isVirtual: true, resolvedColumns: [
-    TableColumn('op', _text),
-    TableColumn('id', _text),
-    TableColumn('type', _text),
-    TableColumn('data', _text),
-    TableColumn('old_values', _text),
-    TableColumn('metadata', _text),
-    TableColumn('options', _int, isHidden: true),
-  ]);
+  return Table(
+    name: 'powersync_crud',
+    isVirtual: true,
+    resolvedColumns: [
+      TableColumn('op', _text),
+      TableColumn('id', _text),
+      TableColumn('type', _text),
+      TableColumn('data', _text),
+      TableColumn('old_values', _text),
+      TableColumn('metadata', _text),
+      TableColumn('options', _int, isHidden: true),
+    ],
+  );
 }
 
 const _text = ResolvedType(type: BasicType.text);

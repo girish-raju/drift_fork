@@ -29,7 +29,7 @@ void main() {
         1,
         emitsError(_stateErrorWithTrace),
         2,
-        emitsError(_stateErrorWithTrace)
+        emitsError(_stateErrorWithTrace),
       ]),
     );
 
@@ -67,15 +67,7 @@ void main() {
       }),
     );
 
-    expectLater(
-      stream,
-      emitsInOrder([
-        1,
-        emitsError(error),
-        2,
-        emitsDone,
-      ]),
-    );
+    expectLater(stream, emitsInOrder([1, emitsError(error), 2, emitsDone]));
 
     controller
       ..add([1])
@@ -85,5 +77,8 @@ void main() {
   }, testOn: 'vm');
 }
 
-Matcher _stateErrorWithTrace =
-    isStateError.having((e) => e.stackTrace, 'stackTrace', isNotNull);
+Matcher _stateErrorWithTrace = isStateError.having(
+  (e) => e.stackTrace,
+  'stackTrace',
+  isNotNull,
+);

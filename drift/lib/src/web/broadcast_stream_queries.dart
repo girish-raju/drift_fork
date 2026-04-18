@@ -25,7 +25,7 @@ class BroadcastStreamQueryStore extends StreamQueryStore {
   ///
   /// All query stores with the same identifier will share stream query updates.
   BroadcastStreamQueryStore(String identifier)
-      : _channel = web.BroadcastChannel('drift_updates_$identifier') {
+    : _channel = web.BroadcastChannel('drift_updates_$identifier') {
     _messageFromChannel = web.EventStreamProviders.messageEvent
         .forTarget(_channel)
         .listen(_handleMessage);
@@ -50,9 +50,9 @@ class BroadcastStreamQueryStore extends StreamQueryStore {
   void handleTableUpdates(Set<TableUpdate> updates) {
     super.handleTableUpdates(updates);
 
-    _channel.postMessage([
-      for (final update in updates) _SerializedTableUpdate.of(update),
-    ].toJS);
+    _channel.postMessage(
+      [for (final update in updates) _SerializedTableUpdate.of(update)].toJS,
+    );
   }
 
   @override

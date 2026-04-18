@@ -40,7 +40,9 @@ import 'tables.dart';
     final database = state.fileAnalysis!.resolvedDatabases.values.single;
 
     expect(database.availableElements, hasLength(1));
-    expect(database.availableElements.first.declaration.name,
-        equals('PartOfDatabase'));
+    expect(
+      database.availableElements.first.declaration.name,
+      equals('PartOfDatabase'),
+    );
   });
 }

@@ -49,9 +49,7 @@ void main() {
                   null,
                   ForeignKeyClause(
                     foreignTable: TableReference('other'),
-                    columnNames: [
-                      Reference(columnName: 'location'),
-                    ],
+                    columnNames: [Reference(columnName: 'location')],
                   ),
                 ),
                 DriftDartName(null, identifier('placeRef')),
@@ -92,17 +90,12 @@ void main() {
           ),
           parameters: [
             VariableTypeHint(
-              NamedVariable(
-                ColonVariableToken(fakeSpan(':foo'), 'foo'),
-              ),
+              NamedVariable(ColonVariableToken(fakeSpan(':foo'), 'foo')),
               'TEXT',
               orNull: true,
               isRequired: true,
             ),
-            DartPlaceholderDefaultValue(
-              'predicate',
-              BooleanLiteral(true),
-            ),
+            DartPlaceholderDefaultValue('predicate', BooleanLiteral(true)),
           ],
         ),
         DeclaredStatement(
@@ -112,7 +105,7 @@ void main() {
               NestedStarResultColumn(
                 tableName: 'foo',
                 as: AliasClause('fooRename'),
-              )
+              ),
             ],
             from: TableReference('tbl', as: AliasClause('foo')),
           ),
@@ -127,11 +120,9 @@ void main() {
             table: TableReference('tbl'),
             source: DartInsertablePlaceholder(name: 'row'),
             targetColumns: const [],
-            returning: Returning([
-              StarResultColumn(),
-            ]),
+            returning: Returning([StarResultColumn()]),
           ),
-        )
+        ),
       ]),
     );
   });
@@ -171,15 +162,19 @@ END;
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/drift/issues/280#issuecomment-570789454
     final parsed = _engine.parse(
-        ParserEntrypoint.driftFile, 'name: NSERT INTO foo DEFAULT VALUES;');
+      ParserEntrypoint.driftFile,
+      'name: NSERT INTO foo DEFAULT VALUES;',
+    );
 
     expect(
       parsed.errors,
-      contains(const TypeMatcher<ParsingError>().having(
-        (e) => e.message,
-        'message',
-        contains('Expected a sql statement here'),
-      )),
+      contains(
+        const TypeMatcher<ParsingError>().having(
+          (e) => e.message,
+          'message',
+          contains('Expected a sql statement here'),
+        ),
+      ),
     );
 
     final root = parsed.rootNode;
@@ -198,9 +193,13 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
 
     expect(result.errors, hasLength(1));
     expect(
-        result.errors.single,
-        isA<ParsingError>()
-            .having((e) => e.token.lexeme, 'token.lexeme', 'WHERE'));
+      result.errors.single,
+      isA<ParsingError>().having(
+        (e) => e.token.lexeme,
+        'token.lexeme',
+        'WHERE',
+      ),
+    );
   });
 
   test('parses REQUIRED without type hint', () {
@@ -210,17 +209,13 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
       DriftFile([
         DeclaredStatement(
           SimpleName('test'),
-          SelectStatement(columns: [
-            ExpressionResultColumn(
-              expression: NamedVariable(variable),
-            ),
-          ]),
+          SelectStatement(
+            columns: [
+              ExpressionResultColumn(expression: NamedVariable(variable)),
+            ],
+          ),
           parameters: [
-            VariableTypeHint(
-              NamedVariable(variable),
-              null,
-              isRequired: true,
-            ),
+            VariableTypeHint(NamedVariable(variable), null, isRequired: true),
           ],
         ),
       ]),
@@ -255,9 +250,7 @@ CREATE INDEX x ON foo (a);
             useExistingDartClass: true,
           ),
           SelectStatement(
-            columns: [
-              ExpressionResultColumn(expression: NumericLiteral(1)),
-            ],
+            columns: [ExpressionResultColumn(expression: NumericLiteral(1))],
           ),
         ),
       ]),
@@ -287,16 +280,31 @@ SELECT * FROM todos WHERE $predicate;
 
       final stmts = driftFile.statements;
       expect(stmts, [
-        isA<ImportStatement>()
-            .having((e) => e.importedFile, 'importedFile', 'status.dart'),
-        isA<DeclaredStatement>()
-            .having((e) => e.identifier.name, 'identifier.name', 'createEntry'),
-        isA<DeclaredStatement>()
-            .having((e) => e.identifier.name, 'identifier.name', 'deleteById'),
-        isA<DeclaredStatement>()
-            .having((e) => e.identifier.name, 'identifier.name', 'myQuery'),
-        isA<DeclaredStatement>()
-            .having((e) => e.identifier.name, 'identifier.name', 'getTodos'),
+        isA<ImportStatement>().having(
+          (e) => e.importedFile,
+          'importedFile',
+          'status.dart',
+        ),
+        isA<DeclaredStatement>().having(
+          (e) => e.identifier.name,
+          'identifier.name',
+          'createEntry',
+        ),
+        isA<DeclaredStatement>().having(
+          (e) => e.identifier.name,
+          'identifier.name',
+          'deleteById',
+        ),
+        isA<DeclaredStatement>().having(
+          (e) => e.identifier.name,
+          'identifier.name',
+          'myQuery',
+        ),
+        isA<DeclaredStatement>().having(
+          (e) => e.identifier.name,
+          'identifier.name',
+          'getTodos',
+        ),
       ]);
     });
 
@@ -316,10 +324,16 @@ DELETE FROM todos WHERE id = :id;
       final stmts = driftFile.statements;
       expect(stmts, [
         isA<ImportStatement>(),
-        isA<CreateViewStatement>()
-            .having((e) => e.viewName, 'viewName', 'definitions_json_view'),
-        isA<DeclaredStatement>()
-            .having((e) => e.identifier.name, 'identifier.name', 'deleteById'),
+        isA<CreateViewStatement>().having(
+          (e) => e.viewName,
+          'viewName',
+          'definitions_json_view',
+        ),
+        isA<DeclaredStatement>().having(
+          (e) => e.identifier.name,
+          'identifier.name',
+          'deleteById',
+        ),
       ]);
     });
 

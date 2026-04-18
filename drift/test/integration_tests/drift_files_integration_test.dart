@@ -58,7 +58,9 @@ void main() {
     });
 
     test('can be selected from with predicates', () async {
-      await db.update(db.config).write(
+      await db
+          .update(db.config)
+          .write(
             const ConfigCompanion(
               configKey: Value('k'),
               syncState: Value(SyncType.synchronized),
@@ -80,8 +82,11 @@ void main() {
     });
 
     test('can be selected from dart', () async {
-      await db.update(db.config).write(
-          const ConfigCompanion(syncState: Value(SyncType.synchronized)));
+      await db
+          .update(db.config)
+          .write(
+            const ConfigCompanion(syncState: Value(SyncType.synchronized)),
+          );
       await db
           .into(db.config)
           .insert(ConfigCompanion.insert(configKey: 'not_in_view'));
@@ -104,16 +109,14 @@ void main() {
 
       final expectation = expectLater(
         stream,
-        emits(
-          [
-            MyViewData(
-              configKey: entry.configKey,
-              configValue: entry.configValue,
-              syncState: entry.syncState,
-              syncStateImplicit: entry.syncStateImplicit,
-            ),
-          ],
-        ),
+        emits([
+          MyViewData(
+            configKey: entry.configKey,
+            configValue: entry.configValue,
+            syncState: entry.syncState,
+            syncStateImplicit: entry.syncStateImplicit,
+          ),
+        ]),
       );
 
       await db.into(db.config).insert(entry);
@@ -123,9 +126,11 @@ void main() {
 
   test('LIST queries integration test', () async {
     final first = await db.withDefaults.insertReturning(
-        WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(1)));
+      WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(1)),
+    );
     final second = await db.withDefaults.insertReturning(
-        WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(2)));
+      WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(2)),
+    );
 
     await db.withConstraints.insertOne(WithConstraintsCompanion.insert(b: 1));
     await db.withConstraints.insertOne(WithConstraintsCompanion.insert(b: 1));
@@ -154,11 +159,12 @@ void main() {
   });
 
   test('insert with explicit rowid', () async {
-    await db.withConstraints
-        .insertOne(WithConstraintsCompanion.insert(b: 1, rowid: Value(12)));
-    final row = await db
-        .select(db.withConstraints)
-        .addColumns([db.withConstraints.rowId]).getSingle();
+    await db.withConstraints.insertOne(
+      WithConstraintsCompanion.insert(b: 1, rowid: Value(12)),
+    );
+    final row = await db.select(db.withConstraints).addColumns([
+      db.withConstraints.rowId,
+    ]).getSingle();
 
     expect(row.read(db.withConstraints.rowId), 12);
     expect(row.readTable(db.withConstraints), WithConstraint(b: 1));
@@ -167,12 +173,13 @@ void main() {
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(
-          value: ConfigCompanion.insert(
-        configKey: 'key2',
-        configValue: const Value(DriftAny('val')),
-        syncState: const Value(SyncType.locallyCreated),
-        syncStateImplicit: const Value(SyncType.locallyCreated),
-      ));
+        value: ConfigCompanion.insert(
+          configKey: 'key2',
+          configValue: const Value(DriftAny('val')),
+          syncState: const Value(SyncType.locallyCreated),
+          syncStateImplicit: const Value(SyncType.locallyCreated),
+        ),
+      );
 
       expect(result, hasLength(1));
       expect(
@@ -188,8 +195,9 @@ void main() {
   }, skip: ifOlderThanSqlite335(sqlite3Version));
 
   test('can run query with custom result set', () async {
-    await db.withConstraints
-        .insertOne(WithConstraintsCompanion.insert(b: 1, a: Value('key')));
+    await db.withConstraints.insertOne(
+      WithConstraintsCompanion.insert(b: 1, a: Value('key')),
+    );
     await db.noIds.insertOne(NoIdsCompanion.insert(payload: Uint8List(512)));
 
     final result = await db.customResult().get();
@@ -199,9 +207,13 @@ void main() {
     expect(row.b, 1);
     expect(row.syncState, isNull);
     expect(
-        row.config, Config(configKey: 'key', configValue: DriftAny('values')));
-    expect(row.noIds,
-        isA<NoIdRow>().having((e) => e.payload, 'payload', hasLength(512)));
+      row.config,
+      Config(configKey: 'key', configValue: DriftAny('values')),
+    );
+    expect(
+      row.noIds,
+      isA<NoIdRow>().having((e) => e.payload, 'payload', hasLength(512)),
+    );
     expect(row.nested, hasLength(1));
   });
 }

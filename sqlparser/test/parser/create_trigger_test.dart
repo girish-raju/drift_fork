@@ -4,16 +4,16 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 final _block = Block([
-  UpdateStatement(table: TableReference('tbl'), set: [
-    SingleColumnSetComponent(
-      column: Reference(columnName: 'foo'),
-      expression: Reference(columnName: 'bar'),
-    ),
-  ]),
-  SelectStatement(
-    columns: [StarResultColumn()],
-    from: TableReference('tbl'),
+  UpdateStatement(
+    table: TableReference('tbl'),
+    set: [
+      SingleColumnSetComponent(
+        column: Reference(columnName: 'foo'),
+        expression: Reference(columnName: 'bar'),
+      ),
+    ],
   ),
+  SelectStatement(columns: [StarResultColumn()], from: TableReference('tbl')),
 ]);
 
 void main() {

@@ -32,20 +32,24 @@ foo: SELECT foo FROM my_table;
         modularBuild: true,
       );
 
-      checkOutputs({
-        'a|lib/table.drift.dart': decodedMatches(
-          allOf(
-            contains("import 'package:a/converter.dart' as i2;"),
-            contains(r'$converterfoo = i2.myConverter;'),
+      checkOutputs(
+        {
+          'a|lib/table.drift.dart': decodedMatches(
+            allOf(
+              contains("import 'package:a/converter.dart' as i2;"),
+              contains(r'$converterfoo = i2.myConverter;'),
+            ),
           ),
-        ),
-        'a|lib/query.drift.dart': decodedMatches(
-          allOf(
-            contains("import 'package:a/table.drift.dart' as i2;"),
-            contains(r'i2.MyTable.$converterfoo'),
+          'a|lib/query.drift.dart': decodedMatches(
+            allOf(
+              contains("import 'package:a/table.drift.dart' as i2;"),
+              contains(r'i2.MyTable.$converterfoo'),
+            ),
           ),
-        )
-      }, result.dartOutputs, result.writer);
+        },
+        result.dartOutputs,
+        result.writer,
+      );
     });
   });
 
@@ -72,12 +76,14 @@ class Database {}
       options: BuilderOptions({'generate_manager': false}),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(allOf(
-        contains(
-          'typedef User = ({DateTime? birthDate, int id, String name});',
-        ),
-        contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains(
+              'typedef User = ({DateTime? birthDate, int id, String name});',
+            ),
+            contains(r'''
     return (
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -93,8 +99,12 @@ class Database {}
       ),
     );
 '''),
-      ))
-    }, result.dartOutputs, result.writer);
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   }, skip: requireDart('3.0.0-dev'));
 
   test(
@@ -121,20 +131,24 @@ CREATE VIEW a AS SELECT nullif(bar, '') FROM foo;
         logger: loggerThat(neverEmits(anything)),
       );
 
-      checkOutputs({
-        'a|lib/a.drift.dart': decodedMatches(
-          allOf(isNot(contains('converterbarn'))),
-        ),
-      }, result.dartOutputs, result.writer);
+      checkOutputs(
+        {
+          'a|lib/a.drift.dart': decodedMatches(
+            allOf(isNot(contains('converterbarn'))),
+          ),
+        },
+        result.dartOutputs,
+        result.writer,
+      );
     },
   );
 
   test(
-      'generates valid code for for references whose target columnis a reference column itself',
-      () async {
-    final result = await emulateDriftBuild(
-      inputs: {
-        'a|lib/a.dart': r'''
+    'generates valid code for for references whose target columnis a reference column itself',
+    () async {
+      final result = await emulateDriftBuild(
+        inputs: {
+          'a|lib/a.dart': r'''
 import 'package:drift/drift.dart';
 
 class FkToPk0 extends Table {
@@ -156,19 +170,22 @@ class FkToPk3 extends Table {
 @DriftDatabase(tables: [FkToPk0,FkToPk1,FkToPk2,FkToPk3])
 class MyDatabase {}
 ''',
-      },
-      logger: loggerThat(neverEmits(anything)),
-    );
+        },
+        logger: loggerThat(neverEmits(anything)),
+      );
 
-    checkOutputs(
-      {
-        'a|lib/a.drift.dart': allOf(IsValidDartFile(anything),
-            decodedMatches(isNot(contains('f.fk.fk'))))
-      },
-      result.dartOutputs,
-      result.writer,
-    );
-  });
+      checkOutputs(
+        {
+          'a|lib/a.drift.dart': allOf(
+            IsValidDartFile(anything),
+            decodedMatches(isNot(contains('f.fk.fk'))),
+          ),
+        },
+        result.dartOutputs,
+        result.writer,
+      );
+    },
+  );
 
   test('generates valid code for columns containing dollar signs', () async {
     final result = await emulateDriftBuild(
@@ -229,8 +246,10 @@ class MyDatabase {}
 
     checkOutputs(
       {
-        'a|lib/a.drift.dart': allOf(IsValidDartFile(anything),
-            decodedMatches(contains('todoItems.id, todoItems.listId')))
+        'a|lib/a.drift.dart': allOf(
+          IsValidDartFile(anything),
+          decodedMatches(contains('todoItems.id, todoItems.listId')),
+        ),
       },
       result.dartOutputs,
       result.writer,
@@ -250,23 +269,27 @@ class Users extends Table {
 
 @DriftDatabase(tables: [Users])
 class Database {}
-'''
+''',
     };
 
     test('sqlite', () async {
       final result = await emulateDriftBuild(
         inputs: inputs,
         options: BuilderOptions({
-          'sql': {'dialect': 'sqlite'}
+          'sql': {'dialect': 'sqlite'},
         }),
         logger: loggerThat(neverEmits(anything)),
       );
 
       checkOutputs(
         {
-          'a|lib/a.drift.dart': decodedMatches(contains('Index(\n'
+          'a|lib/a.drift.dart': decodedMatches(
+            contains(
+              'Index(\n'
               "    'users_name',\n"
-              "    'CREATE INDEX users_name ON users (name)',"))
+              "    'CREATE INDEX users_name ON users (name)',",
+            ),
+          ),
         },
         result.dartOutputs,
         result.writer,
@@ -277,17 +300,19 @@ class Database {}
       final result = await emulateDriftBuild(
         inputs: inputs,
         options: BuilderOptions({
-          'sql': {'dialect': 'postgres'}
+          'sql': {'dialect': 'postgres'},
         }),
         logger: loggerThat(neverEmits(anything)),
       );
 
       checkOutputs(
         {
-          'a|lib/a.drift.dart': decodedMatches(contains(
-            "Index.byDialect('users_name', {\n"
-            "    SqlDialect.postgres: 'CREATE INDEX users_name ON users (name)',",
-          ))
+          'a|lib/a.drift.dart': decodedMatches(
+            contains(
+              "Index.byDialect('users_name', {\n"
+              "    SqlDialect.postgres: 'CREATE INDEX users_name ON users (name)',",
+            ),
+          ),
         },
         result.dartOutputs,
         result.writer,

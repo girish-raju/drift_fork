@@ -20,8 +20,7 @@ class CaseExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [if (base != null) base!, ...whens, if (elseExpr != null) elseExpr!];
+  Iterable<AstNode> get childNodes => [?base, ...whens, ?elseExpr];
 }
 
 class WhenComponent extends AstNode {

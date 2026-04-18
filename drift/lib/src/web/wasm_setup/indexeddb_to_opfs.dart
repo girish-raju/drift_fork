@@ -18,7 +18,9 @@ Future<void> moveIndexedDBDatabaseToOpfs(String databaseName) async {
   final driftDbRoot = await opfsDriftDirectoryHandle(createDirectory);
   if (driftDbRoot == null) {
     throw MoveIndexedDbToOpfsException._(
-        databaseName, 'OPFS does not appear to be available.');
+      databaseName,
+      'OPFS does not appear to be available.',
+    );
   }
   final dbRoot = await driftDbRoot
       .getDirectoryHandle(databaseName, createDirectory)
@@ -40,7 +42,8 @@ Future<void> moveIndexedDBDatabaseToOpfs(String databaseName) async {
     final target = await dbRoot.getFileHandle(file, createFile).toDart;
     final writable = await target
         .createWritable(
-            FileSystemCreateWritableOptions(keepExistingData: false))
+          FileSystemCreateWritableOptions(keepExistingData: false),
+        )
         .toDart;
     await writable.write(buffer.toJS).toDart;
     await writable.close().toDart;
@@ -56,7 +59,8 @@ Future<void> moveIndexedDBDatabaseToOpfs(String databaseName) async {
     final metaTarget = await dbRoot.getFileHandle('meta', createFile).toDart;
     final metaWriter = await metaTarget
         .createWritable(
-            FileSystemCreateWritableOptions(keepExistingData: false))
+          FileSystemCreateWritableOptions(keepExistingData: false),
+        )
         .toDart;
     final buffer = Uint8List(2);
     buffer[0] = mainFileExists ? 1 : 0;

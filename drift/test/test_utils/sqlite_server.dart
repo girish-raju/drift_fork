@@ -10,13 +10,16 @@ import 'package:stream_channel/stream_channel.dart';
 Future<void> hybridMain(StreamChannel channel) async {
   final wasmFile = File(p.join('..', 'extras', 'assets', 'sqlite3.wasm'));
   if (!await wasmFile.exists()) {
-    throw UnsupportedError('Could not find sqlite3 WebAssembly module at '
-        '${wasmFile.absolute.path}!');
+    throw UnsupportedError(
+      'Could not find sqlite3 WebAssembly module at '
+      '${wasmFile.absolute.path}!',
+    );
   }
 
   final server = await HttpServer.bind('localhost', 0);
-  final handler =
-      const Pipeline().addMiddleware(_cors()).addHandler(_serveFile(wasmFile));
+  final handler = const Pipeline()
+      .addMiddleware(_cors())
+      .addHandler(_serveFile(wasmFile));
   io.serveRequests(server, handler);
 
   channel.sink.add(server.port);
@@ -43,7 +46,9 @@ Middleware _cors() {
   }
 
   return createMiddleware(
-      requestHandler: handleOptionsRequest, responseHandler: addCorsHeaders);
+    requestHandler: handleOptionsRequest,
+    responseHandler: addCorsHeaders,
+  );
 }
 
 Handler _serveFile(File file) {

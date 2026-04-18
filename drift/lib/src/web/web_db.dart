@@ -43,10 +43,15 @@ class WebDatabase extends DelegatedDatabase {
     WebSetup? setup,
     this.readIntsAsBigInt = false,
   }) : super(
-            _WebDelegate(
-                DriftWebStorage(name), initializer, setup, readIntsAsBigInt),
-            logStatements: logStatements,
-            isSequential: true);
+         _WebDelegate(
+           DriftWebStorage(name),
+           initializer,
+           setup,
+           readIntsAsBigInt,
+         ),
+         logStatements: logStatements,
+         isSequential: true,
+       );
 
   /// A database executor that works on the web.
   ///
@@ -69,8 +74,11 @@ class WebDatabase extends DelegatedDatabase {
     CreateWebDatabase? initializer,
     WebSetup? setup,
     this.readIntsAsBigInt = false,
-  }) : super(_WebDelegate(storage, initializer, setup, readIntsAsBigInt),
-            logStatements: logStatements, isSequential: true);
+  }) : super(
+         _WebDelegate(storage, initializer, setup, readIntsAsBigInt),
+         logStatements: logStatements,
+         isSequential: true,
+       );
 }
 
 class _WebDelegate extends DatabaseDelegate {
@@ -85,7 +93,11 @@ class _WebDelegate extends DatabaseDelegate {
   bool _inTransaction = false;
 
   _WebDelegate(
-      this.storage, this.initializer, this.setup, this.readIntsAsBigInt);
+    this.storage,
+    this.initializer,
+    this.setup,
+    this.readIntsAsBigInt,
+  );
 
   @override
   set isInTransaction(bool value) {

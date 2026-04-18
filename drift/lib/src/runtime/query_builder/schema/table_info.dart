@@ -51,14 +51,16 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   @override
   Map<String, GeneratedColumn> get columnsByName {
     return _columnsByName ??= {
-      for (final column in $columns) column.$name: column
+      for (final column in $columns) column.$name: column,
     };
   }
 
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
-  VerificationContext validateIntegrity(Insertable<D> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<D> instance, {
+    bool isInserting = false,
+  }) {
     // default behavior when users chose to not verify the integrity (build time
     // option)
     return const VerificationContext.notEnabled();
@@ -71,19 +73,23 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   /// can properly be interpreted as the high-level Dart values exposed by the
   /// data class.
   Future<D> mapFromCompanion(
-      Insertable<D> companion, DatabaseConnectionUser database) async {
+    Insertable<D> companion,
+    DatabaseConnectionUser database,
+  ) async {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
-      throw ArgumentError('The companion $companion cannot be transformed '
-          'into a dataclass as it contains expressions that need to be '
-          'evaluated by a database engine.');
+      throw ArgumentError(
+        'The companion $companion cannot be transformed '
+        'into a dataclass as it contains expressions that need to be '
+        'evaluated by a database engine.',
+      );
     }
 
     final context = GenerationContext.fromDb(database);
-    final rawValues = asColumnMap
-        .cast<String, Variable>()
-        .map((key, value) => MapEntry(key, value.mapToSimpleValue(context)));
+    final rawValues = asColumnMap.cast<String, Variable>().map(
+      (key, value) => MapEntry(key, value.mapToSimpleValue(context)),
+    );
 
     return map(rawValues);
   }
@@ -174,7 +180,11 @@ extension RowIdExtension on TableInfo {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');
     }
 
-    return GeneratedColumn<int>('_rowid_', aliasedName, false,
-        type: DriftSqlType.int);
+    return GeneratedColumn<int>(
+      '_rowid_',
+      aliasedName,
+      false,
+      type: DriftSqlType.int,
+    );
   }
 }

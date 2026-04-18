@@ -12,7 +12,9 @@ import '../test_utils/test_utils.dart';
 class _FakeExecutorUser extends QueryExecutorUser {
   @override
   Future<void> beforeOpen(
-      QueryExecutor executor, OpeningDetails details) async {}
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {}
 
   @override
   int get schemaVersion => 1;
@@ -33,8 +35,9 @@ MockDatabaseDelegate _mockDelegate() {
   provideDummy<DbVersionDelegate>(const NoVersionDelegate());
 
   when(delegate.isOpen).thenAnswer((_) => Future.value(true));
-  when(delegate.runSelect(any, any))
-      .thenAnswer((_) => Future.value(QueryResult.fromRows([])));
+  when(
+    delegate.runSelect(any, any),
+  ).thenAnswer((_) => Future.value(QueryResult.fromRows([])));
   when(delegate.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
   when(delegate.runInsert(any, any)).thenAnswer((_) => Future.value(4));
   when(delegate.runCustom(any, any)).thenAnswer((_) => Future.value());
@@ -85,8 +88,10 @@ void main() {
         if (details.wasCreated) {
           await executor.runCustom('created', []);
         } else if (details.hadUpgrade) {
-          await executor.runCustom(
-              'updated', [details.versionBefore, details.versionNow]);
+          await executor.runCustom('updated', [
+            details.versionBefore,
+            details.versionNow,
+          ]);
         }
       },
     );
@@ -105,8 +110,9 @@ void main() {
     });
 
     test('when the database supports versions at opening', () async {
-      when(delegate.versionDelegate)
-          .thenReturn(OnOpenVersionDelegate(() => Future.value(3)));
+      when(
+        delegate.versionDelegate,
+      ).thenReturn(OnOpenVersionDelegate(() => Future.value(3)));
       await db.ensureOpen(userDb);
 
       verify(delegate.open(userDb));
@@ -132,16 +138,18 @@ void main() {
     });
 
     test('handles database creations', () async {
-      when(delegate.versionDelegate)
-          .thenReturn(OnOpenVersionDelegate(() => Future.value(0)));
+      when(
+        delegate.versionDelegate,
+      ).thenReturn(OnOpenVersionDelegate(() => Future.value(0)));
       await db.ensureOpen(userDb);
 
       verify(delegate.runCustom('created', []));
     });
 
     test('handles database upgrades', () async {
-      when(delegate.versionDelegate)
-          .thenReturn(OnOpenVersionDelegate(() => Future.value(1)));
+      when(
+        delegate.versionDelegate,
+      ).thenReturn(OnOpenVersionDelegate(() => Future.value(1)));
       await db.ensureOpen(userDb);
 
       verify(delegate.runCustom('updated', argThat(equals([1, 3]))));
@@ -167,8 +175,9 @@ void main() {
     });
 
     test('when the delegate does not support transactions', () async {
-      when(delegate.transactionDelegate)
-          .thenReturn(const NoTransactionDelegate());
+      when(
+        delegate.transactionDelegate,
+      ).thenReturn(const NoTransactionDelegate());
       await db.ensureOpen(_FakeExecutorUser());
 
       final transaction = db.beginTransaction();
@@ -184,13 +193,16 @@ void main() {
     });
 
     test('when committing or rolling back fails', () async {
-      when(delegate.transactionDelegate)
-          .thenReturn(const NoTransactionDelegate());
+      when(
+        delegate.transactionDelegate,
+      ).thenReturn(const NoTransactionDelegate());
       await db.ensureOpen(_FakeExecutorUser());
-      when(delegate.runCustom('COMMIT TRANSACTION', []))
-          .thenAnswer((i) => Future.error('cannot commit'));
-      when(delegate.runCustom('ROLLBACK TRANSACTION', []))
-          .thenAnswer((i) => Future.error('cannot rollback'));
+      when(
+        delegate.runCustom('COMMIT TRANSACTION', []),
+      ).thenAnswer((i) => Future.error('cannot commit'));
+      when(
+        delegate.runCustom('ROLLBACK TRANSACTION', []),
+      ).thenAnswer((i) => Future.error('cannot rollback'));
 
       final transaction = db.beginTransaction();
       await transaction.ensureOpen(_FakeExecutorUser());
@@ -210,8 +222,9 @@ void main() {
     test('when the database supports transactions', () async {
       final transactionDelegate = MockSupportedTransactionDelegate();
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
-        (i.positionalArguments.single as void Function(
-            QueryDelegate))(delegate);
+        (i.positionalArguments.single as void Function(QueryDelegate))(
+          delegate,
+        );
       });
       when(transactionDelegate.managesLockInternally).thenReturn(true);
 
@@ -240,7 +253,9 @@ void main() {
       final transaction = db.beginTransaction();
 
       await expectLater(
-          transaction.ensureOpen(_FakeExecutorUser()), throwsA(exception));
+        transaction.ensureOpen(_FakeExecutorUser()),
+        throwsA(exception),
+      );
       // This is a no-op now that shouldn't throw
       await transaction.send();
 
@@ -252,8 +267,8 @@ void main() {
       final exception = Exception('expected');
 
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {
-        await (i.positionalArguments.single as Future<Object?> Function(
-            QueryDelegate))(delegate);
+        await (i.positionalArguments.single
+            as Future<Object?> Function(QueryDelegate))(delegate);
         throw exception;
       });
       when(transactionDelegate.managesLockInternally).thenReturn(true);
@@ -273,8 +288,9 @@ void main() {
       final nestedRunner = _mockDelegate();
 
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
-        (i.positionalArguments.single as void Function(
-            QueryDelegate))(delegate);
+        (i.positionalArguments.single as void Function(QueryDelegate))(
+          delegate,
+        );
       });
       when(transactionDelegate.startNested).thenReturn((parent, block) async {
         await block(nestedRunner);

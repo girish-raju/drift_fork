@@ -27,11 +27,7 @@ void main() {
               'message',
               allOf(contains('2'), contains('3'), contains('pow expects')),
             )
-            .having(
-              (source) => source.span!.text,
-              'span.text',
-              'pow(1, 2, 3)',
-            ),
+            .having((source) => source.span!.text, 'span.text', 'pow(1, 2, 3)'),
       ]);
     });
 
@@ -45,11 +41,7 @@ void main() {
               'message',
               allOf(contains('2'), contains('1'), contains('sin expects')),
             )
-            .having(
-              (source) => source.span!.text,
-              'span.text',
-              'sin(1, 2)',
-            ),
+            .having((source) => source.span!.text, 'span.text', 'sin(1, 2)'),
       ]);
     });
   });
@@ -59,7 +51,7 @@ void main() {
     final stmt = result.root as SelectStatement;
 
     expect(stmt.resolvedColumns!.map(result.typeOf), [
-      const ResolveResult(ResolvedType(type: BasicType.real, nullable: true))
+      const ResolveResult(ResolvedType(type: BasicType.real, nullable: true)),
     ]);
   });
 
@@ -68,7 +60,7 @@ void main() {
     final stmt = result.root as SelectStatement;
 
     expect(stmt.resolvedColumns!.map(result.typeOf), [
-      const ResolveResult(ResolvedType(type: BasicType.int, nullable: false))
+      const ResolveResult(ResolvedType(type: BasicType.int, nullable: false)),
     ]);
   });
 
@@ -82,10 +74,10 @@ void main() {
     );
   });
 
-  test('integration tests with drift files and experimental inference',
-      () async {
-    final state = await TestBackend.inTest(
-      const {
+  test(
+    'integration tests with drift files and experimental inference',
+    () async {
+      final state = await TestBackend.inTest(const {
         'foo|lib/a.drift': '''
 CREATE TABLE numbers (foo REAL NOT NULL);
 
@@ -95,25 +87,29 @@ query: SELECT pow(oid, foo) FROM numbers;
 import 'a.drift';
 
 wrongArgs: SELECT sin(oid, foo) FROM numbers;
-        '''
-      },
-      options: const DriftOptions.defaults(modules: [SqlModule.moor_ffi]),
-    );
+        ''',
+      }, options: const DriftOptions.defaults(modules: [SqlModule.moor_ffi]));
 
-    final fileA = await state.analyze('package:foo/a.drift');
-    expect(fileA.allErrors, isEmpty);
+      final fileA = await state.analyze('package:foo/a.drift');
+      expect(fileA.allErrors, isEmpty);
 
-    final queryInA =
-        fileA.fileAnalysis!.resolvedQueries.values.single as SqlSelectQuery;
-    expect(
-      queryInA.resultSet.scalarColumns.single,
-      const TypeMatcher<ScalarResultColumn>()
-          .having((e) => e.sqlType.builtin, 'type', DriftSqlType.double),
-    );
+      final queryInA =
+          fileA.fileAnalysis!.resolvedQueries.values.single as SqlSelectQuery;
+      expect(
+        queryInA.resultSet.scalarColumns.single,
+        const TypeMatcher<ScalarResultColumn>().having(
+          (e) => e.sqlType.builtin,
+          'type',
+          DriftSqlType.double,
+        ),
+      );
 
-    final fileB = await state.analyze('package:foo/b.drift');
-    expect(fileB.allErrors, [
-      isDriftError('sin expects 1 arguments, got 2.').withSpan('sin(oid, foo)')
-    ]);
-  });
+      final fileB = await state.analyze('package:foo/b.drift');
+      expect(fileB.allErrors, [
+        isDriftError(
+          'sin expects 1 arguments, got 2.',
+        ).withSpan('sin(oid, foo)'),
+      ]);
+    },
+  );
 }

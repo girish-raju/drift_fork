@@ -16,7 +16,9 @@ CREATE TABLE foo (
     });
 
     final result = await DriftPreprocessor.analyze(
-        backend, Uri.parse('package:a/main.drift'));
+      backend,
+      Uri.parse('package:a/main.drift'),
+    );
 
     expect(result.temporaryDartFile, '''
 import 'package:a/foo.dart';
@@ -24,10 +26,11 @@ var expr_0 = const MyConverter();
 ''');
   });
 
-  test('only includes direct imports if no Dart expressions are used',
-      () async {
-    final backend = await TestBackend.inTest({
-      'a|lib/main.drift': '''
+  test(
+    'only includes direct imports if no Dart expressions are used',
+    () async {
+      final backend = await TestBackend.inTest({
+        'a|lib/main.drift': '''
 import 'foo.dart';
 import '2.drift';
 
@@ -35,17 +38,20 @@ CREATE TABLE foo (
   bar INTEGER NOT NULL
 );
 ''',
-      'a|lib/2.drift': '''
+        'a|lib/2.drift': '''
 import 'bar.dart';
 ''',
-    });
+      });
 
-    final result = await DriftPreprocessor.analyze(
-        backend, Uri.parse('package:a/main.drift'));
+      final result = await DriftPreprocessor.analyze(
+        backend,
+        Uri.parse('package:a/main.drift'),
+      );
 
-    expect(result.result.declaredTablesAndViews, ['foo']);
-    expect(result.temporaryDartFile, "import 'package:a/foo.dart';\n");
-  });
+      expect(result.result.declaredTablesAndViews, ['foo']);
+      expect(result.temporaryDartFile, "import 'package:a/foo.dart';\n");
+    },
+  );
 
   test('finds nested dart imports', () async {
     final backend = await TestBackend.inTest({
@@ -65,10 +71,14 @@ import 'import.dart';
     });
 
     final result = await DriftPreprocessor.analyze(
-        backend, Uri.parse('package:a/a.drift'));
+      backend,
+      Uri.parse('package:a/a.drift'),
+    );
 
     expect(
-        result.temporaryDartFile, contains("import 'package:a/import.dart';"));
+      result.temporaryDartFile,
+      contains("import 'package:a/import.dart';"),
+    );
   });
 
   test('does not throw for invalid import', () async {
@@ -90,7 +100,9 @@ import 'c.drift';
     });
 
     final result = await DriftPreprocessor.analyze(
-        backend, Uri.parse('package:a/a.drift'));
+      backend,
+      Uri.parse('package:a/a.drift'),
+    );
 
     // No Dart import found, but also didn't crash analyzing
     expect(result.temporaryDartFile, isNot(contains('import')));
@@ -111,7 +123,9 @@ import 'c.drift';
       'a|lib/main.drift': '! this not a valid drift file !',
     });
     final result = await DriftPreprocessor.analyze(
-        backend, Uri.parse('package:a/main.drift'));
+      backend,
+      Uri.parse('package:a/main.drift'),
+    );
 
     expect(result.temporaryDartFile, isEmpty);
   });

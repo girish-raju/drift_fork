@@ -36,23 +36,25 @@ class ResolvedType {
   /// Whether this type is an array.
   final bool isArray;
 
-  const ResolvedType(
-      {this.type,
-      this.hints = const [],
-      this.nullable = false,
-      this.isArray = false});
+  const ResolvedType({
+    this.type,
+    this.hints = const [],
+    this.nullable = false,
+    this.isArray = false,
+  });
 
   const ResolvedType.bool({bool? nullable = false})
-      : this(
-            type: BasicType.int,
-            hints: const [IsBoolean()],
-            nullable: nullable);
+    : this(type: BasicType.int, hints: const [IsBoolean()], nullable: nullable);
 
   ResolvedType get withoutNullabilityInfo {
     return nullable == null
         ? this
         : ResolvedType(
-            type: type, hints: hints, isArray: isArray, nullable: null);
+            type: type,
+            hints: hints,
+            isArray: isArray,
+            nullable: null,
+          );
   }
 
   ResolvedType withNullable(bool nullable) {
@@ -63,8 +65,11 @@ class ResolvedType {
     return copyWith(isArray: array);
   }
 
-  ResolvedType copyWith(
-      {List<TypeHint>? hints, bool? nullable, bool? isArray}) {
+  ResolvedType copyWith({
+    List<TypeHint>? hints,
+    bool? nullable,
+    bool? isArray,
+  }) {
     return ResolvedType(
       type: type,
       hints: hints ?? this.hints,
@@ -158,18 +163,18 @@ class ResolveResult {
   final bool unknown;
 
   const ResolveResult(ResolvedType this.type)
-      : needsContext = false,
-        unknown = false;
+    : needsContext = false,
+      unknown = false;
 
   const ResolveResult.needsContext()
-      : type = null,
-        needsContext = true,
-        unknown = false;
+    : type = null,
+      needsContext = true,
+      unknown = false;
 
   const ResolveResult.unknown()
-      : type = null,
-        needsContext = false,
-        unknown = true;
+    : type = null,
+      needsContext = false,
+      unknown = true;
 
   bool get nullable => type?.nullable ?? true;
 

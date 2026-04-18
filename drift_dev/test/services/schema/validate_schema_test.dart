@@ -13,9 +13,13 @@ class _TestTable extends Table with TableInfo<Table, Never> {
 
   @override
   List<GeneratedColumn<Object>> get $columns => [
-        GeneratedColumn('datetime', actualTableName, false,
-            type: DriftSqlType.dateTime),
-      ];
+    GeneratedColumn(
+      'datetime',
+      actualTableName,
+      false,
+      type: DriftSqlType.dateTime,
+    ),
+  ];
 
   @override
   String get actualTableName => 'foo';
@@ -46,9 +50,9 @@ class _TestDatabase extends GeneratedDatabase {
 
 void main() {
   test('finds mismatch for datetime format', () async {
-    final db =
-        _TestDatabase.connect(DatabaseConnection(NativeDatabase.memory()))
-          ..options = const DriftDatabaseOptions(storeDateTimeAsText: false);
+    final db = _TestDatabase.connect(
+      DatabaseConnection(NativeDatabase.memory()),
+    )..options = const DriftDatabaseOptions(storeDateTimeAsText: false);
     await db.customSelect('SELECT 1').get(); // Open db, setup tables
 
     db.options = const DriftDatabaseOptions(storeDateTimeAsText: true);
@@ -56,8 +60,13 @@ void main() {
 
     await expectLater(
       db.validateDatabaseSchema(),
-      throwsA(isA<SchemaMismatch>().having((e) => e.toString(), 'toString()',
-          contains('Expected TEXT, got INTEGER'))),
+      throwsA(
+        isA<SchemaMismatch>().having(
+          (e) => e.toString(),
+          'toString()',
+          contains('Expected TEXT, got INTEGER'),
+        ),
+      ),
     );
   });
 }

@@ -14,13 +14,12 @@ void main() {
     test('for drift-file definitions', () async {
       final project = TestDriftProject(Directory('../drift/').absolute);
 
-      final statements =
-          await project.collectSchema('test/generated/custom_tables.dart');
+      final statements = await project.collectSchema(
+        'test/generated/custom_tables.dart',
+      );
       expect(
         statements,
-        containsAll(
-          [startsWith('CREATE TABLE IF NOT EXISTS "mytable"')],
-        ),
+        containsAll([startsWith('CREATE TABLE IF NOT EXISTS "mytable"')]),
       );
       expect(statements, everyElement(endsWith(';')));
     });
@@ -39,25 +38,23 @@ class Examples extends Table {
 
 @DriftDatabase(tables: [Examples])
 class MyDatabase {}
-''')
-        ])
+'''),
+        ]),
       ]);
 
-      final exported = await project.collectSchema('lib/test.dart',
-          dialect: SqlDialect.postgres);
+      final exported = await project.collectSchema(
+        'lib/test.dart',
+        dialect: SqlDialect.postgres,
+      );
 
       expect(
         exported,
         contains(
           allOf(
-            contains(
-              'CREATE TABLE IF NOT EXISTS "examples"',
-            ),
+            contains('CREATE TABLE IF NOT EXISTS "examples"'),
             // for sqlite, we'd add a CHECK IN (0, 1) constraint to boolean
             // columns. We shouldn't do this for postgres.
-            isNot(
-              contains('CHECK'),
-            ),
+            isNot(contains('CHECK')),
           ),
         ),
       );
@@ -75,24 +72,31 @@ class Examples extends Table {
 
 @DriftDatabase(tables: [Examples])
 class MyDatabase {}
-''')
-        ])
+'''),
+        ]),
       ]);
 
       await expectLater(
         () => project.collectSchema('lib/test.dart'),
-        throwsA(isA<SchemaIsolateException>()
-            .having((e) => e.cause, 'cause', isA<IsolateSpawnException>())
-            .having((e) => e.startupCodeWrittenTo, 'startupCodeWrittenTo',
-                isNot(null))),
+        throwsA(
+          isA<SchemaIsolateException>()
+              .having((e) => e.cause, 'cause', isA<IsolateSpawnException>())
+              .having(
+                (e) => e.startupCodeWrittenTo,
+                'startupCodeWrittenTo',
+                isNot(null),
+              ),
+        ),
       );
     });
   });
 }
 
 extension on TestDriftProject {
-  Future<List<String>> collectSchema(String source,
-      {SqlDialect? dialect}) async {
+  Future<List<String>> collectSchema(
+    String source, {
+    SqlDialect? dialect,
+  }) async {
     final printStatements = <String>[];
     await runZoned(
       () async {
@@ -104,7 +108,7 @@ extension on TestDriftProject {
         ], dropPrints: false);
       },
       zoneSpecification: ZoneSpecification(
-        print: (_, __, ___, msg) => printStatements.add(msg),
+        print: (_, _, _, msg) => printStatements.add(msg),
       ),
     );
 

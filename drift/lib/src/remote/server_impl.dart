@@ -36,8 +36,9 @@ class ServerImplementation implements DriftServer {
   /// transaction completes, we emit an item on [_backlogUpdated]. This can be
   /// used to implement a lock.
   final List<int> _executorBacklog = [];
-  final StreamController<void> _backlogUpdated =
-      StreamController.broadcast(sync: true);
+  final StreamController<void> _backlogUpdated = StreamController.broadcast(
+    sync: true,
+  );
 
   bool _isShuttingDown = false;
   final Set<DriftCommunication> _activeChannels = {};
@@ -47,8 +48,11 @@ class ServerImplementation implements DriftServer {
       StreamController();
 
   /// Creates a server from the underlying connection and further options.
-  ServerImplementation(this.connection, this.allowRemoteShutdown,
-      this.closeExecutorWhenShutdown) {
+  ServerImplementation(
+    this.connection,
+    this.allowRemoteShutdown,
+    this.closeExecutorWhenShutdown,
+  ) {
     done.then((_) {
       _closeRemainingConnections();
       _tableUpdateNotifications.close();
@@ -94,7 +98,9 @@ class ServerImplementation implements DriftServer {
   }
 
   FutureOr<ResponsePayload?> _handleRequest(
-      DriftCommunication comms, Request request) {
+    DriftCommunication comms,
+    Request request,
+  ) {
     final payload = request.payload;
 
     if (payload is NoArgsRequest) {
@@ -112,11 +118,18 @@ class ServerImplementation implements DriftServer {
     } else if (payload is EnsureOpen) {
       return _handleEnsureOpen(comms, payload);
     } else if (payload is ExecuteQuery) {
-      final token = runCancellable(() => _runQuery(
-          payload.method, payload.sql, payload.args, payload.executorId));
+      final token = runCancellable(
+        () => _runQuery(
+          payload.method,
+          payload.sql,
+          payload.args,
+          payload.executorId,
+        ),
+      );
       _cancellableOperations[request.id] = token;
-      return token.result
-          .whenComplete(() => _cancellableOperations.remove(request.id));
+      return token.result.whenComplete(
+        () => _cancellableOperations.remove(request.id),
+      );
     } else if (payload is ExecuteBatchedStatement) {
       return _runBatched(payload.stmts, payload.executorId);
     } else if (payload is NotifyTablesUpdated) {
@@ -133,16 +146,23 @@ class ServerImplementation implements DriftServer {
   }
 
   Future<ResponsePayload> _handleEnsureOpen(
-      DriftCommunication comms, EnsureOpen open) async {
+    DriftCommunication comms,
+    EnsureOpen open,
+  ) async {
     final executor = await _loadExecutor(open.executorId);
     _knownSchemaVersion = open.schemaVersion;
 
-    return PrimitiveResponsePayload.bool(await executor
-        .ensureOpen(_ServerDbUser(this, comms, open.schemaVersion)));
+    return PrimitiveResponsePayload.bool(
+      await executor.ensureOpen(_ServerDbUser(this, comms, open.schemaVersion)),
+    );
   }
 
-  Future<ResponsePayload?> _runQuery(StatementMethod method, String sql,
-      List<Object?> args, int? transactionId) async {
+  Future<ResponsePayload?> _runQuery(
+    StatementMethod method,
+    String sql,
+    List<Object?> args,
+    int? transactionId,
+  ) async {
     final executor = await _loadExecutor(transactionId);
 
     // Give cancellations more time to come in
@@ -155,17 +175,21 @@ class ServerImplementation implements DriftServer {
         return null;
       case StatementMethod.deleteOrUpdate:
         return PrimitiveResponsePayload.int(
-            await executor.runDelete(sql, args));
+          await executor.runDelete(sql, args),
+        );
       case StatementMethod.insert:
         return PrimitiveResponsePayload.int(
-            await executor.runInsert(sql, args));
+          await executor.runInsert(sql, args),
+        );
       case StatementMethod.select:
         return SelectResult(await executor.runSelect(sql, args));
     }
   }
 
   Future<ResponsePayload?> _runBatched(
-      BatchedStatements stmts, int? transactionId) async {
+    BatchedStatements stmts,
+    int? transactionId,
+  ) async {
     final executor = await _loadExecutor(transactionId);
     await executor.runBatched(stmts);
     return null;
@@ -180,8 +204,9 @@ class ServerImplementation implements DriftServer {
 
   Future<int> _spawnTransaction(DriftCommunication comm, int? executor) async {
     final transaction = (await _loadExecutor(executor)).beginTransaction();
-    await transaction
-        .ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
+    await transaction.ensureOpen(
+      _ServerDbUser(this, comm, _knownSchemaVersion),
+    );
     return _putExecutor(transaction, beforeCurrent: true);
   }
 
@@ -204,14 +229,19 @@ class ServerImplementation implements DriftServer {
     return id;
   }
 
-  Future<ResponsePayload?> _transactionControl(DriftCommunication comm,
-      NestedExecutorControl action, int? executorId) async {
+  Future<ResponsePayload?> _transactionControl(
+    DriftCommunication comm,
+    NestedExecutorControl action,
+    int? executorId,
+  ) async {
     if (action == NestedExecutorControl.beginTransaction) {
       return PrimitiveResponsePayload.int(
-          await _spawnTransaction(comm, executorId));
+        await _spawnTransaction(comm, executorId),
+      );
     } else if (action == NestedExecutorControl.startExclusive) {
       return PrimitiveResponsePayload.int(
-          await _spawnExclusive(comm, executorId));
+        await _spawnExclusive(comm, executorId),
+      );
     }
 
     final executor = await _loadExecutor(executorId);
@@ -283,8 +313,10 @@ class ServerImplementation implements DriftServer {
   }
 
   @override
-  void dispatchTableUpdateNotification(NotifyTablesUpdated notification,
-      [DriftCommunication? source]) {
+  void dispatchTableUpdateNotification(
+    NotifyTablesUpdated notification, [
+    DriftCommunication? source,
+  ]) {
     for (final connected in _activeChannels) {
       if (connected != source) {
         connected.notify(notification);
@@ -303,7 +335,9 @@ class _ServerDbUser implements QueryExecutorUser {
 
   @override
   Future<void> beforeOpen(
-      QueryExecutor executor, OpeningDetails details) async {
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {
     final id = _server._putExecutor(executor, beforeCurrent: true);
     try {
       await connection.request<void>(RunBeforeOpen(details, id));

@@ -19,7 +19,9 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
     final sql = computed?.getField('createIndexStatement')?.toStringValue();
 
     final tableResult = await resolver.resolveReferencedElement(
-        discovered.ownId, discovered.onTable);
+      discovered.ownId,
+      discovered.onTable,
+    );
     final table = handleReferenceResult<DriftTable>(
       tableResult,
       (msg) => DriftAnalysisError.forDartElement(discovered.dartElement, msg),
@@ -53,22 +55,27 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
       }
 
       if (columnName == null) {
-        reportError(DriftAnalysisError.forDartElement(
-          discovered.dartElement,
-          'Unknown entry in columns array, should be a symbols or an IndexedColumn instance.',
-        ));
+        reportError(
+          DriftAnalysisError.forDartElement(
+            discovered.dartElement,
+            'Unknown entry in columns array, should be a symbols or an IndexedColumn instance.',
+          ),
+        );
       }
 
-      final tableColumn =
-          table?.columns.firstWhereOrNull((c) => c.nameInDart == columnName);
+      final tableColumn = table?.columns.firstWhereOrNull(
+        (c) => c.nameInDart == columnName,
+      );
 
       if (tableColumn != null) {
         columns.add(DriftIndexedColumn(column: tableColumn, orderBy: orderBy));
       } else {
-        reportError(DriftAnalysisError.forDartElement(
-          discovered.dartElement,
-          'Column `$columnName`, referenced in index `${discovered.ownId.name}`, was not found in the table.',
-        ));
+        reportError(
+          DriftAnalysisError.forDartElement(
+            discovered.dartElement,
+            'Column `$columnName`, referenced in index `${discovered.ownId.name}`, was not found in the table.',
+          ),
+        );
       }
     }
 
@@ -83,14 +90,20 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
   }
 
   Future<DriftIndex> _fromSql(
-      DriftTable? table, String createIndexStatement) async {
+    DriftTable? table,
+    String createIndexStatement,
+  ) async {
     final engineForParsing = resolver.driver.newSqlEngine();
     // TODO: Use Dart AST offsets
     final span = SourceFile.fromString(createIndexStatement).span(0);
     final result = engineForParsing.parseSpan(ParserEntrypoint.statement, span);
     for (final error in result.errors) {
-      reportError(DriftAnalysisError.forDartElement(
-          discovered.dartElement, error.message));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          discovered.dartElement,
+          error.message,
+        ),
+      );
     }
 
     final root = result.rootNode;
@@ -104,8 +117,12 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
       unique = root.unique;
       for (final error in context.errors) {
         if (error.message case final message?) {
-          reportError(DriftAnalysisError.forDartElement(
-              discovered.dartElement, '${error.source?.span?.text}: $message'));
+          reportError(
+            DriftAnalysisError.forDartElement(
+              discovered.dartElement,
+              '${error.source?.span?.text}: $message',
+            ),
+          );
         }
       }
 
@@ -113,15 +130,22 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
       // index actually references the table.
       if (root.on.resolved case Table onTable) {
         if (table != null && onTable.name != table.schemaName) {
-          reportError(DriftAnalysisError.forDartElement(
+          reportError(
+            DriftAnalysisError.forDartElement(
               discovered.dartElement,
               'This index was applied to `${table.baseDartName}` in Dart, '
-              'but references `${onTable.name}` in SQL.'));
+              'but references `${onTable.name}` in SQL.',
+            ),
+          );
         }
       }
     } else {
-      reportError(DriftAnalysisError.forDartElement(discovered.dartElement,
-          'Statement in TableIndex.sql must be a `CREATE INDEX` statement.'));
+      reportError(
+        DriftAnalysisError.forDartElement(
+          discovered.dartElement,
+          'Statement in TableIndex.sql must be a `CREATE INDEX` statement.',
+        ),
+      );
     }
 
     return DriftIndex(

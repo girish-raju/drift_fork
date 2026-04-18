@@ -13,10 +13,8 @@ void main() {
   test('writes types from expressions in moor files', () async {
     final env = await driftTestEnvironment(rootPackage: 'foo');
 
-    await testBuilder(
-      PreprocessBuilder(),
-      {
-        'foo|main.moor': '''
+    await testBuilder(PreprocessBuilder(), {
+      'foo|main.moor': '''
 import 'converter.dart';
 --import 'package:moor_converters/converters.dart';
 
@@ -24,7 +22,7 @@ CREATE TABLE foo (
   id INT NOT NULL MAPPED BY `const MyConverter()`
 );
         ''',
-        'foo|converter.dart': '''
+      'foo|converter.dart': '''
 import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<DateTime, int> {
@@ -38,9 +36,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
   }
 }
         ''',
-      },
-      readerWriter: env,
-    );
+    }, readerWriter: env);
 
     final output = env.readGenerated('foo|main.drift_prep.json');
     final serialized = json.decode(output);
@@ -56,20 +52,18 @@ class MyConverter extends TypeConverter<DateTime, int> {
   test('finds dart files over transitive imports', () async {
     final env = await driftTestEnvironment(rootPackage: 'foo');
 
-    await testBuilder(
-      PreprocessBuilder(),
-      {
-        'foo|main.moor': '''
+    await testBuilder(PreprocessBuilder(), {
+      'foo|main.moor': '''
 import 'indirection.moor';
 
 CREATE TABLE foo (
   id INT NOT NULL MAPPED BY `const MyConverter()`
 );
         ''',
-        'foo|indirection.moor': '''
+      'foo|indirection.moor': '''
 import 'converter.dart';
         ''',
-        'foo|converter.dart': '''
+      'foo|converter.dart': '''
 import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<DateTime, int> {
@@ -83,9 +77,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
   }
 }
         ''',
-      },
-      readerWriter: env,
-    );
+    }, readerWriter: env);
 
     final output = env.readGenerated('foo|main.drift_prep.json');
     final serialized = json.decode(output);

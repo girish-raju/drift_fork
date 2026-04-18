@@ -16,12 +16,15 @@ final _leadingDigits = RegExp(r'^\d*');
 /// generate unique names, this function can append numbers to the generated
 /// identifier to make them unique. To make use of that, pass an iterable of
 /// names already taken in [existingNames].
-String dartNameForSqlColumn(String name,
-    {Iterable<String> existingNames = const Iterable.empty()}) {
+String dartNameForSqlColumn(
+  String name, {
+  Iterable<String> existingNames = const Iterable.empty(),
+}) {
   // remove chars which cannot appear in dart identifiers, also strip away
   // leading digits
-  var escapedName =
-      name.replaceAll(_illegalChars, '').replaceFirst(_leadingDigits, '');
+  var escapedName = name
+      .replaceAll(_illegalChars, '')
+      .replaceFirst(_leadingDigits, '');
 
   if (escapedName.isEmpty) {
     escapedName = 'empty';

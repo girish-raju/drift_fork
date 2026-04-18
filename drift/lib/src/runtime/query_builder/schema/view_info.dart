@@ -42,7 +42,7 @@ abstract class ViewInfo<Self extends HasResultSet, Row>
   @override
   Map<String, GeneratedColumn> get columnsByName {
     return _columnsByName ??= {
-      for (final column in $columns) column.$name: column
+      for (final column in $columns) column.$name: column,
     };
   }
 }

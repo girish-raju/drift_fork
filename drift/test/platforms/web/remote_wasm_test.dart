@@ -25,12 +25,12 @@ void main() {
     test('recovers sqlite exceptions', () async {
       final connection = Database(executor.createConnection());
       await expectLater(
-        () => connection.customSelect(
-          'select throw(?);',
-          variables: [
-            Variable.withString('a'),
-          ],
-        ).get(),
+        () => connection
+            .customSelect(
+              'select throw(?);',
+              variables: [Variable.withString('a')],
+            )
+            .get(),
         throwsA(
           isA<DriftRemoteException>().having(
             (e) => e.remoteCause,
@@ -63,46 +63,48 @@ final class _RemoteWebExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.delayed(Future(() async {
-      final sqlite = await sqlite3;
-      sqlite.registerVirtualFileSystem(_fs, makeDefault: true);
+    return DatabaseConnection.delayed(
+      Future(() async {
+        final sqlite = await sqlite3;
+        sqlite.registerVirtualFileSystem(_fs, makeDefault: true);
 
-      final server = DriftServer(
-        WasmDatabase(
-          sqlite3: sqlite,
-          path: '/db',
-          setup: (database) => {
-            database.createFunction(
-              functionName: 'throw',
-              function: (_) => throw 'exception',
-              argumentCount: const AllowedArgumentCount(1),
-            ),
-          },
-        ),
-        allowRemoteShutdown: true,
-      );
-      final channel = MessageChannel();
-      final clientChannel = channel.port2.channel(
-        explicitClose: true,
-        webNativeSerialization: _newSerialization,
-        nativeSerializionVersion: ProtocolVersion.current.versionCode,
-      );
-
-      server.serve(
-        channel.port1.channel(
+        final server = DriftServer(
+          WasmDatabase(
+            sqlite3: sqlite,
+            path: '/db',
+            setup: (database) => {
+              database.createFunction(
+                functionName: 'throw',
+                function: (_) => throw 'exception',
+                argumentCount: const AllowedArgumentCount(1),
+              ),
+            },
+          ),
+          allowRemoteShutdown: true,
+        );
+        final channel = MessageChannel();
+        final clientChannel = channel.port2.channel(
           explicitClose: true,
           webNativeSerialization: _newSerialization,
           nativeSerializionVersion: ProtocolVersion.current.versionCode,
-        ),
-        serialize: !_newSerialization,
-      );
+        );
 
-      return await connectToRemoteAndInitialize(
-        clientChannel,
-        singleClientMode: true,
-        serialize: !_newSerialization,
-      );
-    }));
+        server.serve(
+          channel.port1.channel(
+            explicitClose: true,
+            webNativeSerialization: _newSerialization,
+            nativeSerializionVersion: ProtocolVersion.current.versionCode,
+          ),
+          serialize: !_newSerialization,
+        );
+
+        return await connectToRemoteAndInitialize(
+          clientChannel,
+          singleClientMode: true,
+          serialize: !_newSerialization,
+        );
+      }),
+    );
   }
 
   @override

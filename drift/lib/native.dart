@@ -61,7 +61,7 @@ class NativeDatabase extends DelegatedDatabase {
   static const _defaultReadPoolSize = 0;
 
   NativeDatabase._(super.delegate, bool logStatements)
-      : super(isSequential: false, logStatements: logStatements);
+    : super(isSequential: false, logStatements: logStatements);
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
@@ -103,14 +103,15 @@ class NativeDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
-        _NativeDelegate(
-          file,
-          setup,
-          enableMigrations,
-          cachePreparedStatements,
-          sqlite3,
-        ),
-        logStatements);
+      _NativeDelegate(
+        file,
+        setup,
+        enableMigrations,
+        cachePreparedStatements,
+        sqlite3,
+      ),
+      logStatements,
+    );
   }
 
   /// Creates a database storing its result in [file].
@@ -193,61 +194,67 @@ class NativeDatabase extends DelegatedDatabase {
   }) {
     RangeError.checkNotNegative(readPool);
 
-    return DatabaseConnection.delayed(Future.sync(() async {
-      final receiveIsolate = ReceivePort();
-      final receive = StreamQueue(receiveIsolate.cast<DriftIsolate>());
+    return DatabaseConnection.delayed(
+      Future.sync(() async {
+        final receiveIsolate = ReceivePort();
+        final receive = StreamQueue(receiveIsolate.cast<DriftIsolate>());
 
-      Future<void> spawnIsolate(String kind) async {
-        await Isolate.spawn(
-          _NativeIsolateStartup.start,
-          _NativeIsolateStartup(
-            path: file.absolute.path,
-            enableLogs: logStatements,
-            cachePreparedStatements: cachePreparedStatements,
-            enableMigrations: enableMigrations,
-            setup: setup,
-            isolateSetup: isolateSetup,
-            sqlite3: sqlite3,
-            sendServer: receiveIsolate.sendPort,
-          ),
-          debugName: 'Drift isolate $kind for ${file.path}',
-        );
-      }
-
-      await spawnIsolate('worker');
-      final driftIsolate = await receive.next;
-
-      var connection = await driftIsolate.connect(
-          singleClientMode: true, isolateDebugLog: isolateDebugLog);
-      if (readPool != 0) {
-        final readers = <QueryExecutor>[];
-
-        for (var i = 0; i < readPool; i++) {
-          await spawnIsolate('reader');
+        Future<void> spawnIsolate(String kind) async {
+          await Isolate.spawn(
+            _NativeIsolateStartup.start,
+            _NativeIsolateStartup(
+              path: file.absolute.path,
+              enableLogs: logStatements,
+              cachePreparedStatements: cachePreparedStatements,
+              enableMigrations: enableMigrations,
+              setup: setup,
+              isolateSetup: isolateSetup,
+              sqlite3: sqlite3,
+              sendServer: receiveIsolate.sendPort,
+            ),
+            debugName: 'Drift isolate $kind for ${file.path}',
+          );
         }
 
-        for (var i = 0; i < readPool; i++) {
-          final spawned = await receive.next;
-          readers.add(await spawned.connect(
-            singleClientMode: true,
-            isolateDebugLog: isolateDebugLog,
-          ));
+        await spawnIsolate('worker');
+        final driftIsolate = await receive.next;
+
+        var connection = await driftIsolate.connect(
+          singleClientMode: true,
+          isolateDebugLog: isolateDebugLog,
+        );
+        if (readPool != 0) {
+          final readers = <QueryExecutor>[];
+
+          for (var i = 0; i < readPool; i++) {
+            await spawnIsolate('reader');
+          }
+
+          for (var i = 0; i < readPool; i++) {
+            final spawned = await receive.next;
+            readers.add(
+              await spawned.connect(
+                singleClientMode: true,
+                isolateDebugLog: isolateDebugLog,
+              ),
+            );
+          }
+
+          connection = DatabaseConnection(
+            MultiExecutor.withReadPool(
+              reads: readers,
+              write: connection.executor,
+            ),
+            streamQueries: connection.streamQueries,
+            connectionData: connection.connectionData,
+          );
         }
 
-        connection = DatabaseConnection(
-          MultiExecutor.withReadPool(
-            reads: readers,
-            write: connection.executor,
-          ),
-          streamQueries: connection.streamQueries,
-          connectionData: connection.connectionData,
-        );
-      }
-
-      await receive.cancel();
-      receiveIsolate.close();
-      return connection;
-    }));
+        await receive.cancel();
+        receiveIsolate.close();
+        return connection;
+      }),
+    );
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
@@ -295,15 +302,16 @@ class NativeDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
-        _NativeDelegate.opened(
-          database,
-          setup,
-          closeUnderlyingOnClose,
-          cachePreparedStatements,
-          enableMigrations,
-          _NativeDelegate._defaultResolver,
-        ),
-        logStatements);
+      _NativeDelegate.opened(
+        database,
+        setup,
+        closeUnderlyingOnClose,
+        cachePreparedStatements,
+        enableMigrations,
+        _NativeDelegate._defaultResolver,
+      ),
+      logStatements,
+    );
   }
 
   /// Disposes resources allocated by all [NativeDatabase] instances of this
@@ -351,8 +359,9 @@ class NativeDatabase extends DelegatedDatabase {
   ///
   /// For more information, see [issue 835](https://github.com/simolus3/drift/issues/835).
   @experimental
-  static Future<void> closeExistingInstances(
-      {SqliteResolver sqlite3 = _NativeDelegate._defaultResolver}) async {
+  static Future<void> closeExistingInstances({
+    SqliteResolver sqlite3 = _NativeDelegate._defaultResolver,
+  }) async {
     tracker(await sqlite3()).closeExisting();
   }
 }
@@ -362,13 +371,17 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
   final SqliteResolver _sqlite3;
   DatabaseTracker? _trackedBy;
 
-  _NativeDelegate(this.file, DatabaseSetup? setup, bool enableMigrations,
-      bool cachePreparedStatements, this._sqlite3)
-      : super(
-          setup,
-          enableMigrations: enableMigrations,
-          cachePreparedStatements: cachePreparedStatements,
-        );
+  _NativeDelegate(
+    this.file,
+    DatabaseSetup? setup,
+    bool enableMigrations,
+    bool cachePreparedStatements,
+    this._sqlite3,
+  ) : super(
+        setup,
+        enableMigrations: enableMigrations,
+        cachePreparedStatements: cachePreparedStatements,
+      );
 
   _NativeDelegate.opened(
     Database super.db,
@@ -377,11 +390,11 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
     bool cachePreparedStatements,
     bool enableMigrations,
     this._sqlite3,
-  )   : file = null,
-        super.opened(
-          cachePreparedStatements: cachePreparedStatements,
-          enableMigrations: enableMigrations,
-        );
+  ) : file = null,
+      super.opened(
+        cachePreparedStatements: cachePreparedStatements,
+        enableMigrations: enableMigrations,
+      );
 
   @override
   Future<Database> openDatabase() async {
@@ -482,14 +495,16 @@ class _NativeIsolateStartup {
     await startup.isolateSetup?.call();
     final isolate = DriftIsolate.inCurrent(
       () {
-        return DatabaseConnection(NativeDatabase(
-          File(startup.path),
-          logStatements: startup.enableLogs,
-          cachePreparedStatements: startup.cachePreparedStatements,
-          enableMigrations: startup.enableMigrations,
-          sqlite3: startup.sqlite3,
-          setup: startup.setup,
-        ));
+        return DatabaseConnection(
+          NativeDatabase(
+            File(startup.path),
+            logStatements: startup.enableLogs,
+            cachePreparedStatements: startup.cachePreparedStatements,
+            enableMigrations: startup.enableMigrations,
+            sqlite3: startup.sqlite3,
+            setup: startup.setup,
+          ),
+        );
       },
       shutdownAfterLastDisconnect: true,
       killIsolateWhenDone: true,

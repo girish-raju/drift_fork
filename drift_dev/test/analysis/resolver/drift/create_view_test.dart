@@ -26,11 +26,15 @@ void main() {
 
     expect(view.columns, [
       isA<DriftColumn>().having(
-          (e) => e.sqlType.builtin, 'sqlType', drift.DriftSqlType.string)
+        (e) => e.sqlType.builtin,
+        'sqlType',
+        drift.DriftSqlType.string,
+      ),
     ]);
 
-    expect(view.references,
-        [isA<DriftTable>().having((t) => t.schemaName, 'schemaName', 't')]);
+    expect(view.references, [
+      isA<DriftTable>().having((t) => t.schemaName, 'schemaName', 't'),
+    ]);
 
     state.expectNoErrors();
   });
@@ -59,7 +63,10 @@ void main() {
     expect(parentView.columns, hasLength(2));
     expect(childView.columns, [
       isA<DriftColumn>().having(
-          (e) => e.sqlType.builtin, 'sqlType', drift.DriftSqlType.string)
+        (e) => e.sqlType.builtin,
+        'sqlType',
+        drift.DriftSqlType.string,
+      ),
     ]);
 
     expect(parentView.references.map((e) => e.id.name), ['t']);
@@ -80,7 +87,9 @@ void main() {
     final file = await state.analyze('package:foo/a.drift');
 
     expect(
-        file.allErrors, contains(isDriftError(contains('Could not find t'))));
+      file.allErrors,
+      contains(isDriftError(contains('Could not find t'))),
+    );
   });
 
   test('does not allow nested columns', () async {
@@ -96,8 +105,11 @@ void main() {
 
     expect(file.allErrors, [
       isDriftError(
-          contains('Nested star columns may only appear in a top-level select '
-              'query.'))
+        contains(
+          'Nested star columns may only appear in a top-level select '
+          'query.',
+        ),
+      ),
     ]);
   });
 
@@ -181,7 +193,10 @@ TypeConverter<Object, int> createConverter() => throw UnimplementedError();
       column.typeConverter,
       isA<AppliedTypeConverter>()
           .having(
-              (e) => e.expression.toString(), 'expression', 'createConverter()')
+            (e) => e.expression.toString(),
+            'expression',
+            'createConverter()',
+          )
           .having((e) => e.owningColumn, 'owningColumn', tableColumn),
     );
   });
@@ -210,7 +225,10 @@ TypeConverter<Object, int> createConverter() => throw UnimplementedError();
       column.typeConverter,
       isA<AppliedTypeConverter>()
           .having(
-              (e) => e.expression.toString(), 'expression', 'createConverter()')
+            (e) => e.expression.toString(),
+            'expression',
+            'createConverter()',
+          )
           .having((e) => e.owningColumn, 'owningColumn', column),
     );
 
@@ -253,15 +271,21 @@ enum MyEnum {
     expect(
       c2.typeConverter,
       isA<AppliedTypeConverter>()
-          .having((e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter',
-              isTrue)
+          .having(
+            (e) => e.isDriftEnumTypeConverter,
+            'isDriftEnumTypeConverter',
+            isTrue,
+          )
           .having((e) => e.owningColumn, 'owningColumn', c2),
     );
     expect(
       c3.typeConverter,
       isA<AppliedTypeConverter>()
-          .having((e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter',
-              isTrue)
+          .having(
+            (e) => e.isDriftEnumTypeConverter,
+            'isDriftEnumTypeConverter',
+            isTrue,
+          )
           .having((e) => e.owningColumn, 'owningColumn', c3),
     );
 
@@ -282,10 +306,9 @@ enum MyEnum {
       String expectedSql,
       DriftOptions options,
     ) async {
-      final backend = await TestBackend.inTest(
-        {'a|lib/a.drift': definition},
-        options: options,
-      );
+      final backend = await TestBackend.inTest({
+        'a|lib/a.drift': definition,
+      }, options: options);
       final state = await backend.analyze('package:a/a.drift');
       backend.expectNoErrors();
 

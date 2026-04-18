@@ -40,14 +40,16 @@ class _Fts5Module extends Module {
         // actual syntax is <name> <options...>
         columnNames.add(argument.trim().split(' ').first);
       } else {
-        options[match.group(1)!.replaceAll(_cleanTicks, '')] =
-            match.group(2)!.replaceAll(_cleanTicks, '');
+        options[match.group(1)!.replaceAll(_cleanTicks, '')] = match
+            .group(2)!
+            .replaceAll(_cleanTicks, '');
       }
     }
 
     //No external content when null or empty String
-    final contentTable =
-        (options['content']?.isNotEmpty ?? false) ? options['content'] : null;
+    final contentTable = (options['content']?.isNotEmpty ?? false)
+        ? options['content']
+        : null;
     //Fallback to "rowid" when option is not set
     final contentRowId = options['content_rowid'] ?? 'rowid';
 
@@ -59,10 +61,7 @@ class _Fts5Module extends Module {
         for (var arg in columnNames)
           TableColumn(
             arg,
-            ResolvedType(
-              type: BasicType.text,
-              nullable: assumeNullableColumns,
-            ),
+            ResolvedType(type: BasicType.text, nullable: assumeNullableColumns),
           ),
       ],
       definition: stmt,
@@ -87,36 +86,39 @@ class _Fts5VocabModule extends Module {
     switch (type) {
       case 'row':
         return Table(
-            name: stmt.tableName,
-            resolvedColumns: [
-              TableColumn('term', const ResolvedType(type: BasicType.text)),
-              TableColumn('doc', const ResolvedType(type: BasicType.int)),
-              TableColumn('cnt', const ResolvedType(type: BasicType.int)),
-            ],
-            definition: stmt,
-            isVirtual: true);
+          name: stmt.tableName,
+          resolvedColumns: [
+            TableColumn('term', const ResolvedType(type: BasicType.text)),
+            TableColumn('doc', const ResolvedType(type: BasicType.int)),
+            TableColumn('cnt', const ResolvedType(type: BasicType.int)),
+          ],
+          definition: stmt,
+          isVirtual: true,
+        );
       case 'col':
         return Table(
-            name: stmt.tableName,
-            resolvedColumns: [
-              TableColumn('term', const ResolvedType(type: BasicType.text)),
-              TableColumn('col', const ResolvedType(type: BasicType.text)),
-              TableColumn('doc', const ResolvedType(type: BasicType.int)),
-              TableColumn('cnt', const ResolvedType(type: BasicType.int)),
-            ],
-            definition: stmt,
-            isVirtual: true);
+          name: stmt.tableName,
+          resolvedColumns: [
+            TableColumn('term', const ResolvedType(type: BasicType.text)),
+            TableColumn('col', const ResolvedType(type: BasicType.text)),
+            TableColumn('doc', const ResolvedType(type: BasicType.int)),
+            TableColumn('cnt', const ResolvedType(type: BasicType.int)),
+          ],
+          definition: stmt,
+          isVirtual: true,
+        );
       case 'instance':
         return Table(
-            name: stmt.tableName,
-            resolvedColumns: [
-              TableColumn('term', const ResolvedType(type: BasicType.text)),
-              TableColumn('doc', const ResolvedType(type: BasicType.int)),
-              TableColumn('col', const ResolvedType(type: BasicType.text)),
-              TableColumn('offset', const ResolvedType(type: BasicType.int)),
-            ],
-            definition: stmt,
-            isVirtual: true);
+          name: stmt.tableName,
+          resolvedColumns: [
+            TableColumn('term', const ResolvedType(type: BasicType.text)),
+            TableColumn('doc', const ResolvedType(type: BasicType.int)),
+            TableColumn('col', const ResolvedType(type: BasicType.text)),
+            TableColumn('offset', const ResolvedType(type: BasicType.int)),
+          ],
+          definition: stmt,
+          isVirtual: true,
+        );
       default:
         throw ArgumentError('Unknown fts5vocab table type');
     }
@@ -134,14 +136,14 @@ class Fts5Table extends Table {
     this.contentRowId,
     CreateVirtualTableStatement? super.definition,
   }) : super(
-          resolvedColumns: [
-            if (contentTable != null && contentRowId != null) RowId(),
-            ...columns,
-            _Fts5RankColumn(),
-            _Fts5TableColumn(name),
-          ],
-          isVirtual: true,
-        );
+         resolvedColumns: [
+           if (contentTable != null && contentRowId != null) RowId(),
+           ...columns,
+           _Fts5RankColumn(),
+           _Fts5TableColumn(name),
+         ],
+         isVirtual: true,
+       );
 }
 
 /// Provides type inference and lints for
@@ -153,11 +155,13 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
 
   @override
   ResolveResult inferArgumentType(
-      TypeInferenceSession session, SqlInvocation call, Expression argument) {
+    TypeInferenceSession session,
+    SqlInvocation call,
+    Expression argument,
+  ) {
     int? argumentIndex;
     if (call.parameters is ExprFunctionParameters) {
-      argumentIndex = (call.parameters as ExprFunctionParameters)
-          .parameters
+      argumentIndex = (call.parameters as ExprFunctionParameters).parameters
           .indexOf(argument);
     }
     if (argumentIndex == null || argumentIndex < 0) {
@@ -196,8 +200,11 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
   }
 
   @override
-  ResolveResult inferReturnType(TypeInferenceSession session,
-      SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(
+    TypeInferenceSession session,
+    SqlInvocation call,
+    List<Typeable> expandedArgs,
+  ) {
     switch (call.name.toLowerCase()) {
       case 'bm25':
         return const ResolveResult(ResolvedType(type: BasicType.real));
@@ -208,28 +215,28 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
         }
 
         return const ResolveResult(
-            ResolvedType(type: BasicType.text, nullable: true));
+          ResolvedType(type: BasicType.text, nullable: true),
+        );
     }
     return const ResolveResult.unknown();
   }
 
   @override
   int? argumentCountFor(String function) {
-    return const {
-      'highlight': 4,
-      'snippet': 6,
-    }[function];
+    return const {'highlight': 4, 'snippet': 6}[function];
   }
 
   @override
   void reportErrors(SqlInvocation call, AnalysisContext context) {
     // it doesn't make sense to call fts5 functions with a star parameter
     if (call.parameters is StarFunctionParameter) {
-      context.reportError(AnalysisError(
-        relevantNode: call,
-        message: '${call.name} should not be called with a star parameter',
-        type: AnalysisErrorType.other,
-      ));
+      context.reportError(
+        AnalysisError(
+          relevantNode: call,
+          message: '${call.name} should not be called with a star parameter',
+          type: AnalysisErrorType.other,
+        ),
+      );
       return;
     }
 
@@ -249,23 +256,28 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
 
     // the first argument to all functions must be a fts5 table name
     if (firstResolved == null || firstResolved.source is! _Fts5TableColumn) {
-      context.reportError(AnalysisError(
-        relevantNode: args.first,
-        message: 'Expected an fts5 table name here',
-        type: AnalysisErrorType.other,
-      ));
+      context.reportError(
+        AnalysisError(
+          relevantNode: args.first,
+          message: 'Expected an fts5 table name here',
+          type: AnalysisErrorType.other,
+        ),
+      );
     } else if (calledFunction == 'bm25') {
       // The bm25 function can use (table, weights...) parameters, but there
       // shouldn't be more weights than columns.
       final source = firstResolved.source as _Fts5TableColumn;
       if (source.table case final table?) {
         if (args.length > table.resultColumns.length + 1) {
-          context.reportError(AnalysisError(
-            relevantNode: call,
-            message: 'Superfluous weight columns (there are only '
-                '${table.resultColumns.length} columns on the table).',
-            type: AnalysisErrorType.other,
-          ));
+          context.reportError(
+            AnalysisError(
+              relevantNode: call,
+              message:
+                  'Superfluous weight columns (there are only '
+                  '${table.resultColumns.length} columns on the table).',
+              type: AnalysisErrorType.other,
+            ),
+          );
         }
       }
     }
@@ -281,7 +293,7 @@ class _Fts5RankColumn extends TableColumn {
   bool get includedInResults => false;
 
   _Fts5RankColumn()
-      : super('rank', const ResolvedType(type: BasicType.real, nullable: true));
+    : super('rank', const ResolvedType(type: BasicType.real, nullable: true));
 }
 
 /// A column that has the same name as the fts5 it's from. We introduce this
@@ -297,5 +309,5 @@ class _Fts5TableColumn extends TableColumn {
   bool get includedInResults => false;
 
   _Fts5TableColumn(String name)
-      : super(name, const ResolvedType(type: BasicType.text));
+    : super(name, const ResolvedType(type: BasicType.text));
 }

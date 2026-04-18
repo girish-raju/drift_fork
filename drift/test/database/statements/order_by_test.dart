@@ -18,71 +18,70 @@ void main() {
     final query = db.select(db.users);
     query.orderBy([(tbl) => OrderingTerm(expression: tbl.name)]);
     await query.get();
-    verify(executor.runSelect(
-      'SELECT * FROM "users" ORDER BY "name" ASC;',
-      argThat(isEmpty),
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT * FROM "users" ORDER BY "name" ASC;',
+        argThat(isEmpty),
+      ),
+    );
   });
 
   test('nullsOrder is last', () async {
     final query = db.select(db.users);
     query.orderBy([
-      (tbl) => OrderingTerm(
-            expression: tbl.name,
-            nulls: NullsOrder.last,
-          ),
+      (tbl) => OrderingTerm(expression: tbl.name, nulls: NullsOrder.last),
     ]);
     await query.get();
-    verify(executor.runSelect(
-      'SELECT * FROM "users" ORDER BY "name" ASC NULLS LAST;',
-      argThat(isEmpty),
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT * FROM "users" ORDER BY "name" ASC NULLS LAST;',
+        argThat(isEmpty),
+      ),
+    );
   });
 
   test('nullsOrder is first', () async {
     final query = db.select(db.users);
     query.orderBy([
-      (tbl) => OrderingTerm(
-            expression: tbl.name,
-            nulls: NullsOrder.first,
-          ),
+      (tbl) => OrderingTerm(expression: tbl.name, nulls: NullsOrder.first),
     ]);
     await query.get();
-    verify(executor.runSelect(
-      'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST;',
-      argThat(isEmpty),
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST;',
+        argThat(isEmpty),
+      ),
+    );
   });
 
   test('complex order by with different nullsOrder', () async {
     final query = db.select(db.users);
     query.orderBy([
-      (tbl) => OrderingTerm(
-            expression: tbl.name,
-            nulls: NullsOrder.first,
-          ),
-      (tbl) => OrderingTerm(
-            expression: tbl.creationTime,
-          ),
-      (tbl) => OrderingTerm(
-            expression: tbl.profilePicture,
-            nulls: NullsOrder.last,
-          ),
+      (tbl) => OrderingTerm(expression: tbl.name, nulls: NullsOrder.first),
+      (tbl) => OrderingTerm(expression: tbl.creationTime),
+      (tbl) =>
+          OrderingTerm(expression: tbl.profilePicture, nulls: NullsOrder.last),
     ]);
     await query.get();
-    verify(executor.runSelect(
-      'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST, "creation_time" ASC, "profile_picture" ASC NULLS LAST;',
-      argThat(isEmpty),
-    ));
+    verify(
+      executor.runSelect(
+        'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST, "creation_time" ASC, "profile_picture" ASC NULLS LAST;',
+        argThat(isEmpty),
+      ),
+    );
   });
 
   test('works with helper factories', () {
     final table = db.users;
 
     expect(OrderingTerm.asc(table.id), generates('"id" ASC'));
-    expect(OrderingTerm.asc(table.id, nulls: NullsOrder.last),
-        generates('"id" ASC NULLS LAST'));
-    expect(OrderingTerm.desc(table.id, nulls: NullsOrder.first),
-        generates('"id" DESC NULLS FIRST'));
+    expect(
+      OrderingTerm.asc(table.id, nulls: NullsOrder.last),
+      generates('"id" ASC NULLS LAST'),
+    );
+    expect(
+      OrderingTerm.desc(table.id, nulls: NullsOrder.first),
+      generates('"id" DESC NULLS FIRST'),
+    );
   });
 }

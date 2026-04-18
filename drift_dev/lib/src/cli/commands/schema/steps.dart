@@ -47,14 +47,17 @@ class WriteVersions extends Command {
     }
     final schemas = await parseSchema(inputDirectory);
     await outputFile.writeAsString(
-        await StepsGenerationUtil.generateStepByStepMigration(cli, schemas));
+      await StepsGenerationUtil.generateStepByStepMigration(cli, schemas),
+    );
   }
 }
 
 class StepsGenerationUtil {
   /// Generate dart code for incremental migrations between schema versions.
   static Future<String> generateStepByStepMigration(
-      DriftDevCli cli, Map<int, ExportedSchema> schemas) async {
+    DriftDevCli cli,
+    Map<int, ExportedSchema> schemas,
+  ) async {
     final imports = LibraryImportManager();
     final writer = Writer(
       cli.project.options,
@@ -64,11 +67,7 @@ class StepsGenerationUtil {
 
     final byVersion = [
       for (final MapEntry(key: version, value: schema) in schemas.entries)
-        SchemaVersion(
-          version,
-          schema.schema,
-          schema.options,
-        ),
+        SchemaVersion(version, schema.schema, schema.options),
     ];
     byVersion.sortBy<num>((s) => s.version);
 

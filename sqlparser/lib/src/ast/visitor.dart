@@ -754,7 +754,10 @@ extension TransformerUtils<A> on Transformer<A> {
   }
 
   List<T> transformChildren<T extends AstNode>(
-      List<T> children, AstNode parent, A arg) {
+    List<T> children,
+    AstNode parent,
+    A arg,
+  ) {
     final newChildren = <T>[];
 
     for (final child in children) {

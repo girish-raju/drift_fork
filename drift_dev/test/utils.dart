@@ -26,8 +26,9 @@ TypeMatcher<LogRecord> record(dynamic message) {
   return isA<LogRecord>().having((e) => e.message, 'message', message);
 }
 
-Future<TestReaderWriter> driftTestEnvironment(
-    {String rootPackage = 'a'}) async {
+Future<TestReaderWriter> driftTestEnvironment({
+  String rootPackage = 'a',
+}) async {
   final rw = TestReaderWriter(rootPackage: rootPackage);
   final reader = await PackageAssetReader.currentIsolate();
   for (final package in [
@@ -42,8 +43,10 @@ Future<TestReaderWriter> driftTestEnvironment(
     'stack_trace',
     'typed_data',
   ]) {
-    await for (final asset
-        in reader.findAssets(Glob('lib/**'), package: package)) {
+    await for (final asset in reader.findAssets(
+      Glob('lib/**'),
+      package: package,
+    )) {
       rw.testing.writeBytes(asset, await reader.readAsBytes(asset));
     }
   }
@@ -69,11 +72,9 @@ Future<DriftBuildResult> emulateDriftBuild({
       analyzer(options),
       modularBuild ? modular(options) : driftBuilderNotShared(options),
     ],
-    postProcessBuilders: [
-      driftCleanup(options),
-    ],
+    postProcessBuilders: [driftCleanup(options)],
     appliesBuilders: {
-      prepare: ['FileDeletingBuilder']
+      prepare: ['FileDeletingBuilder'],
     },
     inputs,
     rootPackage: 'a',
@@ -83,14 +84,19 @@ Future<DriftBuildResult> emulateDriftBuild({
         // We sometimes want to assert that no warnings are printed, but
         // everything below that is noise.
         logger?.log(
-            record.level, record.message, record.error, record.stackTrace);
+          record.level,
+          record.message,
+          record.error,
+          record.stackTrace,
+        );
       }
     },
     readerWriter: env,
     // Assets from other packages are visible, but we're not running
     // builders on them.
-    generateFor:
-        inputs.keys.where((e) => makeAssetId(e).package == 'a').toSet(),
+    generateFor: inputs.keys
+        .where((e) => makeAssetId(e).package == 'a')
+        .toSet(),
   );
   if (!result.succeeded) {
     throw Exception('testBuilders failed: ${result.errors}');
@@ -144,11 +150,11 @@ extension ReaderWriterUtils on TestReaderWriter {
 
 class IsValidDartFile extends CustomMatcher {
   IsValidDartFile(dynamic valueOrMatcher)
-      : super(
-          'A syntactically-valid Dart source file',
-          'parsed unit',
-          valueOrMatcher,
-        );
+    : super(
+        'A syntactically-valid Dart source file',
+        'parsed unit',
+        valueOrMatcher,
+      );
 
   @override
   Object? featureValueOf(actual) {

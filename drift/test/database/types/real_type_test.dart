@@ -2,8 +2,9 @@ import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 void main() {
-  final typeSystem = const drift.DriftDatabaseOptions()
-      .createTypeMapping(drift.SqlDialect.sqlite);
+  final typeSystem = const drift.DriftDatabaseOptions().createTypeMapping(
+    drift.SqlDialect.sqlite,
+  );
 
   group('RealType', () {
     test('can be read from floating point values returned by sql', () {
@@ -15,8 +16,10 @@ void main() {
     });
 
     test('can read BigInt', () {
-      expect(typeSystem.read(drift.DriftSqlType.double, BigInt.parse('12345')),
-          12345.0);
+      expect(
+        typeSystem.read(drift.DriftSqlType.double, BigInt.parse('12345')),
+        12345.0,
+      );
     });
 
     test('can be mapped to sql constants', () {

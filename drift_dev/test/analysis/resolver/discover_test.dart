@@ -27,16 +27,18 @@ CREATE VIEW my_view AS SELECT whatever FROM unknown_table;
         discovered,
         isA<DiscoveredDriftFile>()
             .having((e) => e.imports, 'imports', isEmpty)
-            .having(
-          (e) => e.locallyDefinedElements,
-          'locallyDefinedElements',
-          [
-            isA<DiscoveredDriftTable>()
-                .having((t) => t.ownId, 'ownId', id('foo')),
-            isA<DiscoveredDriftView>()
-                .having((v) => v.ownId, 'ownId', id('my_view')),
-          ],
-        ),
+            .having((e) => e.locallyDefinedElements, 'locallyDefinedElements', [
+              isA<DiscoveredDriftTable>().having(
+                (t) => t.ownId,
+                'ownId',
+                id('foo'),
+              ),
+              isA<DiscoveredDriftView>().having(
+                (v) => v.ownId,
+                'ownId',
+                id('my_view'),
+              ),
+            ]),
       );
     });
 
@@ -58,9 +60,13 @@ CREATE TABLE valid_2 (bar INTEGER);
 
       // The syntax error should only affect the single statement
       expect(
-          state.discovery,
-          isA<DiscoveredDriftFile>().having((e) => e.locallyDefinedElements,
-              'locallyDefinedElements', hasLength(2)));
+        state.discovery,
+        isA<DiscoveredDriftFile>().having(
+          (e) => e.locallyDefinedElements,
+          'locallyDefinedElements',
+          hasLength(2),
+        ),
+      );
     });
 
     test('warns about duplicate elements', () async {
@@ -158,16 +164,19 @@ class Groups extends Table {
       expect(state, hasNoErrors);
       expect(
         state.discovery,
-        isA<DiscoveredDartLibrary>().having(
-          (e) => e.locallyDefinedElements,
-          'locallyDefinedElements',
-          [
-            isA<DiscoveredDartTable>()
-                .having((t) => t.ownId, 'ownId', DriftElementId(uri, 'users')),
-            isA<DiscoveredDartTable>().having((t) => t.ownId, 'ownId',
-                DriftElementId(uri, 'my_custom_table')),
-          ],
-        ),
+        isA<DiscoveredDartLibrary>()
+            .having((e) => e.locallyDefinedElements, 'locallyDefinedElements', [
+              isA<DiscoveredDartTable>().having(
+                (t) => t.ownId,
+                'ownId',
+                DriftElementId(uri, 'users'),
+              ),
+              isA<DiscoveredDartTable>().having(
+                (t) => t.ownId,
+                'ownId',
+                DriftElementId(uri, 'my_custom_table'),
+              ),
+            ]),
       );
     });
 
@@ -196,14 +205,14 @@ abstract class BaseRelationTable extends Table {
       expect(state, hasNoErrors);
       expect(
         state.discovery,
-        isA<DiscoveredDartLibrary>().having(
-          (e) => e.locallyDefinedElements,
-          'locallyDefinedElements',
-          [
-            isA<DiscoveredDartTable>()
-                .having((t) => t.ownId, 'ownId', DriftElementId(uri, 'users')),
-          ],
-        ),
+        isA<DiscoveredDartLibrary>()
+            .having((e) => e.locallyDefinedElements, 'locallyDefinedElements', [
+              isA<DiscoveredDartTable>().having(
+                (t) => t.ownId,
+                'ownId',
+                DriftElementId(uri, 'users'),
+              ),
+            ]),
       );
     });
 
@@ -230,11 +239,9 @@ class InvalidGetter extends Table {
       for (final source in backend.sourceContents.keys) {
         final state = await backend.driver.findLocalElements(Uri.parse(source));
 
-        expect(
-          state.errorsDuringDiscovery,
-          [isDriftError(contains('must directly return a string literal'))],
-          reason: 'Should report error for $source',
-        );
+        expect(state.errorsDuringDiscovery, [
+          isDriftError(contains('must directly return a string literal')),
+        ], reason: 'Should report error for $source');
       }
     });
 
@@ -257,8 +264,9 @@ class B extends Table {
 ''',
       });
 
-      final state =
-          await backend.driver.findLocalElements(Uri.parse('package:a/a.dart'));
+      final state = await backend.driver.findLocalElements(
+        Uri.parse('package:a/a.dart'),
+      );
 
       expect(state.errorsDuringDiscovery, [
         isDriftError(contains('already defines an element named `tbl`')),
@@ -266,8 +274,11 @@ class B extends Table {
 
       final result = state.discovery as DiscoveredDartLibrary;
       expect(result.locallyDefinedElements, [
-        isA<DiscoveredDartTable>()
-            .having((e) => e.dartElement.name, 'dartElement.name', 'A')
+        isA<DiscoveredDartTable>().having(
+          (e) => e.dartElement.name,
+          'dartElement.name',
+          'A',
+        ),
       ]);
     });
   });

@@ -45,13 +45,14 @@ void writeMemoizedGetter({
 ///   code
 /// }
 /// ```
-void writeMemoizedGetterWithBody(
-    {required StringBuffer buffer,
-    required String getterName,
-    required String returnType,
-    required String code,
-    required GenerationOptions options,
-    bool hasOverride = false}) {
+void writeMemoizedGetterWithBody({
+  required StringBuffer buffer,
+  required String getterName,
+  required String returnType,
+  required String code,
+  required GenerationOptions options,
+  bool hasOverride = false,
+}) {
   final constructingMethod = '_construct${ReCase(getterName).pascalCase}';
 
   if (hasOverride) {

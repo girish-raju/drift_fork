@@ -14,11 +14,7 @@ void main() {
   test('drop table', () {
     testStatement(
       'DROP TABLE IF EXISTS foo',
-      DropStatement(
-        type: DropType.table,
-        elementName: 'foo',
-        ifExists: true,
-      ),
+      DropStatement(type: DropType.table, elementName: 'foo', ifExists: true),
     );
   });
 

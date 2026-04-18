@@ -10,10 +10,14 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     implements BaseSelectStatement<TypedResult> {
   /// Used internally by drift, users should use [SimpleSelectStatement.join]
   /// instead.
-  JoinedSelectStatement(super.database, super.table, this._joins,
-      [this.distinct = false,
-      this._includeMainTableInResult = true,
-      this._includeJoinedTablesInResult = true]);
+  JoinedSelectStatement(
+    super.database,
+    super.table,
+    this._joins, [
+    this.distinct = false,
+    this._includeMainTableInResult = true,
+    this._includeJoinedTablesInResult = true,
+  ]);
 
   /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
   /// rows from the result set.
@@ -50,12 +54,13 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       _columnsWithName(null);
 
   Iterable<(Expression<Object>, String)> _columnsWithName(
-      String? generatingForView) sync* {
+    String? generatingForView,
+  ) sync* {
     for (final table in _queriedTables(true)) {
       for (final column in table.$columns) {
         yield (
           column,
-          _nameForTableColumn(column, generatingForView: generatingForView)
+          _nameForTableColumn(column, generatingForView: generatingForView),
         );
       }
     }
@@ -64,7 +69,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       if (column is GeneratedColumn) {
         yield (
           column,
-          _nameForTableColumn(column, generatingForView: generatingForView)
+          _nameForTableColumn(column, generatingForView: generatingForView),
         );
       } else {
         yield (column, _columnAliases[column]!);
@@ -92,8 +97,10 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     return null;
   }
 
-  String _nameForTableColumn(GeneratedColumn column,
-      {String? generatingForView}) {
+  String _nameForTableColumn(
+    GeneratedColumn column, {
+    String? generatingForView,
+  }) {
     if (generatingForView == column.tableName) {
       return column.$name;
     } else {
@@ -105,8 +112,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   ///
   /// If [onlyResults] (defaults to false) is set, only tables that are included
   /// in the result set are returned.
-  Iterable<ResultSetImplementation> _queriedTables(
-      [bool onlyResults = false]) sync* {
+  Iterable<ResultSetImplementation> _queriedTables([
+    bool onlyResults = false,
+  ]) sync* {
     if (!onlyResults || _includeMainTableInResult) {
       yield table;
     }
@@ -127,9 +135,10 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
           other.orderByExpr != null ||
           other._compounds.isNotEmpty) {
         throw ArgumentError(
-            "Can't add compound query that has a limit or an order-by clause. "
-            'Also, the added query must hot have its own compound parts. Add  '
-            'the clauses and parts to the top-level parts instead.');
+          "Can't add compound query that has a limit or an order-by clause. "
+          'Also, the added query must hot have its own compound parts. Add  '
+          'the clauses and parts to the top-level parts instead.',
+        );
       }
     }
 
@@ -140,8 +149,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     while (columnsHere.moveNext()) {
       if (!otherColumns.moveNext()) {
         throw ArgumentError(
-            "Can't add select with fewer columns (added part has "
-            '$columnCount columns, the original source has more).');
+          "Can't add select with fewer columns (added part has "
+          '$columnCount columns, the original source has more).',
+        );
       }
 
       var here = columnsHere.current;
@@ -149,8 +159,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
       if (here.$1.driftSqlType != otherColumn.$1.driftSqlType) {
         throw ArgumentError(
-            "Can't add part because the column types at index $columnCount "
-            'differ.');
+          "Can't add part because the column types at index $columnCount "
+          'differ.',
+        );
       }
 
       columnCount++;
@@ -158,8 +169,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
     if (otherColumns.moveNext()) {
       throw ArgumentError(
-          "Can't add select with more columns (the original query has "
-          '$columnCount columns, the added part has more).');
+        "Can't add select with more columns (the original query has "
+        '$columnCount columns, the added part has more).',
+      );
     }
 
     _compounds.add((operator, other));
@@ -413,12 +425,14 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// Builds a query which which will emit a new result whenever any of the
   /// tables this query depends on changes.
   /// You can pass additional tables to watch to this method.
-  Stream<List<TypedResult>> _watchWithAdditionalTables(
-      [Iterable<ResultSetImplementation<dynamic, dynamic>> tables = const []]) {
+  Stream<List<TypedResult>> _watchWithAdditionalTables([
+    Iterable<ResultSetImplementation<dynamic, dynamic>> tables = const [],
+  ]) {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher(
-      readsFrom:
-          TableUpdateQuery.onAllTables(ctx.watchedTables.followedBy(tables)),
+      readsFrom: TableUpdateQuery.onAllTables(
+        ctx.watchedTables.followedBy(tables),
+      ),
       fetchData: () => _getRaw(ctx),
       key: StreamKey(ctx.sql, ctx.boundVariables),
     );
@@ -490,9 +504,13 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   }
 
   Never _warnAboutDuplicate(
-      dynamic cause, StackTrace trace, ResultSetImplementation table) {
+    dynamic cause,
+    StackTrace trace,
+    ResultSetImplementation table,
+  ) {
     throw DriftWrappedException(
-      message: 'This query contained the table ${table.entityName} more than '
+      message:
+          'This query contained the table ${table.entityName} more than '
           'once. Is this a typo? \n'
           'If you need a join that includes the same table more than once, you '
           'need to alias() at least one table. See https://drift.simonbinder.eu/queries/joins#aliases '
@@ -528,7 +546,9 @@ class _LazyExpressionMap extends UnmodifiableMapBase<Expression, Object?> {
 
     return _cachedData.putIfAbsent(key, () {
       return _rawData.readNullableWithType(
-          key.driftSqlType, _columnAliases[key]!);
+        key.driftSqlType,
+        _columnAliases[key]!,
+      );
     });
   }
 
@@ -558,8 +578,11 @@ base class _ResultStructure {
 
       // If the map method returns a future, we have to await it when mapping
       // results.
-      if (map is Future Function(Map<String, dynamic> data,
-          {String? tablePrefix})) {
+      if (map
+          is Future Function(
+            Map<String, dynamic> data, {
+            String? tablePrefix,
+          })) {
         return true;
       }
 
@@ -572,35 +595,39 @@ base class _ResultStructure {
   }
 
   TypedResult _intoTypedResult(
-      DatabaseConnectionUser database,
-      Map<String, Object?> row,
-      Map<ResultSetImplementation, dynamic> readTables) {
+    DatabaseConnectionUser database,
+    Map<String, Object?> row,
+    Map<ResultSetImplementation, dynamic> readTables,
+  ) {
     final driftRow = QueryRow(row, database);
     return TypedResult(
       readTables,
       driftRow,
-      _LazyExpressionMap(
-        columnAliases,
-        driftRow,
-      ),
+      _LazyExpressionMap(columnAliases, driftRow),
     );
   }
 
   FutureOr<TypedResult> map(
-      DatabaseConnectionUser database, Map<String, Object?> row) {
+    DatabaseConnectionUser database,
+    Map<String, Object?> row,
+  ) {
     return mapAsync(database, row);
   }
 
   Future<TypedResult> mapAsync(
-      DatabaseConnectionUser database, Map<String, Object?> row) async {
+    DatabaseConnectionUser database,
+    Map<String, Object?> row,
+  ) async {
     final readTables = <ResultSetImplementation, dynamic>{};
 
     for (final table in queriedTables) {
       final prefix = '${table.aliasedName}.';
       // if all columns of this table are null, skip the table
       if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-        final FutureOr<Object?> mapped =
-            table.map(row, tablePrefix: table.aliasedName);
+        final FutureOr<Object?> mapped = table.map(
+          row,
+          tablePrefix: table.aliasedName,
+        );
         readTables[table] = await mapped;
       }
     }
@@ -638,10 +665,9 @@ final class _SyncResultStructure extends _ResultStructure {
 
 @internal
 extension JoinedSelectStatementAdditionalTables on JoinedSelectStatement {
-  Stream<List<TypedResult>> watchWithAdditionalTables(
-          [Iterable<ResultSetImplementation<dynamic, dynamic>> tables =
-              const []]) =>
-      _watchWithAdditionalTables(tables);
+  Stream<List<TypedResult>> watchWithAdditionalTables([
+    Iterable<ResultSetImplementation<dynamic, dynamic>> tables = const [],
+  ]) => _watchWithAdditionalTables(tables);
 }
 
 enum _CompoundOperator {

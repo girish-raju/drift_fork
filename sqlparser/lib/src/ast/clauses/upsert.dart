@@ -44,11 +44,7 @@ class UpsertClauseEntry extends AstNode implements HasWhereClause {
 
   @override
   Iterable<AstNode> get childNodes {
-    return [
-      if (onColumns != null) ...onColumns!,
-      if (where != null) where!,
-      action,
-    ];
+    return [if (onColumns != null) ...onColumns!, ?where, action];
   }
 }
 
@@ -86,5 +82,5 @@ class DoUpdate extends UpsertAction implements HasWhereClause {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [...set, if (where != null) where!];
+  Iterable<AstNode> get childNodes => [...set, ?where];
 }

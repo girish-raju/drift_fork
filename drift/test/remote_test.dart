@@ -15,8 +15,10 @@ import 'test_utils/test_utils.dart';
 void main() {
   test('closes channel in shutdown', () async {
     final controller = StreamChannelController<Object?>();
-    final server =
-        DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+    final server = DriftServer(
+      testInMemoryDatabase(),
+      allowRemoteShutdown: true,
+    );
     server.serve(controller.foreign);
 
     await shutdown(controller.local.expectedToClose);
@@ -24,13 +26,16 @@ void main() {
 
   test('can shutdown server on close', () async {
     final controller = StreamChannelController<Object?>();
-    final server =
-        DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+    final server = DriftServer(
+      testInMemoryDatabase(),
+      allowRemoteShutdown: true,
+    );
     server.serve(controller.foreign);
 
     final client = await connectToRemoteAndInitialize(
-        controller.local.expectedToClose,
-        singleClientMode: true);
+      controller.local.expectedToClose,
+      singleClientMode: true,
+    );
     final db = TodoDb(client);
 
     await db.todosTable.select().get();
@@ -42,18 +47,22 @@ void main() {
   test(
     'does not send table update notifications in single client mode',
     () async {
-      final server =
-          DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+      final server = DriftServer(
+        testInMemoryDatabase(),
+        allowRemoteShutdown: true,
+      );
       final controller = StreamChannelController<Object?>();
       server.serve(controller.foreign, serialize: false);
 
       final client = await connectToRemoteAndInitialize(
-        controller.local.transformSink(StreamSinkTransformer.fromHandlers(
-          handleData: (data, out) {
-            expect(data, isNot(isA<NotifyTablesUpdated>()));
-            out.add(data);
-          },
-        )),
+        controller.local.transformSink(
+          StreamSinkTransformer.fromHandlers(
+            handleData: (data, out) {
+              expect(data, isNot(isA<NotifyTablesUpdated>()));
+              out.add(data);
+            },
+          ),
+        ),
         serialize: false,
         singleClientMode: true,
       );
@@ -70,14 +79,16 @@ void main() {
     final request = Request(
       1,
       ExecuteQuery(StatementMethod.select, 'SELECT ?', [
-        Uint8List.fromList([1, 2, 3])
+        Uint8List.fromList([1, 2, 3]),
       ]),
     );
 
     final mapped = protocol.deserialize(protocol.serialize(request)!);
     expect(
       mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
+      isA<Request>()
+          .having((e) => e.id, 'id', 1)
+          .having(
             (e) => e.payload,
             'payload',
             isA<ExecuteQuery>()
@@ -98,7 +109,9 @@ void main() {
     final mapped = _checkSimpleRoundtrip(protocol, request);
     expect(
       mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
+      isA<Request>()
+          .having((e) => e.id, 'id', 1)
+          .having(
             (e) => e.payload,
             'payload',
             isA<ExecuteQuery>()
@@ -108,23 +121,22 @@ void main() {
     );
 
     final response = SuccessResponse(
-        1,
-        SelectResult([
-          {'col': BigInt.one}
-        ]));
+      1,
+      SelectResult([
+        {'col': BigInt.one},
+      ]),
+    );
     final mappedResponse = _checkSimpleRoundtrip(protocol, response);
     expect(
       mappedResponse,
-      isA<SuccessResponse>().having((e) => e.requestId, 'requestId', 1).having(
+      isA<SuccessResponse>()
+          .having((e) => e.requestId, 'requestId', 1)
+          .having(
             (e) => e.response,
             'response',
-            isA<SelectResult>().having(
-              (e) => e.rows,
-              'rows',
-              ([
-                {'col': BigInt.one}
-              ]),
-            ),
+            isA<SelectResult>().having((e) => e.rows, 'rows', ([
+              {'col': BigInt.one},
+            ])),
           ),
     );
 
@@ -132,19 +144,23 @@ void main() {
       protocol,
       Request(
         1,
-        ExecuteBatchedStatement(BatchedStatements(
-          ['SELECT ?'],
-          [
-            ArgumentsForBatchedStatement(0, [BigInt.zero]),
-            ArgumentsForBatchedStatement(0, [BigInt.one]),
-            ArgumentsForBatchedStatement(0, [BigInt.two]),
-          ],
-        )),
+        ExecuteBatchedStatement(
+          BatchedStatements(
+            ['SELECT ?'],
+            [
+              ArgumentsForBatchedStatement(0, [BigInt.zero]),
+              ArgumentsForBatchedStatement(0, [BigInt.one]),
+              ArgumentsForBatchedStatement(0, [BigInt.two]),
+            ],
+          ),
+        ),
       ),
     );
     expect(
       batchRequest,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
+      isA<Request>()
+          .having((e) => e.id, 'id', 1)
+          .having(
             (e) => e.payload,
             'payload',
             isA<ExecuteBatchedStatement>().having(
@@ -169,40 +185,59 @@ void main() {
     addTearDown(server.shutdown);
 
     final channelController = StreamChannelController<Object?>();
-    server.serve(channelController.foreign.changeStream(_checkStreamOfSimple),
-        serialize: true);
-
-    final connection = await connectToRemoteAndInitialize(
-        channelController.local
-            .changeStream(_checkStreamOfSimple)
-            .expectedToClose,
-        serialize: true);
-    final db = TodoDb(connection);
-
-    await db.customSelect('SELECT ?, ?, ?, ?', variables: [
-      Variable.withBigInt(BigInt.one),
-      Variable.withBool(true),
-      Variable.withReal(1.2),
-      Variable.withBlob(Uint8List(12)),
-    ]).get();
-    verify(executor.runSelect('SELECT ?, ?, ?, ?', [
-      BigInt.one,
-      1,
-      1.2,
-      Uint8List(12),
-    ]));
-
-    when(executor.runInsert(any, any)).thenAnswer(
-        (realInvocation) => Future.error(UnimplementedError('error!')));
-    await expectLater(
-      db.categories
-          .insertOne(CategoriesCompanion.insert(description: 'description')),
-      throwsA(isA<DriftRemoteException>().having(
-          (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
+    server.serve(
+      channelController.foreign.changeStream(_checkStreamOfSimple),
+      serialize: true,
     );
 
-    final statements =
-        BatchedStatements(['SELECT 1'], [ArgumentsForBatchedStatement(0, [])]);
+    final connection = await connectToRemoteAndInitialize(
+      channelController.local
+          .changeStream(_checkStreamOfSimple)
+          .expectedToClose,
+      serialize: true,
+    );
+    final db = TodoDb(connection);
+
+    await db
+        .customSelect(
+          'SELECT ?, ?, ?, ?',
+          variables: [
+            Variable.withBigInt(BigInt.one),
+            Variable.withBool(true),
+            Variable.withReal(1.2),
+            Variable.withBlob(Uint8List(12)),
+          ],
+        )
+        .get();
+    verify(
+      executor.runSelect('SELECT ?, ?, ?, ?', [
+        BigInt.one,
+        1,
+        1.2,
+        Uint8List(12),
+      ]),
+    );
+
+    when(executor.runInsert(any, any)).thenAnswer(
+      (realInvocation) => Future.error(UnimplementedError('error!')),
+    );
+    await expectLater(
+      db.categories.insertOne(
+        CategoriesCompanion.insert(description: 'description'),
+      ),
+      throwsA(
+        isA<DriftRemoteException>().having(
+          (e) => e.remoteCause,
+          'remoteCause',
+          'UnimplementedError: error!',
+        ),
+      ),
+    );
+
+    final statements = BatchedStatements(
+      ['SELECT 1'],
+      [ArgumentsForBatchedStatement(0, [])],
+    );
     when(executor.runBatched(any)).thenAnswer((i) => Future.value());
     // Not using db.batch because that starts a transaction, we want to test
     // this working with the default executor.
@@ -246,10 +281,13 @@ void main() {
     await db.transaction(() async {
       final abortException = Exception('abort');
 
-      await expectLater(db.transaction(() async {
-        await db.select(db.todosTable).get();
-        throw abortException;
-      }), throwsA(abortException));
+      await expectLater(
+        db.transaction(() async {
+          await db.select(db.todosTable).get();
+          throw abortException;
+        }),
+        throwsA(abortException),
+      );
 
       await db.transaction(() async {
         await db.select(db.todosTable).get();
@@ -289,16 +327,22 @@ void main() {
     final exclusiveB = MockExecutor();
 
     var exclusiveCount = 0;
-    when(executor.beginExclusive()).thenAnswer(expectAsync1((_) {
-      if (exclusiveCount == 0) {
-        exclusiveCount++;
-        testEvents.add('try-a');
-        return exclusiveA;
-      } else {
-        testEvents.add('try-b');
-        return exclusiveB;
-      }
-    }, count: 2, id: 'beginExclusive'));
+    when(executor.beginExclusive()).thenAnswer(
+      expectAsync1(
+        (_) {
+          if (exclusiveCount == 0) {
+            exclusiveCount++;
+            testEvents.add('try-a');
+            return exclusiveA;
+          } else {
+            testEvents.add('try-b');
+            return exclusiveB;
+          }
+        },
+        count: 2,
+        id: 'beginExclusive',
+      ),
+    );
 
     for (final (name, executor) in [('a', exclusiveA), ('b', exclusiveB)]) {
       final closeCompleter = Completer<void>();
@@ -323,10 +367,12 @@ void main() {
         }
       });
 
-      when(executor.close()).thenAnswer(expectAsync1((_) async {
-        testEvents.add('close-$name');
-        closeCompleter.complete();
-      }, id: 'close-$name'));
+      when(executor.close()).thenAnswer(
+        expectAsync1((_) async {
+          testEvents.add('close-$name');
+          closeCompleter.complete();
+        }, id: 'close-$name'),
+      );
     }
 
     final wait = Completer<void>();
@@ -339,10 +385,7 @@ void main() {
       await b.customSelect('SELECT 1').get();
     });
 
-    await expectLater(
-      testEventQueue,
-      emitsInOrder(['try-a', 'try-b']),
-    );
+    await expectLater(testEventQueue, emitsInOrder(['try-a', 'try-b']));
 
     wait.complete();
     await expectLater(
@@ -391,9 +434,11 @@ Message _checkSimpleRoundtrip(DriftProtocol protocol, Message source) {
 
 extension<T> on StreamChannel<T> {
   StreamChannel<T> get expectedToClose {
-    return transformStream(StreamTransformer.fromHandlers(
-      handleDone: expectAsync1((out) => out.close()),
-    ));
+    return transformStream(
+      StreamTransformer.fromHandlers(
+        handleDone: expectAsync1((out) => out.close()),
+      ),
+    );
   }
 
   void serveMulti(DriftServer server) {

@@ -31,20 +31,17 @@ class ForeignKeyClause extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [
-        foreignTable,
-        ...columnNames,
-        if (deferrable != null) deferrable!,
-      ];
+    foreignTable,
+    ...columnNames,
+    ?deferrable,
+  ];
 
   InitialDeferrableMode get effectiveDeferrableMode {
     return deferrable?.effectiveInitialMode ?? InitialDeferrableMode.immediate;
   }
 }
 
-enum InitialDeferrableMode {
-  deferred,
-  immediate,
-}
+enum InitialDeferrableMode { deferred, immediate }
 
 class DeferrableClause extends AstNode {
   final bool not;
@@ -97,12 +94,16 @@ class KeyClause extends TableConstraint {
   List<Reference> get indexedColumns {
     return [
       for (final column in columns)
-        if (column.expression is Reference) column.expression as Reference
+        if (column.expression is Reference) column.expression as Reference,
     ];
   }
 
-  KeyClause(super.name,
-      {required this.isPrimaryKey, required this.columns, this.onConflict});
+  KeyClause(
+    super.name, {
+    required this.isPrimaryKey,
+    required this.columns,
+    this.onConflict,
+  });
 
   @override
   bool constraintEquals(KeyClause other) {
@@ -139,8 +140,11 @@ class ForeignKeyTableConstraint extends TableConstraint {
   List<Reference> columns;
   ForeignKeyClause clause;
 
-  ForeignKeyTableConstraint(super.name,
-      {required this.columns, required this.clause});
+  ForeignKeyTableConstraint(
+    super.name, {
+    required this.columns,
+    required this.clause,
+  });
 
   @override
   bool constraintEquals(ForeignKeyTableConstraint other) => true;

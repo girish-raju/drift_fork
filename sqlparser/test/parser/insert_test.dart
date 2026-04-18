@@ -16,11 +16,13 @@ void main() {
           Reference(columnName: 'c'),
         ],
         source: ValuesSource([
-          Tuple(expressions: [
-            Reference(columnName: 'd'),
-            Reference(columnName: 'e'),
-            Reference(columnName: 'f'),
-          ]),
+          Tuple(
+            expressions: [
+              Reference(columnName: 'd'),
+              Reference(columnName: 'e'),
+              Reference(columnName: 'f'),
+            ],
+          ),
         ]),
       ),
     );
@@ -76,20 +78,18 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: UpsertClause(
-            [
-              UpsertClauseEntry(
-                onColumns: [
-                  IndexedColumn(Reference(columnName: 'foo')),
-                  IndexedColumn(
-                    Reference(columnName: 'bar'),
-                    OrderingMode.descending,
-                  ),
-                ],
-                action: DoNothing(),
-              ),
-            ],
-          ),
+          upsert: UpsertClause([
+            UpsertClauseEntry(
+              onColumns: [
+                IndexedColumn(Reference(columnName: 'foo')),
+                IndexedColumn(
+                  Reference(columnName: 'bar'),
+                  OrderingMode.descending,
+                ),
+              ],
+              action: DoNothing(),
+            ),
+          ]),
         ),
       );
     });
@@ -101,22 +101,20 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: UpsertClause(
-            [
-              UpsertClauseEntry(
-                onColumns: [
-                  IndexedColumn(Reference(columnName: 'foo')),
-                  IndexedColumn(Reference(columnName: 'bar')),
-                ],
-                where: BinaryExpression(
-                  NumericLiteral(2),
-                  token(TokenType.equal),
-                  Reference(columnName: 'foo'),
-                ),
-                action: DoNothing(),
+          upsert: UpsertClause([
+            UpsertClauseEntry(
+              onColumns: [
+                IndexedColumn(Reference(columnName: 'foo')),
+                IndexedColumn(Reference(columnName: 'bar')),
+              ],
+              where: BinaryExpression(
+                NumericLiteral(2),
+                token(TokenType.equal),
+                Reference(columnName: 'foo'),
               ),
-            ],
-          ),
+              action: DoNothing(),
+            ),
+          ]),
         ),
       );
     });
@@ -128,20 +126,16 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: UpsertClause(
-            [
-              UpsertClauseEntry(
-                action: DoUpdate(
-                  [
-                    SingleColumnSetComponent(
-                      column: Reference(columnName: 'foo'),
-                      expression: NumericLiteral(2),
-                    ),
-                  ],
+          upsert: UpsertClause([
+            UpsertClauseEntry(
+              action: DoUpdate([
+                SingleColumnSetComponent(
+                  column: Reference(columnName: 'foo'),
+                  expression: NumericLiteral(2),
                 ),
-              ),
-            ],
-          ),
+              ]),
+            ),
+          ]),
         ),
       );
     });
@@ -153,21 +147,16 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: UpsertClause(
-            [
-              UpsertClauseEntry(
-                action: DoUpdate(
-                  [
-                    SingleColumnSetComponent(
-                      column: Reference(columnName: 'foo'),
-                      expression: NumericLiteral(2),
-                    ),
-                  ],
-                  where: NumberedVariable(null),
+          upsert: UpsertClause([
+            UpsertClauseEntry(
+              action: DoUpdate([
+                SingleColumnSetComponent(
+                  column: Reference(columnName: 'foo'),
+                  expression: NumericLiteral(2),
                 ),
-              ),
-            ],
-          ),
+              ], where: NumberedVariable(null)),
+            ),
+          ]),
         ),
       );
     });
@@ -179,25 +168,21 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: UpsertClause(
-            [
-              UpsertClauseEntry(
-                onColumns: [IndexedColumn(Reference(columnName: 'foo'))],
-                action: DoNothing(),
-              ),
-              UpsertClauseEntry(
-                onColumns: [IndexedColumn(Reference(columnName: 'bar'))],
-                action: DoUpdate(
-                  [
-                    SingleColumnSetComponent(
-                      column: Reference(columnName: 'x'),
-                      expression: NumericLiteral(2),
-                    ),
-                  ],
+          upsert: UpsertClause([
+            UpsertClauseEntry(
+              onColumns: [IndexedColumn(Reference(columnName: 'foo'))],
+              action: DoNothing(),
+            ),
+            UpsertClauseEntry(
+              onColumns: [IndexedColumn(Reference(columnName: 'bar'))],
+              action: DoUpdate([
+                SingleColumnSetComponent(
+                  column: Reference(columnName: 'x'),
+                  expression: NumericLiteral(2),
                 ),
-              ),
-            ],
-          ),
+              ]),
+            ),
+          ]),
         ),
       );
     });
@@ -212,9 +197,7 @@ void main() {
         source: DefaultValues(),
         returning: Returning([
           ExpressionResultColumn(expression: Reference(columnName: 'foo')),
-          ExpressionResultColumn(
-            expression: NumericLiteral(3),
-          ),
+          ExpressionResultColumn(expression: NumericLiteral(3)),
           ExpressionResultColumn(expression: Reference(columnName: 'bar')),
         ]),
       ),

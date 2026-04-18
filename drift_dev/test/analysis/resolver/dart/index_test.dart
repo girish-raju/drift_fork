@@ -37,10 +37,7 @@ class MyTable extends Table {
 
     expect(indexBC.table, table);
     expect(indexBC.unique, true);
-    expect(indexBC.indexedColumns, [
-      indexedColumn('b'),
-      indexedColumn('c'),
-    ]);
+    expect(indexBC.indexedColumns, [indexedColumn('b'), indexedColumn('c')]);
   });
 
   test('warns about missing columns', () async {
@@ -58,7 +55,8 @@ class MyTable extends Table {
     final file = await backend.analyze('package:a/a.dart');
     expect(file.allErrors, [
       isDriftError(
-          'Column `foo`, referenced in index `tbl_a`, was not found in the table.')
+        'Column `foo`, referenced in index `tbl_a`, was not found in the table.',
+      ),
     ]);
   });
 
@@ -80,8 +78,9 @@ class MyTable extends Table {
     backend.expectNoErrors();
 
     final indexA = file.analysis[file.id('tbl_a')]!.result as DriftIndex;
-    expect(indexA.indexedColumns,
-        [indexedColumn('a', ordering: OrderingMode.descending)]);
+    expect(indexA.indexedColumns, [
+      indexedColumn('a', ordering: OrderingMode.descending),
+    ]);
   });
 
   group('SQL', () {
@@ -101,10 +100,17 @@ class MyTable extends Table {
         logger: loggerThat(neverEmits(anything)),
       );
 
-      checkOutputs({
-        'a|lib/a.drift.dart': decodedMatches(contains(
-            "i0.Index('my_index', 'CREATE INDEX my_index ON my_table (a) WHERE a > 10')")),
-      }, results.dartOutputs, results.writer);
+      checkOutputs(
+        {
+          'a|lib/a.drift.dart': decodedMatches(
+            contains(
+              "i0.Index('my_index', 'CREATE INDEX my_index ON my_table (a) WHERE a > 10')",
+            ),
+          ),
+        },
+        results.dartOutputs,
+        results.writer,
+      );
     });
 
     test('warns on mismatching tables', () async {
@@ -126,7 +132,8 @@ class OtherTable extends Table {
       final file = await backend.analyze('package:a/a.dart');
       expect(file.allErrors, [
         isDriftError(
-            'This index was applied to `MyTable` in Dart, but references `other_table` in SQL.')
+          'This index was applied to `MyTable` in Dart, but references `other_table` in SQL.',
+        ),
       ]);
     });
 
@@ -148,8 +155,10 @@ class MyTable extends Table {
   });
 }
 
-TypeMatcher<DriftIndexedColumn> indexedColumn(String name,
-    {OrderingMode? ordering}) {
+TypeMatcher<DriftIndexedColumn> indexedColumn(
+  String name, {
+  OrderingMode? ordering,
+}) {
   return isA<DriftIndexedColumn>()
       .having((e) => e.column.nameInSql, 'nameInSql', name)
       .having((e) => e.orderBy, 'orderBy', ordering);

@@ -35,8 +35,9 @@ void main() {
 
     final file = await state.analyze('package:a/file.drift');
     expect(file.allErrors, [
-      isDriftError(contains("does not exist or can't be imported."))
-          .withSpan("import 'tables.dart';")
+      isDriftError(
+        contains("does not exist or can't be imported."),
+      ).withSpan("import 'tables.dart';"),
     ]);
   });
 }

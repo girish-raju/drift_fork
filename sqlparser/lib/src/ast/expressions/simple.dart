@@ -25,11 +25,11 @@ class CollateExpression extends UnaryExpression {
 
   String get collation => collateFunction.lexeme;
 
-  CollateExpression(
-      {required Token operator,
-      required Expression inner,
-      required this.collateFunction})
-      : super(operator, inner);
+  CollateExpression({
+    required Token operator,
+    required Expression inner,
+    required this.collateFunction,
+  }) : super(operator, inner);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -67,12 +67,13 @@ class StringComparisonExpression extends Expression {
   Expression right;
   Expression? escape;
 
-  StringComparisonExpression(
-      {this.not = false,
-      required this.left,
-      required this.operator,
-      required this.right,
-      this.escape});
+  StringComparisonExpression({
+    this.not = false,
+    required this.left,
+    required this.operator,
+    required this.right,
+    this.escape,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -87,8 +88,7 @@ class StringComparisonExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [left, right, if (escape != null) escape!];
+  Iterable<AstNode> get childNodes => [left, right, ?escape];
 }
 
 /// `(NOT)? $left IS $right` or
@@ -102,8 +102,12 @@ class IsExpression extends Expression {
   Expression left;
   Expression right;
 
-  IsExpression(this.negated, this.left, this.right,
-      {this.distinctFromSyntax = false});
+  IsExpression(
+    this.negated,
+    this.left,
+    this.right, {
+    this.distinctFromSyntax = false,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -149,11 +153,12 @@ class BetweenExpression extends Expression {
   Expression lower;
   Expression upper;
 
-  BetweenExpression(
-      {this.not = false,
-      required this.check,
-      required this.lower,
-      required this.upper});
+  BetweenExpression({
+    this.not = false,
+    required this.check,
+    required this.lower,
+    required this.upper,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

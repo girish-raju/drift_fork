@@ -4,8 +4,11 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const a = CustomExpression('a',
-      customType: _NegatedIntType(), precedence: Precedence.primary);
+  const a = CustomExpression(
+    'a',
+    customType: _NegatedIntType(),
+    precedence: Precedence.primary,
+  );
 
   test('equals', () {
     expect(a.equals(123), generates('a = ?', [-123]));
@@ -27,19 +30,26 @@ void main() {
     expect(a.isBiggerOrEqualValue(42), generates('a >= ?', [-42]));
 
     expect(
-        a.isBetweenValues(12, 24), generates('a BETWEEN ? AND ?', [-12, -24]));
-    expect(a.isBetweenValues(12, 24, not: true),
-        generates('a NOT BETWEEN ? AND ?', [-12, -24]));
+      a.isBetweenValues(12, 24),
+      generates('a BETWEEN ? AND ?', [-12, -24]),
+    );
+    expect(
+      a.isBetweenValues(12, 24, not: true),
+      generates('a NOT BETWEEN ? AND ?', [-12, -24]),
+    );
   });
 
   test('cast', () {
-    expect(Variable.withInt(10).cast<int>(const _NegatedIntType()),
-        generates('CAST(? AS custom_int)', [10]));
+    expect(
+      Variable.withInt(10).cast<int>(const _NegatedIntType()),
+      generates('CAST(? AS custom_int)', [10]),
+    );
   });
 
   test('dartCast', () {
-    final exp =
-        Variable.withInt(10).dartCast<int>(customType: const _NegatedIntType());
+    final exp = Variable.withInt(
+      10,
+    ).dartCast<int>(customType: const _NegatedIntType());
 
     expect(exp, generates('?', [10]));
     expect(exp.driftSqlType, isA<_NegatedIntType>());
@@ -57,9 +67,13 @@ void main() {
 
     expect(b.equals(3), generates('b = ?', [-3]));
     expect(
-        b.equals(3),
-        generatesWithOptions('b = \$1',
-            variables: [3], dialect: SqlDialect.postgres));
+      b.equals(3),
+      generatesWithOptions(
+        'b = \$1',
+        variables: [3],
+        dialect: SqlDialect.postgres,
+      ),
+    );
   });
 }
 

@@ -75,11 +75,8 @@ abstract interface class PgTimeValue {
 class DateType<T extends PgTimeValue> extends PostgresType<T> {
   final T Function(DateTime) _fromDateTime;
 
-  const DateType(
-    Type type,
-    String name,
-    this._fromDateTime,
-  ) : super(type: type, name: name);
+  const DateType(Type type, String name, this._fromDateTime)
+    : super(type: type, name: name);
 
   @override
   String mapToSqlLiteral(T dartValue) {
@@ -100,19 +97,17 @@ class DateType<T extends PgTimeValue> extends PostgresType<T> {
 final class ArrayType<T> extends PostgresType<List<T>> {
   final CustomSqlType? innerType;
 
-  const ArrayType({
-    required super.type,
-    required super.name,
-    this.innerType,
-  });
+  const ArrayType({required super.type, required super.name, this.innerType});
 
   @override
   String mapToSqlLiteral(List<T> dartValue) {
     // This gives us the `{array, initializer}` syntax, but without the
     // surrounding quotes.
     final encoded = PostgresType._encoder.convert(dartValue);
-    final asStringLiteral =
-        PostgresType._encoder.convert(encoded, escapeStrings: true);
+    final asStringLiteral = PostgresType._encoder.convert(
+      encoded,
+      escapeStrings: true,
+    );
 
     return '$asStringLiteral::$name';
   }

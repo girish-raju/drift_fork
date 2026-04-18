@@ -53,19 +53,19 @@ class FunctionExpression extends Expression
 
   @override
   bool get isAggregate => const {
-        'avg',
-        'count',
-        'group_concat',
-        'string_agg',
-        'max',
-        'min',
-        'sum',
-        'total',
-        'json_group_array',
-        'jsonb_group_array',
-        'json_group_object',
-        'jsonb_group_object',
-      }.contains(name.toLowerCase());
+    'avg',
+    'count',
+    'group_concat',
+    'string_agg',
+    'max',
+    'min',
+    'sum',
+    'total',
+    'json_group_array',
+    'jsonb_group_array',
+    'json_group_object',
+    'jsonb_group_object',
+  }.contains(name.toLowerCase());
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

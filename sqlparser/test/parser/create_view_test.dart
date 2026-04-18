@@ -23,9 +23,7 @@ void main() {
       CreateViewStatement(
         viewName: 'my_view',
         query: SelectStatement(
-          columns: [
-            ExpressionResultColumn(expression: NumericLiteral(1)),
-          ],
+          columns: [ExpressionResultColumn(expression: NumericLiteral(1))],
         ),
         driftTableName: DriftTableName(
           overriddenDataClassName: 'ExistingDartClass',
@@ -42,9 +40,7 @@ void main() {
       CreateViewStatement(
         viewName: 'my_view',
         query: SelectStatement(
-          columns: [
-            ExpressionResultColumn(expression: NumericLiteral(1)),
-          ],
+          columns: [ExpressionResultColumn(expression: NumericLiteral(1))],
         ),
         driftTableName: DriftTableName(
           overriddenDataClassName: 'DartClass',
@@ -76,23 +72,17 @@ void main() {
                   ),
                 ),
               ),
-              ExpressionResultColumn(
-                expression: Reference(columnName: 'name'),
-              ),
+              ExpressionResultColumn(expression: Reference(columnName: 'name')),
               ExpressionResultColumn(
                 expression: FunctionExpression(
                   name: 'count',
                   parameters: StarFunctionParameter(),
                 ),
               ),
-              ExpressionResultColumn(
-                expression: StringLiteral('dog'),
-              ),
+              ExpressionResultColumn(expression: StringLiteral('dog')),
             ],
             from: TableReference('dogs'),
-            groupBy: GroupBy(
-              by: [Reference(columnName: 'name')],
-            ),
+            groupBy: GroupBy(by: [Reference(columnName: 'name')]),
           ),
           additional: [
             CompoundSelectPart(
@@ -116,14 +106,12 @@ void main() {
                       parameters: StarFunctionParameter(),
                     ),
                   ),
-                  ExpressionResultColumn(expression: StringLiteral('cat'))
+                  ExpressionResultColumn(expression: StringLiteral('cat')),
                 ],
                 from: TableReference('cats'),
-                groupBy: GroupBy(
-                  by: [Reference(columnName: 'name')],
-                ),
+                groupBy: GroupBy(by: [Reference(columnName: 'name')]),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -19,5 +19,8 @@ class ResolvedDatabaseAccessor {
   final List<DriftElement> availableElements;
 
   ResolvedDatabaseAccessor(
-      this.definedQueries, this.knownImports, this.availableElements);
+    this.definedQueries,
+    this.knownImports,
+    this.availableElements,
+  );
 }

@@ -79,13 +79,7 @@ void main() {
     final errors = <String>[];
     transformCustomResultClasses(queries, errors.add);
 
-    expect(
-      errors,
-      [
-        contains('DifferentColumns'),
-        contains('DifferentNested'),
-      ],
-    );
+    expect(errors, [contains('DifferentColumns'), contains('DifferentNested')]);
   });
 
   test('can unify queries with LIST column', () async {
@@ -107,13 +101,19 @@ getTitlesWithGroupOther AS GroupWithTitles: SELECT group_name, LIST(SELECT title
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(isA<String>().having(
-        (e) => 'class GroupWithTitles'.allMatches(e),
-        'contains one GroupWithTitles class',
-        hasLength(1),
-      )),
-    }, results.dartOutputs, results.writer);
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          isA<String>().having(
+            (e) => 'class GroupWithTitles'.allMatches(e),
+            'contains one GroupWithTitles class',
+            hasLength(1),
+          ),
+        ),
+      },
+      results.dartOutputs,
+      results.writer,
+    );
   });
 
   test('supports query with two list columns', () async {

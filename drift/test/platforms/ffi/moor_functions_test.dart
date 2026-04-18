@@ -54,11 +54,7 @@ void main() {
 
         // NaN in sqlite is null, account for that
         if (dartResult.isNaN) {
-          expect(
-            sqlResult,
-            null,
-            reason: '$function($input) = $dartResult',
-          );
+          expect(sqlResult, null, reason: '$function($input) = $dartResult');
         } else {
           expect(
             sqlResult,
@@ -75,19 +71,25 @@ void main() {
 
   group('regexp', () {
     test('cannot be called with more or fewer than 2 parameters', () {
-      expect(() => db.execute("SELECT regexp('foo')"),
-          throwsA(isA<SqliteException>()));
+      expect(
+        () => db.execute("SELECT regexp('foo')"),
+        throwsA(isA<SqliteException>()),
+      );
 
-      expect(() => db.execute("SELECT regexp('foo', 'bar', 'baz')"),
-          throwsA(isA<SqliteException>()));
+      expect(
+        () => db.execute("SELECT regexp('foo', 'bar', 'baz')"),
+        throwsA(isA<SqliteException>()),
+      );
     });
 
     test('results in error when not passing a string', () {
-      final complainsAboutTypes = throwsA(isA<SqliteException>().having(
-        (e) => e.message,
-        'message',
-        contains('Expected two strings as parameters to regexp'),
-      ));
+      final complainsAboutTypes = throwsA(
+        isA<SqliteException>().having(
+          (e) => e.message,
+          'message',
+          contains('Expected two strings as parameters to regexp'),
+        ),
+      );
 
       expect(() => db.execute("SELECT 'foo' REGEXP 3"), complainsAboutTypes);
       expect(() => db.execute("SELECT 3 REGEXP 'foo'"), complainsAboutTypes);
@@ -96,8 +98,13 @@ void main() {
     test('fails on invalid regex', () {
       expect(
         () => db.execute("SELECT 'foo' REGEXP '('"),
-        throwsA(isA<SqliteException>()
-            .having((e) => e.message, 'message', contains('Invalid regex'))),
+        throwsA(
+          isA<SqliteException>().having(
+            (e) => e.message,
+            'message',
+            contains('Invalid regex'),
+          ),
+        ),
       );
     });
 
@@ -114,8 +121,9 @@ void main() {
     });
 
     test('supports flags', () {
-      final stmt =
-          db.prepare(r"SELECT regexp_moor_ffi('^bar', 'foo\nbar', 8) AS r;");
+      final stmt = db.prepare(
+        r"SELECT regexp_moor_ffi('^bar', 'foo\nbar', 8) AS r;",
+      );
       final result = stmt.select();
       expect(result.single['r'], 0);
     });
@@ -132,8 +140,10 @@ void main() {
 
   group('moor_contains', () {
     test('checks for type errors', () {
-      expect(() => db.execute('SELECT moor_contains(12, 1);'),
-          throwsA(isA<SqliteException>()));
+      expect(
+        () => db.execute('SELECT moor_contains(12, 1);'),
+        throwsA(isA<SqliteException>()),
+      );
     });
 
     test('case insensitive without parameter', () {
@@ -164,16 +174,13 @@ class _UnaryFunctionTestCase {
   final List<num> inputs;
 
   const _UnaryFunctionTestCase(
-      this.sqlFunction, this.dartEquivalent, this.inputs);
+    this.sqlFunction,
+    this.dartEquivalent,
+    this.inputs,
+  );
 }
 
-const _unaryInputs = [
-  pi,
-  0,
-  pi / 2,
-  e,
-  123,
-];
+const _unaryInputs = [pi, 0, pi / 2, e, 123];
 
 const _testCases = <_UnaryFunctionTestCase>[
   _UnaryFunctionTestCase('sin', sin, _unaryInputs),

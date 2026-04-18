@@ -80,25 +80,31 @@ void main() {
     test('with default serializer, date as text', () {
       expect(
         _someTodoEntry.toJson(
-            serializer: const ValueSerializer.defaults(
-                serializeDateTimeValuesAsString: true)),
+          serializer: const ValueSerializer.defaults(
+            serializeDateTimeValuesAsString: true,
+          ),
+        ),
         equals(_asTextSerialized),
       );
     });
 
     test('applies json type converter', () {
       const serialized = {
-        'txt': {'data': 'foo'}
+        'txt': {'data': 'foo'},
       };
 
       expect(PureDefault(txt: MyCustomObject('foo')).toJson(), serialized);
-      expect(PureDefault.fromJson(serialized),
-          PureDefault(txt: MyCustomObject('foo')));
+      expect(
+        PureDefault.fromJson(serialized),
+        PureDefault(txt: MyCustomObject('foo')),
+      );
     });
 
     test('with custom serializer', () {
-      expect(_someTodoEntry.toJson(serializer: CustomSerializer()),
-          equals(_customSerialized));
+      expect(
+        _someTodoEntry.toJson(serializer: CustomSerializer()),
+        equals(_customSerialized),
+      );
     });
   });
 
@@ -109,19 +115,25 @@ void main() {
     });
 
     test('with date-as-text serializer', () {
-      const serializer =
-          ValueSerializer.defaults(serializeDateTimeValuesAsString: true);
+      const serializer = ValueSerializer.defaults(
+        serializeDateTimeValuesAsString: true,
+      );
 
-      expect(TodoEntry.fromJson(_regularSerialized, serializer: serializer),
-          equals(_someTodoEntry));
-      expect(TodoEntry.fromJson(_asTextSerialized, serializer: serializer),
-          equals(_someTodoEntry));
+      expect(
+        TodoEntry.fromJson(_regularSerialized, serializer: serializer),
+        equals(_someTodoEntry),
+      );
+      expect(
+        TodoEntry.fromJson(_asTextSerialized, serializer: serializer),
+        equals(_someTodoEntry),
+      );
     });
 
     test('with custom serializer', () {
       expect(
-          TodoEntry.fromJson(_customSerialized, serializer: CustomSerializer()),
-          equals(_someTodoEntry));
+        TodoEntry.fromJson(_customSerialized, serializer: CustomSerializer()),
+        equals(_someTodoEntry),
+      );
     });
   });
 }

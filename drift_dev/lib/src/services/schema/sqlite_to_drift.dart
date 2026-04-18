@@ -17,7 +17,8 @@ import 'verifier_common.dart';
 /// In the future, this could also be a starting point for users with existing
 /// databases wanting to migrate to drift.
 Future<List<DriftElement>> extractDriftElementsFromDatabase(
-    CommonDatabase database) async {
+  CommonDatabase database,
+) async {
   // Put everything from sqlite_schema into a fake drift file, analyze it.
   final createStatements = <String>[];
   for (final row in database.select('select * from sqlite_master')) {
@@ -39,20 +40,22 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
 }
 
 Future<List<DriftElement>> extractDriftElementsFromSql(
-    List<String> nameToCreateStatements) async {
+  List<String> nameToCreateStatements,
+) async {
   // Put all create statements into a fake file, then analyze it.
   final logger = Logger('extractDriftElementsFromSql');
   final uri = SchemaReader.elementUri;
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
   final driver = DriftAnalysisDriver(
-      backend,
-      DriftOptions.defaults(
-        sqliteAnalysisOptions: SqliteAnalysisOptions(
-          modules: SqlModule.values,
-          version: SqliteVersion.current,
-        ),
+    backend,
+    DriftOptions.defaults(
+      sqliteAnalysisOptions: SqliteAnalysisOptions(
+        modules: SqlModule.values,
+        version: SqliteVersion.current,
       ),
-      isTesting: true);
+    ),
+    isTesting: true,
+  );
 
   final engineForParsing = driver.newSqlEngine();
   final entities = <String, String>{};
@@ -62,8 +65,9 @@ Future<List<DriftElement>> extractDriftElementsFromSql(
       sql += ';';
     }
 
-    final parsed =
-        engineForParsing.parse(ParserEntrypoint.statement, sql).rootNode;
+    final parsed = engineForParsing
+        .parse(ParserEntrypoint.statement, sql)
+        .rootNode;
 
     // Virtual table modules often add auxiliary tables that aren't part of the
     // user-defined database schema. So we need to keep track of them to be
@@ -89,25 +93,40 @@ Future<List<DriftElement>> extractDriftElementsFromSql(
     final result = element.result;
     switch (result) {
       case DriftTrigger():
-        result.parsedStatement = engine
-            .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
-            .rootNode as CreateTriggerStatement;
+        result.parsedStatement =
+            engine
+                    .parse(
+                      ParserEntrypoint.statement,
+                      entities[element.ownId.name]!,
+                    )
+                    .rootNode
+                as CreateTriggerStatement;
       case DriftIndex():
-        result.parsedStatement = engine
-            .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
-            .rootNode as CreateIndexStatement;
+        result.parsedStatement =
+            engine
+                    .parse(
+                      ParserEntrypoint.statement,
+                      entities[element.ownId.name]!,
+                    )
+                    .rootNode
+                as CreateIndexStatement;
       case DriftView():
         if (result.source case final SqlViewSource source) {
-          source.parsedStatement = engine
-              .parse(ParserEntrypoint.statement, entities[element.ownId.name]!)
-              .rootNode as CreateViewStatement;
+          source.parsedStatement =
+              engine
+                      .parse(
+                        ParserEntrypoint.statement,
+                        entities[element.ownId.name]!,
+                      )
+                      .rootNode
+                  as CreateViewStatement;
         }
     }
   }
 
   return [
     for (final entry in file.analysis.values)
-      if (entry.result != null) entry.result!
+      if (entry.result != null) entry.result!,
   ];
 }
 
@@ -143,13 +162,19 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
 
   @override
   Future<Never> resolveExpression(
-      Uri context, String dartExpression, Iterable<String> imports) async {
+    Uri context,
+    String dartExpression,
+    Iterable<String> imports,
+  ) async {
     _noAnalyzer();
   }
 
   @override
   Future<Element?> resolveTopLevelElement(
-      Uri context, String reference, Iterable<Uri> imports) {
+    Uri context,
+    String reference,
+    Iterable<Uri> imports,
+  ) {
     _noAnalyzer();
   }
 

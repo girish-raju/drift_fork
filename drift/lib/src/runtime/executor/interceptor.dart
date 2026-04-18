@@ -78,37 +78,54 @@ abstract class QueryInterceptor {
 
   /// Intercept [QueryExecutor.runBatched] calls.
   Future<void> runBatched(
-      QueryExecutor executor, BatchedStatements statements) {
+    QueryExecutor executor,
+    BatchedStatements statements,
+  ) {
     return executor.runBatched(statements);
   }
 
   /// Intercept [QueryExecutor.runCustom] calls.
   Future<void> runCustom(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     return executor.runCustom(statement, args);
   }
 
   /// Intercept [QueryExecutor.runInsert] calls.
   Future<int> runInsert(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     return executor.runInsert(statement, args);
   }
 
   /// Intercept [QueryExecutor.runDelete] calls.
   Future<int> runDelete(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     return executor.runDelete(statement, args);
   }
 
   /// Intercept [QueryExecutor.runUpdate] calls.
   Future<int> runUpdate(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     return executor.runUpdate(statement, args);
   }
 
   /// Intercept [QueryExecutor.runSelect] calls.
   Future<List<Map<String, Object?>>> runSelect(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     return executor.runSelect(statement, args);
   }
 }
@@ -121,12 +138,16 @@ class _InterceptedExecutor extends QueryExecutor {
 
   @override
   TransactionExecutor beginTransaction() => _InterceptedTransactionExecutor(
-      _interceptor.beginTransaction(_inner), _interceptor);
+    _interceptor.beginTransaction(_inner),
+    _interceptor,
+  );
 
   @override
   QueryExecutor beginExclusive() {
     return _InterceptedExecutor(
-        _interceptor.beginExclusive(_inner), _interceptor);
+      _interceptor.beginExclusive(_inner),
+      _interceptor,
+    );
   }
 
   @override
@@ -159,7 +180,9 @@ class _InterceptedExecutor extends QueryExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
+    String statement,
+    List<Object?> args,
+  ) {
     return _interceptor.runSelect(_inner, statement, args);
   }
 

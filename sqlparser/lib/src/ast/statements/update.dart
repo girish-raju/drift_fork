@@ -2,13 +2,7 @@ import '../../analysis/analysis.dart';
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
 
-enum FailureMode {
-  rollback,
-  abort,
-  replace,
-  fail,
-  ignore,
-}
+enum FailureMode { rollback, abort, replace, fail, ignore }
 
 const Map<TokenType, FailureMode> _tokensToMode = {
   TokenType.rollback: FailureMode.rollback,
@@ -65,13 +59,13 @@ class UpdateStatement extends CrudStatement
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (withClause != null) withClause!,
-        table,
-        ...set,
-        if (from != null) from!,
-        if (where != null) where!,
-        if (returning != null) returning!,
-      ];
+    ?withClause,
+    table,
+    ...set,
+    ?from,
+    ?where,
+    ?returning,
+  ];
 
   static FailureMode? failureModeFromToken(TokenType token) {
     return _tokensToMode[token];

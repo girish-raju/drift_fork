@@ -227,9 +227,11 @@ class ReferenceExpressionColumn extends ExpressionColumn {
 
   final String? overriddenName;
 
-  ReferenceExpressionColumn(Reference ref,
-      {this.overriddenName, super.mappedBy})
-      : super(name: '_', expression: ref);
+  ReferenceExpressionColumn(
+    Reference ref, {
+    this.overriddenName,
+    super.mappedBy,
+  }) : super(name: '_', expression: ref);
 }
 
 /// A column that wraps another column.
@@ -280,7 +282,7 @@ class ValuesSelectColumn extends Column {
   final List<Expression> expressions;
 
   ValuesSelectColumn(this.name, this.expressions)
-      : assert(expressions.isNotEmpty);
+    : assert(expressions.isNotEmpty);
 }
 
 /// A column that is available in the scope of a statement.

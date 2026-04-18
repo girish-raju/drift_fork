@@ -30,8 +30,10 @@ class DriftResolver {
   /// This path is used to detect and prevent circular references.
   final List<DriftElementId> _currentDependencyPath = [];
 
-  late final ElementDeserializer _deserializer =
-      ElementDeserializer(driver, _currentDependencyPath);
+  late final ElementDeserializer _deserializer = ElementDeserializer(
+    driver,
+    _currentDependencyPath,
+  );
 
   DriftResolver(this.driver);
 
@@ -57,8 +59,9 @@ class DriftResolver {
     // We can't resolve the element from cache, so we need to resolve it.
     final owningFile = driver.cache.stateForUri(element.libraryUri);
     await driver.discoverIfNecessary(owningFile);
-    final discovered = owningFile.discovery!.locallyDefinedElements
-        .firstWhere((e) => e.ownId == element);
+    final discovered = owningFile.discovery!.locallyDefinedElements.firstWhere(
+      (e) => e.ownId == element,
+    );
 
     return await _resolveDiscovered(discovered);
   }
@@ -67,38 +70,76 @@ class DriftResolver {
   Future<DriftElement> _resolveDiscovered(DiscoveredElement discovered) async {
     final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
     final elementState = fileState.analysis.putIfAbsent(
-        discovered.ownId, () => ElementAnalysisState(discovered.ownId));
+      discovered.ownId,
+      () => ElementAnalysisState(discovered.ownId),
+    );
 
     elementState.errorsDuringAnalysis.clear();
 
     LocalElementResolver resolver;
     if (discovered is DiscoveredDriftTable) {
       resolver = drift_table.DriftTableResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDriftIndex) {
       resolver = drift_index.DriftIndexResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDriftStatement) {
       resolver = drift_query.DriftQueryResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDriftTrigger) {
       resolver = drift_trigger.DriftTriggerResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDriftView) {
       resolver = drift_view.DriftViewResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDartTable) {
       resolver = dart_table.DartTableResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDartView) {
-      resolver =
-          dart_view.DartViewResolver(fileState, discovered, this, elementState);
+      resolver = dart_view.DartViewResolver(
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredDartIndex) {
       resolver = dart_index.DartIndexResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else if (discovered is DiscoveredBaseAccessor) {
       resolver = dart_accessor.DartAccessorResolver(
-          fileState, discovered, this, elementState);
+        fileState,
+        discovered,
+        this,
+        elementState,
+      );
     } else {
       throw UnimplementedError('TODO: Handle $discovered');
     }
@@ -119,7 +160,9 @@ class DriftResolver {
   /// the element. To not cause the entire analysis run to fail, this reports
   /// an error message and otherwise continues analysis of other elements.
   Future<ResolveReferencedElementResult> resolveReferencedElement(
-      DriftElementId owner, DriftElementId reference) async {
+    DriftElementId owner,
+    DriftElementId reference,
+  ) async {
     if (owner == reference) {
       return const ReferencesItself();
     }
@@ -141,7 +184,10 @@ class DriftResolver {
     }
 
     final existing = driver
-        .cache.knownFiles[reference.libraryUri]?.analysis[reference]?.result;
+        .cache
+        .knownFiles[reference.libraryUri]
+        ?.analysis[reference]
+        ?.result;
     if (existing != null) {
       // todo: Check for circular references for existing elements
       return ResolvedReferenceFound(existing);
@@ -165,18 +211,22 @@ class DriftResolver {
     }
 
     throw StateError(
-        'Unknown pending element $reference, this is a bug in drift_dev');
+      'Unknown pending element $reference, this is a bug in drift_dev',
+    );
   }
 
   /// Resolves a Dart element reference, if the referenced Dart [element]
   /// defines an element understood by drift.
   Future<ResolveReferencedElementResult> resolveDartReference(
-      DriftElementId owner, Element element) async {
+    DriftElementId owner,
+    Element element,
+  ) async {
     final uri = await driver.backend.uriOfDart(element.library!);
     final state = driver.cache.stateForUri(uri);
 
     final existing = state.definedElements.firstWhereOrNull(
-        (existing) => existing.dartElementName == element.name);
+      (existing) => existing.dartElementName == element.name,
+    );
 
     if (existing != null) {
       return resolveReferencedElement(owner, existing.ownId);
@@ -195,7 +245,9 @@ class DriftResolver {
   /// the same name. If one exists, it is resolved and returned. Otherwise, an
   /// error result is returned.
   Future<ResolveReferencedElementResult> resolveReference(
-      DriftElementId owner, String reference) async {
+    DriftElementId owner,
+    String reference,
+  ) async {
     final candidates = <DriftElementId>[];
     final file = driver.cache.knownFiles[owner.libraryUri]!;
 
@@ -218,8 +270,9 @@ class DriftResolver {
         '`$reference` could not be found in any import.',
       );
     } else if (candidates.length > 1) {
-      final description =
-          candidates.map((c) => '`${c.name}` in `${c.libraryUri}`').join(', ');
+      final description = candidates
+          .map((c) => '`${c.name}` in `${c.libraryUri}`')
+          .join(', ');
 
       return InvalidReferenceResult(
         InvalidReferenceError.ambigiousElements,
@@ -248,10 +301,9 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result = await resolver.resolveReference(discovered.ownId, reference);
-    if (result
-        case InvalidReferenceResult(
-          error: InvalidReferenceError.noElementWithSuchName
-        )) {
+    if (result case InvalidReferenceResult(
+      error: InvalidReferenceError.noElementWithSuchName,
+    )) {
       final knownTables = resolver.driver.options.sqliteOptions?.knownTables;
       if (knownTables != null && knownTables.any((e) => e.name == reference)) {
         // This table is external, no need to emit a warning.
@@ -266,8 +318,10 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     Element reference,
     DriftAnalysisError Function(String msg) createError,
   ) async {
-    final result =
-        await resolver.resolveDartReference(discovered.ownId, reference);
+    final result = await resolver.resolveDartReference(
+      discovered.ownId,
+      reference,
+    );
     return handleReferenceResult(result, createError);
   }
 
@@ -282,7 +336,8 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
       } else {
         // todo: Better type description in error message
         reportError(
-            createError('Expected a $E, but got a ${element.runtimeType}'));
+          createError('Expected a $E, but got a ${element.runtimeType}'),
+        );
       }
     } else {
       reportErrorForUnresolvedReference(result, createError);
@@ -291,18 +346,24 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     return null;
   }
 
-  void reportErrorForUnresolvedReference(ResolveReferencedElementResult result,
-      DriftAnalysisError Function(String msg) createError) {
+  void reportErrorForUnresolvedReference(
+    ResolveReferencedElementResult result,
+    DriftAnalysisError Function(String msg) createError,
+  ) {
     if (result is InvalidReferenceResult) {
       reportError(createError(result.message));
     } else if (result is ReferencedElementCouldNotBeResolved) {
-      reportError(createError(
-          'The referenced element could not be analyzed due to a bug in drift.'));
+      reportError(
+        createError(
+          'The referenced element could not be analyzed due to a bug in drift.',
+        ),
+      );
     }
   }
 
   Future<SqlEngine> newEngineWithTables(
-      Iterable<DriftElement> references) async {
+    Iterable<DriftElement> references,
+  ) async {
     final mapping = await resolver.driver.typeMapping;
     return mapping.newEngineWithTables(references);
   }
@@ -316,8 +377,9 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     for (final table in references) {
       // If this is a reference to a table the empty engine already knows, it
       // must be a table builtin to sqlite3, not a drift reference.
-      if (engine.knownResultSets
-          .any((e) => e.name.toLowerCase() == table.toLowerCase())) {
+      if (engine.knownResultSets.any(
+        (e) => e.name.toLowerCase() == table.toLowerCase(),
+      )) {
         continue;
       }
 
@@ -338,8 +400,10 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
               missingNames[reference.tableName.toLowerCase()];
 
           if (unresolvedBecause != null) {
-            reportErrorForUnresolvedReference(unresolvedBecause,
-                (msg) => DriftAnalysisError.inDriftFile(reference, msg));
+            reportErrorForUnresolvedReference(
+              unresolvedBecause,
+              (msg) => DriftAnalysisError.inDriftFile(reference, msg),
+            );
           }
         }
       }

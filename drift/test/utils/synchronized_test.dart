@@ -11,15 +11,15 @@ void main() {
     var inSynchronizedBlock = 0;
     final completionOrder = <int>[];
     final futures = List.generate(
-        100,
-        (index) => lock.synchronized(() async {
-              expect(inSynchronizedBlock, 0);
-              inSynchronizedBlock = 1;
-              await pumpEventQueue();
-              inSynchronizedBlock--;
-              return i++;
-            })
-              ..whenComplete(() => completionOrder.add(index)));
+      100,
+      (index) => lock.synchronized(() async {
+        expect(inSynchronizedBlock, 0);
+        inSynchronizedBlock = 1;
+        await pumpEventQueue();
+        inSynchronizedBlock--;
+        return i++;
+      })..whenComplete(() => completionOrder.add(index)),
+    );
     final results = await Future.wait(futures);
 
     expect(results, List.generate(100, (index) => index));

@@ -288,58 +288,56 @@ class Companies extends Table {
   tearDownAll(() => state.dispose);
 
   group('warns about misuse', () {
-    test('when the desired row class does not have an unnamed constructor',
-        () async {
-      final file =
-          await state.analyze('package:a/invalid_no_unnamed_constructor.dart');
-      expect(
-        file.allErrors,
-        [isDriftError(contains('must have an unnamed constructor'))],
-      );
-    });
+    test(
+      'when the desired row class does not have an unnamed constructor',
+      () async {
+        final file = await state.analyze(
+          'package:a/invalid_no_unnamed_constructor.dart',
+        );
+        expect(file.allErrors, [
+          isDriftError(contains('must have an unnamed constructor')),
+        ]);
+      },
+    );
 
     test('when no constructor with the right name exists', () async {
-      final file =
-          await state.analyze('package:a/invalid_no_named_constructor.dart');
-      expect(
-        file.allErrors,
-        [isDriftError(contains('does not have a constructor named create2'))],
+      final file = await state.analyze(
+        'package:a/invalid_no_named_constructor.dart',
       );
+      expect(file.allErrors, [
+        isDriftError(contains('does not have a constructor named create2')),
+      ]);
     });
 
     test('when a parameter has a mismatching type', () async {
       final file = await state.analyze('package:a/mismatching_type.dart');
-      expect(
-        file.allErrors,
-        [isDriftError(contains('Parameter must accept String'))],
-      );
+      expect(file.allErrors, [
+        isDriftError(contains('Parameter must accept String')),
+      ]);
     });
 
     test('when a parameter should be nullable', () async {
-      final file =
-          await state.analyze('package:a/mismatching_nullability.dart');
-      expect(
-        file.allErrors,
-        [isDriftError('Expected this parameter to be nullable')],
+      final file = await state.analyze(
+        'package:a/mismatching_nullability.dart',
       );
+      expect(file.allErrors, [
+        isDriftError('Expected this parameter to be nullable'),
+      ]);
     });
 
     test('when a parameter has a mismatching type converter', () async {
-      final file =
-          await state.analyze('package:a/mismatching_type_converter.dart');
-      expect(
-        file.allErrors,
-        [isDriftError('Parameter must accept int')],
+      final file = await state.analyze(
+        'package:a/mismatching_type_converter.dart',
       );
+      expect(file.allErrors, [isDriftError('Parameter must accept int')]);
     });
 
     test('when a getter is missing with generateInsertable: true', () async {
       final file = await state.analyze('package:a/insertable_missing.dart');
 
-      expect(
-        file.allErrors,
-        [isDriftError(contains('but some are missing: bar'))],
-      );
+      expect(file.allErrors, [
+        isDriftError(contains('but some are missing: bar')),
+      ]);
     });
 
     test('for invalid static factories', () async {
@@ -349,8 +347,9 @@ class Companies extends Table {
         file.allErrors,
         containsAll([
           isDriftError(contains('it needs to be static')).withSpan('notStatic'),
-          isDriftError(contains('needs to return an instance of it'))
-              .withSpan('invalidReturn'),
+          isDriftError(
+            contains('needs to return an instance of it'),
+          ).withSpan('invalidReturn'),
         ]),
       );
     });
@@ -360,10 +359,12 @@ class Companies extends Table {
     final file = await state.analyze('package:a/generic.dart');
     expect(file.allErrors, isEmpty);
 
-    final stringTable = file.analyzedElements
-        .singleWhere((e) => e.id.name == 'string_table') as DriftTable;
-    final intTable = file.analyzedElements
-        .singleWhere((e) => e.id.name == 'int_table') as DriftTable;
+    final stringTable =
+        file.analyzedElements.singleWhere((e) => e.id.name == 'string_table')
+            as DriftTable;
+    final intTable =
+        file.analyzedElements.singleWhere((e) => e.id.name == 'int_table')
+            as DriftTable;
 
     expect(
       stringTable.existingRowClass,
@@ -406,9 +407,13 @@ class Companies extends Table {
 
     final table = file.analyzedElements.whereType<DriftTable>().single;
     expect(
-        table.existingRowClass,
-        isA<ExistingRowClass>()
-            .having((e) => e.isAsyncFactory, 'isAsyncFactory', isTrue));
+      table.existingRowClass,
+      isA<ExistingRowClass>().having(
+        (e) => e.isAsyncFactory,
+        'isAsyncFactory',
+        isTrue,
+      ),
+    );
   });
 
   test('handles `ANY` columns', () async {
@@ -439,8 +444,9 @@ class FooData {
 
   group('custom data class parent', () {
     test('check valid', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_no_error.dart');
+      final file = await state.analyze(
+        'package:a/custom_parent_class_no_error.dart',
+      );
       expect(file.allErrors, isEmpty);
 
       final table = file.analyzedElements.single as DriftTable;
@@ -448,85 +454,97 @@ class FooData {
     });
 
     test('check valid with type argument', () async {
-      final file = await state
-          .analyze('package:a/custom_parent_class_typed_no_error.dart');
+      final file = await state.analyze(
+        'package:a/custom_parent_class_typed_no_error.dart',
+      );
       expect(file.allErrors, isEmpty);
     });
 
     test('check extends DataClass (no super)', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_no_super.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(contains('Parameter `extending` in '
-              '@DataClassName must be subtype of DataClass'))
-        ],
+      final file = await state.analyze(
+        'package:a/custom_parent_class_no_super.dart',
       );
+
+      expect(file.allErrors, [
+        isDriftError(
+          contains(
+            'Parameter `extending` in '
+            '@DataClassName must be subtype of DataClass',
+          ),
+        ),
+      ]);
     });
 
     test('extends DataClass (wrong super)', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_wrong_super.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(contains('Parameter `extending` in '
-              '@DataClassName must be subtype of DataClass'))
-        ],
+      final file = await state.analyze(
+        'package:a/custom_parent_class_wrong_super.dart',
       );
+
+      expect(file.allErrors, [
+        isDriftError(
+          contains(
+            'Parameter `extending` in '
+            '@DataClassName must be subtype of DataClass',
+          ),
+        ),
+      ]);
 
       final table = file.analyzedElements.single as DriftTable;
       expect(
-          table.customParentClass,
-          isA<CustomParentClass>()
-              .having((e) => e.isConst, 'isConst', false)
-              .having(
-                  (e) => e.parentClass.toString(), 'parentClass', 'BaseModel'));
+        table.customParentClass,
+        isA<CustomParentClass>()
+            .having((e) => e.isConst, 'isConst', false)
+            .having(
+              (e) => e.parentClass.toString(),
+              'parentClass',
+              'BaseModel',
+            ),
+      );
     });
 
     test('wrong type argument in extending', () async {
-      final file = await state
-          .analyze('package:a/custom_parent_class_typed_wrong_type_arg.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(
-              contains('Parameter `extending` in @DataClassName can only be '
-                  'provided as'))
-        ],
+      final file = await state.analyze(
+        'package:a/custom_parent_class_typed_wrong_type_arg.dart',
       );
+
+      expect(file.allErrors, [
+        isDriftError(
+          contains(
+            'Parameter `extending` in @DataClassName can only be '
+            'provided as',
+          ),
+        ),
+      ]);
     });
 
     test('two type arguments in parent class', () async {
-      final file = await state
-          .analyze('package:a/custom_parent_class_two_type_argument.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(
-              contains('Parameter `extending` in @DataClassName must have zero '
-                  'or one type parameter'))
-        ],
+      final file = await state.analyze(
+        'package:a/custom_parent_class_two_type_argument.dart',
       );
+
+      expect(file.allErrors, [
+        isDriftError(
+          contains(
+            'Parameter `extending` in @DataClassName must have zero '
+            'or one type parameter',
+          ),
+        ),
+      ]);
     });
 
     test('not a class in extending', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_not_class.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(
-              contains('Parameter `extending` in @DataClassName must be used '
-                  'with a class'))
-        ],
+      final file = await state.analyze(
+        'package:a/custom_parent_class_not_class.dart',
       );
+
+      expect(file.allErrors, [
+        isDriftError(
+          contains(
+            'Parameter `extending` in @DataClassName must be used '
+            'with a class',
+          ),
+        ),
+      ]);
     });
   });
 
@@ -559,8 +577,11 @@ class Users extends Table {
         isA<ExistingRowClass>()
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
-            .having((e) => e.targetType.toString(), 'targetType',
-                '({DateTime birthday, int id, String name})'),
+            .having(
+              (e) => e.targetType.toString(),
+              'targetType',
+              '({DateTime birthday, int id, String name})',
+            ),
       );
       expect(table.nameOfRowClass, 'User');
     });
@@ -591,8 +612,11 @@ class Users extends Table {
         isA<ExistingRowClass>()
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
-            .having((e) => e.targetType.toString(), 'targetType',
-                '({DateTime birthday, int id, String name})'),
+            .having(
+              (e) => e.targetType.toString(),
+              'targetType',
+              '({DateTime birthday, int id, String name})',
+            ),
       );
       expect(table.nameOfRowClass, 'User');
     }, skip: requireDart('3.0.0-dev'));
@@ -633,8 +657,10 @@ class User implements Insertable<User> {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'''
 class _$UserInsertable implements i0.Insertable<i1.User> {
   i1.User _object;
   _$UserInsertable(this._object);
@@ -647,8 +673,12 @@ class _$UserInsertable implements i0.Insertable<i1.User> {
     ).toColumns(false);
   }
 }
-''')),
-    }, result.dartOutputs, result.writer);
+'''),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 
   test('generates insertable for inherited getter', () async {
@@ -678,8 +708,10 @@ class User with HasId {
       logger: loggerThat(neverEmits(anything)),
     );
 
-    checkOutputs({
-      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(r'''
 class _$UserInsertable implements i0.Insertable<i1.User> {
   i1.User _object;
   _$UserInsertable(this._object);
@@ -691,7 +723,11 @@ class _$UserInsertable implements i0.Insertable<i1.User> {
     ).toColumns(false);
   }
 }
-''')),
-    }, result.dartOutputs, result.writer);
+'''),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 }

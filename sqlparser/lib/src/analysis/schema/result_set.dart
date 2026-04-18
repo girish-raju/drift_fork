@@ -19,8 +19,9 @@ abstract mixin class ResultSet implements ResolvesToResultSet {
 
   Column? findColumn(String name) {
     final lowerName = name.toLowerCase();
-    return resolvedColumns!
-        .firstWhereOrNull((c) => c.name.toLowerCase() == lowerName);
+    return resolvedColumns!.firstWhereOrNull(
+      (c) => c.name.toLowerCase() == lowerName,
+    );
   }
 }
 
@@ -78,8 +79,12 @@ class ResultSetAvailableInStatement with Referencable {
   @override
   bool get visibleToChildren => true;
 
-  ResultSetAvailableInStatement(this.origin, this.resultSet, this.alias,
-      {this.canUseUnqualifiedColumns = true});
+  ResultSetAvailableInStatement(
+    this.origin,
+    this.resultSet,
+    this.alias, {
+    this.canUseUnqualifiedColumns = true,
+  });
 }
 
 extension UnaliasResultSet on ResultSet {

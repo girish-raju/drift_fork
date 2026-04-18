@@ -78,8 +78,9 @@ class AnalysisContextBackend extends DriftBackend {
     final library = element.library;
     if (library == null) return null;
 
-    final info =
-        await context.currentSession.getResolvedLibraryByElement(library);
+    final info = await context.currentSession.getResolvedLibraryByElement(
+      library,
+    );
     if (info is ResolvedLibraryResult) {
       return info.getFragmentDeclaration(element.firstFragment)?.node;
     } else {
@@ -136,12 +137,14 @@ class AnalysisContextBackend extends DriftBackend {
     );
 
     try {
-      final result =
-          await this.context.currentSession.getResolvedLibrary(pathForTemp);
+      final result = await this.context.currentSession.getResolvedLibrary(
+        pathForTemp,
+      );
 
       if (result is! ResolvedLibraryResult) {
         throw CannotReadExpressionException(
-            'Could not resolve temporary helper file');
+          'Could not resolve temporary helper file',
+        );
       }
 
       final compilationUnit = result.units.first.unit;
@@ -153,7 +156,8 @@ class AnalysisContextBackend extends DriftBackend {
       }
 
       throw CannotReadExpressionException(
-          'Temporary helper file contains no field.');
+        'Temporary helper file contains no field.',
+      );
     } finally {
       provider.removeOverlay(pathForTemp);
     }
@@ -161,12 +165,17 @@ class AnalysisContextBackend extends DriftBackend {
 
   @override
   Future<Element?> resolveTopLevelElement(
-      Uri context, String reference, Iterable<Uri> imports) async {
+    Uri context,
+    String reference,
+    Iterable<Uri> imports,
+  ) async {
     // Create a fake file next to the content
     final path = _pathOfUri(context)!;
     final pathContext = provider.pathContext;
     final pathForTemp = pathContext.join(
-        pathContext.dirname(path), 'moor_temp_${imports.hashCode}.dart');
+      pathContext.dirname(path),
+      'moor_temp_${imports.hashCode}.dart',
+    );
 
     final content = StringBuffer();
     for (final import in imports) {
@@ -180,8 +189,9 @@ class AnalysisContextBackend extends DriftBackend {
     );
 
     try {
-      final result =
-          await this.context.currentSession.getResolvedLibrary(pathForTemp);
+      final result = await this.context.currentSession.getResolvedLibrary(
+        pathForTemp,
+      );
 
       if (result is ResolvedLibraryResult) {
         return result.element.firstFragment.scope.lookup(reference).getter;

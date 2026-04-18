@@ -298,7 +298,7 @@ final class TableIndex {
   /// using `#nextUpdateSnapshot`.
   ///
   /// To further control options of the index, use an [IndexedColumn] instance.
-  final Set<Object /*IndexedColumn | Symbol*/ > columns;
+  final Set<Object /*IndexedColumn | Symbol*/> columns;
 
   /// As an alternative to [name], [unique] and [columns], a `CREATE INDEX` SQL
   /// statement defining the index.
@@ -324,9 +324,9 @@ final class TableIndex {
   /// collations or indexing expressions. It can also be used for partials
   /// indexes by adding a `WHERE` clause.
   const TableIndex.sql(String this.createIndexStatement)
-      : name = '',
-        unique = false,
-        columns = const {};
+    : name = '',
+      unique = false,
+      columns = const {};
 }
 
 /// A column that can appear in a [TableIndex].
@@ -531,8 +531,11 @@ class UseRowClass {
   /// table.
   ///
   /// For details, see the class documentation on [UseRowClass].
-  const UseRowClass(this.type,
-      {this.constructor = 'new', this.generateInsertable = false});
+  const UseRowClass(
+    this.type, {
+    this.constructor = 'new',
+    this.generateInsertable = false,
+  });
 }
 
 /// An annotation specifying view properties

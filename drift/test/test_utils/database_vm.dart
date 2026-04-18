@@ -11,7 +11,11 @@ Version get sqlite3Version {
 }
 
 DatabaseConnection testInMemoryDatabase() {
-  return DatabaseConnection(NativeDatabase.memory(setup: (rawDb) {
-    rawDb.config.doubleQuotedStringLiterals = false;
-  }));
+  return DatabaseConnection(
+    NativeDatabase.memory(
+      setup: (rawDb) {
+        rawDb.config.doubleQuotedStringLiterals = false;
+      },
+    ),
+  );
 }

@@ -23,8 +23,10 @@ extension StringExpressionOperators on Expression<String> {
   /// For details on which patterms are valid and how they are interpreted,
   /// check out [this tutorial](http://www.sqlitetutorial.net/sqlite-like/) or
   /// the [SQLite documentation](https://www.sqlite.org/lang_expr.html#the_like_glob_regexp_match_and_extract_operators).
-  Expression<bool> likeExp(Expression<String> regex,
-      {Expression<String>? escape}) {
+  Expression<bool> likeExp(
+    Expression<String> regex, {
+    Expression<String>? escape,
+  }) {
     return _LikeOperator(this, regex, escape: escape);
   }
 
@@ -63,14 +65,11 @@ extension StringExpressionOperators on Expression<String> {
     }
 
     if (flags != 0) {
-      return FunctionCallExpression<bool>(
-        'regexp_moor_ffi',
-        [
-          Variable.withString(regex),
-          this,
-          Variable.withInt(flags),
-        ],
-      );
+      return FunctionCallExpression<bool>('regexp_moor_ffi', [
+        Variable.withString(regex),
+        this,
+        Variable.withInt(flags),
+      ]);
     }
 
     // No special flags enabled, use the regular REGEXP operator
@@ -94,8 +93,12 @@ extension StringExpressionOperators on Expression<String> {
 
   /// Performs a string concatenation in sql by appending [other] to `this`.
   Expression<String> operator +(Expression<String> other) {
-    return BaseInfixOperator(this, '||', other,
-        precedence: Precedence.stringConcatenation);
+    return BaseInfixOperator(
+      this,
+      '||',
+      other,
+      precedence: Precedence.stringConcatenation,
+    );
   }
 
   /// Calls the sqlite function `UPPER` on `this` string. Please note that, in
@@ -150,7 +153,9 @@ extension StringExpressionOperators on Expression<String> {
   /// [start].
   Expression<String> substr(int start, [int? length]) {
     return substrExpr(
-        Constant(start), length != null ? Constant(length) : null);
+      Constant(start),
+      length != null ? Constant(length) : null,
+    );
   }
 
   /// Calls the [`substr`](https://sqlite.org/lang_corefunc.html#substr)
@@ -168,13 +173,11 @@ extension StringExpressionOperators on Expression<String> {
   ///
   /// When both [start] and [length] are Dart values (e.g. [Variable]s or
   /// [Constant]s), consider using [substr] instead.
-  Expression<String> substrExpr(Expression<int> start,
-      [Expression<int>? length]) {
-    return FunctionCallExpression('SUBSTR', [
-      this,
-      start,
-      if (length != null) length,
-    ]);
+  Expression<String> substrExpr(
+    Expression<int> start, [
+    Expression<int>? length,
+  ]) {
+    return FunctionCallExpression('SUBSTR', [this, start, ?length]);
   }
 }
 
@@ -197,12 +200,7 @@ class _LikeOperator extends Expression<bool> {
   final Precedence precedence = Precedence.comparisonEq;
 
   /// Perform a like operator with the target and the regex.
-  _LikeOperator(
-    this.target,
-    this.regex, {
-    this.operator = 'LIKE',
-    this.escape,
-  });
+  _LikeOperator(this.target, this.regex, {this.operator = 'LIKE', this.escape});
 
   @override
   void writeInto(GenerationContext context) {

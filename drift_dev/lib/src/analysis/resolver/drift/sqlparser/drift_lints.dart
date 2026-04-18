@@ -41,13 +41,16 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitBetweenExpression(BetweenExpression e, void arg) {
     if (_isTextDateTime(linter._context.typeOf(e.check))) {
-      linter.sqlParserErrors.add(AnalysisError(
-        type: AnalysisErrorType.hint,
-        message: 'This compares two date time values lexicographically. '
-            'To compare date time values, compare their `unixepoch()` '
-            'value instead.',
-        relevantNode: e,
-      ));
+      linter.sqlParserErrors.add(
+        AnalysisError(
+          type: AnalysisErrorType.hint,
+          message:
+              'This compares two date time values lexicographically. '
+              'To compare date time values, compare their `unixepoch()` '
+              'value instead.',
+          relevantNode: e,
+        ),
+      );
     }
 
     super.visitBetweenExpression(e, arg);
@@ -55,7 +58,8 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitBinaryExpression(BinaryExpression e, void arg) {
-    final isForDateTimes = _isTextDateTime(linter._context.typeOf(e.left)) &&
+    final isForDateTimes =
+        _isTextDateTime(linter._context.typeOf(e.left)) &&
         _isTextDateTime(linter._context.typeOf(e.right));
 
     if (isForDateTimes) {
@@ -64,26 +68,31 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
         case TokenType.doubleEqual:
         case TokenType.exclamationEqual:
         case TokenType.lessMore:
-          linter.sqlParserErrors.add(AnalysisError(
-            type: AnalysisErrorType.hint,
-            message:
-                'Semantically equivalent date time values may be formatted '
-                "differently and can't be compared directly. Consider "
-                'comparing the `unixepoch()` values of the time value instead.',
-            relevantNode: e.operator,
-          ));
+          linter.sqlParserErrors.add(
+            AnalysisError(
+              type: AnalysisErrorType.hint,
+              message:
+                  'Semantically equivalent date time values may be formatted '
+                  "differently and can't be compared directly. Consider "
+                  'comparing the `unixepoch()` values of the time value instead.',
+              relevantNode: e.operator,
+            ),
+          );
           break;
         case TokenType.less:
         case TokenType.lessEqual:
         case TokenType.more:
         case TokenType.moreEqual:
-          linter.sqlParserErrors.add(AnalysisError(
-            type: AnalysisErrorType.hint,
-            message: 'This compares two date time values lexicographically. '
-                'To compare date time values, compare their `unixepoch()` '
-                'value instead.',
-            relevantNode: e.operator,
-          ));
+          linter.sqlParserErrors.add(
+            AnalysisError(
+              type: AnalysisErrorType.hint,
+              message:
+                  'This compares two date time values lexicographically. '
+                  'To compare date time values, compare their `unixepoch()` '
+                  'value instead.',
+              relevantNode: e.operator,
+            ),
+          );
           break;
         default:
           break;
@@ -109,14 +118,18 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   void visitDartPlaceholder(DartPlaceholder e, void arg) {
     if (e is! DartExpressionPlaceholder) {
       // Default values are supported for expressions only
-      if (linter._context.stmtOptions.defaultValuesForPlaceholder
-          .containsKey(e.name)) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'This placeholder has a default value, which is only '
-              'supported for expressions.',
-          relevantNode: e,
-        ));
+      if (linter._context.stmtOptions.defaultValuesForPlaceholder.containsKey(
+        e.name,
+      )) {
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'This placeholder has a default value, which is only '
+                'supported for expressions.',
+            relevantNode: e,
+          ),
+        );
       }
     }
   }
@@ -129,8 +142,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     if (hint != null && hint.converter.isDriftEnumTypeConverter) {
       final enumElement =
           (hint.converter.dartType as InterfaceType).element as EnumElement;
-      final entryCount =
-          enumElement.fields.where((e) => e.isEnumConstant).length;
+      final entryCount = enumElement.fields
+          .where((e) => e.isEnumConstant)
+          .length;
 
       var value = e.value;
       final parent = e.parent;
@@ -145,21 +159,27 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
         }
 
         if (value.isNegative) {
-          linter.sqlParserErrors.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'From context, it seems like this int literal is written '
-                'into a column with an enum type, so it can\'t be negative.',
-            relevantNode: span,
-          ));
+          linter.sqlParserErrors.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message:
+                  'From context, it seems like this int literal is written '
+                  'into a column with an enum type, so it can\'t be negative.',
+              relevantNode: span,
+            ),
+          );
         } else if (e.value >= entryCount) {
-          linter.sqlParserErrors.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'From context, it seems like this int literal is written '
-                'into a column with an enum type `${enumElement.name}`. However, '
-                'that enum only has $entryCount values, the constant index is '
-                'too large.',
-            relevantNode: span,
-          ));
+          linter.sqlParserErrors.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message:
+                  'From context, it seems like this int literal is written '
+                  'into a column with an enum type `${enumElement.name}`. However, '
+                  'that enum only has $entryCount values, the constant index is '
+                  'too large.',
+              relevantNode: span,
+            ),
+          );
         }
       }
     }
@@ -177,12 +197,15 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       final resolveResult = linter._context.typeOf(expression);
 
       if (resolveResult.type == null) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Expression has an unknown type, the generated code can be'
-              ' inaccurate.',
-          relevantNode: expression,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'Expression has an unknown type, the generated code can be'
+                ' inaccurate.',
+            relevantNode: expression,
+          ),
+        );
       }
     }
 
@@ -190,13 +213,16 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       // check that a table.** column only appears in a top-level select
       // statement
       if (!linter._contextRootIsQuery || e.parent != linter._context.root) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Nested star columns may only appear in a top-level select '
-              "query. They're not supported in compound selects or select "
-              'expressions',
-          relevantNode: e,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'Nested star columns may only appear in a top-level select '
+                "query. They're not supported in compound selects or select "
+                'expressions',
+            relevantNode: e,
+          ),
+        );
       }
     }
 
@@ -204,13 +230,16 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       // check that a LIST(...) column only appears in a top-level select
       // statement
       if (!linter._contextRootIsQuery || e.parent != linter._context.root) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Nested query may only appear in a top-level select '
-              "query. They're not supported in compound selects or select "
-              'expressions',
-          relevantNode: e,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'Nested query may only appear in a top-level select '
+                "query. They're not supported in compound selects or select "
+                'expressions',
+            relevantNode: e,
+          ),
+        );
       }
     }
   }
@@ -225,34 +254,42 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     if (source is ValuesSource) {
       for (final tuple in source.values) {
         if (tuple.expressions.length != targeted.length) {
-          linter.sqlParserErrors.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: 'Expected tuple to have ${targeted.length} values',
-            relevantNode: tuple,
-          ));
+          linter.sqlParserErrors.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message: 'Expected tuple to have ${targeted.length} values',
+              relevantNode: tuple,
+            ),
+          );
         }
       }
     } else if (source is SelectInsertSource) {
       final columns = source.stmt.resolvedColumns;
 
       if (columns != null && columns.length != targeted.length) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'This select statement should return ${targeted.length} '
-              'columns, but actually returns ${columns.length}',
-          relevantNode: source.stmt,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'This select statement should return ${targeted.length} '
+                'columns, but actually returns ${columns.length}',
+            relevantNode: source.stmt,
+          ),
+        );
       }
     } else if (source is DartInsertablePlaceholder) {
       // Insertables always cover a full table, so we can't have target columns
       if (e.targetColumns.isNotEmpty) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: "Dart placeholders can't be used here, because this insert "
-              'statement explicitly defines the columns to set. Try removing '
-              'the columns on the left.',
-          relevantNode: source,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                "Dart placeholders can't be used here, because this insert "
+                'statement explicitly defines the columns to set. Try removing '
+                'the columns on the left.',
+            relevantNode: source,
+          ),
+        );
       }
     }
 
@@ -260,8 +297,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     final resolved = e.table.resolved;
     List<DriftColumn> required = const [];
     if (resolved is Table) {
-      final driftTable =
-          linter.references.firstWhereOrNull((e) => e.id.name == resolved.name);
+      final driftTable = linter.references.firstWhereOrNull(
+        (e) => e.id.name == resolved.name,
+      );
 
       if (driftTable is DriftTable) {
         required = driftTable.columns
@@ -273,27 +311,34 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     if (required.isNotEmpty && e.source is DefaultValues) {
-      linter.sqlParserErrors.add(AnalysisError(
-        type: AnalysisErrorType.other,
-        message: 'This table has columns without default values, so defaults '
-            'can\'t be used for insert.',
-        relevantNode: e.table,
-      ));
+      linter.sqlParserErrors.add(
+        AnalysisError(
+          type: AnalysisErrorType.other,
+          message:
+              'This table has columns without default values, so defaults '
+              'can\'t be used for insert.',
+          relevantNode: e.table,
+        ),
+      );
     } else {
       final notPresent = required.where((c) {
-        return !targeted
-            .any((t) => t?.name.toUpperCase() == c.nameInSql.toUpperCase());
+        return !targeted.any(
+          (t) => t?.name.toUpperCase() == c.nameInSql.toUpperCase(),
+        );
       });
 
       if (notPresent.isNotEmpty) {
         final msg = notPresent.map((c) => c.nameInSql).join(', ');
 
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Some columns are required but not present here. Expected '
-              'values for $msg.',
-          relevantNode: e.source.childNodes.first,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'Some columns are required but not present here. Expected '
+                'values for $msg.',
+            relevantNode: e.source.childNodes.first,
+          ),
+        );
       }
     }
 
@@ -311,13 +356,16 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       final field = enumElement.getField(e.value);
 
       if (field == null || !field.isEnumConstant) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'From context, it seems like this text literal is written '
-              'into a column with an enum type `${enumElement.name}`. However, '
-              'that enum declares no member with this name.',
-          relevantNode: e,
-        ));
+        linter.sqlParserErrors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'From context, it seems like this text literal is written '
+                'into a column with an enum type `${enumElement.name}`. However, '
+                'that enum declares no member with this name.',
+            relevantNode: e,
+          ),
+        );
       }
     }
   }

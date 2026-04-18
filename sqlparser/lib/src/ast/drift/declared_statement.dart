@@ -24,8 +24,12 @@ class DeclaredStatement extends Statement implements PartOfDriftFile {
   /// meaning.
   bool get isRegularQuery => identifier is SimpleName;
 
-  DeclaredStatement(this.identifier, this.statement,
-      {this.parameters = const [], this.as});
+  DeclaredStatement(
+    this.identifier,
+    this.statement, {
+    this.parameters = const [],
+    this.as,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -40,8 +44,7 @@ class DeclaredStatement extends Statement implements PartOfDriftFile {
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [statement, ...parameters, if (as != null) as!];
+  Iterable<AstNode> get childNodes => [statement, ...parameters, ?as];
 }
 
 /// How a statement was declared in a drift file.
@@ -118,8 +121,12 @@ class VariableTypeHint extends StatementParameter {
 
   Token? as;
 
-  VariableTypeHint(this.variable, this.typeName,
-      {this.orNull = false, this.isRequired = false});
+  VariableTypeHint(
+    this.variable,
+    this.typeName, {
+    this.orNull = false,
+    this.isRequired = false,
+  });
 
   @override
   Iterable<AstNode> get childNodes => [variable];

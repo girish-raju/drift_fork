@@ -21,7 +21,7 @@ class DedicatedDriftWorker {
   WasmCompatibility? _compatibility;
 
   DedicatedDriftWorker(this.self, WasmDatabaseSetup? setup)
-      : _servers = DriftServerController(setup);
+    : _servers = DriftServerController(setup);
 
   void start() {
     EventStreamProviders.messageEvent.forTarget(self).listen((event) {

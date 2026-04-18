@@ -42,9 +42,9 @@ class ViewWriter extends TableOrViewWriter {
 
       emitter
         ..write('class ${view.entityInfoName}')
-        ..write(viewDslName != null
-            ? ' extends ${scope.dartCode(viewDslName)}'
-            : '')
+        ..write(
+          viewDslName != null ? ' extends ${scope.dartCode(viewDslName)}' : '',
+        )
         ..write(' with ')
         ..writeDriftRef('ResultSet')
         ..write(typeArgs)
@@ -58,11 +58,13 @@ class ViewWriter extends TableOrViewWriter {
         ..writeln('final String? alias;')
         ..writeln('final $dbClassName $_attachedDatabase;')
         ..writeln(
-            '${view.entityInfoName}(this.$_attachedDatabase, [this.alias]);');
+          '${view.entityInfoName}(this.$_attachedDatabase, [this.alias]);',
+        );
     } else {
       emitter
         ..write(
-            'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}')
+          'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}',
+        )
         ..write('<$viewClassName, $dataClass>')
         ..writeln(' implements ${emitter.drift('HasResultSet')} {');
 
@@ -71,8 +73,10 @@ class ViewWriter extends TableOrViewWriter {
       buffer
         ..writeln('final String? _alias;')
         ..writeln('@override final $dbClassName $_attachedDatabase;')
-        ..writeln('${view.entityInfoName}(this.$_attachedDatabase, '
-            '[this._alias]);');
+        ..writeln(
+          '${view.entityInfoName}(this.$_attachedDatabase, '
+          '[this._alias]);',
+        );
     }
 
     final source = view.source;
@@ -90,19 +94,24 @@ class ViewWriter extends TableOrViewWriter {
           ..write(' get ${ref.name} => ')
           ..writeDart(emitter.referenceElement(ref.table, _attachedDatabase))
           ..writeln(
-              scope.drift3 ? '.withAlias($alias);' : '.createAlias($alias);');
+            scope.drift3 ? '.withAlias($alias);' : '.createAlias($alias);',
+          );
       }
     }
 
     writeGetColumnsOverride();
 
     if (!scope.drift3) {
-      buffer.write('@override\nString get aliasedName => '
-          '_alias ?? entityName;\n');
+      buffer.write(
+        '@override\nString get aliasedName => '
+        '_alias ?? entityName;\n',
+      );
     }
 
-    buffer.write('@override\n String get entityName=>'
-        ' ${asDartLiteral(view.schemaName)};\n');
+    buffer.write(
+      '@override\n String get entityName=>'
+      ' ${asDartLiteral(view.schemaName)};\n',
+    );
 
     if (scope.drift3) {
       _writeDrift3SqlDefinition();
@@ -207,8 +216,9 @@ class ViewWriter extends TableOrViewWriter {
       final columnsGetter = scope.drift3 ? 'columns' : r'$columns';
       emitter
         ..write(
-            '($_attachedDatabase.selectOnly(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
-            '..addColumns($columnsGetter))')
+          '($_attachedDatabase.selectOnly(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
+          '..addColumns($columnsGetter))',
+        )
         ..writeDart(source.dartQuerySource)
         ..writeln(';');
     } else {

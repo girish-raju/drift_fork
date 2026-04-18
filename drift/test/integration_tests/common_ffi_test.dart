@@ -40,10 +40,12 @@ void main() {
   runAllTests(DriftNativeExcecutor());
 
   test('can save and restore a database', () async {
-    final mainFile =
-        File(join(Directory.systemTemp.path, 'drift-save-and-restore-tests-1'));
-    final createdForSwap =
-        File(join(Directory.systemTemp.path, 'drift-save-and-restore-tests-2'));
+    final mainFile = File(
+      join(Directory.systemTemp.path, 'drift-save-and-restore-tests-1'),
+    );
+    final createdForSwap = File(
+      join(Directory.systemTemp.path, 'drift-save-and-restore-tests-2'),
+    );
 
     if (await mainFile.exists()) {
       await mainFile.delete();
@@ -57,19 +59,27 @@ void main() {
 
     // Prepare the file we're swapping in later
     final dbForSetup = Database.executor(NativeDatabase(createdForSwap));
-    await dbForSetup.into(dbForSetup.users).insert(
-        UsersCompanion.insert(name: nameInSwap, birthDate: DateTime.now()));
+    await dbForSetup
+        .into(dbForSetup.users)
+        .insert(
+          UsersCompanion.insert(name: nameInSwap, birthDate: DateTime.now()),
+        );
     await dbForSetup.close();
 
     // Open the main file
     var db = Database.executor(NativeDatabase(mainFile));
-    await db.into(db.users).insert(
-        UsersCompanion.insert(name: nameInMain, birthDate: DateTime.now()));
+    await db
+        .into(db.users)
+        .insert(
+          UsersCompanion.insert(name: nameInMain, birthDate: DateTime.now()),
+        );
     await db.close();
 
     // Copy swap file to main file
-    await mainFile.writeAsBytes(await createdForSwap.readAsBytes(),
-        flush: true);
+    await mainFile.writeAsBytes(
+      await createdForSwap.readAsBytes(),
+      flush: true,
+    );
 
     // Re-open database
     db = Database.executor(NativeDatabase(mainFile));

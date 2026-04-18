@@ -179,8 +179,9 @@ String pathForOpfs(String databaseName) {
 
 /// returns the [FileSystemDirectoryHandle] containing all drift databases, or
 /// null if it doesn't exist.
-Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle(
-    [FileSystemGetDirectoryOptions? options]) async {
+Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle([
+  FileSystemGetDirectoryOptions? options,
+]) async {
   final storage = storageManager;
   if (storage == null) return null;
 
@@ -188,7 +189,9 @@ Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle(
   try {
     return await directory
         .getDirectoryHandle(
-            'drift_db', options ?? FileSystemGetDirectoryOptions())
+          'drift_db',
+          options ?? FileSystemGetDirectoryOptions(),
+        )
         .toDart;
   } on Object {
     // fine, an error probably means that the database didn't exist in the first
@@ -204,8 +207,9 @@ Future<List<String>> opfsDatabases() async {
     return const [];
   }
 
-  final entries = AsyncJavaScriptIteratable<JSArray>(directory)
-      .map((data) => data.toDart[1] as FileSystemHandle);
+  final entries = AsyncJavaScriptIteratable<JSArray>(
+    directory,
+  ).map((data) => data.toDart[1] as FileSystemHandle);
 
   final found = <String>[];
   await for (final entry in entries) {
@@ -258,9 +262,7 @@ class DriftServerController {
   DriftServerController(this._setup);
 
   /// Serves a drift connection as requested by the [message].
-  void serve(
-    ServeDriftDatabase message,
-  ) {
+  void serve(ServeDriftDatabase message) {
     final server = servers.putIfAbsent(message.databaseName, () {
       final initPort = message.initializationPort;
 
@@ -278,13 +280,17 @@ class DriftServerController {
             }
           : null;
 
-      final server = DriftServer(LazyDatabase(() => openConnection(
+      final server = DriftServer(
+        LazyDatabase(
+          () => openConnection(
             sqlite3WasmUri: message.sqlite3WasmUri,
             databaseName: message.databaseName,
             storage: message.storage,
             initializer: initializer,
             enableMigrations: message.enableMigrations,
-          )));
+          ),
+        ),
+      );
 
       final wasmServer = RunningWasmServer(message.storage, server);
       wasmServer.lastClientDisconnected.whenComplete(() {
@@ -323,7 +329,8 @@ class DriftServerController {
     switch (storage) {
       case WasmStorageImplementation.opfsShared:
         final simple = vfs = await SimpleOpfsFileSystem.loadFromStorage(
-            pathForOpfs(databaseName));
+          pathForOpfs(databaseName),
+        );
         close = simple.close;
       case WasmStorageImplementation.opfsLocks:
         final locks = vfs = await _loadLockedWasmVfs(databaseName);
@@ -340,8 +347,10 @@ class DriftServerController {
       final response = await initializer();
 
       if (response != null) {
-        final (file: file, outFlags: _) =
-            vfs.xOpen(Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+        final (file: file, outFlags: _) = vfs.xOpen(
+          Sqlite3Filename('/database'),
+          SqlFlag.SQLITE_OPEN_CREATE,
+        );
         file.xWrite(response, 0);
         file.xClose();
       }
@@ -364,9 +373,7 @@ class DriftServerController {
 
   Future<WasmVfs> _loadLockedWasmVfs(String databaseName) async {
     // Create SharedArrayBuffers to synchronize requests
-    final options = WasmVfs.createOptions(
-      root: pathForOpfs(databaseName),
-    );
+    final options = WasmVfs.createOptions(root: pathForOpfs(databaseName));
     final worker = Worker(Uri.base.toString().toJS);
 
     StartFileSystemServer(options).sendToWorker(worker);
@@ -416,15 +423,17 @@ class RunningWasmServer {
     _connectedClients++;
 
     server.serve(
-      channel.transformStream(StreamTransformer.fromHandlers(
-        handleDone: (sink) {
-          if (--_connectedClients == 0) {
-            _lastClientDisconnected.complete();
-          }
+      channel.transformStream(
+        StreamTransformer.fromHandlers(
+          handleDone: (sink) {
+            if (--_connectedClients == 0) {
+              _lastClientDisconnected.complete();
+            }
 
-          sink.close();
-        },
-      )),
+            sink.close();
+          },
+        ),
+      ),
       serialize: serialize,
     );
   }

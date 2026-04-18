@@ -32,7 +32,7 @@ void main() {
             .transform(const SystemEncoding().decoder)
             .transform(const LineSplitter())
             .forEach(stdoutContent.add),
-        process.exitCode
+        process.exitCode,
       ).wait;
 
       expect(stdoutContent, isEmpty);

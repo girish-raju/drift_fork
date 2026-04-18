@@ -8,10 +8,13 @@ void main() {
   test('parsers simple create table statements', () {
     testStatement(
       'CREATE TABLE my_tbl (a INT, b TEXT)',
-      CreateTableStatement(tableName: 'my_tbl', columns: [
-        ColumnDefinition(columnName: 'a', typeName: 'INT'),
-        ColumnDefinition(columnName: 'b', typeName: 'TEXT'),
-      ]),
+      CreateTableStatement(
+        tableName: 'my_tbl',
+        columns: [
+          ColumnDefinition(columnName: 'a', typeName: 'INT'),
+          ColumnDefinition(columnName: 'b', typeName: 'TEXT'),
+        ],
+      ),
     );
   });
 
@@ -65,10 +68,7 @@ void main() {
             typeName: 'VARCHAR',
             constraints: [
               NullColumnConstraint(null),
-              CollateConstraint(
-                null,
-                'BINARY',
-              ),
+              CollateConstraint(null, 'BINARY'),
               ForeignKeyColumnConstraint(
                 null,
                 ForeignKeyClause(
@@ -83,7 +83,7 @@ void main() {
                 ),
               ),
             ],
-          )
+          ),
         ],
         tableConstraints: [
           KeyClause(
@@ -114,7 +114,7 @@ void main() {
                 InitialDeferrableMode.immediate,
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -163,15 +163,21 @@ void main() {
         tableName: 'a',
         columns: [
           ColumnDefinition(columnName: 'a', typeName: 'TEXT'),
-          ColumnDefinition(columnName: 'b', typeName: 'TEXT', constraints: [
-            GeneratedAs(expr, stored: true),
-          ]),
-          ColumnDefinition(columnName: 'c', typeName: 'TEXT', constraints: [
-            GeneratedAs(expr, stored: false),
-          ]),
-          ColumnDefinition(columnName: 'd', typeName: 'TEXT', constraints: [
-            GeneratedAs(expr, stored: false),
-          ])
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: 'TEXT',
+            constraints: [GeneratedAs(expr, stored: true)],
+          ),
+          ColumnDefinition(
+            columnName: 'c',
+            typeName: 'TEXT',
+            constraints: [GeneratedAs(expr, stored: false)],
+          ),
+          ColumnDefinition(
+            columnName: 'd',
+            typeName: 'TEXT',
+            constraints: [GeneratedAs(expr, stored: false)],
+          ),
         ],
       ),
     );
@@ -180,17 +186,20 @@ void main() {
   test('parses MAPPED BY constraints when in drift mode', () {
     testStatement(
       'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)',
-      CreateTableStatement(tableName: 'a', columns: [
-        ColumnDefinition(
-          columnName: 'b',
-          typeName: null,
-          constraints: [
-            NotNull(null),
-            MappedBy(null, inlineDart('Mapper()')),
-            PrimaryKeyColumn(null),
-          ],
-        ),
-      ]),
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: null,
+            constraints: [
+              NotNull(null),
+              MappedBy(null, inlineDart('Mapper()')),
+              PrimaryKeyColumn(null),
+            ],
+          ),
+        ],
+      ),
       driftMode: true,
     );
   });
@@ -204,12 +213,7 @@ void main() {
           ColumnDefinition(
             columnName: 'b',
             typeName: 'INTEGER',
-            constraints: [
-              JsonKey(
-                null,
-                identifier('my_json_key'),
-              ),
-            ],
+            constraints: [JsonKey(null, identifier('my_json_key'))],
           ),
         ],
       ),
@@ -222,12 +226,7 @@ void main() {
       'CREATE TABLE a (b INTEGER) WITH MyExistingClass',
       CreateTableStatement(
         tableName: 'a',
-        columns: [
-          ColumnDefinition(
-            columnName: 'b',
-            typeName: 'INTEGER',
-          ),
-        ],
+        columns: [ColumnDefinition(columnName: 'b', typeName: 'INTEGER')],
         driftTableName: DriftTableName(
           overriddenDataClassName: 'MyExistingClass',
           useExistingDartClass: true,
@@ -261,11 +260,7 @@ void main() {
         ifNotExists: true,
         tableName: 'foo',
         moduleName: 'bar',
-        arguments: [
-          fakeSpan('a'),
-          fakeSpan('b()'),
-          fakeSpan('c'),
-        ],
+        arguments: [fakeSpan('a'), fakeSpan('b()'), fakeSpan('c')],
         driftTableName: DriftTableName(
           overriddenDataClassName: 'drift',
           useExistingDartClass: false,
@@ -290,23 +285,33 @@ void main() {
     final engine = SqlEngine();
     expect(
       engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE VIRTUAL TABLE foo USING bar(a,)')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE VIRTUAL TABLE foo USING bar(a,)',
+          )
           .errors,
       contains(
-        const TypeMatcher<ParsingError>()
-            .having((e) => e.token.lexeme, 'fails at closing bracket', ')'),
+        const TypeMatcher<ParsingError>().having(
+          (e) => e.token.lexeme,
+          'fails at closing bracket',
+          ')',
+        ),
       ),
     );
 
     expect(
       engine
-          .parse(ParserEntrypoint.statement,
-              'CREATE VIRTUAL TABLE foo USING bar(a,,b)')
+          .parse(
+            ParserEntrypoint.statement,
+            'CREATE VIRTUAL TABLE foo USING bar(a,,b)',
+          )
           .errors,
       contains(
-        const TypeMatcher<ParsingError>()
-            .having((e) => e.token.lexeme, 'fails at next comma', ','),
+        const TypeMatcher<ParsingError>().having(
+          (e) => e.token.lexeme,
+          'fails at next comma',
+          ',',
+        ),
       ),
     );
   });
@@ -316,9 +321,7 @@ void main() {
       'CREATE TABLE a (c INTEGER) STRICT, WITHOUT ROWID, STRICT',
       CreateTableStatement(
         tableName: 'a',
-        columns: [
-          ColumnDefinition(columnName: 'c', typeName: 'INTEGER'),
-        ],
+        columns: [ColumnDefinition(columnName: 'c', typeName: 'INTEGER')],
         withoutRowId: true,
         isStrict: true,
       ),
@@ -332,16 +335,20 @@ void main() {
       CreateTableStatement(
         tableName: 'a',
         columns: [
-          ColumnDefinition(columnName: 'b', typeName: 'INTEGER', constraints: [
-            NotNull(null),
-            Default(
-              null,
-              UnaryExpression(
-                Token(TokenType.minus, fakeSpan('-')),
-                NumericLiteral(1),
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: 'INTEGER',
+            constraints: [
+              NotNull(null),
+              Default(
+                null,
+                UnaryExpression(
+                  Token(TokenType.minus, fakeSpan('-')),
+                  NumericLiteral(1),
+                ),
               ),
-            )
-          ])
+            ],
+          ),
         ],
       ),
     );

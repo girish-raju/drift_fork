@@ -5,7 +5,9 @@ part of 'manager.dart';
 /// This function is used internally by generated code and should not be used directly.
 // ignore: non_constant_identifier_names
 String $_aliasNameGenerator(
-    GeneratedColumn currentColumn, GeneratedColumn referencedColumn) {
+  GeneratedColumn currentColumn,
+  GeneratedColumn referencedColumn,
+) {
   return '${currentColumn.tableName}__${currentColumn.name}__${referencedColumn.tableName}__${referencedColumn.name}';
 }
 
@@ -253,8 +255,11 @@ String $_aliasNameGenerator(
 /// }
 /// ```
 /// from above, we will get a manager that has prefetchedData included.
-base class BaseReferences<$Database extends GeneratedDatabase,
-    $Table extends Table, $Dataclass> {
+base class BaseReferences<
+  $Database extends GeneratedDatabase,
+  $Table extends Table,
+  $Dataclass
+> {
   /// The database instance
   // ignore: non_constant_identifier_names
   final $Database $_db;
@@ -290,13 +295,38 @@ base class BaseReferences<$Database extends GeneratedDatabase,
 }
 
 /// Type definition for a function that transforms the state of a manager
-typedef StateTransformer = T Function<
-    T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state);
+typedef StateTransformer =
+    T Function<
+      T extends TableManagerState<
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic,
+        dynamic
+      >
+    >(T $state);
 
 T _defaultStateTransformer<
-    T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state) {
+  T extends TableManagerState<
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic
+  >
+>(T $state) {
   return $state;
 }
 
@@ -315,14 +345,15 @@ class PrefetchHooks {
 
   /// A function which will return list of references for each prefetch data source.
   final Future<List<List<MultiTypedResultEntry>>> Function(List<TypedResult>)?
-      getPrefetchedDataCallback;
+  getPrefetchedDataCallback;
 
   /// Create a [PrefetchHooks] object
-  PrefetchHooks(
-      {required this.db,
-      StateTransformer? addJoins,
-      this.explicitlyWatchedTables = const [],
-      this.getPrefetchedDataCallback}) {
+  PrefetchHooks({
+    required this.db,
+    StateTransformer? addJoins,
+    this.explicitlyWatchedTables = const [],
+    this.getPrefetchedDataCallback,
+  }) {
     withJoins = addJoins ?? _defaultStateTransformer;
   }
 
@@ -332,17 +363,17 @@ class PrefetchHooks {
     if (getPrefetchedDataCallback == null) {
       return items;
     }
-    return await db.transaction(
-      () async {
-        final prefetchedData = await getPrefetchedDataCallback!(items);
-        return _addPrefetchedDataToRows(items, prefetchedData);
-      },
-    );
+    return await db.transaction(() async {
+      final prefetchedData = await getPrefetchedDataCallback!(items);
+      return _addPrefetchedDataToRows(items, prefetchedData);
+    });
   }
 
   /// Helper function to insert the prefetched data into the TypedResult objects.
-  List<TypedResult> _addPrefetchedDataToRows(List<TypedResult> rows,
-      List<List<MultiTypedResultEntry<dynamic>>> prefetches) {
+  List<TypedResult> _addPrefetchedDataToRows(
+    List<TypedResult> rows,
+    List<List<MultiTypedResultEntry<dynamic>>> prefetches,
+  ) {
     final results = <TypedResult>[];
 
     /// Iterate over each row, get the prefetched data for that row, and add it to the row.
@@ -379,9 +410,12 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
   final String entityName;
 
   @override
-  FutureOr<$Dataclass> map(Map<String, dynamic> data, {String? tablePrefix}) =>
-      throw UnsupportedError(
-          "A MultiTypedResultKey cannot be used to parse the raw data from a SQL query");
+  FutureOr<$Dataclass> map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) => throw UnsupportedError(
+    "A MultiTypedResultKey cannot be used to parse the raw data from a SQL query",
+  );
 
   @override
   final String aliasedName;
@@ -398,19 +432,20 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
     );
   }
 
-  const MultiTypedResultKey._(
-      {required this.$columns,
-      required this.asDslTable,
-      required this.attachedDatabase,
-      required this.columnsByName,
-      required this.entityName,
-      required this.aliasedName});
+  const MultiTypedResultKey._({
+    required this.$columns,
+    required this.asDslTable,
+    required this.attachedDatabase,
+    required this.columnsByName,
+    required this.entityName,
+    required this.aliasedName,
+  });
 
   /// Create a [MultiTypedResultKey] from a table
-  static MultiTypedResultKey<$Table, List<$Dataclass>>
-      fromTable<$Table extends Table, $Dataclass>(
-          TableInfo<$Table, $Dataclass> table,
-          {required String aliasName}) {
+  static MultiTypedResultKey<$Table, List<$Dataclass>> fromTable<
+    $Table extends Table,
+    $Dataclass
+  >(TableInfo<$Table, $Dataclass> table, {required String aliasName}) {
     return MultiTypedResultKey<$Table, List<$Dataclass>>._(
       $columns: table.$columns,
       asDslTable: table.asDslTable,
@@ -490,27 +525,34 @@ class MultiTypedResultEntry<T> {
 /// This function is used by the generated code and should not be used directly.
 // ignore: non_constant_identifier_names
 Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
-        $CurrentDataclass, $CurrentTable extends Table, $ReferencedDataclass>(
-    {required ProcessedTableManager<
-                dynamic,
-                dynamic,
-                $ReferencedDataclass,
-                dynamic,
-                dynamic,
-                dynamic,
-                dynamic,
-                dynamic,
-                dynamic,
-                $ReferencedDataclass,
-                dynamic>
-            Function(TypedResult)
-        managerFromTypedResult,
-    required MultiTypedResultKey referencedTable,
-    required List<TypedResult> typedResults,
-    required TableInfo<$CurrentTable, $CurrentDataclass> currentTable,
-    required Iterable<$ReferencedDataclass> Function(
-            $CurrentDataclass item, List<$ReferencedDataclass> referencedItems)
-        referencedItemsForCurrentItem}) async {
+  $CurrentDataclass,
+  $CurrentTable extends Table,
+  $ReferencedDataclass
+>({
+  required ProcessedTableManager<
+    dynamic,
+    dynamic,
+    $ReferencedDataclass,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    $ReferencedDataclass,
+    dynamic
+  >
+  Function(TypedResult)
+  managerFromTypedResult,
+  required MultiTypedResultKey referencedTable,
+  required List<TypedResult> typedResults,
+  required TableInfo<$CurrentTable, $CurrentDataclass> currentTable,
+  required Iterable<$ReferencedDataclass> Function(
+    $CurrentDataclass item,
+    List<$ReferencedDataclass> referencedItems,
+  )
+  referencedItemsForCurrentItem,
+}) async {
   if (typedResults.isEmpty) {
     return [];
   } else {
@@ -520,20 +562,20 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
     final manager = managers.reduce((value, element) {
       if (element.$state.filter != null) {
         return value._filter(
-            (_) => element.$state.filter!, _BooleanOperator.or);
+          (_) => element.$state.filter!,
+          _BooleanOperator.or,
+        );
       } else {
         return value;
       }
     });
 
-    return manager.get(distinct: true).then(
-      (value) {
-        return typedResults.map((e) {
-          final item = e.readTable(currentTable);
-          final refs = referencedItemsForCurrentItem(item, value).toList();
-          return MultiTypedResultEntry(key: referencedTable, value: refs);
-        }).toList();
-      },
-    );
+    return manager.get(distinct: true).then((value) {
+      return typedResults.map((e) {
+        final item = e.readTable(currentTable);
+        final refs = referencedItemsForCurrentItem(item, value).toList();
+        return MultiTypedResultEntry(key: referencedTable, value: refs);
+      }).toList();
+    });
   }
 }

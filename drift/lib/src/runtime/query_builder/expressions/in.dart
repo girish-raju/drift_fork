@@ -29,7 +29,7 @@ final class _InExpression<T extends Object> extends _BaseInExpression {
   final List<Expression<T>> _values;
 
   _InExpression(Expression expression, this._values, bool not)
-      : super(expression, not);
+    : super(expression, not);
 
   @override
   void _writeValues(GenerationContext context) {
@@ -61,7 +61,7 @@ final class _InSelectExpression extends _BaseInExpression {
   final BaseSelectStatement _select;
 
   _InSelectExpression(this._select, Expression expression, bool not)
-      : super(expression, not);
+    : super(expression, not);
 
   @override
   void _writeValues(GenerationContext context) {

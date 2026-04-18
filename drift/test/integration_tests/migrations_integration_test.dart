@@ -14,9 +14,10 @@ import '../generated/todos.dart';
 void main() {
   test('change column types', () async {
     // Create todos table with category as text (it's an int? in Dart).
-    final executor = NativeDatabase.memory(setup: (db) {
-      db
-        ..execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db
+          ..execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -27,12 +28,17 @@ void main() {
           UNIQUE(title, category)
         );
       ''')
-        ..execute('CREATE INDEX my_index ON todos (content);')
-        ..execute('INSERT INTO todos (title, content, target_date, category) '
-            "VALUES ('title', 'content', 0, '12')")
-        ..execute('CREATE VIEW todo_categories AS SELECT category FROM todos;')
-        ..execute('PRAGMA foreign_keys = ON');
-    });
+          ..execute('CREATE INDEX my_index ON todos (content);')
+          ..execute(
+            'INSERT INTO todos (title, content, target_date, category) '
+            "VALUES ('title', 'content', 0, '12')",
+          )
+          ..execute(
+            'CREATE VIEW todo_categories AS SELECT category FROM todos;',
+          )
+          ..execute('PRAGMA foreign_keys = ON');
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -59,20 +65,23 @@ void main() {
     expect(item.category, 12);
 
     // We enabled foreign keys, so they should still be enabled now.
-    final foreignKeysResult =
-        await db.customSelect('PRAGMA foreign_keys').getSingle();
+    final foreignKeysResult = await db
+        .customSelect('PRAGMA foreign_keys')
+        .getSingle();
     expect(foreignKeysResult.read<bool>('foreign_keys'), isTrue);
 
     // Similarly, the legacy_alter_table behavior should be disabled.
-    final legacyAlterTable =
-        await db.customSelect('PRAGMA legacy_alter_table').getSingle();
+    final legacyAlterTable = await db
+        .customSelect('PRAGMA legacy_alter_table')
+        .getSingle();
     expect(legacyAlterTable.read<bool>('legacy_alter_table'), isFalse);
   });
 
   test('rename columns', () async {
     // Create todos table with category as category_old
-    final executor = NativeDatabase.memory(setup: (db) {
-      db.execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db.execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -83,9 +92,12 @@ void main() {
         );
       ''');
 
-      db.execute('INSERT INTO todos (title, content, target_date) '
-          "VALUES ('title', 'content', 0)");
-    });
+        db.execute(
+          'INSERT INTO todos (title, content, target_date) '
+          "VALUES ('title', 'content', 0)",
+        );
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -117,8 +129,9 @@ void main() {
 
   test('delete column', () async {
     // Create todos table with an additional column
-    final executor = NativeDatabase.memory(setup: (db) {
-      db.execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db.execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -130,9 +143,12 @@ void main() {
         );
       ''');
 
-      db.execute('INSERT INTO todos (title, content, target_date) '
-          "VALUES ('title', 'content', 0)");
-    });
+        db.execute(
+          'INSERT INTO todos (title, content, target_date) '
+          "VALUES ('title', 'content', 0)",
+        );
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -146,10 +162,7 @@ void main() {
         .map((row) => row.read<String>('sql'))
         .getSingle();
 
-    expect(
-      createStmt,
-      isNot(contains('additional_column')),
-    );
+    expect(createStmt, isNot(contains('additional_column')));
 
     final item = await db.select(db.todosTable).getSingle();
     expect(item.title, 'title');
@@ -157,8 +170,9 @@ void main() {
 
   test('delete column with dropColumn', () async {
     // Create todos table with an additional column
-    final executor = NativeDatabase.memory(setup: (db) {
-      db.execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db.execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -170,9 +184,12 @@ void main() {
         );
       ''');
 
-      db.execute('INSERT INTO todos (title, content, target_date) '
-          "VALUES ('title', 'content', 0)");
-    });
+        db.execute(
+          'INSERT INTO todos (title, content, target_date) '
+          "VALUES ('title', 'content', 0)",
+        );
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -186,10 +203,7 @@ void main() {
         .map((row) => row.read<String>('sql'))
         .getSingle();
 
-    expect(
-      createStmt,
-      isNot(contains('additional_column')),
-    );
+    expect(createStmt, isNot(contains('additional_column')));
 
     final item = await db.select(db.todosTable).getSingle();
     expect(item.title, 'title');
@@ -197,8 +211,9 @@ void main() {
 
   test('rename tables', () async {
     // Create todos table with old name
-    final executor = NativeDatabase.memory(setup: (db) {
-      db.execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db.execute('''
         CREATE TABLE todos_old_name (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -208,9 +223,12 @@ void main() {
         );
       ''');
 
-      db.execute('INSERT INTO todos_old_name (title, content, target_date) '
-          "VALUES ('title', 'content', 0)");
-    });
+        db.execute(
+          'INSERT INTO todos_old_name (title, content, target_date) '
+          "VALUES ('title', 'content', 0)",
+        );
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -226,9 +244,10 @@ void main() {
   });
 
   test('add columns with default value', () async {
-    final executor = NativeDatabase.memory(setup: (db) {
-      // Create todos table without content column
-      db.execute('''
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        // Create todos table without content column
+        db.execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -238,9 +257,12 @@ void main() {
         );
       ''');
 
-      db.execute('INSERT INTO todos (title, target_date, category) VALUES '
-          "('Title', 0, 0)");
-    });
+        db.execute(
+          'INSERT INTO todos (title, target_date, category) VALUES '
+          "('Title', 0, 0)",
+        );
+      },
+    );
 
     final db = TodoDb(executor);
     db.migration = MigrationStrategy(
@@ -256,8 +278,9 @@ void main() {
             ),
           );
 
-          await db
-              .customStatement("DELETE FROM todos WHERE content != 'content';");
+          await db.customStatement(
+            "DELETE FROM todos WHERE content != 'content';",
+          );
         });
       },
     );
@@ -267,21 +290,26 @@ void main() {
   });
 
   test('alter table without rowid', () async {
-    final executor = NativeDatabase.memory(setup: (db) {
-      db.execute(
-          'CREATE TABLE no_ids (old BLOB NOT NULL PRIMARY KEY) WITHOUT ROWID');
-    });
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db.execute(
+          'CREATE TABLE no_ids (old BLOB NOT NULL PRIMARY KEY) WITHOUT ROWID',
+        );
+      },
+    );
 
     final db = CustomTablesDb(executor);
     db.migration = MigrationStrategy(
       onCreate: (m) async {
-        await m.alterTable(TableMigration(
-          db.noIds,
-          columnTransformer: {
-            db.noIds.payload: const CustomExpression('old'),
-          },
-          newColumns: [db.noIds.payload],
-        ));
+        await m.alterTable(
+          TableMigration(
+            db.noIds,
+            columnTransformer: {
+              db.noIds.payload: const CustomExpression('old'),
+            },
+            newColumns: [db.noIds.payload],
+          ),
+        );
       },
     );
     addTearDown(db.close);
@@ -298,17 +326,20 @@ void main() {
     addTearDown(db.close);
 
     await db.categories.insertOne(
-        CategoriesCompanion.insert(description: 'My Initial Description'));
+      CategoriesCompanion.insert(description: 'My Initial Description'),
+    );
 
     final migrator = db.createMigrator();
     await migrator.drop(db.categoryTodoCountView);
     await migrator.drop(db.todoWithCategoryView);
-    await migrator.alterTable(TableMigration(
-      db.categories,
-      columnTransformer: {
-        db.categories.description: db.categories.description.lower(),
-      },
-    ));
+    await migrator.alterTable(
+      TableMigration(
+        db.categories,
+        columnTransformer: {
+          db.categories.description: db.categories.description.lower(),
+        },
+      ),
+    );
     await migrator.recreateAllViews();
 
     final value = await db.categories.select().getSingle();
@@ -319,18 +350,21 @@ void main() {
     final db = TodoDb(NativeDatabase.memory());
     addTearDown(db.close);
 
-    await db.todosTable
-        .insertOne(TodosTableCompanion.insert(content: 'my content'));
+    await db.todosTable.insertOne(
+      TodosTableCompanion.insert(content: 'my content'),
+    );
 
     final migrator = db.createMigrator();
     await migrator.drop(db.categoryTodoCountView);
     await migrator.drop(db.todoWithCategoryView);
-    await migrator.alterTable(TableMigration(
-      db.todosTable,
-      columnTransformer: {
-        db.todosTable.content: Variable('old: ') + db.todosTable.content,
-      },
-    ));
+    await migrator.alterTable(
+      TableMigration(
+        db.todosTable,
+        columnTransformer: {
+          db.todosTable.content: Variable('old: ') + db.todosTable.content,
+        },
+      ),
+    );
     await migrator.recreateAllViews();
 
     final value = await db.todosTable.select().getSingle();
@@ -351,45 +385,48 @@ void main() {
       expect(nativeDb.userVersion, isZero);
     });
 
-    test('do not change the user version when in a nested transaction',
-        () async {
+    test(
+      'do not change the user version when in a nested transaction',
+      () async {
+        final nativeDb = sqlite3.openInMemory();
+        var db = _TestDatabase(
+          NativeDatabase.opened(nativeDb, closeUnderlyingOnClose: false),
+          1,
+          MigrationStrategy(),
+        );
+        await db.doWhenOpened((e) {});
+        await db.close();
+
+        db = _TestDatabase(
+          NativeDatabase.opened(nativeDb),
+          2,
+          MigrationStrategy(
+            onCreate: (m) => Future.error('Should not call onCreate'),
+            onUpgrade: expectAsync3((m, from, to) {
+              expect(from, 1);
+              expect(to, 2);
+
+              return db.transaction(() => Future.error('error in transaction'));
+            }),
+          ),
+        );
+        addTearDown(db.close);
+
+        await expectLater(
+          db.doWhenOpened((_) {}),
+          throwsA('error in transaction'),
+        );
+        expect(nativeDb.userVersion, 1);
+      },
+    );
+
+    test('can set user version in callback', () async {
       final nativeDb = sqlite3.openInMemory();
       var db = _TestDatabase(
         NativeDatabase.opened(nativeDb, closeUnderlyingOnClose: false),
         1,
         MigrationStrategy(),
       );
-      await db.doWhenOpened((e) {});
-      await db.close();
-
-      db = _TestDatabase(
-        NativeDatabase.opened(nativeDb),
-        2,
-        MigrationStrategy(
-          onCreate: (m) => Future.error('Should not call onCreate'),
-          onUpgrade: expectAsync3(
-            (m, from, to) {
-              expect(from, 1);
-              expect(to, 2);
-
-              return db.transaction(() => Future.error('error in transaction'));
-            },
-          ),
-        ),
-      );
-      addTearDown(db.close);
-
-      await expectLater(
-          db.doWhenOpened((_) {}), throwsA('error in transaction'));
-      expect(nativeDb.userVersion, 1);
-    });
-
-    test('can set user version in callback', () async {
-      final nativeDb = sqlite3.openInMemory();
-      var db = _TestDatabase(
-          NativeDatabase.opened(nativeDb, closeUnderlyingOnClose: false),
-          1,
-          MigrationStrategy());
       await db.doWhenOpened((e) {});
 
       db = _TestDatabase(
@@ -405,14 +442,17 @@ void main() {
             await db.customStatement('pragma user_version = 3');
 
             await db.transaction(
-                () => Future<void>.error('Error after partial migration'));
+              () => Future<void>.error('Error after partial migration'),
+            );
           }),
         ),
       );
       addTearDown(db.close);
 
       await expectLater(
-          db.doWhenOpened((_) {}), throwsA('Error after partial migration'));
+        db.doWhenOpened((_) {}),
+        throwsA('Error after partial migration'),
+      );
       expect(nativeDb.userVersion, 3);
     });
   });
@@ -434,7 +474,9 @@ void main() {
       );
 
       expect(
-          db.customSelect('SELECT 1;').get(), throwsA(isA<SchemaMismatch>()));
+        db.customSelect('SELECT 1;').get(),
+        throwsA(isA<SchemaMismatch>()),
+      );
     });
 
     test('does not throw for a matching schema', () {
@@ -494,7 +536,9 @@ void main() {
       if (currentSchema != maxSchema - 1) {
         // Opening the database should throw this exception
         await expectLater(
-            db.customSelect('SELECT 1').get(), throwsA(expectedException));
+          db.customSelect('SELECT 1').get(),
+          throwsA(expectedException),
+        );
       } else {
         // The last migration should work
         await expectLater(db.customSelect('SELECT 1').get(), completes);
@@ -511,18 +555,19 @@ void main() {
 
     final db = TodoDb(NativeDatabase.opened(underlying))
       ..schemaVersion = 5
-      ..migration =
-          MigrationStrategy(onUpgrade: VersionedSchema.stepByStepHelper(
-        step: (version, database) async {
-          await database.customStatement('CREATE TABLE t$version (id INT);');
+      ..migration = MigrationStrategy(
+        onUpgrade: VersionedSchema.stepByStepHelper(
+          step: (version, database) async {
+            await database.customStatement('CREATE TABLE t$version (id INT);');
 
-          if (version == 3) {
-            throw expectedException;
-          }
+            if (version == 3) {
+              throw expectedException;
+            }
 
-          return version + 1;
-        },
-      ));
+            return version + 1;
+          },
+        ),
+      );
 
     await expectLater(
       db.customSelect('SELECT 1').get(),
@@ -538,29 +583,33 @@ void main() {
 
     final db = TodoDb(NativeDatabase.opened(underlying))
       ..schemaVersion = 3
-      ..migration =
-          MigrationStrategy(onUpgrade: VersionedSchema.stepByStepHelper(
-        step: (version, database) async {
-          return version + 1;
-        },
-      ));
+      ..migration = MigrationStrategy(
+        onUpgrade: VersionedSchema.stepByStepHelper(
+          step: (version, database) async {
+            return version + 1;
+          },
+        ),
+      );
 
     await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
     expect(underlying.userVersion, 5);
   });
 
-  test("alterTable works for databases that can't set legacy alter table",
-      () async {
-    final interceptor = _NoLegacyAlterTable();
-    final db = TodoDb(NativeDatabase.memory().interceptWith(interceptor));
-    addTearDown(db.close);
+  test(
+    "alterTable works for databases that can't set legacy alter table",
+    () async {
+      final interceptor = _NoLegacyAlterTable();
+      final db = TodoDb(NativeDatabase.memory().interceptWith(interceptor));
+      addTearDown(db.close);
 
-    final user = await db.users.insertReturning(
-        UsersCompanion.insert(name: 'test user', profilePicture: Uint8List(0)));
-    await Migrator(db).alterTable(TableMigration(db.users));
-    expect(await db.users.all().get(), [user]);
-    expect(interceptor.didPreventLegacyAlterTable, isTrue);
-  });
+      final user = await db.users.insertReturning(
+        UsersCompanion.insert(name: 'test user', profilePicture: Uint8List(0)),
+      );
+      await Migrator(db).alterTable(TableMigration(db.users));
+      expect(await db.users.all().get(), [user]);
+      expect(interceptor.didPreventLegacyAlterTable, isTrue);
+    },
+  );
 }
 
 class _TestDatabase extends GeneratedDatabase {
@@ -581,7 +630,10 @@ class _NoLegacyAlterTable extends QueryInterceptor {
 
   @override
   Future<void> runCustom(
-      QueryExecutor executor, String statement, List<Object?> args) {
+    QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) {
     if (statement.contains('legacy_alter_table') && statement.contains('=')) {
       didPreventLegacyAlterTable = true;
       throw 'not allowed';

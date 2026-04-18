@@ -35,10 +35,7 @@ void main() {
 
     final transaction = db.transaction(() async {
       stream = db
-          .customSelect(
-            'SELECT _mocked_',
-            readsFrom: {db.users},
-          )
+          .customSelect('SELECT _mocked_', readsFrom: {db.users})
           .map((r) => r.read<int>('_mocked_'))
           .watchSingleOrNull();
       didSetUpStream.complete();
@@ -153,11 +150,14 @@ void main() {
         verify(executor.beginTransaction());
         final cause = Exception('revert inner');
 
-        await expectLater(db.transaction(() async {
-          // Some bogus query so that the transaction is actually opened.
-          await db.select(db.todosTable).get();
-          throw cause;
-        }), throwsA(cause));
+        await expectLater(
+          db.transaction(() async {
+            // Some bogus query so that the transaction is actually opened.
+            await db.select(db.todosTable).get();
+            throw cause;
+          }),
+          throwsA(cause),
+        );
 
         verify(outerTransactions.beginTransaction());
         verify(innerTransactions.ensureOpen(any));
@@ -207,8 +207,9 @@ void main() {
 
     // After the transaction completes, the queries should be updated
     verify(
-      streamQueries.handleTableUpdates(
-          {TableUpdate.onTable(db.users, kind: UpdateKind.update)}),
+      streamQueries.handleTableUpdates({
+        TableUpdate.onTable(db.users, kind: UpdateKind.update),
+      }),
     ).called(1);
     verify(executor.transactions.send());
   });
@@ -229,34 +230,44 @@ void main() {
     const cause = 'original cause';
 
     final transactions = executor.transactions;
-    when(transactions.rollback())
-        .thenAnswer((_) => Future.error(rollbackException));
+    when(
+      transactions.rollback(),
+    ).thenAnswer((_) => Future.error(rollbackException));
 
     return expectLater(
       db.transaction(() => Future<void>.error(cause)),
-      throwsA(isA<CouldNotRollBackException>()
-          .having((e) => e.cause, 'cause', cause)
-          .having((e) => e.exception, 'exception', rollbackException)),
+      throwsA(
+        isA<CouldNotRollBackException>()
+            .having((e) => e.cause, 'cause', cause)
+            .having((e) => e.exception, 'exception', rollbackException),
+      ),
     );
   });
 
-  test('reports original exception when rollback throws after failed commit',
-      () {
-    const rollbackException = 'rollback';
-    const commitException = 'commit';
+  test(
+    'reports original exception when rollback throws after failed commit',
+    () {
+      const rollbackException = 'rollback';
+      const commitException = 'commit';
 
-    final transactions = executor.transactions;
-    when(transactions.send()).thenAnswer((_) => Future.error(commitException));
-    when(transactions.rollback())
-        .thenAnswer((_) => Future.error(rollbackException));
+      final transactions = executor.transactions;
+      when(
+        transactions.send(),
+      ).thenAnswer((_) => Future.error(commitException));
+      when(
+        transactions.rollback(),
+      ).thenAnswer((_) => Future.error(rollbackException));
 
-    return expectLater(
-      db.transaction(Future.value),
-      throwsA(isA<CouldNotRollBackException>()
-          .having((e) => e.cause, 'cause', commitException)
-          .having((e) => e.exception, 'exception', rollbackException)),
-    );
-  });
+      return expectLater(
+        db.transaction(Future.value),
+        throwsA(
+          isA<CouldNotRollBackException>()
+              .having((e) => e.cause, 'cause', commitException)
+              .having((e) => e.exception, 'exception', rollbackException),
+        ),
+      );
+    },
+  );
 
   group('statements run in correct zone', () {
     // Statements used to run in the executor of the zone that created them, but
@@ -264,8 +275,9 @@ void main() {
     // the database operation (https://github.com/simolus3/drift/issues/2873).
 
     test('select', () async {
-      when(executor.runSelect(any, any))
-          .thenAnswer((_) => Future.error('should run select in transaction'));
+      when(
+        executor.runSelect(any, any),
+      ).thenAnswer((_) => Future.error('should run select in transaction'));
 
       final simpleQuery = db.users.select();
       final joinedQuery = db.selectOnly(db.users)..addColumns([db.users.id]);
@@ -279,21 +291,27 @@ void main() {
     });
 
     test('update', () async {
-      when(executor.runUpdate(any, any))
-          .thenAnswer((_) => Future.error('should run update in transaction'));
+      when(
+        executor.runUpdate(any, any),
+      ).thenAnswer((_) => Future.error('should run update in transaction'));
 
       final stmt = db.update(db.users);
       await db.transaction(() async {
         await stmt.write(UsersCompanion(isAwesome: Value(true)));
       });
 
-      verify(executor.transactions
-          .runUpdate('UPDATE "users" SET "is_awesome" = ?;', [1]));
+      verify(
+        executor.transactions.runUpdate(
+          'UPDATE "users" SET "is_awesome" = ?;',
+          [1],
+        ),
+      );
     });
 
     test('delete', () async {
-      when(executor.runDelete(any, any))
-          .thenAnswer((_) => Future.error('should run delete in transaction'));
+      when(
+        executor.runDelete(any, any),
+      ).thenAnswer((_) => Future.error('should run delete in transaction'));
 
       final stmt = db.delete(db.users);
       await db.transaction(() async {
@@ -304,24 +322,34 @@ void main() {
     });
 
     test('insert', () async {
-      when(executor.runSelect(any, any))
-          .thenAnswer((_) => Future.error('should run select in transaction'));
-      when(executor.runInsert(any, any))
-          .thenAnswer((_) => Future.error('should run delete in transaction'));
+      when(
+        executor.runSelect(any, any),
+      ).thenAnswer((_) => Future.error('should run select in transaction'));
+      when(
+        executor.runInsert(any, any),
+      ).thenAnswer((_) => Future.error('should run delete in transaction'));
 
       final stmt = db.into(db.categories);
 
       await db.transaction(() async {
         await stmt.insert(CategoriesCompanion.insert(description: 'test'));
         await stmt.insertReturningOrNull(
-            CategoriesCompanion.insert(description: 'test2'));
+          CategoriesCompanion.insert(description: 'test2'),
+        );
       });
 
-      verify(executor.transactions
-          .runInsert('INSERT INTO "categories" ("desc") VALUES (?)', ['test']));
-      verify(executor.transactions.runSelect(
+      verify(
+        executor.transactions.runInsert(
+          'INSERT INTO "categories" ("desc") VALUES (?)',
+          ['test'],
+        ),
+      );
+      verify(
+        executor.transactions.runSelect(
           'INSERT INTO "categories" ("desc") VALUES (?) RETURNING *',
-          ['test2']));
+          ['test2'],
+        ),
+      );
     });
   });
 }

@@ -111,8 +111,11 @@ class DriftIsolate {
       singleClientMode: singleClientMode,
     );
 
-    return DatabaseConnection(connection.executor,
-        streamQueries: connection.streamQueries, connectionData: this);
+    return DatabaseConnection(
+      connection.executor,
+      streamQueries: connection.streamQueries,
+      connectionData: this,
+    );
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s
@@ -247,10 +250,12 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
       // manually forward stream query updates.
       final forwardToServer = tableUpdates().listen((localUpdates) {
         server.server.dispatchTableUpdateNotification(
-            NotifyTablesUpdated(localUpdates.toList()));
+          NotifyTablesUpdated(localUpdates.toList()),
+        );
       });
-      final forwardToLocal =
-          server.server.tableUpdateNotifications.listen((remoteUpdates) {
+      final forwardToLocal = server.server.tableUpdateNotifications.listen((
+        remoteUpdates,
+      ) {
         notifyUpdates(remoteUpdates.updates.toSet());
       });
       server.server.done.whenComplete(() {

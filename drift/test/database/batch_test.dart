@@ -19,13 +19,10 @@ void main() {
 
   test('runs generated statements', () async {
     await db.batch((b) {
-      b.insertAll(
-        db.todosTable,
-        [
-          TodosTableCompanion.insert(content: 'first'),
-          TodosTableCompanion.insert(content: 'second'),
-        ],
-      );
+      b.insertAll(db.todosTable, [
+        TodosTableCompanion.insert(content: 'first'),
+        TodosTableCompanion.insert(content: 'second'),
+      ]);
 
       b.update(db.users, const UsersCompanion(name: Value('new name')));
       b.update(
@@ -40,7 +37,9 @@ void main() {
       ]);
 
       b.deleteWhere<$CategoriesTable, Category>(
-          db.categories, (tbl) => tbl.id.equals(1));
+        db.categories,
+        (tbl) => tbl.id.equals(1),
+      );
       b.deleteAll(db.categories);
       b.delete(db.todosTable, const TodosTableCompanion(id: Value(RowId(3))));
 
@@ -102,15 +101,19 @@ void main() {
       );
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) '
-            'ON CONFLICT("id") DO UPDATE SET "id" = ?')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['description', 42])
-      ],
-    )));
+    verify(
+      executor.transactions.runBatched(
+        BatchedStatements(
+          [
+            ('INSERT INTO "categories" ("desc") VALUES (?) '
+                'ON CONFLICT("id") DO UPDATE SET "id" = ?'),
+          ],
+          [
+            ArgumentsForBatchedStatement(0, ['description', 42]),
+          ],
+        ),
+      ),
+    );
   });
 
   test('insertAllOnConflictUpdate', () async {
@@ -123,16 +126,20 @@ void main() {
       batch.insertAllOnConflictUpdate(db.categories, entries);
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) '
-            'ON CONFLICT("id") DO UPDATE SET "desc" = ?')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['first', 'first']),
-        ArgumentsForBatchedStatement(0, ['second', 'second']),
-      ],
-    )));
+    verify(
+      executor.transactions.runBatched(
+        BatchedStatements(
+          [
+            ('INSERT INTO "categories" ("desc") VALUES (?) '
+                'ON CONFLICT("id") DO UPDATE SET "desc" = ?'),
+          ],
+          [
+            ArgumentsForBatchedStatement(0, ['first', 'first']),
+            ArgumentsForBatchedStatement(0, ['second', 'second']),
+          ],
+        ),
+      ),
+    );
   });
 
   test('insert with where clause and excluded table', () async {
@@ -157,54 +164,74 @@ void main() {
       );
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) ON CONFLICT("id") '
-            'DO UPDATE SET "desc" = "categories"."desc", '
-            '"priority" = "excluded"."priority" WHERE "categories"."id" >= "excluded"."id"')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['first']),
-        ArgumentsForBatchedStatement(0, ['second']),
-      ],
-    )));
+    verify(
+      executor.transactions.runBatched(
+        BatchedStatements(
+          [
+            ('INSERT INTO "categories" ("desc") VALUES (?) ON CONFLICT("id") '
+                'DO UPDATE SET "desc" = "categories"."desc", '
+                '"priority" = "excluded"."priority" WHERE "categories"."id" >= "excluded"."id"'),
+          ],
+          [
+            ArgumentsForBatchedStatement(0, ['first']),
+            ArgumentsForBatchedStatement(0, ['second']),
+          ],
+        ),
+      ),
+    );
   });
 
-  test('can re-use an outer transaction', () async {
-    await db.transaction(() async {
-      await db.batch((b) {});
-    });
+  test(
+    'can re-use an outer transaction',
+    () async {
+      await db.transaction(() async {
+        await db.batch((b) {});
+      });
 
-    verifyNever(executor.runBatched(any));
-    verify(executor.transactions.runBatched(any));
-  }, onPlatform: const {
-    'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
-  });
+      verifyNever(executor.runBatched(any));
+      verify(executor.transactions.runBatched(any));
+    },
+    onPlatform: const {
+      'js': [
+        Skip('Blocked by https://github.com/dart-lang/mockito/issues/198'),
+      ],
+    },
+  );
 
   test('supports async batch functions', () async {
     await db.batch((batch) async {
       batch.insert(
-          db.categories, CategoriesCompanion.insert(description: 'first'));
+        db.categories,
+        CategoriesCompanion.insert(description: 'first'),
+      );
 
       await Future<void>.delayed(Duration.zero);
 
       batch.insert(
-          db.categories, CategoriesCompanion.insert(description: 'second'));
+        db.categories,
+        CategoriesCompanion.insert(description: 'second'),
+      );
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      ['INSERT INTO "categories" ("desc") VALUES (?)'],
-      [
-        ArgumentsForBatchedStatement(0, ['first']),
-        ArgumentsForBatchedStatement(0, ['second']),
-      ],
-    )));
+    verify(
+      executor.transactions.runBatched(
+        BatchedStatements(
+          ['INSERT INTO "categories" ("desc") VALUES (?)'],
+          [
+            ArgumentsForBatchedStatement(0, ['first']),
+            ArgumentsForBatchedStatement(0, ['second']),
+          ],
+        ),
+      ),
+    );
   });
 
   test('updates stream queries', () async {
     await db.batch((b) {
       b.insert(
-          db.todosTable, const TodoEntry(id: RowId(3), content: 'content'));
+        db.todosTable,
+        const TodoEntry(id: RowId(3), content: 'content'),
+      );
 
       b.update(db.users, const UsersCompanion(name: Value('new user name')));
       b.replace(
@@ -226,15 +253,17 @@ void main() {
     );
   });
 
-  test('does not start a new transaction when running in a transaction',
-      () async {
-    await db.transaction(() async {
-      await db.batch((batch) {});
-      await db.batch((batch) {});
-    });
+  test(
+    'does not start a new transaction when running in a transaction',
+    () async {
+      await db.transaction(() async {
+        await db.batch((batch) {});
+        await db.batch((batch) {});
+      });
 
-    verify(executor.beginTransaction()).called(1);
-  });
+      verify(executor.beginTransaction()).called(1);
+    },
+  );
 
   test('starts a new transaction when not running in a transaction', () async {
     await db.batch((batch) {});
@@ -246,21 +275,27 @@ void main() {
     test('with simple select statement', () async {
       final query = db.select(db.categories);
       await db.batch((b) {
-        b.insertFromSelect(db.categories, query, columns: {
-          db.categories.description: db.categories.description,
-          db.categories.priority: db.categories.priority,
-        });
+        b.insertFromSelect(
+          db.categories,
+          query,
+          columns: {
+            db.categories.description: db.categories.description,
+            db.categories.priority: db.categories.priority,
+          },
+        );
       });
 
-      verify(executor.transactions.runBatched(BatchedStatements(
-        [
-          ('WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
-              '("desc", "priority") SELECT "desc", "priority" FROM _source')
-        ],
-        [
-          ArgumentsForBatchedStatement(0, []),
-        ],
-      )));
+      verify(
+        executor.transactions.runBatched(
+          BatchedStatements(
+            [
+              ('WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
+                  '("desc", "priority") SELECT "desc", "priority" FROM _source'),
+            ],
+            [ArgumentsForBatchedStatement(0, [])],
+          ),
+        ),
+      );
     });
 
     test('with join', () async {
@@ -269,33 +304,41 @@ void main() {
       final query = db.selectOnly(db.todosTable)
         ..join([
           innerJoin(
-              db.categories, db.categories.id.equalsExp(db.todosTable.category))
+            db.categories,
+            db.categories.id.equalsExp(db.todosTable.category),
+          ),
         ])
         ..groupBy([db.categories.id])
         ..addColumns([newDescription, db.categories.priority]);
 
       await db.batch((b) {
-        b.insertFromSelect(db.categories, query, columns: {
-          db.categories.description: newDescription,
-          db.categories.priority: db.categories.priority,
-        });
+        b.insertFromSelect(
+          db.categories,
+          query,
+          columns: {
+            db.categories.description: newDescription,
+            db.categories.priority: db.categories.priority,
+          },
+        );
       });
 
-      verify(executor.transactions.runBatched(BatchedStatements(
-        [
-          ('WITH _source AS (SELECT '
-              '"categories"."desc" || CAST(COUNT("todos"."id") AS TEXT) AS "c0", '
-              '"categories"."priority" AS "categories.priority" '
-              'FROM "todos" '
-              'INNER JOIN "categories" ON "categories"."id" = "todos"."category" '
-              'GROUP BY "categories"."id") '
-              'INSERT INTO "categories" ("desc", "priority") '
-              'SELECT "c0", "categories.priority" FROM _source')
-        ],
-        [
-          ArgumentsForBatchedStatement(0, []),
-        ],
-      )));
+      verify(
+        executor.transactions.runBatched(
+          BatchedStatements(
+            [
+              ('WITH _source AS (SELECT '
+                  '"categories"."desc" || CAST(COUNT("todos"."id") AS TEXT) AS "c0", '
+                  '"categories"."priority" AS "categories.priority" '
+                  'FROM "todos" '
+                  'INNER JOIN "categories" ON "categories"."id" = "todos"."category" '
+                  'GROUP BY "categories"."id") '
+                  'INSERT INTO "categories" ("desc", "priority") '
+                  'SELECT "c0", "categories.priority" FROM _source'),
+            ],
+            [ArgumentsForBatchedStatement(0, [])],
+          ),
+        ),
+      );
     });
 
     test('with on conflict clause', () async {
@@ -309,23 +352,23 @@ void main() {
             db.categories.priority: db.categories.priority,
           },
           onConflict: DoUpdate<$CategoriesTable, Category>(
-            (old) => CategoriesCompanion.custom(
-              description: old.description,
-            ),
+            (old) => CategoriesCompanion.custom(description: old.description),
           ),
         );
       });
 
-      verify(executor.transactions.runBatched(BatchedStatements(
-        [
-          ('WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
-              '("desc", "priority") SELECT "desc", "priority" FROM _source WHERE TRUE'
-              ' ON CONFLICT("id") DO UPDATE SET "desc" = "desc"')
-        ],
-        [
-          ArgumentsForBatchedStatement(0, []),
-        ],
-      )));
+      verify(
+        executor.transactions.runBatched(
+          BatchedStatements(
+            [
+              ('WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
+                  '("desc", "priority") SELECT "desc", "priority" FROM _source WHERE TRUE'
+                  ' ON CONFLICT("id") DO UPDATE SET "desc" = "desc"'),
+            ],
+            [ArgumentsForBatchedStatement(0, [])],
+          ),
+        ),
+      );
     });
   });
 }

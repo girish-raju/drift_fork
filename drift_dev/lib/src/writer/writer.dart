@@ -73,7 +73,8 @@ abstract class _NodeOrWriter {
   AnnotatedDartCode generatedElement(DriftElement element, String dartName) {
     if (writer.generationOptions.isModular) {
       return AnnotatedDartCode.build(
-          (b) => b.addGeneratedElement(element, dartName));
+        (b) => b.addGeneratedElement(element, dartName),
+      );
     } else {
       return AnnotatedDartCode([DartLexeme(dartName)]);
     }
@@ -131,24 +132,29 @@ abstract class _NodeOrWriter {
     if (writer.generationOptions.isModular) {
       final infoType = entityInfoType(element);
 
-      return AnnotatedDartCode.build((b) => b
-        ..addSymbol('ReadDatabaseContainer', modularSupport)
-        ..addText('($database).resultSet<')
-        ..addCode(infoType)
-        ..addText('>(${asDartLiteral(element.schemaName)})'));
+      return AnnotatedDartCode.build(
+        (b) => b
+          ..addSymbol('ReadDatabaseContainer', modularSupport)
+          ..addText('($database).resultSet<')
+          ..addCode(infoType)
+          ..addText('>(${asDartLiteral(element.schemaName)})'),
+      );
     } else {
       return AnnotatedDartCode.text('$database.${element.dbGetterName}');
     }
   }
 
   /// Returns a Dart expression evaluating to the [converter].
-  AnnotatedDartCode readConverter(AppliedTypeConverter converter,
-      {bool forNullable = false}) {
+  AnnotatedDartCode readConverter(
+    AppliedTypeConverter converter, {
+    bool forNullable = false,
+  }) {
     return AnnotatedDartCode.build((b) {
       final owningColumn = converter.owningColumn;
       final needsImplicitNullableVersion =
           forNullable && converter.canBeSkippedForNulls;
-      final hasNullableVariantInField = owningColumn != null &&
+      final hasNullableVariantInField =
+          owningColumn != null &&
           converter.canBeSkippedForNulls &&
           owningColumn.nullable;
 
@@ -169,10 +175,11 @@ abstract class _NodeOrWriter {
           addRegularConverter();
         case (true, false):
           b.addSymbol(
-              converter.alsoAppliesToJsonConversion
-                  ? 'JsonTypeConverter2.asNullable('
-                  : 'NullAwareTypeConverter.wrap(',
-              AnnotatedDartCode.drift);
+            converter.alsoAppliesToJsonConversion
+                ? 'JsonTypeConverter2.asNullable('
+                : 'NullAwareTypeConverter.wrap(',
+            AnnotatedDartCode.drift,
+          );
           b.addCode(converter.expression);
           b.addText(')');
         case (true, true):
@@ -184,16 +191,19 @@ abstract class _NodeOrWriter {
   }
 
   /// A suitable typename to store an instance of the type converter used here.
-  AnnotatedDartCode converterType(AppliedTypeConverter converter,
-      {bool makeNullable = false}) {
+  AnnotatedDartCode converterType(
+    AppliedTypeConverter converter, {
+    bool makeNullable = false,
+  }) {
     // Write something like `TypeConverter<MyFancyObject, String>`
     return AnnotatedDartCode.build((b) {
       AnnotatedDartCode sqlDartType;
 
       switch (converter.sqlType) {
         case ColumnDriftType():
-          sqlDartType =
-              AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
+          sqlDartType = AnnotatedDartCode([
+            dartTypeNames[converter.sqlType.builtin]!,
+          ]);
         case ColumnCustomType(:final custom):
           sqlDartType = AnnotatedDartCode.type(custom.dartType);
       }
@@ -216,7 +226,8 @@ abstract class _NodeOrWriter {
           ..addText(',')
           ..addDartType(converter.jsonType!)
           ..questionMarkIfNullable(
-              makeNullable && !converter.jsonTypeIsNullable);
+            makeNullable && !converter.jsonTypeIsNullable,
+          );
       }
 
       b.addText('>');
@@ -231,11 +242,16 @@ abstract class _NodeOrWriter {
   /// converters.
   ///
   /// This is the same as [dartType] but without type converters.
-  AnnotatedDartCode variableTypeCode(HasType type,
-      {bool? nullable, bool ignoreArray = false}) {
+  AnnotatedDartCode variableTypeCode(
+    HasType type, {
+    bool? nullable,
+    bool ignoreArray = false,
+  }) {
     if (type.isArray && !ignoreArray) {
-      final inner =
-          innerColumnType(type.sqlType, nullable: nullable ?? type.nullable);
+      final inner = innerColumnType(
+        type.sqlType,
+        nullable: nullable ?? type.nullable,
+      );
       return AnnotatedDartCode([
         DartTopLevelSymbol.list,
         const DartLexeme('<'),
@@ -266,8 +282,11 @@ abstract class _NodeOrWriter {
     });
   }
 
-  AnnotatedDartCode mapValue(HasType column, AnnotatedDartCode expression,
-      {bool ignoreArray = false}) {
+  AnnotatedDartCode mapValue(
+    HasType column,
+    AnnotatedDartCode expression, {
+    bool ignoreArray = false,
+  }) {
     if (!writer.options.drift3Preview) {
       // Before drift 3, raw variables are represented with the Variable query
       // builder class.
@@ -294,14 +313,18 @@ abstract class _NodeOrWriter {
     });
   }
 
-  AnnotatedDartCode wrapInVariable(HasType column, AnnotatedDartCode expression,
-      {bool ignoreArray = false}) {
+  AnnotatedDartCode wrapInVariable(
+    HasType column,
+    AnnotatedDartCode expression, {
+    bool ignoreArray = false,
+  }) {
     return AnnotatedDartCode.build((b) {
       b
         ..addTopLevel(DartTopLevelSymbol.drift('Variable'))
         ..addText('<')
         ..addCode(
-            variableTypeCode(column, nullable: false, ignoreArray: ignoreArray))
+          variableTypeCode(column, nullable: false, ignoreArray: ignoreArray),
+        )
         ..addText('>(');
 
       final converter = column.typeConverter;
@@ -343,11 +366,12 @@ abstract class _NodeOrWriter {
 
     return AnnotatedDartCode.build((b) {
       final defaultText = StringBuffer();
-      SqlWriter(writer.options,
-              dialect: dialects.first,
-              buffer: defaultText,
-              escapeForDart: false)
-          .writeSql(node);
+      SqlWriter(
+        writer.options,
+        dialect: dialects.first,
+        buffer: defaultText,
+        escapeForDart: false,
+      ).writeSql(node);
       final dialectSpecific = StringBuffer();
       _writeSqlByDialectMap(node, dialectSpecific, defaultText.toString());
 
@@ -367,8 +391,10 @@ abstract class _NodeOrWriter {
   }
 
   String refUri(Uri definition, String element) {
-    final prefix =
-        writer.generationOptions.imports.prefixFor(definition, element);
+    final prefix = writer.generationOptions.imports.prefixFor(
+      definition,
+      element,
+    );
 
     if (prefix == null) {
       return element;
@@ -390,19 +416,22 @@ abstract class _NodeOrWriter {
   AnnotatedDartCode _drift3SqlType(ColumnType sqlType) {
     AnnotatedDartCode builtinType(String name) {
       return AnnotatedDartCode.importedSymbol(
-          AnnotatedDartCode.drift, 'BuiltinDriftType.$name');
+        AnnotatedDartCode.drift,
+        'BuiltinDriftType.$name',
+      );
     }
 
     return switch (sqlType) {
       ColumnDriftType(builtin: DriftSqlType.string) => builtinType('text'),
       ColumnDriftType(builtin: DriftSqlType.blob) => builtinType('byteArray'),
       ColumnDriftType(builtin: DriftSqlType.bigInt) => builtinType('int64'),
-      ColumnDriftType(builtin: DriftSqlType.any) =>
-        AnnotatedDartCode.build((b) {
-          b.addText('const ');
-          b.addSymbol('AnyType', AnnotatedDartCode.driftSqlitePreview);
-          b.addText('()');
-        }),
+      ColumnDriftType(builtin: DriftSqlType.any) => AnnotatedDartCode.build((
+        b,
+      ) {
+        b.addText('const ');
+        b.addSymbol('AnyType', AnnotatedDartCode.driftSqlitePreview);
+        b.addText('()');
+      }),
       ColumnDriftType(:final builtin) => builtinType(builtin.name),
       ColumnCustomType(:final custom) => custom.expression,
     };
@@ -430,8 +459,11 @@ abstract class _NodeOrWriter {
   }
 
   String sqlCode(sql.AstNode node, SqlDialect dialect) {
-    return SqlWriter(writer.options, dialect: dialect, escapeForDart: false)
-        .writeSql(node);
+    return SqlWriter(
+      writer.options,
+      dialect: dialect,
+      escapeForDart: false,
+    ).writeSql(node);
   }
 
   /// Builds a Dart expression writing the [node] into a Dart string.
@@ -450,9 +482,11 @@ abstract class _NodeOrWriter {
       // dialect-specific map if that dialect is not sqlite3. The reason is that
       // APIs in drift that aren't dialect-specific all assume sqlite3.
       return (
-        SqlWriter(writer.options, dialect: dialects.single)
-            .writeNodeIntoStringLiteral(node),
-        false
+        SqlWriter(
+          writer.options,
+          dialect: dialects.single,
+        ).writeNodeIntoStringLiteral(node),
+        false,
       );
     }
 
@@ -461,18 +495,27 @@ abstract class _NodeOrWriter {
     return (buffer.toString(), true);
   }
 
-  void _writeSqlByDialectMap(sql.AstNode node, StringBuffer buffer,
-      [String? defaultSql]) {
+  void _writeSqlByDialectMap(
+    sql.AstNode node,
+    StringBuffer buffer, [
+    String? defaultSql,
+  ]) {
     buffer.write('{');
 
     for (final dialect in writer.options.supportedDialects) {
       final dialectBuffer = StringBuffer();
-      SqlWriter(writer.options, dialect: dialect, buffer: dialectBuffer)
-          .writeSql(node);
+      SqlWriter(
+        writer.options,
+        dialect: dialect,
+        buffer: dialectBuffer,
+      ).writeSql(node);
       if (dialectBuffer.toString() != defaultSql) {
         buffer
-          ..write(drift(
-              writer.options.drift3Preview ? 'KnownSqlDialect' : 'SqlDialect'))
+          ..write(
+            drift(
+              writer.options.drift3Preview ? 'KnownSqlDialect' : 'SqlDialect',
+            ),
+          )
           ..write(".${dialect.name}: '")
           ..write(dialectBuffer)
           ..writeln("',");
@@ -510,8 +553,8 @@ class Scope extends _Node {
   final Set<String> _usedNames = {};
 
   Scope({required Scope? parent, Writer? writer})
-      : writer = writer ?? parent!.writer,
-        super(parent);
+    : writer = writer ?? parent!.writer,
+      super(parent);
 
   DriftOptions get options => writer.options;
 
@@ -533,8 +576,9 @@ class Scope extends _Node {
     return child;
   }
 
-  TextEmitter leaf(
-      {void Function(TaggedDartLexeme, StringBuffer)? writeTaggedDartCode}) {
+  TextEmitter leaf({
+    void Function(TaggedDartLexeme, StringBuffer)? writeTaggedDartCode,
+  }) {
     final child = TextEmitter(this, writeTaggedDartCode: writeTaggedDartCode);
     _children.add(child);
     return child;
@@ -570,10 +614,12 @@ class TextEmitter extends _Node {
   @override
   final Writer writer;
 
-  TextEmitter(Scope super.parent,
-      {this.writeTaggedDartCode, StringBuffer? buffer})
-      : writer = parent.writer,
-        buffer = buffer ?? StringBuffer();
+  TextEmitter(
+    Scope super.parent, {
+    this.writeTaggedDartCode,
+    StringBuffer? buffer,
+  }) : writer = parent.writer,
+       buffer = buffer ?? StringBuffer();
 
   @override
   void _writeTagged(StringBuffer buffer, TaggedDartLexeme lexeme) {
@@ -596,8 +642,11 @@ class TextEmitter extends _Node {
 
   void writeDart(AnnotatedDartCode code) => write(dartCode(code));
 
-  void writeSql(sql.AstNode node,
-      {required SqlDialect dialect, bool escapeForDartString = true}) {
+  void writeSql(
+    sql.AstNode node, {
+    required SqlDialect dialect,
+    bool escapeForDartString = true,
+  }) {
     SqlWriter(
       writer.options,
       dialect: dialect,

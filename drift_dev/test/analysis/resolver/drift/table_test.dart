@@ -21,8 +21,9 @@ CREATE TABLE b (
 ''',
     });
 
-    final state =
-        await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
+    final state = await backend.driver.resolveElements(
+      Uri.parse('package:a/a.drift'),
+    );
 
     expect(state, hasNoErrors);
     final results = state.analysis.values.toList();
@@ -46,10 +47,12 @@ CREATE TABLE b (
           .having((e) => e.otherColumn, 'otherColumn', bBar)
           .having((e) => e.onUpdate, 'onUpdate', isNull)
           .having((e) => e.onDelete, 'onDelete', isNull)
-          .having((e) => e.initiallyDeferred, 'initiallyDeferred', isTrue)
+          .having((e) => e.initiallyDeferred, 'initiallyDeferred', isTrue),
     ]);
-    expect(aBar.customConstraints,
-        'REFERENCES b(bar)DEFERRABLE INITIALLY DEFERRED');
+    expect(
+      aBar.customConstraints,
+      'REFERENCES b(bar)DEFERRABLE INITIALLY DEFERRED',
+    );
 
     expect(bBar.sqlType.builtin, DriftSqlType.int);
     expect(bBar.nullable, isFalse);
@@ -70,7 +73,7 @@ CREATE TABLE b (
         name TEXT NOT NULL,
         PRIMARY KEY (id)
       );
-      '''
+      ''',
     });
 
     final result = await state.analyze('package:foo/a.drift');
@@ -111,8 +114,9 @@ CREATE TABLE b (
 
     final file = await state.analyze('package:a/a.drift');
     final table = file.analyzedElements.single as DriftTable;
-    final indexColumn =
-        table.columns.singleWhere((c) => c.nameInSql == 'fruitIndex');
+    final indexColumn = table.columns.singleWhere(
+      (c) => c.nameInSql == 'fruitIndex',
+    );
 
     expect(indexColumn.sqlType.builtin, DriftSqlType.int);
     expect(
@@ -126,8 +130,9 @@ CREATE TABLE b (
           .having((e) => e.dartType.getDisplayString(), 'dartType', 'Fruits'),
     );
 
-    final withGenericIndexColumn = table.columns
-        .singleWhere((c) => c.nameInSql == 'fruitWithGenericIndex');
+    final withGenericIndexColumn = table.columns.singleWhere(
+      (c) => c.nameInSql == 'fruitWithGenericIndex',
+    );
     expect(withGenericIndexColumn.sqlType.builtin, DriftSqlType.int);
     expect(
       withGenericIndexColumn.typeConverter,
@@ -138,11 +143,15 @@ CREATE TABLE b (
             contains('EnumIndexConverter<FruitsWithGeneric>'),
           )
           .having(
-              (e) => e.dartType.element!.name, 'dartType', 'FruitsWithGeneric'),
+            (e) => e.dartType.element!.name,
+            'dartType',
+            'FruitsWithGeneric',
+          ),
     );
 
-    final nameColumn =
-        table.columns.singleWhere((c) => c.nameInSql == 'fruitName');
+    final nameColumn = table.columns.singleWhere(
+      (c) => c.nameInSql == 'fruitName',
+    );
 
     expect(nameColumn.sqlType.builtin, DriftSqlType.string);
     expect(
@@ -159,10 +168,12 @@ CREATE TABLE b (
     expect(
       file.allErrors,
       containsAllInOrder([
-        isDriftError(contains('Could not find `DoesNotExist`'))
-            .withSpan('ENUM(DoesNotExist)'),
-        isDriftError(contains('Could not find `DoesNotExist`'))
-            .withSpan('ENUMNAME(DoesNotExist)'),
+        isDriftError(
+          contains('Could not find `DoesNotExist`'),
+        ).withSpan('ENUM(DoesNotExist)'),
+        isDriftError(
+          contains('Could not find `DoesNotExist`'),
+        ).withSpan('ENUMNAME(DoesNotExist)'),
       ]),
     );
   });
@@ -189,14 +200,11 @@ CREATE TABLE b (
 
     final file = await state.analyze('package:a/a.drift');
 
-    expect(
-      file.allErrors,
-      [
-        isDriftError(
-                'Multiple type converters applied to this column, ignoring this one.')
-            .withSpan('MAPPED BY `MyConverter()`')
-      ],
-    );
+    expect(file.allErrors, [
+      isDriftError(
+        'Multiple type converters applied to this column, ignoring this one.',
+      ).withSpan('MAPPED BY `MyConverter()`'),
+    ]);
   });
 
   test('does not allow enum types for non-enums', () async {
@@ -216,10 +224,7 @@ CREATE TABLE b (
     final file = await state.analyze('package:a/a.drift');
     expect(file.analyzedElements, hasLength(1));
 
-    expect(
-      file.allErrors,
-      contains(isDriftError('Not an enum: `NotAnEnum`')),
-    );
+    expect(file.allErrors, contains(isDriftError('Not an enum: `NotAnEnum`')));
   });
 
   test('supports JSON KEY annotation', () async {
@@ -238,9 +243,13 @@ CREATE TABLE waybills (
 
     final table = file.analyzedElements.single as DriftTable;
     expect(
-        table.columnBySqlName['parent'],
-        isA<DriftColumn>().having(
-            (e) => e.overriddenJsonName, 'overriddenJsonName', 'parentDoc'));
+      table.columnBySqlName['parent'],
+      isA<DriftColumn>().having(
+        (e) => e.overriddenJsonName,
+        'overriddenJsonName',
+        'parentDoc',
+      ),
+    );
   });
 
   test('recognizes documentation comments', () async {
@@ -260,8 +269,11 @@ CREATE TABLE IF NOT EXISTS currencies (
     final table = file.analyzedElements.single as DriftTable;
     expect(
       table.columnBySqlName['name'],
-      isA<DriftColumn>().having((e) => e.documentationComment,
-          'documentationComment', '/// The name of this currency'),
+      isA<DriftColumn>().having(
+        (e) => e.documentationComment,
+        'documentationComment',
+        '/// The name of this currency',
+      ),
     );
   });
 

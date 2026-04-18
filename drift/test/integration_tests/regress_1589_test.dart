@@ -35,14 +35,17 @@ CREATE TABLE IF NOT EXISTS todo_categories (
           // Thanks to the deferrable clause, this statement will only cause a
           // failing COMMIT.
           await db.customStatement(
-              'INSERT INTO todo_items (title, category_id) VALUES (?, ?);',
-              ['a', 100]);
+            'INSERT INTO todo_items (title, category_id) VALUES (?, ?);',
+            ['a', 100],
+          );
         }),
         throwsA(anyOf(isA<SqliteException>(), isA<DriftRemoteException>())),
       );
 
-      expect(db.customSelect('SELECT * FROM todo_items').get(),
-          completion(isEmpty));
+      expect(
+        db.customSelect('SELECT * FROM todo_items').get(),
+        completion(isEmpty),
+      );
     }
 
     test('sync client', () async {

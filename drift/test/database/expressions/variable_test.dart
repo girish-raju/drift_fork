@@ -6,8 +6,9 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   test('maps the variable to sql', () {
-    final variable =
-        Variable(DateTime.fromMillisecondsSinceEpoch(1551297563000));
+    final variable = Variable(
+      DateTime.fromMillisecondsSinceEpoch(1551297563000),
+    );
     final ctx = GenerationContext.fromDb(TodoDb());
 
     variable.writeInto(ctx);

@@ -198,7 +198,8 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
   FutureOr<void> Function(
     QueryDelegate outer,
     Future<void> Function(QueryDelegate) block,
-  )? get startNested => null;
+  )?
+  get startNested => null;
 }
 
 /// A [TransactionDelegate] for database APIs that have it's own transaction

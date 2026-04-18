@@ -20,8 +20,10 @@ insertNode: INSERT INTO nodes VALUES(json(?));
       ''',
       },
       options: const DriftOptions.defaults(
-          sqliteAnalysisOptions:
-              SqliteAnalysisOptions(version: SqliteVersion.v3_39)),
+        sqliteAnalysisOptions: SqliteAnalysisOptions(
+          version: SqliteVersion.v3_39,
+        ),
+      ),
     );
 
     final result = await state.analyze('package:foo/a.drift');

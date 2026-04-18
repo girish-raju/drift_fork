@@ -17,11 +17,12 @@ class _TableManagerWriter {
 
   final List<DriftTable> otherTables;
 
-  _TableManagerWriter(
-      {required this.table,
-      required this.scope,
-      required this.dbClassName,
-      required this.otherTables});
+  _TableManagerWriter({
+    required this.table,
+    required this.scope,
+    required this.dbClassName,
+    required this.otherTables,
+  });
 
   _ManagerCodeTemplates get _templates => _ManagerCodeTemplates(scope);
 
@@ -29,19 +30,29 @@ class _TableManagerWriter {
     // Write the typedefs for the companion builders
     final (
       typeDefinition: insertCompanionBuilderTypeDef,
-      companionBuilder: insertCompanionBuilder
-    ) = _templates.companionBuilder(table, leaf, isUpdate: false);
+      companionBuilder: insertCompanionBuilder,
+    ) = _templates.companionBuilder(
+      table,
+      leaf,
+      isUpdate: false,
+    );
     final (
       typeDefinition: updateCompanionBuilderTypeDef,
-      companionBuilder: updateCompanionBuilder
-    ) = _templates.companionBuilder(table, leaf, isUpdate: true);
+      companionBuilder: updateCompanionBuilder,
+    ) = _templates.companionBuilder(
+      table,
+      leaf,
+      isUpdate: true,
+    );
 
     leaf.writeln(insertCompanionBuilderTypeDef);
     leaf.writeln(updateCompanionBuilderTypeDef);
 
     // Gather the relationships to and from this table
-    List<_Relation> relations =
-        table.columns.map((e) => _getRelationForColumn(e)).nonNulls.toList();
+    List<_Relation> relations = table.columns
+        .map((e) => _getRelationForColumn(e))
+        .nonNulls
+        .toList();
 
     for (var otherTable in otherTables) {
       final otherTableRelations = otherTable.columns
@@ -90,10 +101,11 @@ class _TableManagerWriter {
       if (fieldNameCount != 1) {
         if (table.id.isDefinedInDart) {
           print(
-              "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
-              " Filter and orderings for this field wont be generated."
-              " Use the @ReferenceName() annotation to resolve this issue."
-              " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information");
+            "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
+            " Filter and orderings for this field wont be generated."
+            " Use the @ReferenceName() annotation to resolve this issue."
+            " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information",
+          );
         }
 
         return false;
@@ -121,11 +133,12 @@ class _TableManagerWriter {
       final referencedType = typeForColumn(relation.referencedColumn);
       if (currentType != referencedType) {
         print(
-            "\"${relation.currentTable.baseDartName}.${relation.currentColumn.nameInSql}\" has a type of \"$currentType\""
-            " and \"${relation.referencedTable.baseDartName}.${relation.referencedColumn.nameInSql}\" has a type of \"$referencedType\"."
-            " Filters, orderings and reference getters for this relation wont be generated."
-            " The Manager API can only generate filters and orderings for relations where the types are exactly the same."
-            " If you aren't using the Manager API, you can ignore this message.");
+          "\"${relation.currentTable.baseDartName}.${relation.currentColumn.nameInSql}\" has a type of \"$currentType\""
+          " and \"${relation.referencedTable.baseDartName}.${relation.referencedColumn.nameInSql}\" has a type of \"$referencedType\"."
+          " Filters, orderings and reference getters for this relation wont be generated."
+          " The Manager API can only generate filters and orderings for relations where the types are exactly the same."
+          " If you aren't using the Manager API, you can ignore this message.",
+        );
         return false;
       }
       return true;
@@ -145,70 +158,116 @@ class _TableManagerWriter {
       // The type that this column is (int, string, etc)
       final type = leaf.dartCode(leaf.innerColumnType(column.sqlType));
       if (column.typeConverter != null) {
-        columnFilters.add(_templates.columnWithTypeConverterFilters(
-            column: column, leaf: leaf, type: type));
-        columnAnnotations.add(_templates.columnWithTypeConverterAnnotations(
-            column: column, leaf: leaf, type: type));
+        columnFilters.add(
+          _templates.columnWithTypeConverterFilters(
+            column: column,
+            leaf: leaf,
+            type: type,
+          ),
+        );
+        columnAnnotations.add(
+          _templates.columnWithTypeConverterAnnotations(
+            column: column,
+            leaf: leaf,
+            type: type,
+          ),
+        );
       } else {
-        columnFilters.add(_templates.standardColumnFilters(
-            column: column, leaf: leaf, type: type));
-        columnAnnotations.add(_templates.standardColumnAnnotation(
-            column: column, leaf: leaf, type: type));
+        columnFilters.add(
+          _templates.standardColumnFilters(
+            column: column,
+            leaf: leaf,
+            type: type,
+          ),
+        );
+        columnAnnotations.add(
+          _templates.standardColumnAnnotation(
+            column: column,
+            leaf: leaf,
+            type: type,
+          ),
+        );
       }
-      columnOrderings.add(_templates.standardColumnOrderings(
-          column: column, leaf: leaf, type: type));
+      columnOrderings.add(
+        _templates.standardColumnOrderings(
+          column: column,
+          leaf: leaf,
+          type: type,
+        ),
+      );
     }
 
     for (var relation in relations) {
-      columnFilters
-          .add(_templates.relatedFilter(leaf: leaf, relation: relation));
+      columnFilters.add(
+        _templates.relatedFilter(leaf: leaf, relation: relation),
+      );
       // Don't generate reverse ordering, only regular ones
       if (!relation.isReverse) {
-        columnOrderings
-            .add(_templates.relatedOrderings(leaf: leaf, relation: relation));
+        columnOrderings.add(
+          _templates.relatedOrderings(leaf: leaf, relation: relation),
+        );
       }
 
-      columnAnnotations
-          .add(_templates.relatedAnnotations(leaf: leaf, relation: relation));
+      columnAnnotations.add(
+        _templates.relatedAnnotations(leaf: leaf, relation: relation),
+      );
     }
 
     if (relations.isNotEmpty) {
-      leaf.write(_templates.rowReferencesClass(
+      leaf.write(
+        _templates.rowReferencesClass(
           table: table,
           relations: relations,
           leaf: leaf,
-          dbClassName: dbClassName));
+          dbClassName: dbClassName,
+        ),
+      );
     }
 
-    leaf.write(_templates.filterComposer(
+    leaf.write(
+      _templates.filterComposer(
         table: table,
         leaf: leaf,
         dbClassName: dbClassName,
-        columnFilters: columnFilters));
-    leaf.write(_templates.orderingComposer(
+        columnFilters: columnFilters,
+      ),
+    );
+    leaf.write(
+      _templates.orderingComposer(
         table: table,
         leaf: leaf,
         dbClassName: dbClassName,
-        columnOrderings: columnOrderings));
-    leaf.write(_templates.annotationComposer(
+        columnOrderings: columnOrderings,
+      ),
+    );
+    leaf.write(
+      _templates.annotationComposer(
         table: table,
         leaf: leaf,
         dbClassName: dbClassName,
-        columnAnnotations: columnAnnotations));
+        columnAnnotations: columnAnnotations,
+      ),
+    );
 
     // Write the root and processed table managers
-    leaf.write(_templates.rootTableManager(
+    leaf.write(
+      _templates.rootTableManager(
         table: table,
         dbClassName: dbClassName,
         leaf: leaf,
         updateCompanionBuilder: updateCompanionBuilder,
         createCompanionBuilder: insertCompanionBuilder,
-        relations: relations));
-    leaf.write(_templates.processedTableManagerTypeDef(
+        relations: relations,
+      ),
+    );
+    leaf.write(
+      _templates.processedTableManagerTypeDef(
         table: table,
         dbClassName: dbClassName,
         leaf: leaf,
-        relations: relations));
+        relations: relations,
+      ),
+    );
   }
 }
 
@@ -219,18 +278,20 @@ class _Relation {
   DriftTable get currentTable => currentColumn.owner as DriftTable;
   DriftTable get referencedTable => referencedColumn.owner as DriftTable;
   final bool isReverse;
-  _Relation(
-      {required this.currentColumn,
-      required this.referencedColumn,
-      this.isReverse = false});
+  _Relation({
+    required this.currentColumn,
+    required this.referencedColumn,
+    this.isReverse = false,
+  });
 
   /// Returna copy of this class with the current and referenced columns swaped
   /// this is commonly used when finding reverse references
   _Relation swaped() {
     return _Relation(
-        currentColumn: referencedColumn,
-        referencedColumn: currentColumn,
-        isReverse: !isReverse);
+      currentColumn: referencedColumn,
+      referencedColumn: currentColumn,
+      isReverse: !isReverse,
+    );
   }
 
   /// What field name to use when generating filters/ordering for this column
@@ -240,7 +301,7 @@ class _Relation {
     return switch (isReverse) {
       false => currentColumn.nameInDart,
       true =>
-        referencedColumn.referenceName ?? "${referencedTable.dbGetterName}Refs"
+        referencedColumn.referenceName ?? "${referencedTable.dbGetterName}Refs",
     };
   }
 }
@@ -265,8 +326,10 @@ _Relation? _getRelationForColumn(DriftColumn column) {
       .firstOrNull
       ?.otherColumn;
   if (referencedCol != null && referencedCol.owner is DriftTable) {
-    final relation =
-        _Relation(currentColumn: column, referencedColumn: referencedCol);
+    final relation = _Relation(
+      currentColumn: column,
+      referencedColumn: referencedCol,
+    );
     return relation;
   } else {
     return null;

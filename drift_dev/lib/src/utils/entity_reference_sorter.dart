@@ -32,7 +32,8 @@ extension SortTopologically on Iterable<DriftElement> {
   /// Unlike throwing an exception for circular references, the [reportError]
   /// callback is invoked and the elements are returned unchanged.
   List<DriftElement> sortTopologicallyOrElse(
-      void Function(String) reportError) {
+    void Function(String) reportError,
+  ) {
     try {
       return sortTopologically();
     } on CircularReferenceException catch (e) {

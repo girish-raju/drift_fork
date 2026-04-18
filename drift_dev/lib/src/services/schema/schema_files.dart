@@ -63,9 +63,10 @@ class SchemaWriter {
       );
 
       for (final statement in statements) {
-        knownStatements
-            .putIfAbsent(statement.elementName, () => [])
-            .add((statement.dialect, statement.createStatement));
+        knownStatements.putIfAbsent(statement.elementName, () => []).add((
+          statement.dialect,
+          statement.createStatement,
+        ));
       }
     } on SchemaIsolateException catch (e) {
       _logger.warning(e.description(isFatal: false));
@@ -73,14 +74,19 @@ class SchemaWriter {
 
     return {
       '_meta': {
-        'description': 'This file contains a serialized version of schema '
+        'description':
+            'This file contains a serialized version of schema '
             'entities for drift.',
         'version': _ExportedSchemaVersion.current.toString(),
       },
       'options': _serializeOptions(),
       'entities': elements
-          .map((e) => _entityToJson(e,
-              e is DriftSchemaElement ? knownStatements[e.schemaName] : null))
+          .map(
+            (e) => _entityToJson(
+              e,
+              e is DriftSchemaElement ? knownStatements[e.schemaName] : null,
+            ),
+          )
           .whereType<Map>()
           .toList(),
       if (knownStatements.isNotEmpty)
@@ -90,12 +96,9 @@ class SchemaWriter {
               'name': key,
               'sql': [
                 for (final (dialect, sql) in value)
-                  {
-                    'dialect': dialect.name,
-                    'sql': sql,
-                  }
-              ]
-            }
+                  {'dialect': dialect.name, 'sql': sql},
+              ],
+            },
         ],
     };
   }
@@ -109,7 +112,9 @@ class SchemaWriter {
   }
 
   Map<String, Object?>? _entityToJson(
-      DriftElement entity, List<(SqlDialect, String)>? knownSql) {
+    DriftElement entity,
+    List<(SqlDialect, String)>? knownSql,
+  ) {
     String? type;
     Map<String, Object?>? data;
 
@@ -168,8 +173,9 @@ class SchemaWriter {
         final source = entity.source;
         if (source is! SqlViewSource) {
           throw UnsupportedError(
-              'Exporting Dart-defined views into a schema is not '
-              'currently supported');
+            'Exporting Dart-defined views into a schema is not '
+            'currently supported',
+          );
         }
 
         sql = source.sqlCreateViewStmt;
@@ -181,16 +187,13 @@ class SchemaWriter {
         'sql': sql,
         'dart_info_name': entity.entityInfoName,
         'columns': [
-          for (final column in entity.columns) _columnData(column, null)
+          for (final column in entity.columns) _columnData(column, null),
         ],
       };
     } else if (entity is DefinedSqlQuery) {
       if (entity.mode == QueryMode.atCreate) {
         type = 'special-query';
-        data = {
-          'scenario': 'create',
-          'sql': entity.sql,
-        };
+        data = {'scenario': 'create', 'sql': entity.sql};
       }
     } else {
       throw AssertionError('unknown entity type $entity');
@@ -210,9 +213,12 @@ class SchemaWriter {
   }
 
   Map<String, Object?> _tableData(
-      DriftTable table, CreateTableStatement? create) {
-    final primaryKeyFromTableConstraint =
-        table.tableConstraints.whereType<PrimaryKeyColumns>().firstOrNull;
+    DriftTable table,
+    CreateTableStatement? create,
+  ) {
+    final primaryKeyFromTableConstraint = table.tableConstraints
+        .whereType<PrimaryKeyColumns>()
+        .firstOrNull;
     final uniqueKeys = table.tableConstraints.whereType<UniqueColumns>();
 
     return {
@@ -220,11 +226,12 @@ class SchemaWriter {
       'was_declared_in_moor': table.declaration.isDriftDeclaration,
       'columns': [
         for (final column in table.columns)
-          _columnData(column, create?.column(column.nameInSql))
+          _columnData(column, create?.column(column.nameInSql)),
       ],
       'is_virtual': table.isVirtual,
       if (table.isVirtual)
-        'create_virtual_stmt': 'CREATE VIRTUAL TABLE "${table.schemaName}" '
+        'create_virtual_stmt':
+            'CREATE VIRTUAL TABLE "${table.schemaName}" '
             'USING ${table.virtualTableData!.module}'
             '(${table.virtualTableData!.moduleArguments.join(', ')})',
       'without_rowid': table.withoutRowId,
@@ -232,18 +239,20 @@ class SchemaWriter {
       if (table.strict) 'strict': true,
       if (primaryKeyFromTableConstraint != null)
         'explicit_pk': [
-          ...primaryKeyFromTableConstraint.primaryKey.map((c) => c.nameInSql)
+          ...primaryKeyFromTableConstraint.primaryKey.map((c) => c.nameInSql),
         ],
       if (uniqueKeys.isNotEmpty)
         'unique_keys': [
           for (final uniqueKey in uniqueKeys)
             [for (final column in uniqueKey.uniqueSet) column.nameInSql],
-        ]
+        ],
     };
   }
 
   Map<String, Object?> _columnData(
-      DriftColumn column, ColumnDefinition? resolved) {
+    DriftColumn column,
+    ColumnDefinition? resolved,
+  ) {
     final constraints = defaultConstraints(column);
     final dialectSpecific = {
       for (final dialect in options.supportedDialects)
@@ -254,10 +263,13 @@ class SchemaWriter {
     final sqlType = column.sqlType;
     var type = column.sqlType.builtin;
     if (resolved != null && sqlType is ColumnCustomType) {
-      final sqlType =
-          const SchemaFromCreateTable().resolveColumnType(resolved.typeName);
-      type =
-          TypeMapping.toDefaultType(sqlType, options.storeDateTimeValuesAsText);
+      final sqlType = const SchemaFromCreateTable().resolveColumnType(
+        resolved.typeName,
+      );
+      type = TypeMapping.toDefaultType(
+        sqlType,
+        options.storeDateTimeValuesAsText,
+      );
     }
     var defaultCode = column.defaultArgument;
     if (defaultCode != null && resolved != null) {
@@ -292,7 +304,7 @@ class SchemaWriter {
         'type_converter': {
           'dart_expr': column.typeConverter!.expression.toString(),
           'dart_type_name': column.typeConverter!.dartType.getDisplayString(),
-        }
+        },
     };
   }
 
@@ -302,31 +314,23 @@ class SchemaWriter {
       PrimaryKeyColumn(:final bool isAutoIncrement) =>
         isAutoIncrement ? 'auto-increment' : 'primary-key',
       ForeignKeyReference() => {
-          'foreign_key': {
-            'to': {
-              'table': feature.otherColumn.owner.schemaName,
-              'column': feature.otherColumn.nameInSql,
-            },
-            'initially_deferred': feature.initiallyDeferred,
-            'on_update': feature.onUpdate?.name,
-            'on_delete': feature.onDelete?.name,
+        'foreign_key': {
+          'to': {
+            'table': feature.otherColumn.owner.schemaName,
+            'column': feature.otherColumn.nameInSql,
           },
+          'initially_deferred': feature.initiallyDeferred,
+          'on_update': feature.onUpdate?.name,
+          'on_delete': feature.onDelete?.name,
         },
-      ColumnGeneratedAs() => {
-          'generated_as': feature.toJson(),
-        },
-      DartCheckExpression() => {
-          'check': feature.toJson(),
-        },
+      },
+      ColumnGeneratedAs() => {'generated_as': feature.toJson()},
+      DartCheckExpression() => {'check': feature.toJson()},
       LimitingTextLength() => {
-          'allowed-lengths': {
-            'min': feature.minLength,
-            'max': feature.maxLength,
-          }
-        },
+        'allowed-lengths': {'min': feature.minLength, 'max': feature.maxLength},
+      },
       CustomColumnConstraint() ||
-      DefaultConstraintsFromSchemaFile() =>
-        'unknown',
+      DefaultConstraintsFromSchemaFile() => 'unknown',
     };
   }
 
@@ -368,9 +372,7 @@ class SchemaReader {
     // Read drift options if they are part of the schema file.
     final optionsInJson = json['options'] as Map<String, Object?>?;
     options = switch (optionsInJson) {
-      null => {
-          'store_date_time_values_as_text': false,
-        },
+      null => {'store_date_time_values_as_text': false},
       final options => Map.from(options),
     };
 
@@ -406,7 +408,9 @@ class SchemaReader {
       DriftDeclaration(elementUri, -1, '<unknown>');
 
   Future<void> _processFromSql(
-      List<Object?> fixedSql, List<Object?> entities) async {
+    List<Object?> fixedSql,
+    List<Object?> entities,
+  ) async {
     final sql = <String>[];
 
     for (final entry in fixedSql) {
@@ -451,7 +455,8 @@ class SchemaReader {
     if (_entitiesById.containsKey(id)) return;
     if (_currentlyProcessing.contains(id)) {
       throw ArgumentError(
-          'Could not read schema file: Contains circular references.');
+        'Could not read schema file: Contains circular references.',
+      );
     }
 
     _currentlyProcessing.add(id);
@@ -483,12 +488,15 @@ class SchemaReader {
         entity = _readQuery(
           content,
           id: id,
-          references:
-              references.map((id) => _entitiesById[id]).nonNulls.toList(),
+          references: references
+              .map((id) => _entitiesById[id])
+              .nonNulls
+              .toList(),
         );
       default:
         throw ArgumentError(
-            'Could not read schema file: Unknown entity $rawData');
+          'Could not read schema file: Unknown entity $rawData',
+        );
     }
 
     _entitiesById[id] = entity;
@@ -533,9 +541,9 @@ class SchemaReader {
       );
 
       if (sql != null) {
-        index.parsedStatement = _engine
-            .parse(ParserEntrypoint.statement, sql)
-            .rootNode as CreateIndexStatement;
+        index.parsedStatement =
+            _engine.parse(ParserEntrypoint.statement, sql).rootNode
+                as CreateIndexStatement;
       } else {
         index.createStatementForDartDefinition();
       }
@@ -543,8 +551,9 @@ class SchemaReader {
       return index;
     } else {
       // In older versions, we always had an SQL statement!
-      final stmt = _engine.parse(ParserEntrypoint.statement, sql!).rootNode
-          as CreateIndexStatement;
+      final stmt =
+          _engine.parse(ParserEntrypoint.statement, sql!).rootNode
+              as CreateIndexStatement;
 
       return DriftIndex(
         _id(name),
@@ -555,10 +564,11 @@ class SchemaReader {
         indexedColumns: [
           for (final column in stmt.columns)
             DriftIndexedColumn(
-              column: on.columnBySqlName[
-                  (column.expression as Reference).columnName]!,
+              column:
+                  on.columnBySqlName[(column.expression as Reference)
+                      .columnName]!,
               orderBy: column.ordering,
-            )
+            ),
         ],
       )..parsedStatement = stmt;
     }
@@ -575,17 +585,19 @@ class SchemaReader {
         (content['references_in_body'] ?? content['refences_in_body']) as List;
 
     return DriftTrigger(
-      _id(name),
-      _declaration,
-      on: on,
-      onWrite: UpdateKind.delete,
-      references: [
-        for (final bodyRef in bodyReferences) _existingEntity(bodyRef)
-      ],
-      createStmt: sql,
-      writes: const [],
-    )..parsedStatement = _engine.parse(ParserEntrypoint.statement, sql).rootNode
-        as CreateTriggerStatement;
+        _id(name),
+        _declaration,
+        on: on,
+        onWrite: UpdateKind.delete,
+        references: [
+          for (final bodyRef in bodyReferences) _existingEntity(bodyRef),
+        ],
+        createStmt: sql,
+        writes: const [],
+      )
+      ..parsedStatement =
+          _engine.parse(ParserEntrypoint.statement, sql).rootNode
+              as CreateTriggerStatement;
   }
 
   DriftTable _readTable(Map<String, dynamic> content) {
@@ -595,13 +607,14 @@ class SchemaReader {
     final pascalCase = ReCase(sqlName).pascalCase;
     final columns = [
       for (final rawColumn in content['columns'] as List)
-        _readColumn(rawColumn as Map<String, dynamic>)
+        _readColumn(rawColumn as Map<String, dynamic>),
     ];
 
     if (isVirtual) {
       final create = content['create_virtual_stmt'] as String;
-      final parsed = _engine.parse(ParserEntrypoint.statement, create).rootNode
-          as CreateVirtualTableStatement;
+      final parsed =
+          _engine.parse(ParserEntrypoint.statement, create).rootNode
+              as CreateVirtualTableStatement;
 
       return DriftTable(
         _id(sqlName),
@@ -612,8 +625,11 @@ class SchemaReader {
         nameOfRowClass: '${pascalCase}Data',
         writeDefaultConstraints: true,
         withoutRowId: withoutRowId,
-        virtualTableData:
-            VirtualTableData(parsed.moduleName, parsed.argumentContent, null),
+        virtualTableData: VirtualTableData(
+          parsed.moduleName,
+          parsed.argumentContent,
+          null,
+        ),
       );
     }
 
@@ -626,7 +642,7 @@ class SchemaReader {
     if (content.containsKey('explicit_pk')) {
       explicitPk = {
         for (final columnName in content['explicit_pk'] as List<dynamic>)
-          columns.singleWhere((c) => c.nameInSql == columnName)
+          columns.singleWhere((c) => c.nameInSql == columnName),
       };
     }
 
@@ -635,7 +651,7 @@ class SchemaReader {
       for (final key in content['unique_keys'] as Iterable) {
         uniqueKeys.add({
           for (final columnName in key as Iterable)
-            columns.singleWhere((c) => c.nameInSql == columnName)
+            columns.singleWhere((c) => c.nameInSql == columnName),
         });
       }
     }
@@ -653,7 +669,7 @@ class SchemaReader {
       overrideTableConstraints: tableConstraints ?? const [],
       tableConstraints: [
         if (explicitPk != null) PrimaryKeyColumns(explicitPk),
-        for (final unique in uniqueKeys) UniqueColumns(unique)
+        for (final unique in uniqueKeys) UniqueColumns(unique),
       ],
     );
   }
@@ -673,7 +689,7 @@ class SchemaReader {
             // generated_as DSL feature for each view column, but that should be
             // ignored because we're parsing views as SQL instead.
             parseColumnConstraints: false,
-          )
+          ),
       ],
       source: SqlViewSource(content['sql'] as String),
       customParentClass: null,
@@ -704,11 +720,14 @@ class SchemaReader {
 
   static final _dialectByName = SqlDialect.values.asNameMap();
 
-  DriftColumn _readColumn(Map<String, dynamic> data,
-      {bool parseColumnConstraints = true}) {
+  DriftColumn _readColumn(
+    Map<String, dynamic> data, {
+    bool parseColumnConstraints = true,
+  }) {
     final name = data['name'] as String;
-    final columnType =
-        _SerializeSqlType.deserialize(data['moor_type'] as String);
+    final columnType = _SerializeSqlType.deserialize(
+      data['moor_type'] as String,
+    );
     final nullable = data['nullable'] as bool;
     final customConstraints = data['customConstraints'] as String?;
     final defaultConstraints = data['defaultConstraints'] as String?;
@@ -719,11 +738,14 @@ class SchemaReader {
       for (final feature in data['dsl_features'] as List<dynamic>)
         if (parseColumnConstraints) _columnFeature(feature),
       if (dialectAwareConstraints != null)
-        DefaultConstraintsFromSchemaFile(null, dialectSpecific: {
-          for (final MapEntry(:key, :value)
-              in dialectAwareConstraints.cast<String, String>().entries)
-            if (_dialectByName[key] case final dialect?) dialect: value,
-        })
+        DefaultConstraintsFromSchemaFile(
+          null,
+          dialectSpecific: {
+            for (final MapEntry(:key, :value)
+                in dialectAwareConstraints.cast<String, String>().entries)
+              ?_dialectByName[key]: value,
+          },
+        )
       else if (defaultConstraints != null)
         DefaultConstraintsFromSchemaFile(defaultConstraints),
     ].whereType<DriftColumnConstraint>().toList();
@@ -792,7 +814,10 @@ extension _SerializeSqlType on DriftSqlType {
       return DriftSqlType.values.byName(description);
     } on ArgumentError {
       throw ArgumentError.value(
-          description, 'description', 'Not a known column type');
+        description,
+        'description',
+        'Not a known column type',
+      );
     }
   }
 

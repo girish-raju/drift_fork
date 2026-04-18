@@ -23,15 +23,17 @@ class ColumnOrderings<T extends Object> {
   ///
   /// The optional [nulls] parameter can be used to control whether `NULL`
   /// values in the column should come for or after non-null values.
-  ComposableOrdering asc({NullsOrder? nulls}) => $composableOrdering(
-      {OrderingBuilder(OrderingMode.asc, column, nulls: nulls)});
+  ComposableOrdering asc({NullsOrder? nulls}) => $composableOrdering({
+    OrderingBuilder(OrderingMode.asc, column, nulls: nulls),
+  });
 
   /// Sort this column in descending order (10 -> 1 | Z -> A | Dec 31 -> Jan 1).
   ///
   /// The optional [nulls] parameter can be used to control whether `NULL`
   /// values in the column should come for or after non-null values.
-  ComposableOrdering desc({NullsOrder? nulls}) => $composableOrdering(
-      {OrderingBuilder(OrderingMode.desc, column, nulls: nulls)});
+  ComposableOrdering desc({NullsOrder? nulls}) => $composableOrdering({
+    OrderingBuilder(OrderingMode.desc, column, nulls: nulls),
+  });
 }
 
 /// Defines a class which will hold the information needed to create an ordering

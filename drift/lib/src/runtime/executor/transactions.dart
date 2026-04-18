@@ -14,11 +14,11 @@ class Transaction extends DatabaseConnectionUser {
   /// Constructs a transaction executor from the [_parent] engine and the
   /// underlying [executor].
   Transaction(this._parent, TransactionExecutor executor)
-      : super.delegate(
-          _parent,
-          executor: executor,
-          streamQueries: _TransactionStreamStore(_parent.streamQueries),
-        );
+    : super.delegate(
+        _parent,
+        executor: executor,
+        streamQueries: _TransactionStreamStore(_parent.streamQueries),
+      );
 
   /// Instructs the underlying executor to execute this instructions. Batched
   /// table updates will also be send to the stream query store.
@@ -99,5 +99,5 @@ class BeforeOpenRunner extends DatabaseConnectionUser {
   /// Creates a [BeforeOpenRunner] from a [DatabaseConnectionUser] and the
   /// special [executor] running the queries.
   BeforeOpenRunner(this._parent, QueryExecutor executor)
-      : super.delegate(_parent, executor: executor);
+    : super.delegate(_parent, executor: executor);
 }

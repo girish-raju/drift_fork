@@ -6,8 +6,9 @@ import 'utils.dart';
 
 void main() {
   test('WITH without following statement', () {
-    expectError('WITH foo AS (SELECT * FROM bar)',
-        [isParsingError(message: contains('to follow this WITH clause'))]);
+    expectError('WITH foo AS (SELECT * FROM bar)', [
+      isParsingError(message: contains('to follow this WITH clause')),
+    ]);
   });
 
   test('CREATE without following statement', () {
@@ -56,18 +57,17 @@ void main() {
   });
 
   test('missing result columns', () {
-    final parsed =
-        SqlEngine().parse(ParserEntrypoint.statement, 'SELECT   FROM users;');
+    final parsed = SqlEngine().parse(
+      ParserEntrypoint.statement,
+      'SELECT   FROM users;',
+    );
 
     enforceEqual(
       parsed.rootNode,
-      SelectStatement(
-        columns: [],
-        from: TableReference('users'),
-      ),
+      SelectStatement(columns: [], from: TableReference('users')),
     );
     expect(parsed.errors, [
-      isParsingError(message: 'Expected a result column here.', span: 'FROM')
+      isParsingError(message: 'Expected a result column here.', span: 'FROM'),
     ]);
   });
 }

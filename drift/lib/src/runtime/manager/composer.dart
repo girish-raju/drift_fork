@@ -66,8 +66,10 @@ class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
   ///
   /// This function removes also joins when the arent needed
   /// See [$removeJoinBuilderFromRootComposer] for more information
-  T $composableBuilder<T, C extends GeneratedColumn>(
-      {required C column, required T Function(C column) builder}) {
+  T $composableBuilder<T, C extends GeneratedColumn>({
+    required C column,
+    required T Function(C column) builder,
+  }) {
     // The proper join builders and column for the builder
     final C columnForBuilder;
 
@@ -98,41 +100,55 @@ class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
   /// When we filter the todos, we will be creating a todos filter composer.
   /// This function is used to build that composer.
   /// It will create he needed joins and ensure that the correct table alias name is used internaly
-  T $composerBuilder<T, CurrentColumn extends GeneratedColumn,
-          RelatedTable extends Table, RelatedColumn extends GeneratedColumn>(
-      {required Composer composer,
-      required CurrentColumn Function(CurrentTable) getCurrentColumn,
-      required RelatedTable referencedTable,
-      required RelatedColumn Function(RelatedTable) getReferencedColumn,
-      required T Function(JoinBuilder joinBuilder,
-              {void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
-              void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer})
-          builder}) {
+  T $composerBuilder<
+    T,
+    CurrentColumn extends GeneratedColumn,
+    RelatedTable extends Table,
+    RelatedColumn extends GeneratedColumn
+  >({
+    required Composer composer,
+    required CurrentColumn Function(CurrentTable) getCurrentColumn,
+    required RelatedTable referencedTable,
+    required RelatedColumn Function(RelatedTable) getReferencedColumn,
+    required T Function(
+      JoinBuilder joinBuilder, {
+      void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
+      void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer,
+    })
+    builder,
+  }) {
     // Get the column of this table which will be used to build the join
     final aliasedColumn = getCurrentColumn(_aliasedTable);
 
     // Use the provided callbacks to create a join builder
     final referencedColumn = getReferencedColumn(referencedTable);
     final aliasName = $_aliasNameGenerator(aliasedColumn, referencedColumn);
-    final aliasedReferencedTable =
-        $db.alias(referencedTable as TableInfo, aliasName);
-    final aliasedReferencedColumn =
-        getReferencedColumn(aliasedReferencedTable as RelatedTable);
+    final aliasedReferencedTable = $db.alias(
+      referencedTable as TableInfo,
+      aliasName,
+    );
+    final aliasedReferencedColumn = getReferencedColumn(
+      aliasedReferencedTable as RelatedTable,
+    );
     final referencedJoinBuilder = JoinBuilder(
-        currentTable: _aliasedTable,
-        currentColumn: aliasedColumn,
-        referencedTable: aliasedReferencedTable,
-        referencedColumn: aliasedReferencedColumn);
+      currentTable: _aliasedTable,
+      currentColumn: aliasedColumn,
+      referencedTable: aliasedReferencedTable,
+      referencedColumn: aliasedReferencedColumn,
+    );
     $addJoinBuilderToRootComposer(referencedJoinBuilder);
-    return builder(referencedJoinBuilder,
-        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer);
+    return builder(
+      referencedJoinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
   }
 
   /// A helper method for getting a aliased copy of a column.
   /// If the composer is part of a join, this will return the original column
   AliasedColumn _aliasedColumn<AliasedColumn extends GeneratedColumn>(
-      AliasedColumn column) {
+    AliasedColumn column,
+  ) {
     return (_aliasedTable as TableInfo).columnsByName[column.name]
         as AliasedColumn;
   }
@@ -150,10 +166,11 @@ class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
     void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
     void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer,
   }) : $joinBuilder = joinBuilder {
-    this.$addJoinBuilderToRootComposer = $addJoinBuilderToRootComposer ??
+    this.$addJoinBuilderToRootComposer =
+        $addJoinBuilderToRootComposer ??
         ((JoinBuilder joinBuilder) => $joinBuilders.add(joinBuilder));
     this.$removeJoinBuilderFromRootComposer =
         $removeJoinBuilderFromRootComposer ??
-            ((JoinBuilder joinBuilder) => $joinBuilders.remove(joinBuilder));
+        ((JoinBuilder joinBuilder) => $joinBuilders.remove(joinBuilder));
   }
 }

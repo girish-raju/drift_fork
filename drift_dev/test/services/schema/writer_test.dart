@@ -21,17 +21,13 @@ import '../../analysis/test_utils.dart';
 void main() {
   test('writer integration test', () async {
     const options = DriftOptions.defaults(
-      dialect: DialectOptions(
-        null,
-        [SqlDialect.sqlite, SqlDialect.postgres],
-        SqliteAnalysisOptions(
-          modules: [SqlModule.fts5],
-        ),
-      ),
+      dialect: DialectOptions(null, [
+        SqlDialect.sqlite,
+        SqlDialect.postgres,
+      ], SqliteAnalysisOptions(modules: [SqlModule.fts5])),
     );
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/a.drift': '''
+    final state = await TestBackend.inTest({
+      'a|lib/a.drift': '''
 import 'main.dart';
 
 CREATE TABLE "groups" (
@@ -69,7 +65,7 @@ simple_query: SELECT * FROM my_view; -- not part of the schema
 
 @create: INSERT INTO "groups" ("name") VALUES ('test');
       ''',
-        'a|lib/main.dart': '''
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Users extends Table {
@@ -102,9 +98,7 @@ class MyViewRow {
 @DriftDatabase(include: {'a.drift'}, tables: [Users])
 class Database {}
       ''',
-      },
-      options: options,
-    );
+    }, options: options);
 
     final file = await state.analyze('package:a/main.dart');
     await state.analyze('package:a/a.drift');
@@ -112,9 +106,10 @@ class Database {}
 
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    final schemaJson =
-        await SchemaWriter(db.availableElements, options: options)
-            .createSchemaJson();
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+      options: options,
+    ).createSchemaJson();
 
     expect(schemaJson, json.decode(expected));
 
@@ -122,18 +117,21 @@ class Database {}
       db.availableElements,
       options: const DriftOptions.defaults(storeDateTimeValuesAsText: true),
     ).createSchemaJson();
-    expect(
-        schemaWithOptions['options'], {'store_date_time_values_as_text': true});
+    expect(schemaWithOptions['options'], {
+      'store_date_time_values_as_text': true,
+    });
   });
 
   group('can generate code from schema json', () {
     for (final withFixedSql in [false, true]) {
       test(withFixedSql ? 'with fixed sql' : 'without fixed sql', () async {
-        var serializedSchema = json.decode(
-            // Column types used to be serialized under a different format, test
-            // reading that as well.
-            expected.replaceAll(
-                '"int"', '"ColumnType.integer"')) as Map<String, dynamic>;
+        var serializedSchema =
+            json.decode(
+                  // Column types used to be serialized under a different format, test
+                  // reading that as well.
+                  expected.replaceAll('"int"', '"ColumnType.integer"'),
+                )
+                as Map<String, dynamic>;
         serializedSchema = Map.of(serializedSchema);
         if (!withFixedSql) {
           serializedSchema.remove('fixed_sql');
@@ -141,9 +139,13 @@ class Database {}
 
         final reader = await SchemaReader.readJson(serializedSchema);
 
-        final fakeBuildConfig = runInBuildConfigZone(() {
-          return BuildConfig(buildTargets: {});
-        }, 'drift_dev', []);
+        final fakeBuildConfig = runInBuildConfigZone(
+          () {
+            return BuildConfig(buildTargets: {});
+          },
+          'drift_dev',
+          [],
+        );
         final generated = await GenerateUtils.generateSchemaCode(
           DriftDevCli()
             ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
@@ -157,15 +159,17 @@ class Database {}
           expect(generated, contains('CHECK (LENGTH(setting) > 10)'));
         } else {
           expect(
-              generated,
-              contains(
-                  'ComparableExpr(settings.length).isBiggerThanValue(10)'));
+            generated,
+            contains('ComparableExpr(settings.length).isBiggerThanValue(10)'),
+          );
         }
 
         expect(
-            generated,
-            contains(
-                "OnCreateQuery('INSERT INTO \"groups\" (name) VALUES (\\'test\\')')"));
+          generated,
+          contains(
+            "OnCreateQuery('INSERT INTO \"groups\" (name) VALUES (\\'test\\')')",
+          ),
+        );
       });
     }
   });
@@ -205,8 +209,9 @@ class Database {}
 
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    final schemaJson =
-        await SchemaWriter(db.availableElements).createSchemaJson();
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+    ).createSchemaJson();
     final serializedView = (schemaJson['entities'] as List)[1];
 
     expect(serializedView['data'], {
@@ -214,16 +219,22 @@ class Database {}
       'sql':
           'CREATE VIEW IF NOT EXISTS "my_view" ("id", "id1", "id2") AS SELECT "t0"."id" AS "id", "t1"."id" AS "id1", "t2"."id" AS "id2" FROM "my_table" "t0" INNER JOIN "my_table" "t1" ON "t1"."id" = "t0"."id" INNER JOIN "my_table" "t2" ON "t2"."id" = "t0"."id"',
       'dart_info_name': r'$MyViewView',
-      'columns': everyElement(containsPair('dsl_features', [
-        // Views should include generated_as information about each column.
-        containsPair('generated_as', anything),
-      ])),
+      'columns': everyElement(
+        containsPair('dsl_features', [
+          // Views should include generated_as information about each column.
+          containsPair('generated_as', anything),
+        ]),
+      ),
     });
 
     final reader = await SchemaReader.readJson(schemaJson);
-    final fakeBuildConfig = runInBuildConfigZone(() {
-      return BuildConfig(buildTargets: {});
-    }, 'drift_dev', []);
+    final fakeBuildConfig = runInBuildConfigZone(
+      () {
+        return BuildConfig(buildTargets: {});
+      },
+      'drift_dev',
+      [],
+    );
     final generated = await GenerateUtils.generateSchemaCode(
       DriftDevCli()
         ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
@@ -259,8 +270,9 @@ class Database {}
 
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    final schemaJson =
-        await SchemaWriter(db.availableElements).createSchemaJson();
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+    ).createSchemaJson();
     // Force testing with old format that doesn't have the actual SQL statements
     // yet.
     schemaJson.remove('fixed_sql');
@@ -272,8 +284,8 @@ class Database {}
       'sql': null,
       'unique': false,
       'columns': [
-        {'column': 'name', 'order_by': 'descending'}
-      ]
+        {'column': 'name', 'order_by': 'descending'},
+      ],
     });
 
     final newFormat = schemaJson;
@@ -283,11 +295,16 @@ class Database {}
     oldFormat['entities'][1]['data']['columns'] = ['name'];
 
     for (final format in [oldFormat, newFormat]) {
-      final reader =
-          await SchemaReader.readJson(format as Map<String, Object?>);
-      final fakeBuildConfig = runInBuildConfigZone(() {
-        return BuildConfig(buildTargets: {});
-      }, 'drift_dev', []);
+      final reader = await SchemaReader.readJson(
+        format as Map<String, Object?>,
+      );
+      final fakeBuildConfig = runInBuildConfigZone(
+        () {
+          return BuildConfig(buildTargets: {});
+        },
+        'drift_dev',
+        [],
+      );
       final generated = await GenerateUtils.generateSchemaCode(
         DriftDevCli()
           ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
@@ -298,8 +315,10 @@ class Database {}
       );
 
       if (format == newFormat) {
-        expect(generated,
-            contains('CREATE INDEX tbl_name ON my_table (name DESC)'));
+        expect(
+          generated,
+          contains('CREATE INDEX tbl_name ON my_table (name DESC)'),
+        );
       } else {
         expect(generated, contains('CREATE INDEX tbl_name ON my_table (name)'));
       }
@@ -308,11 +327,11 @@ class Database {}
 
   group('generates correct datetime mode', () {
     Future<void> runTest(bool storeAsText, String expectedDefault) async {
-      final options =
-          DriftOptions.defaults(storeDateTimeValuesAsText: storeAsText);
-      final backend = await TestBackend.inTest(
-        {
-          'a|lib/main.dart': '''
+      final options = DriftOptions.defaults(
+        storeDateTimeValuesAsText: storeAsText,
+      );
+      final backend = await TestBackend.inTest({
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class MyTable extends Table {
@@ -322,18 +341,17 @@ class MyTable extends Table {
 @DriftDatabase(tables: [MyTable])
 class Database {}
 ''',
-        },
-        options: options,
-      );
+      }, options: options);
 
       final file = await backend.analyze('package:a/main.dart');
       backend.expectNoErrors();
 
       final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-      final schemaJson =
-          await SchemaWriter(db.availableElements, options: options)
-              .createSchemaJson();
+      final schemaJson = await SchemaWriter(
+        db.availableElements,
+        options: options,
+      ).createSchemaJson();
       final serializedTable = (schemaJson['entities'] as List)[0];
       final data = serializedTable['data'];
       expect(data, {
@@ -353,7 +371,9 @@ class Database {}
 
     test('with integer times', () async {
       await runTest(
-          false, "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)");
+        false,
+        "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)",
+      );
     });
 
     test('with text times', () async {
@@ -363,27 +383,30 @@ class Database {}
 
   test('merges SQL for @create queries', () async {
     final options = DriftOptions.defaults();
-    final backend = await TestBackend.inTest(
-      {
-        'a|lib/main.drift': '''
+    final backend = await TestBackend.inTest({
+      'a|lib/main.drift': '''
 CREATE TABLE foo (bar TEXT);
 
 @create: INSERT INTO foo DEFAULT VALUES;
 @create: UPDATE foo SET bar = 'testing';
 ''',
-      },
-    );
+    });
 
     final file = await backend.analyze('package:a/main.drift');
     backend.expectNoErrors();
 
-    final schemaJson =
-        await SchemaWriter(file.analyzedElements.toList(), options: options)
-            .createSchemaJson();
+    final schemaJson = await SchemaWriter(
+      file.analyzedElements.toList(),
+      options: options,
+    ).createSchemaJson();
     final reader = await SchemaReader.readJson(schemaJson);
-    final fakeBuildConfig = runInBuildConfigZone(() {
-      return BuildConfig(buildTargets: {});
-    }, 'drift_dev', []);
+    final fakeBuildConfig = runInBuildConfigZone(
+      () {
+        return BuildConfig(buildTargets: {});
+      },
+      'drift_dev',
+      [],
+    );
     final generated = await GenerateUtils.generateSchemaCode(
       DriftDevCli()
         ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),

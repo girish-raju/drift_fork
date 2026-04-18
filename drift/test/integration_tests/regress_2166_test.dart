@@ -16,7 +16,11 @@ void main() {
       for (final useTransaction in [true, false]) {
         for (final singleClientMode in [true, false]) {
           _defineTest(
-              existingListener, useIsolate, useTransaction, singleClientMode);
+            existingListener,
+            useIsolate,
+            useTransaction,
+            singleClientMode,
+          );
         }
       }
     }
@@ -29,7 +33,8 @@ void _defineTest(
   bool useTransaction,
   bool singleClientMode,
 ) {
-  final vars = 'existingListener=$existingListener, '
+  final vars =
+      'existingListener=$existingListener, '
       'useIsolate=$useIsolate, '
       'useTransaction=$useTransaction, '
       'singleClientMode=$singleClientMode';
@@ -58,8 +63,11 @@ void _defineTest(
       await db.update(db.someTable).write(update);
       // await pumpEventQueue();
       final row = await getRow().first;
-      expect(row.name, equals('x'),
-          reason: 'should be able to read the row we just wrote');
+      expect(
+        row.name,
+        equals('x'),
+        reason: 'should be able to read the row we just wrote',
+      );
     }
 
     if (existingListener) {

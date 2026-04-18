@@ -9,7 +9,8 @@ void main() {
     final engine = SqlEngine()
       ..registerTableFromSql('CREATE TABLE Shops (id INTEGER);')
       ..registerTableFromSql(
-          'CREATE TABLE Sales (shop_id INTEGER, date INTEGER, amount REAL);');
+        'CREATE TABLE Sales (shop_id INTEGER, date INTEGER, amount REAL);',
+      );
 
     final result = engine.analyze('''
       SELECT
@@ -80,8 +81,12 @@ void main() {
     final columns = select.resolvedColumns!;
 
     expect(columns.map((e) => e.name), ['id', 'name', 'manager_id', 'note']);
-    expect(columns.map((e) => result.typeOf(e).nullable),
-        [false, false, true, true]);
+    expect(columns.map((e) => result.typeOf(e).nullable), [
+      false,
+      false,
+      true,
+      true,
+    ]);
   });
 
   test('regression test for #1234', () {
@@ -110,17 +115,29 @@ void main() {
     final select = result.root as SelectStatement;
     final columns = select.resolvedColumns!;
 
-    expect(
-        columns.map((e) => e.name), ['id', 'group_id', 'user_id', 'inbox_id']);
-    expect(columns.map((e) => result.typeOf(e).nullable),
-        [false, false, true, true]);
+    expect(columns.map((e) => e.name), [
+      'id',
+      'group_id',
+      'user_id',
+      'inbox_id',
+    ]);
+    expect(columns.map((e) => result.typeOf(e).nullable), [
+      false,
+      false,
+      true,
+      true,
+    ]);
   });
 
   test('regression test for #1096', () {
     // https://github.com/simolus3/drift/issues/1096#issuecomment-931378474
-    final engine = SqlEngine(EngineOptions(
-        driftOptions: const DriftSqlOptions(), version: SqliteVersion.v3_35))
-      ..registerTableFromSql('''
+    final engine =
+        SqlEngine(
+          EngineOptions(
+            driftOptions: const DriftSqlOptions(),
+            version: SqliteVersion.v3_35,
+          ),
+        )..registerTableFromSql('''
 CREATE TABLE downloads (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
     uri TEXT NOT NULL,
@@ -153,16 +170,21 @@ CREATE TABLE downloads (
 
     expect(columns, hasLength(1));
     expect(
-        result.typeOf(columns.single).type,
-        isA<ResolvedType>()
-            .having((e) => e.type, 'type', BasicType.int)
-            .having((e) => e.nullable, 'nullable', isFalse));
+      result.typeOf(columns.single).type,
+      isA<ResolvedType>()
+          .having((e) => e.type, 'type', BasicType.int)
+          .having((e) => e.nullable, 'nullable', isFalse),
+    );
   });
 
   test('regression test for #1858', () {
     // https://github.com/simolus3/drift/issues/1858
-    final engine = SqlEngine(EngineOptions(
-        driftOptions: const DriftSqlOptions(), version: SqliteVersion.v3_38));
+    final engine = SqlEngine(
+      EngineOptions(
+        driftOptions: const DriftSqlOptions(),
+        version: SqliteVersion.v3_38,
+      ),
+    );
 
     engine.registerTableFromSql('''
 CREATE TABLE IF NOT EXISTS contract_has_add_fees
@@ -223,7 +245,8 @@ WHERE EXISTS(SELECT *
     // https://github.com/simolus3/drift/issues/2492
     final engine = SqlEngine()
       ..registerTableFromSql(
-          'CREATE TABLE items (id INT NOT NULL PRIMARY KEY)');
+        'CREATE TABLE items (id INT NOT NULL PRIMARY KEY)',
+      );
 
     final result = engine.analyze('''
       WITH filtered_items AS (

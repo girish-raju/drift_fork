@@ -68,15 +68,20 @@ class DiscoverStep {
             // Backends are supposed to throw NotALibraryExceptions if the
             // library is a part file. For other exceptions, we better report
             // the error.
-            _driver.backend.log
-                .warning('Could not resolve Dart library ${_file.ownUri}', e);
+            _driver.backend.log.warning(
+              'Could not resolve Dart library ${_file.ownUri}',
+              e,
+            );
           }
 
           _file.discovery = NotADartLibrary();
           break;
         }
-        final finder =
-            _FindDartElements(this, library, await _driver.knownTypes);
+        final finder = _FindDartElements(
+          this,
+          library,
+          await _driver.knownTypes,
+        );
         await finder.find();
 
         _file.errorsDuringDiscovery.addAll(finder.errors);
@@ -93,21 +98,28 @@ class DiscoverStep {
 
         SourceFile contents;
         try {
-          final stringContents =
-              await _driver.backend.readAsString(_file.ownUri);
+          final stringContents = await _driver.backend.readAsString(
+            _file.ownUri,
+          );
           contents = SourceFile.fromString(stringContents, url: _file.ownUri);
         } catch (e, s) {
-          _driver.backend.log
-              .fine('Could not read drift sources ${_file.ownUri}', e, s);
+          _driver.backend.log.fine(
+            'Could not read drift sources ${_file.ownUri}',
+            e,
+            s,
+          );
           _file.discovery = NoSuchFile();
           break;
         }
 
-        final parsed =
-            engine.parseSpan(ParserEntrypoint.driftFile, contents.span(0));
+        final parsed = engine.parseSpan(
+          ParserEntrypoint.driftFile,
+          contents.span(0),
+        );
         for (final error in parsed.errors) {
-          _file.errorsDuringDiscovery
-              .add(DriftAnalysisError(error.token.span, error.message));
+          _file.errorsDuringDiscovery.add(
+            DriftAnalysisError(error.token.span, error.message),
+          );
         }
 
         final ast = parsed.rootNode;
@@ -117,22 +129,44 @@ class DiscoverStep {
 
         for (final node in ast.childNodes) {
           if (node is ImportStatement) {
-            final uri =
-                _driver.backend.resolveUri(_file.ownUri, node.importedFile);
+            final uri = _driver.backend.resolveUri(
+              _file.ownUri,
+              node.importedFile,
+            );
 
             imports.add(DriftFileImport(node, uri));
           } else if (node is TableInducingStatement) {
-            pendingElements.add(DiscoveredDriftTable(
-                _id(node.createdName), DriftElementKind.table, node));
+            pendingElements.add(
+              DiscoveredDriftTable(
+                _id(node.createdName),
+                DriftElementKind.table,
+                node,
+              ),
+            );
           } else if (node is CreateViewStatement) {
-            pendingElements.add(DiscoveredDriftView(
-                _id(node.createdName), DriftElementKind.view, node));
+            pendingElements.add(
+              DiscoveredDriftView(
+                _id(node.createdName),
+                DriftElementKind.view,
+                node,
+              ),
+            );
           } else if (node is CreateIndexStatement) {
-            pendingElements.add(DiscoveredDriftIndex(
-                _id(node.indexName), DriftElementKind.dbIndex, node));
+            pendingElements.add(
+              DiscoveredDriftIndex(
+                _id(node.indexName),
+                DriftElementKind.dbIndex,
+                node,
+              ),
+            );
           } else if (node is CreateTriggerStatement) {
-            pendingElements.add(DiscoveredDriftTrigger(
-                _id(node.triggerName), DriftElementKind.trigger, node));
+            pendingElements.add(
+              DiscoveredDriftTrigger(
+                _id(node.triggerName),
+                DriftElementKind.trigger,
+                node,
+              ),
+            );
           } else if (node is DeclaredStatement) {
             String name;
 
@@ -143,8 +177,13 @@ class DiscoverStep {
               name = '\$drift_${specialQueryNameCount++}';
             }
 
-            pendingElements.add(DiscoveredDriftStatement(
-                _id(name), DriftElementKind.definedQuery, node));
+            pendingElements.add(
+              DiscoveredDriftStatement(
+                _id(name),
+                DriftElementKind.definedQuery,
+                node,
+              ),
+            );
           }
         }
 
@@ -178,13 +217,15 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
   final found = <DiscoveredElement>[];
 
   _FindDartElements(
-      this._discoverStep, this._library, KnownDriftTypes knownTypes)
-      : _isTable = _checker(knownTypes.tableType),
-        _isTableIndex = _checker(knownTypes.tableIndexType),
-        _isView = _checker(knownTypes.viewType),
-        _isTableInfo = _checker(knownTypes.tableInfoType),
-        _isDatabase = _checker(knownTypes.driftDatabase),
-        _isDao = _checker(knownTypes.driftAccessor);
+    this._discoverStep,
+    this._library,
+    KnownDriftTypes knownTypes,
+  ) : _isTable = _checker(knownTypes.tableType),
+      _isTableIndex = _checker(knownTypes.tableIndexType),
+      _isView = _checker(knownTypes.viewType),
+      _isTableInfo = _checker(knownTypes.tableInfoType),
+      _isDatabase = _checker(knownTypes.driftDatabase),
+      _isDao = _checker(knownTypes.driftAccessor);
 
   static TypeChecker _checker(InterfaceType type) {
     // Workaround for https://github.com/dart-lang/build/issues/3796, the
@@ -225,22 +266,27 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
           .followedBy(element.getters)
           .any((e) => e.isAbstract);
       if (!declaresAbstractMethod) {
-        _pendingWork.add(Future.sync(() async {
-          final name = await _sqlNameOfTable(element);
-          final id = _discoverStep._id(name);
-          final attachedIndices = <DriftElementId>[];
+        _pendingWork.add(
+          Future.sync(() async {
+            final name = await _sqlNameOfTable(element);
+            final id = _discoverStep._id(name);
+            final attachedIndices = <DriftElementId>[];
 
-          for (final (annotation, indexId) in _tableIndexAnnotation(element)) {
-            attachedIndices.add(indexId);
-            found.add(DiscoveredDartIndex(indexId, element, id, annotation));
-          }
+            for (final (annotation, indexId) in _tableIndexAnnotation(
+              element,
+            )) {
+              attachedIndices.add(indexId);
+              found.add(DiscoveredDartIndex(indexId, element, id, annotation));
+            }
 
-          found.add(DiscoveredDartTable(id, element, attachedIndices));
-        }));
+            found.add(DiscoveredDartTable(id, element, attachedIndices));
+          }),
+        );
       }
     } else if (_isDslView(element)) {
       final annotation = _driftViewAnnotation(element);
-      final name = annotation?.getField('name')?.toStringValue() ??
+      final name =
+          annotation?.getField('name')?.toStringValue() ??
           _defaultNameForTableOrView(element);
       final id = _discoverStep._id(name);
 
@@ -264,10 +310,12 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
 
   void _handleImportOrExport(LibraryElement? imported, bool isExported) {
     if (imported != null && !imported.isInSdk) {
-      _pendingWork.add(Future(() async {
-        final uri = await _discoverStep._driver.backend.uriOfDart(imported);
-        imports.add((uri: uri, transitive: isExported));
-      }));
+      _pendingWork.add(
+        Future(() async {
+          final uri = await _discoverStep._driver.backend.uriOfDart(imported);
+          imports.add((uri: uri, transitive: isExported));
+        }),
+      );
     }
   }
 
@@ -287,13 +335,15 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
   }
 
   String _defaultNameForTableOrView(ClassElement definingElement) {
-    return _discoverStep._driver.options.caseFromDartToSql
-        .apply(definingElement.name!);
+    return _discoverStep._driver.options.caseFromDartToSql.apply(
+      definingElement.name!,
+    );
   }
 
   /// Finds a [TableIndex] annotations on the [table].
   Iterable<(ElementAnnotation, DriftElementId)> _tableIndexAnnotation(
-      ClassElement table) sync* {
+    ClassElement table,
+  ) sync* {
     for (final annotation in table.metadata.annotations) {
       final computed = annotation.computeConstantValue();
       final type = computed?.type;
@@ -314,7 +364,8 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
         yield (
           annotation,
           _discoverStep._id(
-              indexName ?? computed.getField('name')?.toStringValue() ?? '')
+            indexName ?? computed.getField('name')?.toStringValue() ?? '',
+          ),
         );
       }
     }
@@ -354,8 +405,9 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
       return defaultName;
     }
 
-    final node = await _discoverStep._driver.backend
-        .loadElementDeclaration(tableNameGetter);
+    final node = await _discoverStep._driver.backend.loadElementDeclaration(
+      tableNameGetter,
+    );
     final returnExpr = returnExpressionOfMethod(node as dart.MethodDeclaration);
 
     const message =
@@ -366,8 +418,9 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
       return defaultName;
     }
 
-    final value =
-        (returnExpr is dart.StringLiteral) ? returnExpr.stringValue : null;
+    final value = (returnExpr is dart.StringLiteral)
+        ? returnExpr.stringValue
+        : null;
     if (value == null) {
       errors.add(DriftAnalysisError.forDartElement(tableNameGetter, message));
       return defaultName;

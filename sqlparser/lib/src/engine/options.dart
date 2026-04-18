@@ -51,16 +51,24 @@ class EngineOptions {
   }) : enabledExtensions = _allExtensions(enabledExtensions, version) {
     if (version < SqliteVersion.minimum) {
       throw ArgumentError.value(
-          version, 'version', 'Must at least be ${SqliteVersion.minimum}');
+        version,
+        'version',
+        'Must at least be ${SqliteVersion.minimum}',
+      );
     }
     if (version > SqliteVersion.current) {
       throw ArgumentError.value(
-          version, 'version', 'Must at most be ${SqliteVersion.current}');
+        version,
+        'version',
+        'Must at most be ${SqliteVersion.current}',
+      );
     }
   }
 
   static List<Extension> _allExtensions(
-      List<Extension> added, SqliteVersion version) {
+    List<Extension> added,
+    SqliteVersion version,
+  ) {
     return [
       // The json1 extension was enabled by default in sqlite3 version 3.38, so
       // add it if it's not already enabled.
@@ -88,9 +96,7 @@ class EngineOptions {
 class DriftSqlOptions {
   final bool storeDateTimesAsText;
 
-  const DriftSqlOptions({
-    this.storeDateTimesAsText = false,
-  });
+  const DriftSqlOptions({this.storeDateTimesAsText = false});
 }
 
 /// The assumed version of `sqlite3`.

@@ -13,13 +13,13 @@ DriftOptions readOptionsFromConfig(BuildConfig config) {
             const driftBuilders = {
               'drift_dev:drift_dev',
               'drift_dev:not_shared',
-              'drift_dev:modular'
+              'drift_dev:modular',
             };
 
             return [
               for (final MapEntry(:key, :value) in t.builders.entries)
                 if (value.isEnabled && driftBuilders.contains(key))
-                  value.options
+                  value.options,
             ];
           })
           .map((json) => DriftOptions.fromJson(json))

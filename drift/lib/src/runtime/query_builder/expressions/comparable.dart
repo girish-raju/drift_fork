@@ -62,10 +62,17 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   ///
   /// If [not] is set, the expression will be negated. To compare this
   /// expression against two values, see
-  Expression<bool> isBetween(Expression<DT> lower, Expression<DT> higher,
-      {bool not = false}) {
+  Expression<bool> isBetween(
+    Expression<DT> lower,
+    Expression<DT> higher, {
+    bool not = false,
+  }) {
     return _BetweenExpression(
-        target: this, lower: lower, higher: higher, not: not);
+      target: this,
+      lower: lower,
+      higher: higher,
+      not: not,
+    );
   }
 
   /// Returns an expression evaluating to true if this expression is between
@@ -95,11 +102,12 @@ class _BetweenExpression extends Expression<bool> {
   final Expression lower;
   final Expression higher;
 
-  _BetweenExpression(
-      {required this.target,
-      required this.lower,
-      required this.higher,
-      this.not = false});
+  _BetweenExpression({
+    required this.target,
+    required this.lower,
+    required this.higher,
+    this.not = false,
+  });
 
   @override
   void writeInto(GenerationContext context) {

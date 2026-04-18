@@ -4,12 +4,15 @@ import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final engine =
-      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
+  final engine = SqlEngine(
+    EngineOptions(driftOptions: const DriftSqlOptions()),
+  );
 
-  void testFormat(String input,
-      {ParserEntrypoint entrypoint = ParserEntrypoint.statement,
-      String? expectedOutput}) {
+  void testFormat(
+    String input, {
+    ParserEntrypoint entrypoint = ParserEntrypoint.statement,
+    String? expectedOutput,
+  }) {
     AstNode parse(String input) {
       final result = engine.parse(entrypoint, input);
 
@@ -267,8 +270,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       });
 
       test('escapes CTEs', () {
-        testFormat('WITH alias("first", second) AS (SELECT * FROM foo) '
-            'SELECT * FROM alias');
+        testFormat(
+          'WITH alias("first", second) AS (SELECT * FROM foo) '
+          'SELECT * FROM alias',
+        );
       });
 
       test('with materialized CTEs', () {
@@ -419,7 +424,8 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     group('delete', () {
       test('with CTEs', () {
         testFormat(
-            'WITH foo (id) AS (SELECT * FROM bar) DELETE FROM bar WHERE x;');
+          'WITH foo (id) AS (SELECT * FROM bar) DELETE FROM bar WHERE x;',
+        );
       });
 
       test('with returning', () {
@@ -429,8 +435,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
     group('insert', () {
       test('replace', () {
-        testFormat('WITH foo (id) AS (SELECT * FROM bar) '
-            'REPLACE INTO foo DEFAULT VALUES');
+        testFormat(
+          'WITH foo (id) AS (SELECT * FROM bar) '
+          'REPLACE INTO foo DEFAULT VALUES',
+        );
       });
 
       test('into select', () {
@@ -447,33 +455,44 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
       test('upsert - do nothing', () {
         testFormat(
-            'INSERT OR REPLACE INTO foo DEFAULT VALUES ON CONFLICT DO NOTHING');
+          'INSERT OR REPLACE INTO foo DEFAULT VALUES ON CONFLICT DO NOTHING',
+        );
       });
 
       test('upsert with conflict target', () {
-        testFormat('INSERT INTO foo VALUES (1, 2, 3) ON CONFLICT (a, b, c) '
-            'DO NOTHING;');
+        testFormat(
+          'INSERT INTO foo VALUES (1, 2, 3) ON CONFLICT (a, b, c) '
+          'DO NOTHING;',
+        );
       });
 
       test('upsert with conflict target and where', () {
-        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
-            'ON CONFLICT (a, b, c) WHERE foo = bar DO NOTHING;');
+        testFormat(
+          'INSERT INTO foo VALUES (1, 2, 3) '
+          'ON CONFLICT (a, b, c) WHERE foo = bar DO NOTHING;',
+        );
       });
 
       test('upsert - update', () {
-        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
-            'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
+        testFormat(
+          'INSERT INTO foo VALUES (1, 2, 3) '
+          'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;',
+        );
       });
 
       test('upsert - update with column-name-list', () {
-        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
-            'ON CONFLICT DO UPDATE SET (a, c) = (b, d) WHERE d < a;');
+        testFormat(
+          'INSERT INTO foo VALUES (1, 2, 3) '
+          'ON CONFLICT DO UPDATE SET (a, c) = (b, d) WHERE d < a;',
+        );
       });
 
       test('upsert - multiple clauses', () {
-        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
-            'ON CONFLICT DO NOTHING '
-            'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
+        testFormat(
+          'INSERT INTO foo VALUES (1, 2, 3) '
+          'ON CONFLICT DO NOTHING '
+          'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;',
+        );
       });
     });
 
@@ -560,10 +579,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
       expect(
         FunctionExpression(
-                name: 'bar',
-                schemaName: 'foo',
-                parameters: ExprFunctionParameters())
-            .toSql(),
+          name: 'bar',
+          schemaName: 'foo',
+          parameters: ExprFunctionParameters(),
+        ).toSql(),
         'foo.bar()',
       );
     });
@@ -574,11 +593,15 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
 
     test('is DISTINCT FROM', () {
-      testFormat('SELECT foo IS DISTINCT FROM bar',
-          expectedOutput: 'SELECT foo IS NOT bar');
+      testFormat(
+        'SELECT foo IS DISTINCT FROM bar',
+        expectedOutput: 'SELECT foo IS NOT bar',
+      );
 
-      testFormat('SELECT foo IS NOT DISTINCT FROM bar',
-          expectedOutput: 'SELECT foo IS bar');
+      testFormat(
+        'SELECT foo IS NOT DISTINCT FROM bar',
+        expectedOutput: 'SELECT foo IS bar',
+      );
     });
 
     test('is null', () {
@@ -625,7 +648,8 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
     test('blob literal', () {
       testFormat(
-          "select typeof(X'0100000300000000000000000000803F000000000000003F0000803F');");
+        "select typeof(X'0100000300000000000000000000803F000000000000003F0000803F');",
+      );
     });
   });
 
@@ -671,33 +695,40 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
 
     test('declared statements', () {
-      testFormat('foo (?1 AS INT): SELECT * FROM bar WHERE ? < 10;',
-          entrypoint: ParserEntrypoint.driftFile);
-      testFormat('foo: SELECT * FROM bar WHERE :id < 10;',
-          entrypoint: ParserEntrypoint.driftFile);
-      testFormat('foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
-          entrypoint: ParserEntrypoint.driftFile);
-      testFormat(r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
-          entrypoint: ParserEntrypoint.driftFile);
+      testFormat(
+        'foo (?1 AS INT): SELECT * FROM bar WHERE ? < 10;',
+        entrypoint: ParserEntrypoint.driftFile,
+      );
+      testFormat(
+        'foo: SELECT * FROM bar WHERE :id < 10;',
+        entrypoint: ParserEntrypoint.driftFile,
+      );
+      testFormat(
+        'foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
+        entrypoint: ParserEntrypoint.driftFile,
+      );
+      testFormat(
+        r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
+        entrypoint: ParserEntrypoint.driftFile,
+      );
     });
 
     test('nested star', () {
-      testFormat('q: SELECT foo.** FROM foo;',
-          entrypoint: ParserEntrypoint.driftFile);
+      testFormat(
+        'q: SELECT foo.** FROM foo;',
+        entrypoint: ParserEntrypoint.driftFile,
+      );
     });
 
     test('transaction block', () {
-      testFormat(
-        '''
+      testFormat('''
 test: BEGIN TRANSACTION
   SELECT * FROM foo;
   UPDATE foo SET bar = baz;
   DELETE FROM x;
   INSERT INTO foo VALUES (x, y, z);
 COMMIT TRANSACTION;
-''',
-        entrypoint: ParserEntrypoint.driftFile,
-      );
+''', entrypoint: ParserEntrypoint.driftFile);
     });
   });
 

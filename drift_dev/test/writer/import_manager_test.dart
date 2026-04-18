@@ -14,10 +14,14 @@ void main() {
 
     setUp(() {
       imports = LibraryImportManager(sourceUri);
-      final generationOptions =
-          GenerationOptions(imports: imports, isModular: true);
-      writer = Writer(const DriftOptions.defaults(),
-          generationOptions: generationOptions);
+      final generationOptions = GenerationOptions(
+        imports: imports,
+        isModular: true,
+      );
+      writer = Writer(
+        const DriftOptions.defaults(),
+        generationOptions: generationOptions,
+      );
       imports.linkToWriter(writer);
     });
 
@@ -27,8 +31,10 @@ void main() {
 
     test('writes imports', () {
       expect(imports.prefixFor(AnnotatedDartCode.dartAsync, 'Future'), 'i0');
-      expect(imports.prefixFor(AnnotatedDartCode.drift, 'GeneratedDatabase'),
-          'i1');
+      expect(
+        imports.prefixFor(AnnotatedDartCode.drift, 'GeneratedDatabase'),
+        'i1',
+      );
       expect(imports.prefixFor(AnnotatedDartCode.dartAsync, 'Stream'), 'i0');
 
       expect(writer.writeGenerated(), '''
@@ -42,7 +48,9 @@ import 'package:drift/drift.dart' as i1;
       expect(imports.prefixFor(uri, 'Test'), 'i0');
 
       expect(
-          writer.writeGenerated(), contains("import 'imported.dart' as i0;"));
+        writer.writeGenerated(),
+        contains("import 'imported.dart' as i0;"),
+      );
     });
   });
 }

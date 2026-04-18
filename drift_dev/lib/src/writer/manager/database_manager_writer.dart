@@ -47,11 +47,11 @@ class DatabaseManagerWriter {
       ];
 
       _TableManagerWriter(
-              table: table,
-              scope: _scope,
-              dbClassName: _dbClassName,
-              otherTables: otherTables)
-          .write(leaf);
+        table: table,
+        scope: _scope,
+        dbClassName: _dbClassName,
+        otherTables: otherTables,
+      ).write(leaf);
     }
   }
 
@@ -79,14 +79,18 @@ class DatabaseManagerWriter {
 
     for (final table in _addedTables) {
       // Get the name of the table manager class
-      final rootTableManagerClass =
-          _templates.rootTableManagerWithPrefix(table, leaf);
+      final rootTableManagerClass = _templates.rootTableManagerWithPrefix(
+        table,
+        leaf,
+      );
 
       /// Write the getter for the table manager
-      final databaseInstance =
-          accessorMixin != null ? '_db.attachedDatabase' : '_db';
+      final databaseInstance = accessorMixin != null
+          ? '_db.attachedDatabase'
+          : '_db';
       leaf.writeln(
-          '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass($databaseInstance, _db.${table.dbGetterName});');
+        '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass($databaseInstance, _db.${table.dbGetterName});',
+      );
     }
     leaf.writeln('}');
   }

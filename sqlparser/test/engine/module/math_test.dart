@@ -2,24 +2,27 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final engine = SqlEngine(EngineOptions(
-    version: SqliteVersion.current,
-    enabledExtensions: const [BuiltInMathExtension()],
-  ));
+  final engine = SqlEngine(
+    EngineOptions(
+      version: SqliteVersion.current,
+      enabledExtensions: const [BuiltInMathExtension()],
+    ),
+  );
 
   ResolveResult resolveExpr(String expr) {
     final result = engine.analyze('SELECT $expr;');
-    final column = ((result.root as SelectStatement).columns.single
-            as ExpressionResultColumn)
-        .expression;
+    final column =
+        ((result.root as SelectStatement).columns.single
+                as ExpressionResultColumn)
+            .expression;
     return result.typeOf(column);
   }
 
   test('refuses to work with old sqlite versions', () {
     expect(
-      () => SqlEngine(EngineOptions(
-        enabledExtensions: const [BuiltInMathExtension()],
-      )),
+      () => SqlEngine(
+        EngineOptions(enabledExtensions: const [BuiltInMathExtension()]),
+      ),
       throwsStateError,
     );
   });

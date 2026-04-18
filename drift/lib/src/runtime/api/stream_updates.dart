@@ -79,7 +79,7 @@ enum UpdateKind {
   update,
 
   /// A delete statement ran on the affected table.
-  delete
+  delete,
 }
 
 /// Contains information on how a table was updated, which can be used to find
@@ -135,19 +135,23 @@ abstract class TableUpdateQuery {
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
-  const factory TableUpdateQuery.onTableName(String table,
-      {UpdateKind? limitUpdateKind}) = SpecificUpdateQuery;
+  const factory TableUpdateQuery.onTableName(
+    String table, {
+    UpdateKind? limitUpdateKind,
+  }) = SpecificUpdateQuery;
 
   /// A query that listens for all updates on a specific [table].
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
-  factory TableUpdateQuery.onTable(ResultSetImplementation table,
-      {UpdateKind? limitUpdateKind}) {
+  factory TableUpdateQuery.onTable(
+    ResultSetImplementation table, {
+    UpdateKind? limitUpdateKind,
+  }) {
     if (table is ViewInfo) {
       return TableUpdateQuery.allOf([
         for (final table in table.readTables)
-          TableUpdateQuery.onTableName(table)
+          TableUpdateQuery.onTableName(table),
       ]);
     }
 
@@ -159,17 +163,16 @@ abstract class TableUpdateQuery {
 
   /// A query that listens for any change on any table in [tables].
   factory TableUpdateQuery.onAllTables(
-      Iterable<ResultSetImplementation> tables) {
-    return TableUpdateQuery.allOf(
-      [
-        for (final table in tables)
-          if (table is ViewInfo)
-            for (final table in table.readTables)
-              TableUpdateQuery.onTableName(table)
-          else
-            TableUpdateQuery.onTable(table),
-      ],
-    );
+    Iterable<ResultSetImplementation> tables,
+  ) {
+    return TableUpdateQuery.allOf([
+      for (final table in tables)
+        if (table is ViewInfo)
+          for (final table in table.readTables)
+            TableUpdateQuery.onTableName(table)
+        else
+          TableUpdateQuery.onTable(table),
+    ]);
   }
 
   /// Determines whether the [update] would be picked up by this query.

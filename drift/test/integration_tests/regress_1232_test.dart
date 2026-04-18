@@ -23,8 +23,11 @@ void main() {
 
     watchValue().listen(null);
 
-    await db.customUpdate('update tbl set x = 2',
-        updates: someTables, updateKind: UpdateKind.update);
+    await db.customUpdate(
+      'update tbl set x = 2',
+      updates: someTables,
+      updateKind: UpdateKind.update,
+    );
 
     expect(await watchValue().first, 2);
   });

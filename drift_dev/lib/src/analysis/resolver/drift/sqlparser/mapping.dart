@@ -74,8 +74,9 @@ class TypeMapping {
   }
 
   ResolvedType _columnType(DriftColumn column) {
-    var type = _driftTypeToParser(column.sqlType.builtin)
-        .withNullable(column.nullable);
+    var type = _driftTypeToParser(
+      column.sqlType.builtin,
+    ).withNullable(column.nullable);
 
     type = switch (column.sqlType) {
       ColumnDriftType() => type,
@@ -92,17 +93,21 @@ class TypeMapping {
   ResolvedType _driftTypeToParser(DriftSqlType type) {
     return switch (type) {
       DriftSqlType.int => const ResolvedType(type: BasicType.int),
-      DriftSqlType.bigInt =>
-        const ResolvedType(type: BasicType.int, hints: [IsBigInt()]),
+      DriftSqlType.bigInt => const ResolvedType(
+        type: BasicType.int,
+        hints: [IsBigInt()],
+      ),
       DriftSqlType.string => const ResolvedType(type: BasicType.text),
-      DriftSqlType.bool =>
-        const ResolvedType(type: BasicType.int, hints: [IsBoolean()]),
+      DriftSqlType.bool => const ResolvedType(
+        type: BasicType.int,
+        hints: [IsBoolean()],
+      ),
       DriftSqlType.dateTime => ResolvedType(
-          type: driver.options.storeDateTimeValuesAsText
-              ? BasicType.text
-              : BasicType.int,
-          hints: const [IsDateTime()],
-        ),
+        type: driver.options.storeDateTimeValuesAsText
+            ? BasicType.text
+            : BasicType.int,
+        hints: const [IsDateTime()],
+      ),
       DriftSqlType.blob => const ResolvedType(type: BasicType.blob),
       DriftSqlType.double => const ResolvedType(type: BasicType.real),
       DriftSqlType.any => const ResolvedType(type: BasicType.any),
@@ -188,17 +193,20 @@ final class _ResolvedTypeFromSql implements HasType {
   @override
   final AppliedTypeConverter? typeConverter;
 
-  _ResolvedTypeFromSql(
-      {required this.isArray,
-      required this.nullable,
-      required this.sqlType,
-      required this.typeConverter});
+  _ResolvedTypeFromSql({
+    required this.isArray,
+    required this.nullable,
+    required this.sqlType,
+    required this.typeConverter,
+  });
 }
 
 /// Creates a [TypeFromText] implementation that will look up type converters
 /// for `ENUM` and `ENUMNAME` column.
 TypeFromText enumColumnFromText(
-    Map<String, DartType> knownTypes, KnownDriftTypes helper) {
+  Map<String, DartType> knownTypes,
+  KnownDriftTypes helper,
+) {
   return (String typeName) {
     final match = FoundReferencesInSql.enumRegex.firstMatch(typeName);
 

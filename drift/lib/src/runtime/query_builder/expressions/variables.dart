@@ -95,10 +95,7 @@ final class Variable<T extends Object> extends Expression<T> {
         ..write(mark)
         ..write(explicitStart + context.amountOfVariables)
         ..write(suffix);
-      context.introduceVariable(
-        this,
-        mapToSimpleValue(context),
-      );
+      context.introduceVariable(this, mapToSimpleValue(context));
     } else {
       context.buffer.write(mark);
       context.introduceVariable(this, mapToSimpleValue(context));
@@ -138,8 +135,9 @@ final class Constant<T extends Object> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    return context.buffer
-        .write(BaseSqlType.mapToSqlLiteral(context, _customType, value));
+    return context.buffer.write(
+      BaseSqlType.mapToSqlLiteral(context, _customType, value),
+    );
   }
 
   @override

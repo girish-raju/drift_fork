@@ -9,13 +9,16 @@ void main() {
       ..execute('CREATE TABLE foo (id INTEGER PRIMARY KEY, bar TEXT);')
       ..execute('CREATE INDEX my_idx ON foo (bar)')
       ..execute('CREATE VIEW my_view AS SELECT bar FROM foo')
-      ..execute('CREATE TRIGGER my_trigger AFTER UPDATE ON foo BEGIN '
-          'UPDATE foo SET bar = old.bar; '
-          'END;')
       ..execute(
-          'CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN '
-          'UPDATE foo SET bar = old.bar; '
-          'END;');
+        'CREATE TRIGGER my_trigger AFTER UPDATE ON foo BEGIN '
+        'UPDATE foo SET bar = old.bar; '
+        'END;',
+      )
+      ..execute(
+        'CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN '
+        'UPDATE foo SET bar = old.bar; '
+        'END;',
+      );
     addTearDown(database.close);
 
     final elements = await extractDriftElementsFromDatabase(database);
@@ -28,8 +31,11 @@ void main() {
             .having((e) => e.parsedStatement, 'parsedStatement', isNotNull),
         isA<DriftView>()
             .having((e) => e.schemaName, 'schemaName', 'my_view')
-            .having((e) => (e.source as SqlViewSource).parsedStatement,
-                'parsedStatement', isNotNull),
+            .having(
+              (e) => (e.source as SqlViewSource).parsedStatement,
+              'parsedStatement',
+              isNotNull,
+            ),
         isA<DriftTrigger>()
             .having((e) => e.schemaName, 'schemaName', 'my_trigger')
             .having((e) => e.parsedStatement, 'parsedStatement', isNotNull),

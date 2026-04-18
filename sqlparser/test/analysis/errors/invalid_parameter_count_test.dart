@@ -10,10 +10,10 @@ void main() {
 
     expect(result.errors, [
       analysisErrorWith(
-          lexeme: '0, 1',
-          type: AnalysisErrorType.invalidAmountOfParameters,
-          message:
-              'iif expects 3 arguments (2 are allowed since 3.48), got 2.'),
+        lexeme: '0, 1',
+        type: AnalysisErrorType.invalidAmountOfParameters,
+        message: 'iif expects 3 arguments (2 are allowed since 3.48), got 2.',
+      ),
     ]);
   });
 

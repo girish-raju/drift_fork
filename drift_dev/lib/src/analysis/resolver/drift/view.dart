@@ -57,8 +57,11 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       if (source is ExpressionColumn) {
         final mappedBy = source.mappedBy;
         if (mappedBy != null) {
-          converter =
-              await typeConverterFromMappedBy(driftType, nullable, mappedBy);
+          converter = await typeConverterFromMappedBy(
+            driftType,
+            nullable,
+            mappedBy,
+          );
           ownsConverter = true;
         }
       }
@@ -71,8 +74,10 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       final driftColumn = DriftColumn(
         sqlType: driftType,
         nameInSql: column.name,
-        nameInDart:
-            dartNameForSqlColumn(column.name, existingNames: columnDartNames),
+        nameInDart: dartNameForSqlColumn(
+          column.name,
+          existingNames: columnDartNames,
+        ),
         declaration: DriftDeclaration.driftFile(stmt, file.ownUri),
         nullable: nullable,
         typeConverter: converter,
@@ -105,15 +110,18 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       }
     }
 
-    final createStmtForDatabase = CreateViewStatement(
-      ifNotExists: stmt.ifNotExists,
-      viewName: stmt.viewName,
-      columns: stmt.columns,
-      query: stmt.query,
-      // Remove drift-specific syntax
-      driftTableName: null,
-    ).toSqlWithoutDriftSpecificSyntax(
-        resolver.driver.options, SqlDialect.sqlite);
+    final createStmtForDatabase =
+        CreateViewStatement(
+          ifNotExists: stmt.ifNotExists,
+          viewName: stmt.viewName,
+          columns: stmt.columns,
+          query: stmt.query,
+          // Remove drift-specific syntax
+          driftTableName: null,
+        ).toSqlWithoutDriftSpecificSyntax(
+          resolver.driver.options,
+          SqlDialect.sqlite,
+        );
 
     return DriftView(
       discovered.ownId,

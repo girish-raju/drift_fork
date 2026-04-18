@@ -62,11 +62,7 @@ class DriftAnalysisDriver {
 
   AnalysisResultCacheReader? cacheReader;
 
-  DriftAnalysisDriver(
-    this.backend,
-    this.options, {
-    this.isTesting = false,
-  });
+  DriftAnalysisDriver(this.backend, this.options, {this.isTesting = false});
 
   SqlEngine newSqlEngine() {
     return SqlEngine(
@@ -104,14 +100,14 @@ class DriftAnalysisDriver {
     return switch (_loadingTypes) {
       null => _loadingTypes = KnownDriftTypes.resolve(options, backend),
       var loading => loading.then((resolved) {
-          if (resolved == null) {
-            return null;
-          } else if (resolved.isStillConsistent) {
-            return resolved;
-          } else {
-            return _loadingTypes = KnownDriftTypes.resolve(options, backend);
-          }
-        }),
+        if (resolved == null) {
+          return null;
+        } else if (resolved.isStillConsistent) {
+          return resolved;
+        } else {
+          return _loadingTypes = KnownDriftTypes.resolve(options, backend);
+        }
+      }),
     };
   }
 
@@ -136,13 +132,9 @@ class DriftAnalysisDriver {
     if (found == null) return null;
 
     final parsed = json.decode(found) as Map<String, Object?>;
-    final data = CachedSerializationResult(
-      [
-        for (final entry in parsed['imports'] as List)
-          Uri.parse(entry as String)
-      ],
-      (parsed['elements'] as Map<String, Object?>).cast(),
-    );
+    final data = CachedSerializationResult([
+      for (final entry in parsed['imports'] as List) Uri.parse(entry as String),
+    ], (parsed['elements'] as Map<String, Object?>).cast());
     cache.serializationCache[uri] = data;
     return data.cachedElements;
   }
@@ -152,8 +144,10 @@ class DriftAnalysisDriver {
     bool warnIfFileDoesntExist = true,
   }) async {
     if (file.discovery == null) {
-      await DiscoverStep(this, file)
-          .discover(warnIfFileDoesntExist: warnIfFileDoesntExist);
+      await DiscoverStep(
+        this,
+        file,
+      ).discover(warnIfFileDoesntExist: warnIfFileDoesntExist);
       cache.knowsLocalElements(file);
     }
   }
@@ -239,8 +233,9 @@ class DriftAnalysisDriver {
           }
 
           var importAst = discovery.imports[i];
-          known.errorsDuringDiscovery.add(DriftAnalysisError.inDriftFile(
-              importAst.ast, message.toString()));
+          known.errorsDuringDiscovery.add(
+            DriftAnalysisError.inDriftFile(importAst.ast, message.toString()),
+          );
         }
       }
     }
@@ -259,7 +254,9 @@ class DriftAnalysisDriver {
   }
 
   Future<DriftElement?> resolveElement(
-      FileState state, DriftElementId id) async {
+    FileState state,
+    DriftElementId id,
+  ) async {
     assert(state.discovery != null || state.cachedDiscovery != null);
     assert(id.libraryUri == state.ownUri);
 
@@ -345,12 +342,13 @@ class DriftAnalysisDriver {
   /// driver, which avoids running duplicate analysis runs across build steps.
   SerializedElements serializeState(FileState state) {
     final data = ElementSerializer.serialize(
-        state.analysis.values.map((e) => e.result).whereType());
+      state.analysis.values.map((e) => e.result).whereType(),
+    );
 
     final imports = state.discovery?.importDependencies;
     if (imports != null) {
       data.serializedData['imports'] = [
-        for (final import in imports) import.uri.toString()
+        for (final import in imports) import.uri.toString(),
       ];
     }
 

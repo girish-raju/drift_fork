@@ -72,8 +72,11 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   /// Unlike calling [Batch.insertAll] in a [Batch] directly, foreign keys are
   /// checked only _after_ all inserts ran. In other words, the order in which
   /// the [rows] are in doesn't matter if there are foreign keys between them.
-  Future<void> insertAll(Iterable<Insertable<Row>> rows,
-      {InsertMode? mode, UpsertClause<Tbl, Row>? onConflict}) {
+  Future<void> insertAll(
+    Iterable<Insertable<Row>> rows, {
+    InsertMode? mode,
+    UpsertClause<Tbl, Row>? onConflict,
+  }) {
     return attachedDatabase.batch((b) {
       // TODO: Remove this pragma, it should be an explicit opt-in.
       // https://github.com/simolus3/drift/issues/3393
@@ -112,11 +115,7 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
     InsertMode? mode,
     UpsertClause<Tbl, Row>? onConflict,
   }) {
-    return insert().insertReturning(
-      row,
-      mode: mode,
-      onConflict: onConflict,
-    );
+    return insert().insertReturning(row, mode: mode, onConflict: onConflict);
   }
 
   /// Inserts one row into this table and returns it, along with auto-generated

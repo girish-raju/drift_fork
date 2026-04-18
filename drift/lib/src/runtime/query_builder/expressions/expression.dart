@@ -96,7 +96,9 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// drift, [DriftSqlType.forType] will be used as a default.
   Expression<D2> cast<D2 extends Object>([BaseSqlType<D2>? type]) {
     return _CastInSqlExpression<D, D2>(
-        this, type ?? DriftSqlType.forType<D2>());
+      this,
+      type ?? DriftSqlType.forType<D2>(),
+    );
   }
 
   /// Generates an `IS` expression in SQL, comparing this expression with the
@@ -131,8 +133,12 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// Dart. When this expression and [other] are both non-null, this is the same
   /// as [equalsExp]. Two `NULL` values are considered equal as well.
   Expression<bool> isExp(Expression<D> other) {
-    return BaseInfixOperator(this, 'IS', other,
-        precedence: Precedence.comparisonEq);
+    return BaseInfixOperator(
+      this,
+      'IS',
+      other,
+      precedence: Precedence.comparisonEq,
+    );
   }
 
   /// Generates an `IS NOT` expression in SQL, comparing this expression with
@@ -140,8 +146,12 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   ///
   /// This the inverse of [isExp].
   Expression<bool> isNotExp(Expression<D> other) {
-    return BaseInfixOperator(this, 'IS NOT', other,
-        precedence: Precedence.comparisonEq);
+    return BaseInfixOperator(
+      this,
+      'IS NOT',
+      other,
+      precedence: Precedence.comparisonEq,
+    );
   }
 
   /// An expression that is true if `this` resolves to any of the values in
@@ -238,7 +248,9 @@ abstract class Expression<D extends Object> implements FunctionParameter {
 
   /// Evaluates to `this` if [predicate] is true, otherwise evaluates to [ifFalse].
   Expression<T> iif<T extends Object>(
-      Expression<bool> predicate, Expression<T> ifFalse) {
+    Expression<bool> predicate,
+    Expression<T> ifFalse,
+  ) {
     return FunctionCallExpression<T>('IIF', [predicate, this, ifFalse]);
   }
 
@@ -269,8 +281,10 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// it in parentheses if necessary.
   @protected
   void writeInner(GenerationContext ctx, Expression inner) {
-    assert(precedence != Precedence.unknown,
-        "Expressions with unknown precedence shouldn't have inner expressions");
+    assert(
+      precedence != Precedence.unknown,
+      "Expressions with unknown precedence shouldn't have inner expressions",
+    );
     inner.writeAroundPrecedence(ctx, precedence);
   }
 
@@ -542,16 +556,14 @@ class _CastInSqlExpression<D1 extends Object, D2 extends Object>
       typeName = switch (targetType) {
         DriftSqlType.int ||
         DriftSqlType.bigInt ||
-        DriftSqlType.bool =>
-          'INTEGER',
+        DriftSqlType.bool => 'INTEGER',
         DriftSqlType.string => 'CHAR',
         DriftSqlType.double => 'DOUBLE',
         DriftSqlType.blob => 'BINARY',
         DriftSqlType.dateTime => 'DATETIME',
         DriftSqlType.any => '',
         CustomSqlType() ||
-        DialectAwareSqlType() =>
-          targetType.sqlTypeName(context),
+        DialectAwareSqlType() => targetType.sqlTypeName(context),
       };
     } else {
       typeName = targetType.sqlTypeName(context);
@@ -605,8 +617,11 @@ class FunctionCallExpression<R extends Object> extends Expression<R> {
 void _checkSubquery(BaseSelectStatement statement) {
   final columns = statement._expandedColumns.length;
   if (columns != 1) {
-    throw ArgumentError.value(statement, 'statement',
-        'Must return exactly one column (actually returns $columns)');
+    throw ArgumentError.value(
+      statement,
+      'statement',
+      'Must return exactly one column (actually returns $columns)',
+    );
   }
 }
 
@@ -615,7 +630,8 @@ void _checkSubquery(BaseSelectStatement statement) {
 /// The statement, which can be created via [DatabaseConnectionUser.select] in
 /// a database class, must return exactly one row with exactly one column.
 Expression<R> subqueryExpression<R extends Object>(
-    BaseSelectStatement statement) {
+  BaseSelectStatement statement,
+) {
   _checkSubquery(statement);
   return _SubqueryExpression<R>(statement);
 }

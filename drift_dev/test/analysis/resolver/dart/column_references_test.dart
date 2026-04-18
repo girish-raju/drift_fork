@@ -10,27 +10,25 @@ import '../../test_utils.dart';
 void main() {
   group('reports a warning', () {
     test('when the table is not a class type', () async {
-      final state = await TestBackend.inTest(
-        {
-          'a|lib/main.dart': '''
+      final state = await TestBackend.inTest({
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Foo extends Table {
   TextColumn get foo => text().references(dynamic, #what)();
 }
-'''
-        },
-      );
+''',
+      });
 
       final file = await state.analyze('package:a/main.dart');
-      expect(file.allErrors,
-          [isDriftError('Expected a class here.').withSpan('dynamic')]);
+      expect(file.allErrors, [
+        isDriftError('Expected a class here.').withSpan('dynamic'),
+      ]);
     });
 
     test('when the column is not a symbol literal', () async {
-      final state = await TestBackend.inTest(
-        {
-          'a|lib/main.dart': '''
+      final state = await TestBackend.inTest({
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 const column = #other;
@@ -38,21 +36,20 @@ const column = #other;
 class Foo extends Table {
   TextColumn get foo => text().references(Table, column)();
 }
-'''
-        },
-      );
+''',
+      });
 
       final file = await state.analyze('package:a/main.dart');
       expect(file.allErrors, [
-        isDriftError(startsWith('This should be a symbol literal'))
-            .withSpan('column')
+        isDriftError(
+          startsWith('This should be a symbol literal'),
+        ).withSpan('column'),
       ]);
     });
 
     test('includes referenced table in database', () async {
-      final state = await TestBackend.inTest(
-        {
-          'a|lib/main.dart': '''
+      final state = await TestBackend.inTest({
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class OtherTable extends Table {
@@ -65,9 +62,8 @@ class Foo extends Table {
 
 @DriftDatabase(tables: [Foo])
 class Database {}
-'''
-        },
-      );
+''',
+      });
 
       final file = await state.analyze('package:a/main.dart');
       state.expectNoErrors();
@@ -80,9 +76,8 @@ class Database {}
     });
 
     test('when the referenced column does not exist', () async {
-      final state = await TestBackend.inTest(
-        {
-          'a|lib/main.dart': '''
+      final state = await TestBackend.inTest({
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class OtherTable extends Table {
@@ -95,22 +90,21 @@ class Foo extends Table {
 
 @DriftDatabase(tables: [Foo, OtherTable])
 class Database {}
-'''
-        },
-      );
+''',
+      });
 
       final file = await state.analyze('package:a/main.dart');
       expect(file.allErrors, [
-        isDriftError(contains('has no column named `doesNotExist`'))
-            .withSpan('#doesNotExist')
+        isDriftError(
+          contains('has no column named `doesNotExist`'),
+        ).withSpan('#doesNotExist'),
       ]);
     });
   });
 
   test('resolves reference', () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+    final state = await TestBackend.inTest({
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class OtherTable extends Table {
@@ -124,25 +118,31 @@ class Foo extends Table {
 
 @DriftDatabase(tables: [Foo, OtherTable])
 class Database {}
-'''
-      },
-    );
+''',
+    });
 
     final file = await state.analyze('package:a/main.dart');
     expect(file.allErrors, isEmpty);
 
-    final foo = file.analyzedElements
-        .whereType<DriftTable>()
-        .firstWhere((e) => e.schemaName == 'foo');
+    final foo = file.analyzedElements.whereType<DriftTable>().firstWhere(
+      (e) => e.schemaName == 'foo',
+    );
 
     expect(
-        foo.references,
-        contains(isA<DriftTable>()
-            .having((tbl) => tbl.schemaName, 'schemaName', 'other_table')));
+      foo.references,
+      contains(
+        isA<DriftTable>().having(
+          (tbl) => tbl.schemaName,
+          'schemaName',
+          'other_table',
+        ),
+      ),
+    );
 
     final column = foo.columns.single;
-    final constraint =
-        column.constraints.whereType<ForeignKeyReference>().first;
+    final constraint = column.constraints
+        .whereType<ForeignKeyReference>()
+        .first;
 
     expect(constraint.otherColumn.nameInSql, 'column');
     expect(constraint.otherColumn.owner.schemaName, 'other_table');
@@ -151,9 +151,8 @@ class Database {}
   });
 
   test('resolves self-references', () async {
-    final state = await TestBackend.inTest(
-      {
-        'a|lib/main.dart': '''
+    final state = await TestBackend.inTest({
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Foo extends Table {
@@ -163,21 +162,22 @@ class Foo extends Table {
 
 @DriftDatabase(tables: [Foo])
 class Database {}
-'''
-      },
-    );
+''',
+    });
 
     final file = await state.analyze('package:a/main.dart');
     expect(file.allErrors, isEmpty);
 
-    final foo = file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
-        as DriftTable;
+    final foo =
+        file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
+            as DriftTable;
 
     expect(foo.references, isEmpty);
 
     final column = foo.columns[1];
-    final constraint =
-        column.constraints.whereType<ForeignKeyReference>().first;
+    final constraint = column.constraints
+        .whereType<ForeignKeyReference>()
+        .first;
 
     expect(constraint.otherColumn.nameInSql, 'id');
     expect(constraint.otherColumn.owner.schemaName, 'foo');

@@ -37,10 +37,9 @@ sql:
       logger: logger,
     );
 
-    build.checkDartOutputs(
-      {
-        'a|lib/a.drift.dart': decodedMatches(
-          contains('''
+    build.checkDartOutputs({
+      'a|lib/a.drift.dart': decodedMatches(
+        contains('''
 extension DefineFunctions on i3.CommonDatabase {
   void defineFunctions({
     required String Function() dartVersion,
@@ -65,9 +64,8 @@ extension DefineFunctions on i3.CommonDatabase {
   }
 }
 '''),
-        ),
-        'a|lib/queries.drift.dart': anything,
-      },
-    );
+      ),
+      'a|lib/queries.drift.dart': anything,
+    });
   });
 }
