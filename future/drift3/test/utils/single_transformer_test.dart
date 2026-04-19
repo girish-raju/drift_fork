@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift3/src/utils/single_transformer.dart';
+import 'package:drift/src/drift3_preview/src/utils/single_transformer.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 

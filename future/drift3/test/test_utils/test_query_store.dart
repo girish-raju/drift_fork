@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:drift3/src/connection/streams/store.dart';
-import 'package:drift3/src/connection/streams/update_rules.dart';
+import 'package:drift/src/drift3_preview/src/connection/streams/store.dart';
+import 'package:drift/src/drift3_preview/src/connection/streams/update_rules.dart';
 
 final class TestStreamQueryStore extends StreamQueryStore {
   final Set<TableUpdate> recordedUpdates = {};

@@ -10,7 +10,8 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  drift3: ^3.0.0-wip
+  drift:
+  drift3:
   meta: ^1.16.0
   collection: ^1.18.0
   sqlite3: ^3.1.6

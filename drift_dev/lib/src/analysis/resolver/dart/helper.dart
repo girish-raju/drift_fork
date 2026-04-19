@@ -175,7 +175,7 @@ class KnownDriftTypes {
     'package:drift/src/drift_dev_helper.dart',
   );
   static final Uri drift3Uri = Uri.parse(
-    'package:drift3/src/drift_dev_helper.dart',
+    'package:drift/src/drift3_preview/src/drift_dev_helper.dart',
   );
   static final Uri drift3SqliteUri = Uri.parse(
     'package:drift_sqlite/src/drift_dev_helper.dart',

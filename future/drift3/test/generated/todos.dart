@@ -173,8 +173,8 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
 }
 
 class Department extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().nullable()();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get name => text().nullable();
 }
 
 class CustomConverter extends TypeConverter<MyCustomObject, String> {

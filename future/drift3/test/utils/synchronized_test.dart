@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift3/src/utils/synchronized.dart';
+import 'package:drift/src/drift3_preview/src/utils/synchronized.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:test/test.dart';
 

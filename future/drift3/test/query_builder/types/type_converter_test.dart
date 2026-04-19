@@ -10,13 +10,13 @@ enum _MyEnum { one, two, three }
 
 void main() {
   test('TypeConverter.legacyJson', () {
-    // ignore: deprecated_member_use_from_same_package
+    // ignore: deprecated_member_use
     final converter = TypeConverter.legacyJson(
       fromJson: (json) => _MyEnum.values.byName(json as String),
       toJson: (member) => member.name,
     );
 
-    // ignore: deprecated_member_use_from_same_package
+    // ignore: deprecated_member_use
     final customCodec = TypeConverter.legacyJson(
       fromJson: (json) => _MyEnum.values.byName(json as String),
       json: JsonCodec(toEncodable: (object) => 'custom'),

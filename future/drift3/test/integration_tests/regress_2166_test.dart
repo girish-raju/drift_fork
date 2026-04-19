@@ -79,9 +79,9 @@ void _defineTest(
 }
 
 class SomeTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement();
 
-  TextColumn get name => text().nullable()();
+  TextColumn get name => text().nullable();
 }
 
 @DriftDatabase(tables: [SomeTable])

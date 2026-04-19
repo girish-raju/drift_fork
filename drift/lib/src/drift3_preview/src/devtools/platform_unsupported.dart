@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../drift.dart';
+import '../database/db_base.dart';
 
 /// True if exporting is supported on this platform, false otherwise.
 final bool isExportSupported = false;

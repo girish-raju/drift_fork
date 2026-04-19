@@ -13,6 +13,7 @@ dependencies:
   meta: ^1.16.0
   collection: ^1.19.1
   convert: ^3.1.2
+  drift:
 
 dev_dependencies:
   drift_dev:
