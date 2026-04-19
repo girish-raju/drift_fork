@@ -47,9 +47,10 @@ void main() {
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
 
-      b.customStatement('some custom statement', [
-        db.mapValue(BuiltinDriftType.int, 4),
-      ]);
+      b.customStatement(
+        'some custom statement',
+        args: [db.mapValue(BuiltinDriftType.int, 4)],
+      );
     });
 
     final transaction = session.transactions;
@@ -87,7 +88,7 @@ void main() {
     final update = TableUpdate.onTable(db.users);
 
     await db.batch((batch) {
-      batch.customStatement('SELECT 1', [], {update});
+      batch.customStatement('SELECT 1', updates: {update});
     });
 
     expect(streamQueries.recordedUpdates, contains(update));

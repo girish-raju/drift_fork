@@ -17,7 +17,9 @@ final class SqlitePoolSession
   final SqliteConnectionPool pool;
   final Completer<void> _closed = Completer();
 
-  SqlitePoolSession(this.pool);
+  final bool includePersistentSchemaVersion;
+
+  SqlitePoolSession(this.pool, {this.includePersistentSchemaVersion = true});
 
   @override
   Future<void> close() async {
@@ -64,11 +66,14 @@ final class SqlitePoolSession
   DriftSessionWithInternalLocks? get locks => this;
 
   @override
-  PersistentSchemaVersion? get persistentSchemaVersion =>
-      PragmaPersistedSchemaVersion(this);
+  PersistentSchemaVersion? get persistentSchemaVersion {
+    return includePersistentSchemaVersion
+        ? PragmaPersistedSchemaVersion(this)
+        : null;
+  }
 
   @override
-  Object? get tag => null;
+  Object? get tag => this;
 
   @override
   // The root pool itself is never in a transaction, we'd hand out connection

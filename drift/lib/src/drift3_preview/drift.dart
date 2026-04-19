@@ -3,6 +3,8 @@ import 'package:collection/collection.dart';
 export 'src/connection/connection.dart';
 export 'src/connection/interceptor.dart';
 export 'src/connection/result_set.dart' show QueryResult, RawResultSet, RawRow;
+export 'src/connection/streams/store.dart' hide QueryStream, QueryStreamFetcher;
+export 'src/connection/streams/in_memory_store.dart';
 export 'src/connection/streams/update_rules.dart'
     hide AnyUpdateQuery, MultipleUpdateQuery, SpecificUpdateQuery;
 

@@ -239,10 +239,10 @@ final class Batch {
   ///  - [DatabaseConnectionUser.customStatement], the equivalent method outside
   ///    of batches.
   BatchedStatement customStatement(
-    String sql, [
+    String sql, {
     List<MappedValue> args = const [],
     Iterable<TableUpdate> updates = const {},
-  ]) {
+  }) {
     return _addCustomStatement(
       StatementInfo(
         sql,
