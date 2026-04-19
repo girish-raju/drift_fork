@@ -1,5 +1,4 @@
 import 'package:drift3/drift.dart';
-import 'package:drift/src/drift3_preview/src/connection/streams/store.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 
 export 'test_utils/database_stub.dart'
