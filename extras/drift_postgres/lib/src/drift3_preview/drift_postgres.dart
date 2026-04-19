@@ -5,15 +5,16 @@
 library;
 // ignore_for_file: experimental_member_use
 
-import 'package:drift3/drift.dart';
+// ignore: implementation_imports
+import 'package:drift/src/drift3_preview/drift.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
-import 'src/array_access_expression.dart';
-import 'src/type.dart';
+import 'array_access_expression.dart';
+import 'type.dart';
 
 export 'package:uuid/uuid_value.dart' show UuidValue;
-export 'src/dialect.dart' show PostgresDialect;
+export 'dialect.dart' show PostgresDialect;
 
 /// Type for columns storing [UuidValue]s.
 typedef UuidColumn = Column<UuidValue>;

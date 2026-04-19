@@ -1,5 +1,6 @@
 import 'package:drift3/drift.dart';
-import 'package:drift3_postgres/drift_postgres.dart' hide UuidValue;
+import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart'
+    hide UuidValue;
 import 'package:mockito/mockito.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';

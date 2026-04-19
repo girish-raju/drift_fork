@@ -1,6 +1,5 @@
-// ignore_for_file: experimental_member_use
-
-import 'package:drift3/drift.dart';
+// ignore: implementation_imports
+import 'package:drift/src/drift3_preview/drift.dart';
 
 import 'package:postgres/postgres.dart' as pg;
 // ignore: implementation_imports

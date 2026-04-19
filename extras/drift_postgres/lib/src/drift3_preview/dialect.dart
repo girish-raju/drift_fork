@@ -2,7 +2,8 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart';
-import 'package:drift3/drift.dart';
+// ignore: implementation_imports
+import 'package:drift/src/drift3_preview/drift.dart';
 
 import 'array_access_expression.dart';
 import 'type.dart';

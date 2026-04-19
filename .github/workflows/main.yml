@@ -278,9 +278,6 @@ jobs:
       - name: Test drift3
         working-directory: future/drift3
         run: dart test
-      - name: Test drift3_postgres
-        working-directory: future/drift3_postgres
-        run: dart test
       - name: Test drift_sqlite
         working-directory: future/drift_sqlite
         run: dart test

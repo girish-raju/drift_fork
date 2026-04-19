@@ -1,6 +1,7 @@
-import 'package:drift3/drift.dart';
-import 'package:drift3_postgres/drift_postgres.dart';
-import 'package:drift3_postgres/src/type.dart';
+import 'package:drift/src/drift3_preview/drift.dart';
+import 'package:drift_postgres/src/drift3_preview/dialect.dart';
+import 'package:drift_postgres/src/drift3_preview/type.dart';
+
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
