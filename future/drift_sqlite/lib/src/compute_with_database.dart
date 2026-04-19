@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:drift3/drift.dart';
 
 import 'compute_with_database/unsupported.dart'
-    if (dart.library.isolate) 'compute_with_database/supported.dart';
+    if (dart.library.ffi) 'compute_with_database/supported.dart';
 
 /// Extension providing [computeWithDatabase] to run computations using a drift
 /// database on a background isolate.
