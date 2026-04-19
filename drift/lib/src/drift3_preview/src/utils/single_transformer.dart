@@ -5,21 +5,24 @@ import 'dart:async';
 StreamTransformer<List<T>, T?> singleElementsOrNull<T>() {
   final originTrace = StackTrace.current;
 
-  return StreamTransformer.fromHandlers(handleData: (data, sink) {
-    T? result;
+  return StreamTransformer.fromHandlers(
+    handleData: (data, sink) {
+      T? result;
 
-    try {
-      if (data.isNotEmpty) {
-        result = data.single;
-      }
-    } catch (e) {
-      Error.throwWithStackTrace(
+      try {
+        if (data.isNotEmpty) {
+          result = data.single;
+        }
+      } catch (e) {
+        Error.throwWithStackTrace(
           StateError('Expected exactly one element, but got ${data.length}'),
-          originTrace);
-    }
+          originTrace,
+        );
+      }
 
-    sink.add(result);
-  });
+      sink.add(result);
+    },
+  );
 }
 
 /// Transforms a stream of lists into a stream of single elements, assuming
@@ -27,17 +30,20 @@ StreamTransformer<List<T>, T?> singleElementsOrNull<T>() {
 StreamTransformer<List<T>, T> singleElements<T>() {
   final originTrace = StackTrace.current;
 
-  return StreamTransformer.fromHandlers(handleData: (data, sink) {
-    T single;
+  return StreamTransformer.fromHandlers(
+    handleData: (data, sink) {
+      T single;
 
-    try {
-      single = data.single;
-    } catch (e) {
-      Error.throwWithStackTrace(
+      try {
+        single = data.single;
+      } catch (e) {
+        Error.throwWithStackTrace(
           StateError('Expected exactly one element, but got ${data.length}'),
-          originTrace);
-    }
+          originTrace,
+        );
+      }
 
-    sink.add(single);
-  });
+      sink.add(single);
+    },
+  );
 }

@@ -22,15 +22,18 @@ final class DropStatement extends SqlStatement {
 
   /// Creates a `DROP` statement dropping [entity].
   DropStatement.entity(DatabaseSchemaEntity entity, {this.ifExists = false})
-      : kind = switch (entity) {
-          GeneratedTable() => 'TABLE',
-          GeneratedView() => 'VIEW',
-          Index() => 'INDEX',
-          Trigger() => 'TRIGGER',
-          _ => throw ArgumentError.value(
-              entity, 'entity', 'Not something can be dropped.'),
-        },
-        name = entity.entityName;
+    : kind = switch (entity) {
+        GeneratedTable() => 'TABLE',
+        GeneratedView() => 'VIEW',
+        Index() => 'INDEX',
+        Trigger() => 'TRIGGER',
+        _ => throw ArgumentError.value(
+          entity,
+          'entity',
+          'Not something can be dropped.',
+        ),
+      },
+      name = entity.entityName;
 
   @override
   void compileWith(StatementCompiler compiler) {
