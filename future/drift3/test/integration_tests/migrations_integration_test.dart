@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:drift3/drift.dart';
 import 'package:drift3/internal/versioned_schema.dart';
+import 'package:drift_dev/api/migrations_common.dart';
+import 'package:drift_dev/api/migrations_drift3.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
@@ -492,49 +494,51 @@ void main() {
     });
   });
 
-  // TODO: Migrate API in drift_dev to drift3
-  // group('verifySelf', () {
-  //   test('throws when a schema is not created properly', () {
-  //     final db = TodoDb(testInMemoryDatabase());
-  //     addTearDown(db.close);
+  group('verifySelf', () {
+    test('throws when a schema is not created properly', () {
+      final db = TodoDb(testInMemoryDatabase());
+      addTearDown(db.close);
 
-  //     db.migration = MigrationStrategy(
-  //       onCreate: (m) async {
-  //         // Only creating one table, won't be enough
-  //         await m.createTable(db.categories);
-  //       },
-  //       beforeOpen: (details) async {
-  //         await db.validateDatabaseSchema();
-  //       },
-  //     );
+      db.migration = MigrationStrategy(
+        onCreate: (m) async {
+          // Only creating one table, won't be enough
+          await m.createTable(db.categories);
+        },
+        beforeOpen: (details) async {
+          await db.validateDatabaseSchema(connection: testInMemoryDatabase());
+        },
+      );
 
-  //     expect(
-  //       db.customSelect('SELECT 1;').get(),
-  //       throwsA(isA<SchemaMismatch>()),
-  //     );
-  //   });
+      expect(
+        db.customSelect('SELECT 1;').get(),
+        throwsA(isA<SchemaMismatch>()),
+      );
+    });
 
-  //   test('does not throw for a matching schema', () {
-  //     final db = TodoDb(testInMemoryDatabase());
-  //     addTearDown(db.close);
+    test('does not throw for a matching schema', () {
+      final db = TodoDb(testInMemoryDatabase());
+      addTearDown(db.close);
 
-  //     db.migration = MigrationStrategy(
-  //       // use default and correct `onCreate`, validation should work
-  //       beforeOpen: (details) async {
-  //         await db.validateDatabaseSchema();
-  //       },
-  //     );
+      db.migration = MigrationStrategy(
+        // use default and correct `onCreate`, validation should work
+        beforeOpen: (details) async {
+          await db.validateDatabaseSchema(connection: testInMemoryDatabase());
+        },
+      );
 
-  //     expect(db.customSelect('SELECT 1;').get(), completes);
-  //   });
+      expect(db.customSelect('SELECT 1;').get(), completes);
+    });
 
-  //   test("can be used on a database before it's opened", () async {
-  //     final db = TodoDb(testInMemoryDatabase());
-  //     addTearDown(db.close);
+    test("can be used on a database before it's opened", () async {
+      final db = TodoDb(testInMemoryDatabase());
+      addTearDown(db.close);
 
-  //     expect(db.validateDatabaseSchema(), completes);
-  //   });
-  // });
+      expect(
+        db.validateDatabaseSchema(connection: testInMemoryDatabase()),
+        completes,
+      );
+    });
+  });
 
   test('custom schema upgrades', () async {
     // I promised this would work in https://github.com/simolus3/drift/discussions/2436,
