@@ -115,15 +115,11 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_52;
+  static const SqliteVersion current = v3_53;
 
   /// Version `3.52.0` added the `json_array_insert` and `jsonb_array_insert`
-  /// functions.
-  ///
-  /// Note that the `3.52.0` SQLite release has since been retracted, so using
-  /// this version is not recommended until a fixed version is released.
-  @experimental
-  static const SqliteVersion v3_52 = SqliteVersion.v3(52);
+  /// functions and enhanced `ALTER TABLE`.
+  static const SqliteVersion v3_53 = SqliteVersion.v3(53);
 
   /// Version `3.51.0` added the `jsonb_each` and `jsonb_tree` functions.
   static const SqliteVersion v3_51 = SqliteVersion.v3(51);

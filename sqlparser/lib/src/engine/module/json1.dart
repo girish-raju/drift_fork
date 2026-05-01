@@ -119,8 +119,8 @@ class _Json1Functions implements FunctionHandler {
   void reportErrors(SqlInvocation call, AnalysisContext context) {
     final minVersions = const {
       'json_pretty': SqliteVersion.v3_46,
-      'json_array_insert': SqliteVersion.v3_46,
-      'jsonb_array_insert': SqliteVersion.v3_46,
+      'json_array_insert': SqliteVersion.v3_53,
+      'jsonb_array_insert': SqliteVersion.v3_53,
     };
 
     final minVersion = minVersions[call.name.toLowerCase()];
