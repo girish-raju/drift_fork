@@ -175,7 +175,9 @@ extension Parser on ParserState {
     }
 
     if (next is KeywordToken) {
-      message = '$message (got keyword ${reverseKeywords[next.type]})';
+      message =
+          '$message (got keyword ${reverseKeywords[next.type]}, '
+          'try wrapping it in double quotes to escape it).';
     }
 
     return _consume(TokenType.identifier, message) as IdentifierToken;
@@ -2388,6 +2390,32 @@ extension Parser on ParserState {
       _matchOne(TokenType.column);
       final name = _consumeIdentifier('Expected column to drop');
       return DropColumn(Reference.fromTokens(columnName: name))
+        ..setSpan(first, _previous);
+    }
+
+    if (_matchOne(TokenType.alter)) {
+      final first = _previous;
+      _matchOne(TokenType.column);
+      final name = _consumeIdentifier('Expected column to alter');
+      AlterColumnInstruction instr;
+      if (_matchOne(TokenType.set)) {
+        final first = _previous;
+        _consume(TokenType.not);
+        _consume(TokenType.$null);
+        final conflictClause = _conflictClauseOrNull();
+        instr = AlterColumnSetNotNull(onConflict: conflictClause)
+          ..setSpan(first, _previous);
+      } else if (_matchOne(TokenType.drop)) {
+        final first = _previous;
+        _consume(TokenType.not);
+        _consume(TokenType.$null);
+        instr = AlterColumnDropNotNull()..setSpan(first, _previous);
+      } else {
+        _error('Expected SET NOT NULL or DROP NOT NULL here');
+      }
+
+      return AlterColumn(columnName: name.identifier, instruction: instr)
+        ..columnNameToken = name
         ..setSpan(first, _previous);
     }
 

@@ -910,6 +910,23 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
+  @override
+  void visitAlterColumn(AlterColumn e, void arg) {
+    final current = _currentAs<AlterColumn>(e);
+    _assert(current.columnName == e.columnName, e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitAlterColumnSetNotNull(AlterColumnSetNotNull e, void arg) {
+    _currentAs<AlterColumnSetNotNull>(e);
+  }
+
+  @override
+  void visitAlterColumnDropNotNull(AlterColumnDropNotNull e, void arg) {
+    _currentAs<AlterColumnDropNotNull>(e);
+  }
+
   void _assert(bool contentEqual, AstNode context) {
     if (!contentEqual) _notEqual(context);
   }

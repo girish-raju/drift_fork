@@ -1,3 +1,7 @@
+## 0.44.4
+
+- Support `ALTER TABLE ALTER COLUMN` statements.
+
 ## 0.44.3
 
 - Add support for features added in SQLite 3.52.0.

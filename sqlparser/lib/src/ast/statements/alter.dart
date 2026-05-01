@@ -102,3 +102,61 @@ final class DropColumn extends AlterTableInstruction {
     column = transformer.transformChild(column, this, arg);
   }
 }
+
+/// An `ALTER TABLE tbl ALTER COLUMN col` statement added in SQLite version
+/// 3.53.0.
+final class AlterColumn extends AlterTableInstruction {
+  String columnName;
+  IdentifierToken? columnNameToken;
+  AlterColumnInstruction instruction;
+
+  AlterColumn({required this.columnName, required this.instruction});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAlterColumn(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [instruction];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    instruction = transformer.transformChild(instruction, this, arg);
+  }
+}
+
+/// An instruction that appears in an [AlterColumn] instruction.
+sealed class AlterColumnInstruction extends AstNode {}
+
+/// An `ALTER COLUMN SET NOT NULL` instruction.
+final class AlterColumnSetNotNull extends AlterColumnInstruction {
+  ConflictClause? onConflict;
+
+  AlterColumnSetNotNull({this.onConflict});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAlterColumnSetNotNull(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const [];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}
+
+/// An `ALTER COLUMN DROP NOT NULL` instruction.
+final class AlterColumnDropNotNull extends AlterColumnInstruction {
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAlterColumnDropNotNull(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const [];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}

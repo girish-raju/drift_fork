@@ -1500,6 +1500,29 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     identifier(e.column.columnName);
   }
 
+  @override
+  void visitAlterColumn(AlterColumn e, void arg) {
+    keyword(TokenType.alter);
+    keyword(TokenType.column);
+    identifier(e.columnName, fromToken: e.columnNameToken);
+    e.instruction.accept(this, arg);
+  }
+
+  @override
+  void visitAlterColumnSetNotNull(AlterColumnSetNotNull e, void arg) {
+    keyword(TokenType.set);
+    keyword(TokenType.not);
+    keyword(TokenType.$null);
+    _conflictClause(e.onConflict);
+  }
+
+  @override
+  void visitAlterColumnDropNotNull(AlterColumnDropNotNull e, void arg) {
+    keyword(TokenType.drop);
+    keyword(TokenType.not);
+    keyword(TokenType.$null);
+  }
+
   void _conflictClause(ConflictClause? clause) {
     if (clause != null) {
       keyword(TokenType.on);

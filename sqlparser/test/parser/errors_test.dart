@@ -41,7 +41,8 @@ void main() {
 
       expectError('CREATE TABLE x (table TEXT NOT NULL, foo INTEGER);', [
         isParsingError(
-          message: 'Expected a column name (got keyword TABLE)',
+          message:
+              'Expected a column name (got keyword TABLE, try wrapping it in double quotes to escape it).',
           span: 'table',
         ),
       ]);

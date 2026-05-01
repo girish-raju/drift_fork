@@ -258,6 +258,14 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     test('drop column', () {
       testFormat('ALTER TABLE foo DROP COLUMN bar');
     });
+
+    test('alter column', () {
+      testFormat('ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL');
+      testFormat('ALTER TABLE foo ALTER COLUMN bar SET NOT NULL');
+      testFormat(
+        'ALTER TABLE foo ALTER COLUMN bar SET NOT NULL ON CONFLICT FAIL',
+      );
+    });
   });
 
   group('query statements', () {

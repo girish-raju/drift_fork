@@ -65,6 +65,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/utils/case_insensitive_map.dart';
+import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../src/ast/ast.dart';
 import '../src/reader/syntactic_entity.dart';
@@ -105,7 +106,7 @@ final class SchemaBuffer {
       case final AlterTableStatement alterTable:
         if (_currentElements[alterTable.table.tableName]
             case final _TableSchemaElement table?) {
-          _applyAlterTable(errors, alterTable.instruction, table);
+          _applyAlterTable(errors, statement, alterTable.instruction, table);
         } else {
           errors.add(
             AnalysisError(
@@ -190,6 +191,7 @@ final class SchemaBuffer {
 
   void _applyAlterTable(
     List<AnalysisError> errors,
+    AstNode statement,
     AlterTableInstruction instruction,
     _TableSchemaElement element,
   ) {
@@ -245,7 +247,7 @@ final class SchemaBuffer {
           );
         }
 
-        element.addColumn(definition);
+        element.addColumn(statement, definition);
       case DropColumn(:final column):
         if (element.findColumn(column.columnName.toLowerCase())
             case final column?) {
@@ -268,6 +270,22 @@ final class SchemaBuffer {
             ),
           );
         }
+      case AlterColumn(:final columnName, instruction: final inner):
+        if (element.findColumn(columnName.toLowerCase()) case final column?) {
+          switch (inner) {
+            case AlterColumnSetNotNull(:final onConflict):
+              column.setNotNull(onConflict);
+            case AlterColumnDropNotNull():
+              column.dropNotNull();
+          }
+        } else {
+          errors.add(
+            AnalysisError(
+              type: AnalysisErrorType.referencedUnknownColumn,
+              relevantNode: instruction.columnNameToken ?? instruction,
+            ),
+          );
+        }
     }
   }
 }
@@ -282,7 +300,8 @@ sealed class _SchemaElement {
 /// other elements.
 final class _TableSchemaElement extends _SchemaElement {
   final CreateTableStatement originalStatement;
-  final LinkedList<_SourceElement> _sources = LinkedList();
+  final LinkedList<_SourceElement> _sources = LinkedList()
+    ..add(_SourceElement(''));
 
   String lowercaseName;
   late _SourceElement name;
@@ -295,58 +314,23 @@ final class _TableSchemaElement extends _SchemaElement {
     // statements.
     final text = originalStatement.span!.text;
     final startOffset = originalStatement.firstPosition;
-    var currentPosition = 0;
+    final fromText = _SourceFromText(text, startOffset, _sources.last);
 
-    _SourceElement? elementUntil(int offset) {
-      if (currentPosition < offset) {
-        // Static text before this element.
-        final element = _SourceElement(text.substring(currentPosition, offset));
-        _sources.add(element);
-        currentPosition = offset;
-        return element;
-      } else {
-        return null;
-      }
-    }
-
-    (_SourceElement?, _SourceElement) createElementFromSpan(
-      int offset,
-      int length,
-    ) {
-      final prior = elementUntil(offset);
-      final element = elementUntil(currentPosition + length)!;
-
-      return (prior, element);
-    }
-
-    (_SourceElement?, _SourceElement) createElementFromSyntax(
-      SyntacticEntity entity,
-    ) {
-      return createElementFromSpan(
-        entity.firstPosition - startOffset,
-        entity.length,
-      );
-    }
-
-    name = createElementFromSyntax(originalStatement.tableNameToken!).$2;
+    name = fromText
+        .createElementFromSyntax(originalStatement.tableNameToken!)
+        .$2;
     for (final (i, column) in originalStatement.columns.indexed) {
-      final (before, name) = createElementFromSyntax(column.nameToken!);
-      final typeAndConstraints = elementUntil(
-        column.lastPosition - startOffset,
+      final before = fromText.elementUntil(column.nameToken!.firstPosition);
+      final columnDef = fromText._readColumnDefinition(
+        i == 0 ? null : before,
+        column,
       );
 
-      _columns.add(
-        _ColumnDefinition(
-          i == 0 ? null : before,
-          name,
-          column.columnName.toLowerCase(),
-          typeAndConstraints,
-        ),
-      );
+      _columns.add(columnDef);
     }
 
     // Add remaining text from the CREATE TABLE statement.
-    elementUntil(text.length);
+    fromText.elementUntil(text.length);
   }
 
   @override
@@ -358,28 +342,18 @@ final class _TableSchemaElement extends _SchemaElement {
     return _columns.firstWhereOrNull((e) => e.lowercaseName == lowercaseName);
   }
 
-  void addColumn(ColumnDefinition definition) {
-    final definitionText = definition.span!.text;
-    final name = _SourceElement(definition.nameToken!.lexeme);
-    final constraints = _SourceElement(
-      definitionText.substring(name.lexeme.length),
-    );
-
+  void addColumn(AstNode originalStatement, ColumnDefinition definition) {
     if (_columns.lastOrNull case final last?) {
       final precedingComma =
           last.precedingComma?.clone() ?? _SourceElement(', ');
-      (last.constraints ?? last.nameLexeme).insertAfter(precedingComma);
-      precedingComma.insertAfter(name);
-      name.insertAfter(constraints);
+      last.end.insertAfter(precedingComma);
 
-      _columns.add(
-        _ColumnDefinition(
-          precedingComma,
-          name,
-          definition.columnName.toLowerCase(),
-          constraints,
-        ),
-      );
+      final text = originalStatement.span!.text;
+      final startOffset = originalStatement.firstPosition;
+      final fromText = _SourceFromText(text, startOffset, precedingComma);
+      fromText.currentPosition = definition.firstPosition;
+
+      _columns.add(fromText._readColumnDefinition(precedingComma, definition));
     } else {
       throw UnsupportedError('TODO: Adding column to empty table');
     }
@@ -388,7 +362,10 @@ final class _TableSchemaElement extends _SchemaElement {
   void dropColumn(_ColumnDefinition definition) {
     definition.precedingComma?.unlink();
     definition.nameLexeme.unlink();
-    definition.constraints?.unlink();
+    definition.typeName?.unlink();
+    for (final constraint in definition.constraints) {
+      constraint.source.unlink();
+    }
 
     _columns.remove(definition);
   }
@@ -408,14 +385,49 @@ final class _ColumnDefinition {
   final _SourceElement? precedingComma;
   final _SourceElement nameLexeme;
   String lowercaseName;
-  final _SourceElement? constraints;
+  _SourceElement? typeName;
+  final List<_ColumnConstraint> constraints;
+
+  _SourceElement get end {
+    if (constraints.isNotEmpty) {
+      return constraints.last.source;
+    } else {
+      return typeName ?? nameLexeme;
+    }
+  }
 
   _ColumnDefinition(
     this.precedingComma,
     this.nameLexeme,
     this.lowercaseName,
+    this.typeName,
     this.constraints,
   );
+
+  void setNotNull(ConflictClause? onConflict) {
+    if (constraints.any((c) => c.constraint is NotNull)) {
+      return; // Already has a not null constraint
+    }
+
+    final constraint = NotNull(null, onConflict: onConflict);
+    final withSpan = _ColumnConstraint(
+      constraint,
+      _SourceElement(' ${constraint.toSql()}'),
+    );
+
+    withSpan.addAfter(end);
+    constraints.add(withSpan);
+  }
+
+  void dropNotNull() {
+    constraints.removeWhere((c) {
+      if (c.constraint is NotNull) {
+        c.source.unlink();
+        return true;
+      }
+      return false;
+    });
+  }
 }
 
 /// Any schema element that isn't a (non-virtual) table.
@@ -435,10 +447,90 @@ final class _OtherSchemaElement extends _SchemaElement {
   }
 }
 
+final class _ColumnConstraint {
+  final ColumnConstraint constraint;
+  final _SourceElement source;
+
+  _ColumnConstraint(this.constraint, this.source);
+
+  void addAfter(_SourceElement before) {
+    before.insertAfter(source);
+  }
+}
+
 final class _SourceElement extends LinkedListEntry<_SourceElement> {
   String lexeme;
 
   _SourceElement(this.lexeme);
 
   _SourceElement clone() => _SourceElement(lexeme);
+}
+
+final class _SourceFromText {
+  final String text;
+  final int startOffset;
+  _SourceElement last;
+
+  var currentPosition = 0;
+
+  _SourceFromText(this.text, this.startOffset, this.last);
+
+  _SourceElement? elementUntil(int offset) {
+    if (currentPosition < offset) {
+      // Static text before this element.
+      final element = _SourceElement(text.substring(currentPosition, offset));
+      last.insertAfter(element);
+      last = element;
+      currentPosition = offset;
+      return element;
+    } else {
+      return null;
+    }
+  }
+
+  (_SourceElement?, _SourceElement) createElementFromSpan(
+    int offset,
+    int length,
+  ) {
+    final prior = elementUntil(offset);
+    final element = elementUntil(currentPosition + length)!;
+
+    return (prior, element);
+  }
+
+  (_SourceElement?, _SourceElement) createElementFromSyntax(
+    SyntacticEntity entity,
+  ) {
+    return createElementFromSpan(
+      entity.firstPosition - startOffset,
+      entity.length,
+    );
+  }
+
+  _ColumnDefinition _readColumnDefinition(
+    _SourceElement? precedingComma,
+    ColumnDefinition column,
+  ) {
+    final (before, name) = createElementFromSyntax(column.nameToken!);
+    _SourceElement? typeName;
+    final constraints = <_ColumnConstraint>[];
+    if (column.constraints.isNotEmpty) {
+      typeName = elementUntil(column.constraints.first.firstPosition);
+      for (final constraint in column.constraints) {
+        constraints.add(
+          _ColumnConstraint(constraint, elementUntil(constraint.lastPosition)!),
+        );
+      }
+    } else {
+      typeName = elementUntil(column.lastPosition);
+    }
+
+    return _ColumnDefinition(
+      precedingComma,
+      name,
+      column.columnName.toLowerCase(),
+      typeName,
+      [],
+    );
+  }
 }

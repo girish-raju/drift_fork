@@ -72,4 +72,22 @@ void main() {
       ),
     );
   });
+
+  test('alter column', () {
+    testStatement(
+      'ALTER TABLE foo ALTER COLUMN bar SET NOT NULL',
+      AlterTableStatement(
+        TableReference('foo'),
+        AlterColumn(columnName: 'bar', instruction: AlterColumnSetNotNull()),
+      ),
+    );
+
+    testStatement(
+      'ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL',
+      AlterTableStatement(
+        TableReference('foo'),
+        AlterColumn(columnName: 'bar', instruction: AlterColumnDropNotNull()),
+      ),
+    );
+  });
 }

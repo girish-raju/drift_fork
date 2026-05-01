@@ -186,6 +186,30 @@ CREATE TABLE tbl (
       });
     });
 
+    test('alter column', () {
+      process('''
+CREATE TABLE tbl (
+  a INTEGER
+);
+''');
+
+      process('ALTER TABLE tbl ALTER COLUMN a SET NOT NULL;');
+      expect(buffer.definitions, {
+        'tbl': '''
+CREATE TABLE tbl (
+  a INTEGER NOT NULL
+);''',
+      });
+
+      process('ALTER TABLE tbl ALTER COLUMN a DROP NOT NULL;');
+      expect(buffer.definitions, {
+        'tbl': '''
+CREATE TABLE tbl (
+  a INTEGER
+);''',
+      });
+    });
+
     test('drop column that does not exist', () {
       process('CREATE TABLE original (a INTEGER, b INTEGER) STRICT;');
       expect(processWithErrors('ALTER TABLE original DROP COLUMN c;'), [
