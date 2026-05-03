@@ -1,3 +1,7 @@
+## 2.33.0
+
+- Drift files: Support features from SQLite version 3.53.
+
 ## 2.32.1
 
 - For view columns referencing table columns as an alias, we now copy nullability

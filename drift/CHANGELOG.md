@@ -1,4 +1,4 @@
-## 2.33.0-dev
+## 2.33.0
 
 - Add `length` extension for blob expressions.
 - Add `SqlDialect.duckdb` for use with the `drift_duckdb` package.
