@@ -64,7 +64,13 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   FutureOr<DB> openDatabase();
 
   @override
-  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate(
+    // We don't currently have readonly transactions. So we might as well
+    // acquire the write lock at the earliest opportunity to avoid contention
+    // issues on the first statement of the transaction (if multiple database
+    // connections are opened to the same underlying database).
+    start: 'BEGIN IMMEDIATE',
+  );
 
   @override
   late DbVersionDelegate versionDelegate;

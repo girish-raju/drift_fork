@@ -1,3 +1,7 @@
+## 2.34.0 (unreleased)
+
+- Use `BEGIN IMMEDIATE` to start transactions.
+
 ## 2.33.0
 
 - Add `length` extension for blob expressions.
