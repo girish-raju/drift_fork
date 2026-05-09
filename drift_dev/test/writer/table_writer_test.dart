@@ -250,4 +250,32 @@ class GlobalSettings extends Table {
       result.writer,
     );
   });
+
+  test('escapes table name in generated code', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3796.
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': r'''
+import 'package:drift/drift.dart';
+
+class DbNotebook$PageLayouts extends Table {
+  IntColumn get foo => integer()();
+}
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          contains(
+            r"static const String $name = 'db_notebook\$_page_layouts';",
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
+  });
 }

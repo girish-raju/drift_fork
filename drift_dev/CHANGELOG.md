@@ -1,3 +1,7 @@
+## 2.33.1 (unreleased)
+
+- Fix generating code for table classes with a `$` in their name.
+
 ## 2.33.0
 
 - Drift files: Support features from SQLite version 3.53.

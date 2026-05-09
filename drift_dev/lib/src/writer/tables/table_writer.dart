@@ -727,7 +727,9 @@ class TableWriter extends TableOrViewWriter {
       buffer.writeln('@override\nString get actualTableName => \$name;');
     }
 
-    buffer.write('static const String \$name = \'${table.id.name}\';\n');
+    buffer.write(
+      'static const String \$name = ${asDartLiteral(table.id.name)};\n',
+    );
 
     if (scope.drift3) writeAsSelfType();
     _writeValidityCheckMethod();
