@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift/internal/migrations.dart';
-import 'package:drift/wasm.dart';
 import 'package:drift_dev/src/services/schema/verifier_web.dart' as impl;
 import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'package:sqlite3/wasm.dart';
@@ -56,12 +55,20 @@ extension VerifySelf on GeneratedDatabase {
   Future<void> validateDatabaseSchema({
     required CommonSqlite3 sqlite3,
     common.ValidationOptions options = const common.ValidationOptions(),
+    void Function(CommonDatabase raw)? setup,
     @Deprecated('Use field in ValidationOptions instead') bool? validateDropped,
   }) async {
-    await verifyDatabase(
+    final verifier =
+        WebSchemaVerifier(
+              sqlite3,
+              NullSchemaInstantiationHelper(),
+              setup: setup,
+            )
+            as VerifierImplementation;
+
+    await verifier.verifyDatabase(
       this,
       options.applyDeprecatedValidateDroppedParam(validateDropped),
-      () => WasmDatabase.inMemory(sqlite3),
     );
   }
 }

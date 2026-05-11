@@ -37,37 +37,6 @@ void verify(
   }
 }
 
-Future<void> verifyDatabase(
-  GeneratedDatabase db,
-  ValidationOptions options,
-  QueryExecutor Function() open,
-) async {
-  final virtualTables = db.allTables
-      .whereType<VirtualTableInfo>()
-      .map((e) => e.entityName)
-      .toList();
-
-  final schemaOfThisDatabase = await db.collectSchemaInput(virtualTables);
-
-  // The expectedSchema expando will store the expected schema for this
-  // database when it's opened in a migration test. This allows this method
-  // to be used in migration tests -- otherwise, this would always compare the
-  // runtime schema to the latest schema from generated code.
-  var referenceSchema = expectedSchema[db];
-
-  if (referenceSchema == null) {
-    // Collect the schema how it would be if we just called `createAll` on a
-    // clean database.
-    final referenceDb = _GenerateFromScratch(db, open());
-    referenceSchema =
-        expectedSchema[db] ??
-        await referenceDb.collectSchemaInput(virtualTables);
-    await referenceDb.close();
-  }
-
-  verify(referenceSchema, schemaOfThisDatabase, options);
-}
-
 Future<void> verifyDrift3Database(
   drift3.GeneratedDatabase db,
   ValidationOptions options,
@@ -228,6 +197,39 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     await validateItems(newDb);
     await newDb.close();
   }
+
+  Future<void> verifyDatabase(
+    GeneratedDatabase db,
+    ValidationOptions options,
+  ) async {
+    final virtualTables = db.allTables
+        .whereType<VirtualTableInfo>()
+        .map((e) => e.entityName)
+        .toList();
+
+    final schemaOfThisDatabase = await db.collectSchemaInput(virtualTables);
+
+    // The expectedSchema expando will store the expected schema for this
+    // database when it's opened in a migration test. This allows this method
+    // to be used in migration tests -- otherwise, this would always compare the
+    // runtime schema to the latest schema from generated code.
+    var referenceSchema = expectedSchema[db];
+
+    if (referenceSchema == null) {
+      // Collect the schema how it would be if we just called `createAll` on a
+      // clean database.
+      final referenceDb = _GenerateFromScratch(
+        db,
+        wrapOpened(_setupDatabase(), closeUnderlyingOnClose: true),
+      );
+      referenceSchema =
+          expectedSchema[db] ??
+          await referenceDb.collectSchemaInput(virtualTables);
+      await referenceDb.close();
+    }
+
+    verify(referenceSchema, schemaOfThisDatabase, options);
+  }
 }
 
 Input? _parseInputFromSchemaRow(
@@ -346,4 +348,13 @@ final class _GenerateFromScratchDrift3 extends drift3.GeneratedDatabase {
 
   @override
   int get schemaVersion => reference.schemaVersion;
+}
+
+final class NullSchemaInstantiationHelper extends SchemaInstantiationHelper {
+  @override
+  GeneratedDatabase databaseForVersion(QueryExecutor db, int version) {
+    throw UnsupportedError(
+      'databaseForVersion without schema instantiation helper',
+    );
+  }
 }

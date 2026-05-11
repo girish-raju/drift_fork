@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift/internal/migrations.dart';
-import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:drift_dev/src/services/schema/verifier_native.dart';
 import 'package:drift_dev/src/services/schema/verifier_common.dart';
@@ -57,12 +56,16 @@ extension VerifySelf on GeneratedDatabase {
   /// platforms (Android, iOS, macOS, Linux and Windows).
   Future<void> validateDatabaseSchema({
     common.ValidationOptions options = const common.ValidationOptions(),
+    void Function(Database raw)? setup,
     @Deprecated('Use field in ValidationOptions instead') bool? validateDropped,
   }) async {
-    await verifyDatabase(
+    final verifier =
+        SchemaVerifier(NullSchemaInstantiationHelper(), setup: setup)
+            as VerifierImplementation;
+
+    await verifier.verifyDatabase(
       this,
       options.applyDeprecatedValidateDroppedParam(validateDropped),
-      NativeDatabase.memory,
     );
   }
 }

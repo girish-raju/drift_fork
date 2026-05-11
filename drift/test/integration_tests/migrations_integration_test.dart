@@ -501,6 +501,24 @@ void main() {
 
       expect(db.validateDatabaseSchema(), completes);
     });
+
+    test('can use custom setup', () async {
+      final executor = NativeDatabase.memory();
+      final db = TodoDb(executor);
+      addTearDown(db.close);
+
+      db.migration = MigrationStrategy(
+        beforeOpen: (details) async {
+          await db.validateDatabaseSchema(
+            setup: expectAsync1((db) {
+              db.select('SELECT 1');
+            }),
+          );
+        },
+      );
+
+      await db.customSelect('SELECT 1').get();
+    });
   });
 
   test('custom schema upgrades', () async {
