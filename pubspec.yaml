@@ -36,6 +36,7 @@ workspace:
   - examples/with_built_value
 
   - future/drift3
+  - future/drift_manager
   - future/drift_sqlite
 
 dev_dependencies:

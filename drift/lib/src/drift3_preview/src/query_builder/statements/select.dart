@@ -157,6 +157,15 @@ sealed class BaseSelectStatement<
     return _withAddedJoin(Join.cross(table, includeInResult: includeInResult));
   }
 
+  /// Adds all [joins] to this select statement.
+  SelectStatement join(Iterable<Join> joins) {
+    final stmt = _asSelectStatement();
+    for (final join in joins) {
+      stmt._addJoin(join);
+    }
+    return stmt;
+  }
+
   /// Groups the result by values in [expressions].
   ///
   /// An optional [having] attribute can be set to exclude certain groups.

@@ -51,7 +51,12 @@ final class Batch {
   /// Creates a new pending batch on a [DatabaseConnectionUser].
   Batch._(this._database);
 
-  BatchedStatement _addStatement(SqlStatement stmt) {
+  /// Adds an [SqlStatement] to execute in this batch.
+  ///
+  /// All other high-level methods use this internally. It can also be used to
+  /// add advanced statements to a batch when no shorthand method exists for
+  /// those.
+  BatchedStatement addStatement(SqlStatement stmt) {
     final built = _database.dialect.compile(stmt);
     return _addCustomStatement(built);
   }
@@ -90,7 +95,7 @@ final class Batch {
       stmt.onConflict(onConflict);
     }
 
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Inserts rows from the [select] statement.
@@ -119,7 +124,7 @@ final class Batch {
       stmt.onConflict(onConflict);
     }
 
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Inserts all [rows] into the [table].
@@ -164,7 +169,7 @@ final class Batch {
     final stmt = UpdateStatement(_database, table)..setValues(row);
     if (where != null) stmt.where(where);
 
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Replaces the [row] from the [table] with the updated values. The row in
@@ -177,9 +182,7 @@ final class Batch {
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Insertable<Row> row) {
-    return _addStatement(
-      UpdateStatement(_database, table)..prepareReplace(row),
-    );
+    return addStatement(UpdateStatement(_database, table)..prepareReplace(row));
   }
 
   /// Helper that calls [replace] for all [rows].
@@ -202,7 +205,7 @@ final class Batch {
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Insertable<Row> row) {
     final stmt = DeleteStatement(_database, table)..whereSamePrimaryKey(row);
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Deletes all rows from [table] matching the provided [filter].
@@ -214,7 +217,7 @@ final class Batch {
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Expression<bool> Function(RS tbl) filter) {
     final stmt = DeleteStatement(_database, table)..where(filter);
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Deletes ALL rows from [table].
@@ -226,7 +229,7 @@ final class Batch {
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table) {
     final stmt = DeleteStatement(_database, table);
-    return _addStatement(stmt);
+    return addStatement(stmt);
   }
 
   /// Executes the custom [sql] statement with variables instantiated to [args].
