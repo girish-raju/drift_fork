@@ -2,6 +2,7 @@ import 'package:drift3/drift.dart';
 import 'package:meta/meta.dart';
 
 import 'internal.dart';
+import 'row.dart';
 import 'table_manager.dart';
 
 /// Base class for the "WithReference" classes
@@ -261,9 +262,9 @@ base class BaseReferences<
   // ignore: non_constant_identifier_names
   final $Table $_table;
 
-  /// The raw [TypedResult] for this item
+  /// The raw [ManagerResultRow] for this item
   // ignore: non_constant_identifier_names
-  final DriftRow $_typedResult;
+  final ManagerResultRow $_typedResult;
 
   /// Create a [BaseReferences] class
   // ignore: non_constant_identifier_names
@@ -327,7 +328,9 @@ class PrefetchHooks {
   final List<GeneratedTable> explicitlyWatchedTables;
 
   /// A function which will return list of references for each prefetch data source.
-  final Future<List<List<MultiTypedResultEntry>>> Function(List<DriftRow>)?
+  final Future<List<List<MultiTypedResultEntry>>> Function(
+    List<ManagerResultRow>,
+  )?
   getPrefetchedDataCallback;
 
   /// Create a [PrefetchHooks] object
@@ -341,7 +344,9 @@ class PrefetchHooks {
   }
 
   /// Internal function for injecting the prefetched data into the TypedResult object.
-  Future<List<DriftRow>> addPrefetchedData(List<DriftRow> items) async {
+  Future<List<ManagerResultRow>> addPrefetchedData(
+    List<ManagerResultRow> items,
+  ) async {
     /// If this table contains no reverse references, we can just return the rows as is.
     if (getPrefetchedDataCallback == null) {
       return items;
@@ -353,11 +358,11 @@ class PrefetchHooks {
   }
 
   /// Helper function to insert the prefetched data into the TypedResult objects.
-  List<DriftRow> _addPrefetchedDataToRows(
-    List<DriftRow> rows,
+  List<ManagerResultRow> _addPrefetchedDataToRows(
+    List<ManagerResultRow> rows,
     List<List<MultiTypedResultEntry<dynamic>>> prefetches,
   ) {
-    final results = <DriftRow>[];
+    final results = <ManagerResultRow>[];
 
     /// Iterate over each row, get the prefetched data for that row, and add it to the row.
     for (var (rowIndex, row) in rows.indexed) {
@@ -513,10 +518,10 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
     $ReferencedDataclass,
     dynamic
   >
-  Function(DriftRow)
+  Function(ManagerResultRow)
   managerFromTypedResult,
   required MultiTypedResultKey referencedTable,
-  required List<DriftRow> typedResults,
+  required List<ManagerResultRow> typedResults,
   required $CurrentTable currentTable,
   required Iterable<$ReferencedDataclass> Function(
     $CurrentDataclass item,
@@ -532,7 +537,10 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
     // referenced items in one go.
     final manager = managers.reduce((value, element) {
       if (element.$state.filter != null) {
-        return value._filter((_) => element.$state.filter!, BooleanOperator.or);
+        return value.filter(
+          (_) => element.$state.filter!,
+          combineWith: BooleanOperator.or,
+        );
       } else {
         return value;
       }

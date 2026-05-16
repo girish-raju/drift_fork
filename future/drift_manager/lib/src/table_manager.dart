@@ -20,6 +20,7 @@ import 'internal.dart';
 import 'join_builder.dart';
 import 'ordering.dart';
 import 'references.dart';
+import 'row.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
@@ -105,7 +106,7 @@ class TableManagerState<
 
   /// This function is used internally to convert a simple [$Dataclass] into one which has its references attached [$DataclassWithReferences].
   /// This is used internally by [toActiveDataclass] and should not be used outside of this class.
-  final List<$DataclassWithReferences> Function(List<DriftRow>)
+  final List<$DataclassWithReferences> Function(List<ManagerResultRow>)
   _withReferenceMapper;
 
   /// Additional columns/expression that will be added to the query with computed fields
@@ -114,7 +115,7 @@ class TableManagerState<
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
   ///
   /// Depending on if `withReferences` was called, we will either return a list of [$Dataclass] or [$DataclassWithReferences]
-  List<$ActiveDataclass> toActiveDataclass(List<DriftRow> items) {
+  List<$ActiveDataclass> toActiveDataclass(List<ManagerResultRow> items) {
     if ($DataclassWithReferences == $ActiveDataclass) {
       return _withReferenceMapper(items) as List<$ActiveDataclass>;
     } else {
@@ -154,7 +155,7 @@ class TableManagerState<
     return toActiveDataclass(_prefetchedData);
   }
 
-  final List<DriftRow>? _prefetchedData;
+  final List<ManagerResultRow>? _prefetchedData;
 
   /// Once `withReferences` is called, this field will be set to the function that will be used to get the prefetched data
   late final PrefetchHooks prefetchHooks;
@@ -172,11 +173,11 @@ class TableManagerState<
     required this.createComputedFieldComposer,
     required $CreateCompanionCallback createCompanionCallback,
     required $UpdateCompanionCallback updateCompanionCallback,
-    required List<$DataclassWithReferences> Function(List<DriftRow>)
+    required List<$DataclassWithReferences> Function(List<ManagerResultRow>)
     withReferenceMapper,
     required $CreatePrefetchHooksCallback? prefetchHooksCallback,
     PrefetchHooks? prefetchHooks,
-    List<DriftRow>? prefetchedData,
+    List<ManagerResultRow>? prefetchedData,
     this.filter,
     this.distinct,
     this.limit,
@@ -217,12 +218,9 @@ class TableManagerState<
     Set<Expression>? addedColumns,
   }) {
     /// When we import prefetchedData, it's already in its Row Class,
-    /// we need to place it into a TypedResult for the manager to work with it
-    final structure = ResultSetStructure()..addSelectStarFromSingleTable(table);
-    final rs = DriftResultSet(structure, resultSet, db.dialect);
-
+    /// we need to place it into a result row for the manager to work with it
     final prefetchedDataAsTypedResult = prefetchedData
-        ?.map((e) => TypedResult({_tableAsTableInfo: e}, QueryRow({}, db)))
+        ?.map((e) => ManagerResultRow.fromValues(tables: {table: e}))
         .toList();
 
     return TableManagerState(
@@ -644,30 +642,10 @@ abstract class BaseTableManager<
     $ActiveDataclass,
     $CreatePrefetchHooksCallback
   >
-  filter(Expression<bool> Function($FilterComposer f) f) {
-    return _filter(f, BooleanOperator.and);
-  }
-
-  /// Add a filter to the statement
-  ///
-  /// The [combineWith] parameter can be used to specify how the new filter should be combined with the existing filter
-  ProcessedTableManager<
-    $Database,
-    $Table,
-    $Dataclass,
-    $FilterComposer,
-    $OrderingComposer,
-    $ComputedFieldComposer,
-    $CreateCompanionCallback,
-    $UpdateCompanionCallback,
-    $DataclassWithReferences,
-    $ActiveDataclass,
-    $CreatePrefetchHooksCallback
-  >
-  _filter(
-    Expression<bool> Function($FilterComposer f) f,
-    BooleanOperator combineWith,
-  ) {
+  filter(
+    Expression<bool> Function($FilterComposer f) f, {
+    BooleanOperator combineWith = .and,
+  }) {
     final composer = $state.createFilteringComposer();
     final filter = f(composer);
     final combinedFilter = switch (($state.filter, filter)) {
@@ -763,18 +741,28 @@ abstract class BaseTableManager<
     int? limit,
     int? offset,
   }) async {
-    return $state.db.transaction(() async {
-      /// Fetch the items from the database with the prefetch hooks applied
-      var items = await $state.prefetchHooks
-          .withJoins($state)
-          .copyWith(distinct: distinct, limit: limit, offset: offset)
-          .buildSelectStatement()
-          .get();
+    return $state.db.transaction(
+      options: const TransactionOptions(readOnly: true),
+      () async {
+        /// Fetch the items from the database with the prefetch hooks applied
+        var items = await $state.prefetchHooks
+            .withJoins($state)
+            .copyWith(distinct: distinct, limit: limit, offset: offset)
+            .buildSelectStatement()
+            .get();
 
-      /// Apply the prefetch hooks to the items
-      items = await $state.prefetchHooks.addPrefetchedData(items);
-      return $state.toActiveDataclass(items);
-    });
+        /// Apply the prefetch hooks to the items
+        final withPrefetchedData = await $state.prefetchHooks
+            .addPrefetchedData([
+              for (final row in items)
+                ManagerResultRow.fromDriftRow(
+                  row,
+                  expressions: $state.addedColumns,
+                ),
+            ]);
+        return $state.toActiveDataclass(withPrefetchedData);
+      },
+    );
   }
 
   /// Creates an auto-updating stream of the result that emits new items

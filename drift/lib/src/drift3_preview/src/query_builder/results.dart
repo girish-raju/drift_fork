@@ -237,6 +237,12 @@ final class DriftRow {
   Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
     ResultSet<Row, RS> resultSet,
   ) {
-    return this.resultSet._mapperFor(resultSet)(raw) as Row?;
+    return readAnyTableOrNull(resultSet) as Row?;
+  }
+
+  /// A variant of [readTableOrNull] that works with dynamic, untyped
+  /// [ResultSet] instances.
+  Object? readAnyTableOrNull(ResultSet resultSet) {
+    return this.resultSet._mapperFor(resultSet)(raw);
   }
 }
