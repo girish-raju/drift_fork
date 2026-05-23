@@ -49,6 +49,18 @@ final class ManagerResultRow {
     return _loadedTables[table] as Row;
   }
 
+  /// Reads all data that belongs to the given [table] from this row.
+  ///
+  /// Returns `null` if this row does not contain non-null values of the
+  /// [table].
+  ///
+  /// See also: [readTable], which throws instead of returning `null`.
+  Row? readTableOrNull<RS extends ResultSet<Row, RS>, Row extends Object>(
+    RS table,
+  ) {
+    return _loadedTables[table] as Row?;
+  }
+
   /// Reads a single column from an [expr]. The expression must have been added
   /// as a column.
   D? read<D extends Object>(Expression<D> expr) {

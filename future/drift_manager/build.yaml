@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          drift3_preview: true
+          generate_manager: true
+          fatal_warnings: true

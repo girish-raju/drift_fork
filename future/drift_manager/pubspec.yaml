@@ -14,3 +14,9 @@ dependencies:
   drift3:
   drift_sqlite:
   meta: ^1.17.0
+  sqlite3: ^3.0.0
+
+dev_dependencies:
+  build_runner: ^2.15.0
+  drift_dev: ^2.33.0
+  test: ^1.31.0

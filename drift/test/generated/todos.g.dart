@@ -4019,7 +4019,7 @@ final class $$CategoriesTableReferences
     _$TodoDb db,
   ) => MultiTypedResultKey.fromTable(
     db.todosTable,
-    aliasName: $_aliasNameGenerator(db.categories.id, db.todosTable.category),
+    aliasName: 'categories__id__todos__category',
   );
 
   $$TodosTableTableProcessedTableManager get todos {
@@ -4296,9 +4296,7 @@ final class $$TodosTableTableReferences
   $$TodosTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryTable(_$TodoDb db) =>
-      db.categories.createAlias(
-        $_aliasNameGenerator(db.todosTable.category, db.categories.id),
-      );
+      db.categories.createAlias('todos__category__categories__id');
 
   $$CategoriesTableProcessedTableManager? get category {
     final $_column = $_itemColumn<int>('category');
@@ -5673,7 +5671,7 @@ final class $$DepartmentTableReferences
   static MultiTypedResultKey<$ProductTable, List<ProductData>>
   _productRefsTable(_$TodoDb db) => MultiTypedResultKey.fromTable(
     db.product,
-    aliasName: $_aliasNameGenerator(db.department.id, db.product.department),
+    aliasName: 'department__id__product__department',
   );
 
   $$ProductTableProcessedTableManager get productRefs {
@@ -5907,9 +5905,7 @@ final class $$ProductTableReferences
   $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $DepartmentTable _departmentTable(_$TodoDb db) =>
-      db.department.createAlias(
-        $_aliasNameGenerator(db.product.department, db.department.id),
-      );
+      db.department.createAlias('product__department__department__id');
 
   $$DepartmentTableProcessedTableManager? get department {
     final $_column = $_itemColumn<int>('department');
@@ -5929,7 +5925,7 @@ final class $$ProductTableReferences
     _$TodoDb db,
   ) => MultiTypedResultKey.fromTable(
     db.listing,
-    aliasName: $_aliasNameGenerator(db.product.sku, db.listing.product),
+    aliasName: 'product__sku__listing__product',
   );
 
   $$ListingTableProcessedTableManager get listings {
@@ -6265,7 +6261,7 @@ final class $$StoreTableReferences
     _$TodoDb db,
   ) => MultiTypedResultKey.fromTable(
     db.listing,
-    aliasName: $_aliasNameGenerator(db.store.id, db.listing.store),
+    aliasName: 'store__id__listing__store',
   );
 
   $$ListingTableProcessedTableManager get listings {
@@ -6490,9 +6486,8 @@ final class $$ListingTableReferences
     extends BaseReferences<_$TodoDb, $ListingTable, ListingData> {
   $$ListingTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $ProductTable _productTable(_$TodoDb db) => db.product.createAlias(
-    $_aliasNameGenerator(db.listing.product, db.product.sku),
-  );
+  static $ProductTable _productTable(_$TodoDb db) =>
+      db.product.createAlias('listing__product__product__sku');
 
   $$ProductTableProcessedTableManager get product {
     final $_column = $_itemColumn<String>('product')!;
@@ -6509,7 +6504,7 @@ final class $$ListingTableReferences
   }
 
   static $StoreTable _storeTable(_$TodoDb db) =>
-      db.store.createAlias($_aliasNameGenerator(db.listing.store, db.store.id));
+      db.store.createAlias('listing__store__store__id');
 
   $$StoreTableProcessedTableManager? get store {
     final $_column = $_itemColumn<int>('store');

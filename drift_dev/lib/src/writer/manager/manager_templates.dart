@@ -11,6 +11,8 @@ class _ManagerCodeTemplates {
   /// Used to generating names which require import prefixes
   final Scope _scope;
 
+  bool get _drift3 => _scope.options.drift3Preview;
+
   /// Returns the name of the manager class for a table
   ///
   /// This classes acts as container for all the table managers
@@ -387,8 +389,9 @@ class _ManagerCodeTemplates {
   }) {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
+    final columnType = _drift3 ? 'TableColumn' : 'GeneratedColumn';
 
-    return """${leaf.drift("GeneratedColumn")}<$type> get $filterName => \$composableBuilder(
+    return """$columnType<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
       builder: (column) => column);
       """;
@@ -631,12 +634,13 @@ class _ManagerCodeTemplates {
     final body = relations
         .map((relation) {
           final dbName = databaseType(leaf, dbClassName);
+          final aliasName = asDartLiteral(
+            '${relation.currentTable.schemaName}__${relation.currentColumn.nameInSql}__${relation.referencedTable.schemaName}__${relation.referencedColumn.nameInSql}',
+          );
           final referencedTable = leaf.dartCode(
             leaf.referenceElement(relation.referencedTable, 'db'),
           );
-          final currentTable = leaf.dartCode(
-            leaf.referenceElement(relation.currentTable, 'db'),
-          );
+
           final currentColumnType = leaf.dartCode(
             leaf.innerColumnType(relation.currentColumn.sqlType),
           );
@@ -647,18 +651,18 @@ class _ManagerCodeTemplates {
           }
 
           if (relation.isReverse) {
+            final dataclasses =
+                'List<${rowClassWithPrefix(relation.referencedTable, leaf)}';
+            final multiTypedKey = _drift3
+                ? '${leaf.drift("MultiTypedResultKey")}<$dataclasses>>'
+                : '${leaf.drift("MultiTypedResultKey")}<${tableClassWithPrefix(relation.referencedTable, leaf)}, $dataclasses>>';
+
             final aliasedTableMethod =
                 """
-        static ${leaf.drift("MultiTypedResultKey")}<
-          ${tableClassWithPrefix(relation.referencedTable, leaf)},
-          List<${rowClassWithPrefix(relation.referencedTable, leaf)}>
-        > _${relation.fieldName}Table($dbName db) =>
+        static $multiTypedKey _${relation.fieldName}Table($dbName db) =>
           ${leaf.drift("MultiTypedResultKey")}.fromTable(
           $referencedTable,
-          aliasName: ${leaf.drift("\$_aliasNameGenerator")}(
-            $currentTable.${relation.currentColumn.nameInDart},
-            $referencedTable.${relation.referencedColumn.nameInDart})
-        );""";
+          aliasName: $aliasName);""";
 
             return """
           $aliasedTableMethod
@@ -682,12 +686,11 @@ class _ManagerCodeTemplates {
               leaf,
             );
 
+            final createAliasImpl = _drift3 ? 'withAlias' : 'createAlias';
             final aliasedTableMethod =
                 """
           static $referenceTableType _${relation.fieldName}Table($dbName db) =>
-            $referencedTable.createAlias(${leaf.drift("\$_aliasNameGenerator")}(
-            $currentTable.${relation.currentColumn.nameInDart},
-            $referencedTable.${relation.referencedColumn.nameInDart}));
+            $referencedTable.$createAliasImpl($aliasName);
           """;
 
             return """
