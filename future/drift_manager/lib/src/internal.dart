@@ -23,5 +23,5 @@ String $_aliasNameGenerator(
   GeneratedTable referencedTable,
   TableColumn referencedColumn,
 ) {
-  return '${currentTable.entityName}__${currentColumn.name}__${referencedTable.entityName}__${referencedColumn.name}';
+  return '${currentTable.aliasOrName}__${currentColumn.name}__${referencedTable.aliasOrName}__${referencedColumn.name}';
 }

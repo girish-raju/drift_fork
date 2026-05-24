@@ -406,8 +406,12 @@ class _ManagerCodeTemplates {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
     final converterType = leaf.dartCode(leaf.writer.dartType(column));
+    final columnType = _drift3
+        ? 'TableColumnWithTypeConverter'
+        : 'GeneratedColumnWithTypeConverter';
+
     return """
-          ${leaf.drift("GeneratedColumnWithTypeConverter")}<$converterType,$type> get $filterName => \$composableBuilder(
+          ${leaf.drift(columnType)}<$converterType,$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
       builder: (column) => column);
       """;

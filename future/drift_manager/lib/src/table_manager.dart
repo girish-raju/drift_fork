@@ -752,14 +752,9 @@ abstract class BaseTableManager<
             .get();
 
         /// Apply the prefetch hooks to the items
-        final withPrefetchedData = await $state.prefetchHooks
-            .addPrefetchedData([
-              for (final row in items)
-                ManagerResultRow.fromDriftRow(
-                  row,
-                  expressions: $state.addedColumns,
-                ),
-            ]);
+        final withPrefetchedData = await $state.prefetchHooks.addPrefetchedData(
+          [for (final row in items) ManagerResultRow.fromDriftRow(row)],
+        );
         return $state.toActiveDataclass(withPrefetchedData);
       },
     );

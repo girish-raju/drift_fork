@@ -15,19 +15,19 @@ final class ManagerResultRow {
        _loadedExpressions = expressions ?? {};
 
   /// Creates a result row from an underlying drift result row.
-  factory ManagerResultRow.fromDriftRow(
-    DriftRow row, {
-    Iterable<Expression> expressions = const .empty(),
-  }) {
+  factory ManagerResultRow.fromDriftRow(DriftRow row) {
     final structure = row.resultSet.structure;
     final loadedTables = <ResultSet, Object>{};
     final loadedExpressions = <Expression, Object?>{};
 
     for (final table in structure.tables.keys) {
-      loadedTables[table] = row.readAnyTableOrNull(table)!;
+      final parsedRow = row.readAnyTableOrNull(table);
+      if (parsedRow != null) {
+        loadedTables[table] = parsedRow;
+      }
     }
 
-    for (final expr in expressions) {
+    for (final expr in structure.expressions.keys) {
       loadedExpressions[expr] = row.read(expr);
     }
 

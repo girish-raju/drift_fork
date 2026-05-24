@@ -229,18 +229,22 @@ extension BoolFilters on ColumnFilters<bool> {
 /// Built in filters for int/double columns
 extension NumFilters<T extends num> on ColumnFilters<T> {
   /// Create a filter to check if the column is bigger than a value
+  @pragma('drift:v3-rename', 'isGreaterThan')
   Expression<bool> isBiggerThan(T value) =>
       $composableFilter(column.isBiggerThanValue(value));
 
   /// Create a filter to check if the column is small than a value
+  @pragma('drift:v3-rename', 'isLessThan')
   Expression<bool> isSmallerThan(T value) =>
       $composableFilter(column.isSmallerThanValue(value));
 
   /// Create a filter to check if the column is bigger or equal to a value
+  @pragma('drift:v3-rename', 'isGreaterOrEqualTo')
   Expression<bool> isBiggerOrEqualTo(T value) =>
       $composableFilter(column.isBiggerOrEqualValue(value));
 
   /// Create a filter to check if the column is small or equal to a value
+  @pragma('drift:v3-rename', 'isLessOrEqualTo')
   Expression<bool> isSmallerOrEqualTo(T value) =>
       $composableFilter(column.isSmallerOrEqualValue(value));
 

@@ -219,10 +219,10 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
 
 /// Built in filters for bool columns
 extension BoolFilters on ColumnFilters<bool> {
-  /// Create a filter to check if the column is bigger than a value
+  /// Create a filter to check if the column stores the value `TRUE`.
   Expression<bool> isTrue() => $composableFilter(column.equals(true));
 
-  /// Create a filter to check if the column is small than a value
+  /// Create a filter to check if the column stores the value `FALSE`.
   Expression<bool> isFalse() => $composableFilter(column.equals(false));
 }
 
