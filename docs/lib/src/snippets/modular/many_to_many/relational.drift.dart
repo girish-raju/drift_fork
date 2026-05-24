@@ -36,14 +36,7 @@ final class $$ShoppingCartsTableReferences
         i4.ReadDatabaseContainer(
           db,
         ).resultSet<i2.$ShoppingCartEntriesTable>('shopping_cart_entries'),
-        aliasName: i0.$_aliasNameGenerator(
-          i4.ReadDatabaseContainer(
-            db,
-          ).resultSet<i2.$ShoppingCartsTable>('shopping_carts').id,
-          i4.ReadDatabaseContainer(db)
-              .resultSet<i2.$ShoppingCartEntriesTable>('shopping_cart_entries')
-              .shoppingCart,
-        ),
+        aliasName: 'shopping_carts__id__shopping_cart_entries__shopping_cart',
       );
 
   i2.$$ShoppingCartEntriesTableProcessedTableManager
@@ -299,16 +292,7 @@ final class $$ShoppingCartEntriesTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i2.$ShoppingCartsTable>('shopping_carts')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i2.$ShoppingCartEntriesTable>(
-                    'shopping_cart_entries',
-                  )
-                  .shoppingCart,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i2.$ShoppingCartsTable>('shopping_carts').id,
-            ),
+            'shopping_cart_entries__shopping_cart__shopping_carts__id',
           );
 
   i2.$$ShoppingCartsTableProcessedTableManager get shoppingCart {
@@ -332,18 +316,7 @@ final class $$ShoppingCartEntriesTableReferences
   static i1.$BuyableItemsTable _itemTable(i0.GeneratedDatabase db) =>
       i4.ReadDatabaseContainer(db)
           .resultSet<i1.$BuyableItemsTable>('buyable_items')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i2.$ShoppingCartEntriesTable>(
-                    'shopping_cart_entries',
-                  )
-                  .item,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i1.$BuyableItemsTable>('buyable_items').id,
-            ),
-          );
+          .createAlias('shopping_cart_entries__item__buyable_items__id');
 
   i1.$$BuyableItemsTableProcessedTableManager get item {
     final $_column = $_itemColumn<int>('item')!;

@@ -21,10 +21,9 @@ final class $PostsReferences
   $PostsReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i2.Users _authorTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').author,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+      i3.ReadDatabaseContainer(db)
+          .resultSet<i2.Users>('users')
+          .createAlias('posts__author__users__id');
 
   i2.$UsersProcessedTableManager get author {
     final $_column = $_itemColumn<int>('author')!;
@@ -43,9 +42,7 @@ final class $PostsReferences
           i0.GeneratedDatabase db) =>
       i0.MultiTypedResultKey.fromTable(
           i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes'),
-          aliasName: i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id,
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post));
+          aliasName: 'posts__id__likes__post');
 
   i1.$LikesProcessedTableManager get likesRefs {
     final manager = i1
@@ -343,10 +340,9 @@ final class $LikesReferences
   $LikesReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i1.Posts _postTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post,
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id));
+      i3.ReadDatabaseContainer(db)
+          .resultSet<i1.Posts>('posts')
+          .createAlias('likes__post__posts__id');
 
   i1.$PostsProcessedTableManager get post {
     final $_column = $_itemColumn<int>('post')!;
@@ -362,10 +358,9 @@ final class $LikesReferences
   }
 
   static i2.Users _likedByTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').likedBy,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+      i3.ReadDatabaseContainer(db)
+          .resultSet<i2.Users>('users')
+          .createAlias('likes__liked_by__users__id');
 
   i2.$UsersProcessedTableManager get likedBy {
     final $_column = $_itemColumn<int>('liked_by')!;

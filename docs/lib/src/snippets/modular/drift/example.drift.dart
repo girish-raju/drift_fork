@@ -27,16 +27,7 @@ final class $TodosReferences
   static i1.Categories _categoryTable(i0.GeneratedDatabase db) =>
       i2.ReadDatabaseContainer(db)
           .resultSet<i1.Categories>('categories')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i2.ReadDatabaseContainer(
-                db,
-              ).resultSet<i1.Todos>('todos').category,
-              i2.ReadDatabaseContainer(
-                db,
-              ).resultSet<i1.Categories>('categories').id,
-            ),
-          );
+          .createAlias('todos__category__categories__id');
 
   i1.$CategoriesProcessedTableManager? get category {
     final $_column = $_itemColumn<int>('category');
@@ -338,10 +329,7 @@ final class $CategoriesReferences
     i0.GeneratedDatabase db,
   ) => i0.MultiTypedResultKey.fromTable(
     i2.ReadDatabaseContainer(db).resultSet<i1.Todos>('todos'),
-    aliasName: i0.$_aliasNameGenerator(
-      i2.ReadDatabaseContainer(db).resultSet<i1.Categories>('categories').id,
-      i2.ReadDatabaseContainer(db).resultSet<i1.Todos>('todos').category,
-    ),
+    aliasName: 'categories__id__todos__category',
   );
 
   i1.$TodosProcessedTableManager get todosRefs {

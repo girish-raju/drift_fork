@@ -389,7 +389,7 @@ class _ManagerCodeTemplates {
   }) {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
-    final columnType = _drift3 ? 'TableColumn' : 'GeneratedColumn';
+    final columnType = leaf.drift(_drift3 ? 'TableColumn' : 'GeneratedColumn');
 
     return """$columnType<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,

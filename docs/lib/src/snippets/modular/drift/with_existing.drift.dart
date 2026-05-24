@@ -142,16 +142,9 @@ final class $FriendsReferences
   $FriendsReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i2.Users _userATable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db)
-          .resultSet<i2.Users>('users')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(
-                db,
-              ).resultSet<i2.Friends>('friends').userA,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id,
-            ),
-          );
+      i3.ReadDatabaseContainer(
+        db,
+      ).resultSet<i2.Users>('users').createAlias('friends__user_a__users__id');
 
   i2.$UsersProcessedTableManager get userA {
     final $_column = $_itemColumn<int>('user_a')!;
@@ -170,16 +163,9 @@ final class $FriendsReferences
   }
 
   static i2.Users _userBTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db)
-          .resultSet<i2.Users>('users')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(
-                db,
-              ).resultSet<i2.Friends>('friends').userB,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id,
-            ),
-          );
+      i3.ReadDatabaseContainer(
+        db,
+      ).resultSet<i2.Users>('users').createAlias('friends__user_b__users__id');
 
   i2.$UsersProcessedTableManager get userB {
     final $_column = $_itemColumn<int>('user_b')!;

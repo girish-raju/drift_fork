@@ -187,12 +187,9 @@ final class $FollowsReferences
   $FollowsReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i1.Users _followedTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.Follows>('follows')
-                  .followed,
-              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i1.Users>('users')
+          .createAlias('follows__followed__users__id');
 
   i1.$UsersProcessedTableManager get followed {
     final $_column = $_itemColumn<int>('followed')!;
@@ -208,12 +205,9 @@ final class $FollowsReferences
   }
 
   static i1.Users _followerTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.Follows>('follows')
-                  .follower,
-              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i1.Users>('users')
+          .createAlias('follows__follower__users__id');
 
   i1.$UsersProcessedTableManager get follower {
     final $_column = $_itemColumn<int>('follower')!;

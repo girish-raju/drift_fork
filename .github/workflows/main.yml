@@ -281,6 +281,9 @@ jobs:
       - name: Test drift_sqlite
         working-directory: future/drift_sqlite
         run: dart test
+      - name: Test drift_manager
+        working-directory: future/drift_manager
+        run: dart test
   test_flutter:
     runs-on: ubuntu-latest
     needs: [setup]
