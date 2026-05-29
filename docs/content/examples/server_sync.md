@@ -44,21 +44,25 @@ It uses code generation to automate most of the client logic.
 
 <small>
 
-_Disclosure_: Drift maintainer Simon Binder [works at the team maintaining PowerSync](https://www.powersync.com/blog/simon-binder-joins-powersync).
-While this page only reflects his personal opinion, please keep that in mind and perhaps consult other sources on sync options for Dart too.
+_Disclosure_: PowerSync sponsors Drift, and employs Drift maintainer Simon Binder.
+They had no influence on this page, but please keep that in mind and perhaps consult other sources on sync options for Dart too.
 
 </small>
 
 PowerSync is sync solution with [stable and official Flutter support](https://docs.powersync.com/client-sdk-references/flutter).
-Using a sync service available as a managed cloud offering or for self-hosting, you define buckets of data to make available to individual users.
-A client SDK for Dart/Flutter connects to this service to automatically sync changes from backend databases in real-time.
+Using a sync service available as a managed cloud offering or for self-hosting, you define streams of data in SQL that your app
+can subscribe to for real-time sync.
+The client SDK for Dart/Flutter implements the sync process (this includes automatically downloading changes from the backend database, offline
+support, collecting local writes for two-way sync).
 
 While PowerSync automatically collects client-side changes, you're still responsible for uploading these to your backend (which can then validate them).
 For managed Postgres databases such as Supabase, using row-level security and [direct uploads from clients](https://docs.powersync.com/integration-guides/supabase-+-powersync)
 avoids the use of a separate backend.
 
-PowerSync also offers a [package for drift support](https://docs.powersync.com/client-sdk-references/flutter/flutter-orm-support#example-implementation) (currently in Alpha)
+PowerSync also offers a [package for drift support](https://docs.powersync.com/client-sdk-references/flutter/flutter-orm-support#example-implementation) (currently in Beta)
 that will make your query streams update in real-time for changes from the backend.
+Drift also supports the PowerSync SQL extension [in drift files](../generation_options/index.md#available-extensions).
+
 [This example](https://github.com/powersync-ja/powersync.dart/tree/main/demos/supabase-todolist-drift) shows how PowerSync can be integrated into a drift app.
 
 ## ElectricSQL
