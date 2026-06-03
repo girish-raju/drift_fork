@@ -3,10 +3,11 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/native.dart';
-import 'package:drift_sqlite/src/dialect/dialect.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -18,7 +19,10 @@ void main() {
   test('returns new columns after recompilation', () async {
     // https://github.com/simolus3/drift/issues/2454
     final file = File(d.path('test.db'));
-    final session = await sqliteConnectionPool(file, amountOfReaders: 1);
+    final session = (await (sqliteConnectionPool(
+      file: file,
+      amountOfReaders: 1,
+    ).open())).session;
     addTearDown(session.close);
 
     await session.execute(StatementInfo('create table t (c1)'));
@@ -43,8 +47,8 @@ void main() {
 
   test('can use a custom setup function', () async {
     final file = File(d.path('test.db'));
-    final session = await sqliteConnectionPool(
-      file,
+    final session = (await sqliteConnectionPool(
+      file: file,
       amountOfReaders: 1,
       configureDatabase: (db, {required bool isWriter}) {
         db.execute('CREATE TEMPORARY TABLE conn_info(info text);');
@@ -52,7 +56,7 @@ void main() {
           isWriter ? 'writer' : 'reader',
         ]);
       },
-    );
+    ).open()).session;
     addTearDown(session.close);
 
     final writeResult = await session.execute(
@@ -74,28 +78,20 @@ void main() {
     ]);
   });
 
-  test(
-    'throwing in setup prevents the database from being opened',
-    () async {
-      const exception = 'exception';
-      expect(
-        await sqliteConnectionPool(
-          File(d.path('test.db')),
-          configureDatabase: (db, {required bool isWriter}) => throw exception,
-        ),
-        throwsA(exception),
-      );
-    },
-    skip: 'will be fixed in sqlite3_connection_pool 0.2.1',
-  );
+  test('throwing in setup prevents the database from being opened', () async {
+    const exception = 'exception';
+    expect(
+      sqliteConnectionPool(
+        file: File(d.path('test.db')),
+        configureDatabase: (db, {required bool isWriter}) => throw exception,
+      ).open(),
+      throwsA(exception),
+    );
+  });
 
   test('can cancel queries', () async {
     final db = EmptyDb(
-      DriftConnection(
-        dialect: const SqliteDialect(),
-        openConnection: () async =>
-            sqliteConnectionPool(File(d.path('test.db')), amountOfReaders: 1),
-      ),
+      sqliteConnectionPool(file: File(d.path('test.db')), amountOfReaders: 1),
     );
 
     // Occupy the single read connection
@@ -119,11 +115,49 @@ void main() {
     completeTransaction.complete();
     await db.close();
   });
+
+  for (final mode in UpdateNotificationMode.values) {
+    group('with update mode ${mode.name}', () {
+      test('can watch changes from other isolate', () async {
+        final path = d.path('test.db');
+        final db = EmptyDb(
+          sqliteConnectionPool(
+            file: File(path),
+            amountOfReaders: 1,
+            updates: mode,
+          ),
+        );
+        await db.customStatement('CREATE TABLE foo (bar TEXT);');
+        final updates = StreamQueue(db.tableUpdates(.onTableName('foo')));
+
+        await Isolate.run(() async {
+          final db = EmptyDb(
+            sqliteConnectionPool(
+              file: File(path),
+              amountOfReaders: 1,
+              updates: mode,
+            ),
+          );
+
+          switch (mode) {
+            case .native:
+              await db.customInsert('INSERT INTO foo DEFAULT VALUES');
+            case .drift:
+              // Ensure the database is opened.
+              await db.currentSession();
+              db.notifyUpdates({TableUpdate('foo')});
+          }
+
+          await db.close();
+        });
+
+        expect(updates, emits({TableUpdate('foo')}));
+      });
+    });
+  }
 }
 
-Future<DriftSession> _openPool() async {
+Future<DriftDatabaseImplementation> _openPool() async {
   final file = File(d.path('test.db'));
-  final pool = await sqliteConnectionPool(file);
-  addTearDown(pool.close);
-  return pool;
+  return sqliteConnectionPool(file: file).open();
 }

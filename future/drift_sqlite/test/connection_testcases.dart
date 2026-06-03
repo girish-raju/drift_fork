@@ -6,18 +6,20 @@ import 'package:drift/src/drift3_preview/src/utils/cancellation_zone.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
-void declareConnectionTests(Future<DriftSession> Function() openConnection) {
-  Future<DriftSession> open() async {
-    final session = await openConnection();
-    addTearDown(session.close);
-    return session;
+void declareConnectionTests(
+  Future<DriftDatabaseImplementation> Function() openConnection,
+) {
+  Future<DriftDatabaseImplementation> open() async {
+    final impl = await openConnection();
+    addTearDown(impl.session.close);
+    return impl;
   }
 
   EmptyDb openDrift() {
     final db = EmptyDb(
-      DriftConnection(
+      DriftConnection.withImplementation(
         dialect: const SqliteDialect(),
-        openConnection: openConnection,
+        implementation: openConnection,
       ),
     );
     addTearDown(db.close);
@@ -25,7 +27,7 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
   }
 
   test('schema version', () async {
-    final session = await open();
+    final session = (await open()).session;
     final version = session.persistentSchemaVersion!;
     expect(await version.schemaVersion, 0);
 
@@ -36,7 +38,7 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
   });
 
   test('queries', () async {
-    final session = await open();
+    final session = (await open()).session;
     await session.execute(
       StatementInfo('CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY)'),
     );
@@ -56,7 +58,7 @@ void declareConnectionTests(Future<DriftSession> Function() openConnection) {
   });
 
   test('does not cache explain statements', () async {
-    final db = await open();
+    final db = (await open()).session;
 
     await db.execute(
       StatementInfo(

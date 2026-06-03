@@ -1,6 +1,7 @@
 @TestOn('browser')
 library;
 
+import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:test/test.dart';
@@ -17,6 +18,9 @@ void main() {
   });
 
   declareConnectionTests(() async {
-    return SqliteConnection(sqlite.openInMemory());
+    return DriftDatabaseImplementation(
+      SqliteConnection(sqlite.openInMemory()),
+      InMemoryStreamQueryStore(),
+    );
   });
 }

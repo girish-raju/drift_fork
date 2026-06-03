@@ -102,6 +102,34 @@ final class SqlitePoolSession
   }
 }
 
+/// A [StreamQueryStore] implemented on a [SqliteConnectionPool].
+final class SqlitePoolUpdates extends StreamQueryStore {
+  final SqliteConnectionPool _pool;
+  final bool _enableCustomUpdates;
+
+  /// @nodoc
+  SqlitePoolUpdates(this._pool, {required bool enableCustomUpdates})
+    : _enableCustomUpdates = enableCustomUpdates;
+
+  @override
+  void handleTableUpdates(Set<TableUpdate> updates) {
+    if (_enableCustomUpdates) {
+      _pool.dispatchUpdateNotification([
+        for (final update in updates) update.table,
+      ]);
+    }
+  }
+
+  @override
+  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
+    return _pool.updatedTables
+        .map((tables) {
+          return {for (final table in tables) TableUpdate(table)};
+        })
+        .where((updates) => updates.any(query.matches));
+  }
+}
+
 List<Object?> _preparedStatementValues(Iterable<MappedValue> values) {
   return values.map((e) => e.rawValue).toList();
 }

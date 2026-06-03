@@ -1,6 +1,7 @@
 @TestOn('browser')
 library;
 
+import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:sqlite3_web/sqlite3_web.dart';
 import 'package:test/test.dart';
@@ -23,6 +24,9 @@ void main() {
       wasmModule: sqliteWasmUri,
     );
     final db = await sqlite.connect('db-${dbCounter++}', .inMemoryLocal);
-    return WasmDatabase.wrapDatabase(db);
+    return DriftDatabaseImplementation(
+      WasmDatabase.wrapDatabase(db),
+      InMemoryStreamQueryStore(),
+    );
   });
 }

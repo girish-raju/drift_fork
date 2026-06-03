@@ -66,15 +66,8 @@ CREATE TABLE IF NOT EXISTS todo_categories (
     });
 
     test('pool', () async {
-      await testWith(
-        DriftConnection(
-          dialect: const SqliteDialect(),
-          openConnection: () async {
-            final file = File(d.path('test.db'));
-            return await sqliteConnectionPool(file);
-          },
-        ),
-      );
+      final file = File(d.path('test.db'));
+      await testWith(sqliteConnectionPool(file: file));
     });
   });
 }

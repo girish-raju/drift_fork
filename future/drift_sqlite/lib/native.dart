@@ -10,11 +10,10 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 
 import 'src/connection/pool.dart';
+import 'src/dialect/dialect.dart';
 
 /// Opens a pool of SQLite connection for high-performance and concurrent
 /// queries.
-///
-/// This method can be passed to a [DriftConnection] constructor.
 ///
 /// This opens a single connnection for writes and additional [amountOfReaders]
 /// connections for reads.
@@ -29,11 +28,32 @@ import 'src/connection/pool.dart';
 ///
 /// Two isolates calling [sqliteConnectionPool] with the same path will
 /// implicitly use the same connection pool without conflict.
-Future<DriftSession> sqliteConnectionPool(
-  File file, {
+DriftConnection sqliteConnectionPool({
+  required File file,
+  SqliteOptions dialectOptions = const SqliteOptions(),
+  UpdateNotificationMode updates = .native,
   int amountOfReaders = 4,
   int preparedStatementCacheSize = 16,
   void Function(Database, {required bool isWriter})? configureDatabase,
+}) {
+  return DriftConnection.withImplementation(
+    dialect: SqliteDialect(options: dialectOptions),
+    implementation: () => _sqliteConnectionPool(
+      file: file,
+      amountOfReaders: amountOfReaders,
+      preparedStatementCacheSize: preparedStatementCacheSize,
+      configureDatabase: configureDatabase,
+      updates: updates,
+    ),
+  );
+}
+
+Future<DriftDatabaseImplementation> _sqliteConnectionPool({
+  required File file,
+  required int amountOfReaders,
+  required int preparedStatementCacheSize,
+  required void Function(Database, {required bool isWriter})? configureDatabase,
+  required UpdateNotificationMode updates,
 }) async {
   final path = file.absolute.path;
 
@@ -67,9 +87,34 @@ Future<DriftSession> sqliteConnectionPool(
         rethrow;
       }
 
-      return PoolConnections(writer, readers);
+      return PoolConnections(
+        writer,
+        readers,
+        preparedStatementCacheSize: preparedStatementCacheSize,
+        enableNativeUpdateHooks: updates == .native,
+      );
     },
   );
 
-  return SqlitePoolSession(pool);
+  return DriftDatabaseImplementation(
+    SqlitePoolSession(pool),
+    SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
+  );
+}
+
+/// How a [sqliteConnectionPool] should interact with watched queries in drift.
+///
+/// The default and recommended option is [native], which uses native SQLite
+/// update hooks to ensure drift streams only emit updates for writes that
+/// actually happened. However, [native] misses updates for `WITHOUT ROWID`
+/// tables and custom updates added via
+/// [DatabaseConnectionUser.markTablesUpdated]. To rely on this feature, use
+/// the [drift] mode instead.
+enum UpdateNotificationMode {
+  /// Use SQLite update hooks to track which tables were affected by a
+  /// statement.
+  native,
+
+  /// Disable SQLite update hooks and process updates entirely in Dart.
+  drift,
 }
