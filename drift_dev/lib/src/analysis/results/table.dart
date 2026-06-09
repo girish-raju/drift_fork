@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../options.dart';
 import 'dart.dart';
 import 'element.dart';
 
@@ -110,7 +111,11 @@ class DriftTable extends DriftElementWithResultSet {
   bool get isVirtual => virtualTableData != null;
 
   @override
-  String get dbGetterName => DriftSchemaElement.dbFieldName(baseDartName);
+  String computeDbGetterName(DriftOptions options) {
+    return DriftSchemaElement.dbFieldName(
+      options.useSqlTableNameForAccessors ? id.name : baseDartName,
+    );
+  }
 
   /// The primary key for this table, computed by looking at the primary key
   /// defined as a table constraint or as a column constraint.
