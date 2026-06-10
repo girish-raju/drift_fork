@@ -1,4 +1,4 @@
-## 2.34.0 (unreleased)
+## 2.34.0
 
 - Add `setup` callback to `validateDatabaseSchema` in `VerifySelf` extension.
 - Fix generating code for table classes with a `$` in their name.

@@ -1,4 +1,4 @@
-## 0.44.5 (unreleased)
+## 0.44.5
 
 - Support `ALTER TABLE ADD/DROP CONSTRAINT` statements. 
 
