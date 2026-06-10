@@ -71,3 +71,6 @@ dependency_overrides:
     path: ../extras/drift_postgres
   sqlparser:
     path: ../sqlparser
+
+  # Until https://github.com/schultek/jaspr/pull/819 gets released
+  riverpod: '>=3.2.0 <3.3.2'
