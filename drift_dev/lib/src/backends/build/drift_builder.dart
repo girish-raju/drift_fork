@@ -21,6 +21,7 @@ import '../../writer/tables/view_writer.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
 import 'exception.dart';
+import 'incremental/timing.dart';
 
 class _BuilderFlags {
   bool didWarnAboutDeprecatedOptions = false;
@@ -175,9 +176,9 @@ class _DriftBuildRun {
 
     await _checkForLanguageVersions();
 
-    final fileResult = await _analyze(
-      buildStep.inputId.uri,
-      isEntrypoint: true,
+    final fileResult = await timedAsync(
+      'builder.analyze(${buildStep.inputId})',
+      () => _analyze(buildStep.inputId.uri, isEntrypoint: true),
     );
 
     // For the monolithic build modes, we only generate code for databases and
@@ -190,7 +191,10 @@ class _DriftBuildRun {
     if (mode.isMonolithic) {
       await _generateMonolithic(fileResult);
     } else {
-      await _generateModular(fileResult);
+      await timedAsync(
+        'builder.generateModular(${buildStep.inputId})',
+        () => _generateModular(fileResult),
+      );
     }
     await _emitCode();
 
@@ -541,13 +545,16 @@ class _DriftBuildRun {
     var code = writer.writeGenerated();
 
     try {
-      code = formatDartCode(
-        code,
-        sourceLanguageVersion ?? DartFormatter.latestLanguageVersion,
-        // source_gen will include the linewidth comment for us.
-        includeWidthComment:
-            !mode.appliesCombiningBuilderFromSourceGen &&
-            options.preamble == null,
+      code = timedSync(
+        'builder.format(${buildStep.inputId})',
+        () => formatDartCode(
+          code,
+          sourceLanguageVersion ?? DartFormatter.latestLanguageVersion,
+          // source_gen will include the linewidth comment for us.
+          includeWidthComment:
+              !mode.appliesCombiningBuilderFromSourceGen &&
+              options.preamble == null,
+        ),
       );
     } on FormatterException {
       log.warning(

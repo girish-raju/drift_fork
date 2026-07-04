@@ -46,7 +46,12 @@ class DriftResolver {
 
   Future<DriftElement> _restoreOrResolve(DriftElementId element) async {
     try {
-      if (await driver.readStoredAnalysisResult(element.libraryUri) != null) {
+      final stored = await driver.readStoredAnalysisResult(element.libraryUri);
+      // The stored results may intentionally cover only a subset of the
+      // library's elements (drift's incremental cache only serves elements
+      // whose sources are unchanged) - treat absent elements as a plain cache
+      // miss instead of a deserialization error.
+      if (stored != null && stored.containsKey(element.name)) {
         return await _deserializer.readDriftElement(element);
       }
     } on CouldNotDeserializeException catch (e, s) {

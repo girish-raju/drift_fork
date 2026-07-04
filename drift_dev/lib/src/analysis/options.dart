@@ -141,6 +141,28 @@ class DriftOptions {
   @JsonKey(name: 'has_separate_analyzer', defaultValue: false)
   final bool hasDriftAnalyzer;
 
+  /// Enables an experimental, per-table incremental generation cache.
+  ///
+  /// When enabled, drift stores analysis results for each table in a sidecar
+  /// cache under `.dart_tool/drift_incremental_cache/`. On subsequent builds,
+  /// tables whose source has not changed are restored from that cache instead
+  /// of being re-resolved through the analyzer, so editing a single table in a
+  /// file defining many tables no longer re-analyzes all of them.
+  ///
+  /// Deleting the cache directory forces a full re-analysis.
+  @JsonKey(name: 'incremental_generation', defaultValue: false)
+  final bool incrementalGeneration;
+
+  /// Where the incremental generation cache is stored, relative to the package
+  /// root. Defaults to `.dart_tool/drift_incremental_cache`.
+  ///
+  /// Teams can point this at a directory tracked in version control so that a
+  /// warm cache is shared between machines - entries are validated against
+  /// source hashes, so a stale or foreign cache can never produce incorrect
+  /// results, it only affects how much needs to be re-analyzed.
+  @JsonKey(name: 'incremental_cache_dir')
+  final String? incrementalCacheDir;
+
   final String? preamble;
 
   @JsonKey(name: 'fatal_warnings', defaultValue: false)
@@ -185,6 +207,8 @@ class DriftOptions {
     this.writeToColumnsMixins = false,
     this.fatalWarnings = false,
     this.hasDriftAnalyzer = false,
+    this.incrementalGeneration = false,
+    this.incrementalCacheDir,
     this.assumeCorrectReference = false,
     this.schemaDir = "drift_schemas",
     this.testDir = "test/drift",
@@ -219,6 +243,8 @@ class DriftOptions {
     required this.fatalWarnings,
     required this.preamble,
     required this.hasDriftAnalyzer,
+    this.incrementalGeneration = false,
+    this.incrementalCacheDir,
     required this.assumeCorrectReference,
     this.dialect,
     required this.schemaDir,

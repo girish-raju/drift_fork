@@ -11,6 +11,8 @@ import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
 import 'exception.dart';
+import 'incremental/incremental_cache.dart';
+import 'incremental/timing.dart';
 
 class DriftDiscover extends Builder {
   final DriftOptions options;
@@ -77,13 +79,24 @@ class DriftAnalyzer extends Builder {
       buildStep,
       forDrift3Preview: options.drift3Preview,
     );
-    final driver = DriftAnalysisDriver(backend, options)
-      ..cacheReader = BuildCacheReader(
-        buildStep,
-        findsLocalElementsReliably: true,
-      );
 
-    final results = await driver.resolveElements(buildStep.inputId.uri);
+    final sidecar = options.incrementalGeneration
+        ? IncrementalDriftCache.open(options, buildStep.inputId.package)
+        : null;
+    final buildCacheReader = BuildCacheReader(
+      buildStep,
+      findsLocalElementsReliably: true,
+    );
+
+    final driver = DriftAnalysisDriver(backend, options)
+      ..cacheReader = sidecar == null
+          ? buildCacheReader
+          : IncrementalCacheReader(buildCacheReader, sidecar, buildStep);
+
+    final results = await timedAsync(
+      'analyzer.resolveElements(${buildStep.inputId})',
+      () => driver.resolveElements(buildStep.inputId.uri),
+    );
     var hadWarnings = false;
 
     // The discovery builder is just here to accelerate builds and doesn't
@@ -103,7 +116,10 @@ class DriftAnalyzer extends Builder {
         }
       }
 
-      final serialized = driver.serializeState(results);
+      final serialized = timedSync(
+        'analyzer.serializeState(${buildStep.inputId})',
+        () => driver.serializeState(results),
+      );
       final asJson = JsonUtf8Encoder(
         ' ' * 2,
       ).convert(serialized.serializedData);
@@ -144,6 +160,19 @@ class DriftAnalyzer extends Builder {
 
         await buildStep.writeAsString(typesOutput, writer.writeGenerated());
       }
+    }
+
+    if (sidecar != null && buildStep.inputId.extension == '.dart') {
+      // Update the sidecar cache with the analysis results of this library so
+      // that later build steps (and later builds) can reuse them for tables
+      // whose sources haven't changed.
+      await timedAsync(
+        'analyzer.sidecarWriteBack(${buildStep.inputId})',
+        () async {
+          final source = await buildStep.readAsString(buildStep.inputId);
+          await sidecar.storeLibrary(results, source: source);
+        },
+      );
     }
 
     if (hadWarnings && options.fatalWarnings) {
